@@ -11,10 +11,10 @@
     
     <!-- MAIN/ -->
     <div>
-      <slot/>
+      <slot/> 
     </div>
 
-    <div>
+    <div class="mt-10">
       <AppFooter/>
     </div>
   </div>

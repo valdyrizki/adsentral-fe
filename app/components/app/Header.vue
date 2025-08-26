@@ -9,6 +9,8 @@
         <AppHeaderMain/>
     </div>
 
-    
+    <div>
+      <AppCategoryPreview/>
+    </div>
   </header>
 </template>
