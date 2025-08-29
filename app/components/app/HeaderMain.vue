@@ -19,18 +19,14 @@ import { UIcon } from '#components';
         <div class="flex flex-1 mx-6">
           <div class="flex w-full">
             <!-- Dropdown kategori -->
-            <button
-              class="flex items-center space-x-2 px-3 py-2 bg-white text-black rounded-l-lg border border-gray-300 hover:bg-gray-100"
-            >
-              <span>Kategori</span>
-              <UIcon name="material-symbols:arrow-drop-down" />
-            </button>
+
+            
 
             <!-- Input -->
             <input
               type="text"
               placeholder="Cari produk..."
-              class="flex-1 px-4 py-2 border-t border-b border-gray-300 focus:outline-none"
+              class="flex-1 px-4 py-2 border border-gray-300 focus:outline-none "
             />
 
             <!-- Search button -->
@@ -50,12 +46,24 @@ import { UIcon } from '#components';
           </button>
 
           <!-- Login -->
-          <button
-            class="bg-blue-500 px-4 py-2 rounded text-white hover:bg-blue-600"
-          >
-            Masuk
-          </button>
+          <UModal :dismissible="false" :transition="true" :overlay="true" title="Sign in to your account">
+            <UButton label="Daftar" color="neutral" variant="subtle" class="bg-blue-500 px-4 py-2 rounded text-white hover:bg-blue-600" />
+
+            <template #body>
+              <LazyFormLogin/>
+            </template>
+          </UModal>
+
+          <!-- Login -->
+          <UModal :dismissible="false" :transition="true" :overlay="true" title="Sign in to your account">
+            <UButton label="Masuk" color="neutral" variant="subtle" class="bg-blue-500 px-4 py-2 rounded text-white hover:bg-blue-600" />
+
+            <template #body>
+              <LazyFormLogin/>
+            </template>
+          </UModal>
         </div>
+        
       </div>
     </div>
 </template>

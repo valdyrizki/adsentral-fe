@@ -6,7 +6,8 @@
   <div>
     <!-- HEADER -->
     <div>
-      <AppHeader/>
+      <!-- <AppHeader/> -->
+      <app-header-example/>
     </div>
     
     <!-- MAIN/ -->
@@ -19,3 +20,7 @@
     </div>
   </div>
 </template>;
+
+
+
+

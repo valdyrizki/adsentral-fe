@@ -1,66 +1,90 @@
 <template>
-  <div class="bg-white">
-    <div class="py-8 sm:py-12 xl:mx-auto xl:max-w-7xl xl:px-8">
-      <div class="px-4 sm:flex sm:items-center sm:justify-between sm:px-6 lg:px-8 xl:px-0">
-        <h2 class="text-2xl font-bold tracking-tight text-gray-900">Shop by Category</h2>
-        <a href="#" class="hidden text-sm font-semibold text-indigo-600 hover:text-indigo-500 sm:block">
-          Browse all categories
-          <span aria-hidden="true"> &rarr;</span>
-        </a>
-      </div>
+  <div class="w-full">
+    
+    <div class="mx-auto max-w-2xl px-4 py-4 sm:px-6 sm:py-6 lg:max-w-7xl lg:px-8">
+        <div class="mx-auto mt-4 flow-root pb-10 border rounded-2xl border-blue-200 bg-gray-100">
+          <AppHeaderSection title="Category" description="Cari kebutuhanmu berdasarkan kategori produk yang tersedia disini!" to="/category" icon="iconamoon:category-light"   />
+            <USeparator/>
+            <UCarousel
+              v-if="categories"
+              v-slot="{ item }"
+              loop
+              arrows
+              dots
+              :autoplay="{ delay: 3000 }"
+              :items="categories"
+              :ui="{ item: 'basis-1/3 md:basis-1/6' }"
+              class="mt-4"
+            >
+              <div class="m-1">
+                  <a href={{ item.name }} >
+                  <NuxtImg :src="item.image_url" class="mx-auto rounded-2xl"    />
+                  <!-- <UB class="text-center mx-auto text-white">{{ item.name }}</h1> -->
+                    <div class="w-full bg-amber-800 justify-items-center mx-auto flex items-center">
+                      <UButton color="neutral" :label="item.name" class="bg-gray-200 opacity-75  mx-auto -mt-10 text-black hover:text-white" />
+                    </div>
+                </a>
+              </div>
 
-      <div class="mt-4 flow-root">
-        <div class="-my-2">
-          <div class="relative box-content h-80 overflow-x-auto py-2 xl:overflow-visible">
-            <div class="absolute flex space-x-8 px-4 sm:px-6 lg:px-8 xl:relative xl:grid xl:grid-cols-5 xl:gap-x-8 xl:space-x-0 xl:px-0">
-              <a v-for="category in categories" :key="category.name" :href="category.href" class="relative flex h-80 w-56 flex-col overflow-hidden rounded-lg p-6 hover:opacity-75 xl:w-auto">
-                <span aria-hidden="true" class="absolute inset-0">
-                  <img :src="category.imageSrc" alt="" class="size-full object-cover" />
-                </span>
-                <span aria-hidden="true" class="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-gray-800 opacity-50" />
-                <span class="relative mt-auto text-center text-xl font-bold text-white">{{ category.name }}</span>
+            <!-- <div class="bg-primary flex flex-col items-center justify-center h-64">
+              <a href="{{ item.name }}" class="flex flex-col items-center">
+                <NuxtImg 
+                  src="https://picsum.photos/640/640?random=1" 
+                  width="200" 
+                  height="100" 
+                  class="mx-auto"
+                />
+                <h1 class="text-center mt-4">{{ item.name }}</h1>
               </a>
-            </div>
-          </div>
+            </div> -->
+
+              
+            </UCarousel>
         </div>
       </div>
+      
+      
+          
 
-      <div class="mt-6 px-4 sm:hidden">
-        <a href="#" class="block text-sm font-semibold text-indigo-600 hover:text-indigo-500">
-          Browse all categories
-          <span aria-hidden="true"> &rarr;</span>
-        </a>
-      </div>
-    </div>
   </div>
+  
 </template>
 
-<script setup>
-const categories = [
-  {
-    name: 'New Arrivals',
-    href: '#',
-    imageSrc: 'https://tailwindcss.com/plus-assets/img/ecommerce-images/home-page-01-category-01.jpg',
-  },
-  {
-    name: 'Productivity',
-    href: '#',
-    imageSrc: 'https://tailwindcss.com/plus-assets/img/ecommerce-images/home-page-01-category-02.jpg',
-  },
-  {
-    name: 'Workspace',
-    href: '#',
-    imageSrc: 'https://tailwindcss.com/plus-assets/img/ecommerce-images/home-page-01-category-04.jpg',
-  },
-  {
-    name: 'Accessories',
-    href: '#',
-    imageSrc: 'https://tailwindcss.com/plus-assets/img/ecommerce-images/home-page-01-category-05.jpg',
-  },
-  {
-    name: 'Sale',
-    href: '#',
-    imageSrc: 'https://tailwindcss.com/plus-assets/img/ecommerce-images/home-page-01-category-03.jpg',
-  },
-]
+<script lang="ts" setup>
+
+  const toast = useToast()
+
+  function showToast() {
+      toast.add({
+      title: 'Uh oh! Something went wrong.',
+      description: 'There was a problem with your request.',
+      icon: props.icon
+    })
+  }
+
+
+  const config = useRuntimeConfig()
+  const api = config.public.apiBase 
+
+  const { 
+    data: categories, 
+    error, 
+    pending 
+  } = await useFetch(api + '/categories', {
+    transform: (res) => res.data,
+    onRequest({ options }) {
+      console.log('Fetching categories...')
+    },
+    onRequestError({ error }) {
+      showToast()
+    },
+    onResponse({ response }) {
+      console.log('Got response:', response._data)
+    },
+    onResponseError({ response }) {
+      console.error('Response error:', response)
+    }
+  })
+
+
 </script>
