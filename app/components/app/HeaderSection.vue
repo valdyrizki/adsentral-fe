@@ -32,8 +32,6 @@
   </div>
 </template>
 
-
-
 <style>
 
 </style>

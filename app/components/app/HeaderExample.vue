@@ -3,7 +3,7 @@
     <div class="h-auto">
       
         <!-- informasi (desktop only) -->
-         <div class="w-full bg-blue-900">
+         <div class="w-full bg-blue-600">
             <div class="hidden md:flex w-3/4 mx-auto justify-between items-center py-2 ">
                 <div class="basis-1/4">
                     <p class="text-xs mx-2">Hubungi Kami : 085855558813</p>
@@ -19,7 +19,7 @@
       
 
       <!-- header utama -->
-       <div class="w-full bg-blue-600 py-4">
+       <div class="w-full bg-blue-900 py-4">
         <div class="flex flex-col md:flex-row w-full md:w-3/4 mx-auto justify-between items-center gap-4 ">
             <!-- Logo -->
             <div class="w-full md:basis-1/6 md:text-left">

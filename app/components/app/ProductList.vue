@@ -1,45 +1,83 @@
 <template>
-  <div class=" w-full border bg-amber-200">
-    <div class="mx-auto max-w-2xl px-4 py-4 sm:px-6 sm:py-6 lg:max-w-7xl lg:px-8 border rounded-2xl bg-amber-600">
+  <div class="w-full p-1 md:p-0 bg-white">
+    <div class="mx-auto w-full md:w-3/4 border rounded-2xl border-blue-200 bg-gray-100">
       <!-- PRODUCT HEADER -->
-       <div class="border border-amber-300">
-        <AppHeaderSection title="Product" description="Cari produk yang kamu cari disini!" to="/product" icon="material-symbols:shopping-bag-sharp"   />
+      <div>
+        <AppHeaderSection
+          title="Product"
+          description="Cari produk yang kamu cari disini!"
+          to="/product"
+          icon="material-symbols:shopping-bag-sharp"
+        />
       </div>
 
-    <div>
-      <!-- PRODUCT LIST -->
-       <div class="mx-auto max-w-2xl px-4 py-4 sm:px-6 sm:py-6 lg:max-w-7xl lg:px-8">
-      <div class="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-6">
-        <div v-for="product in products" :key="product.id">
-          <div class="relative border">
-            <div class="relative h-50 w-full overflow-hidden rounded-lg">
-              <img :src="product.imageSrc" :alt="product.imageAlt" class="size-full object-cover" />
-            </div>
-            <div class="relative mt-4">
-              <h3 class="text-sm font-medium text-gray-900">{{ product.name }}</h3>
-              <p class="mt-1 text-sm text-gray-500">{{ product.color }}</p>
-            </div>
-            <div class="absolute inset-x-0 top-0 flex h-53 items-end justify-end overflow-hidden rounded-lg">
-              <p class="relative text-lg font-semibold text-white bg-warning">{{ product.price }}</p>
+      <USeparator />
+
+      <div>
+        <!-- PRODUCT LIST -->
+        <div class="mx-auto w-full p-4">
+          <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div
+              v-for="product in products"
+              :key="product.id"
+              class="relative group border border-transparent hover:border hover:rounded-2xl hover:border-blue-200 p-1 transition-all duration-300 ease-in-out"
+            >
+              <div class="relative aspect-square w-full overflow-hidden rounded-lg">
+                <img
+                  :src="product.imageSrc"
+                  :alt="product.imageAlt"
+                  class="size-full object-cover hover:scale-125 block transition"
+                />
+              </div>
+
+              <!-- UnderImage -->
+               <div class="flex justify-between">
+                <div class="basis-1/3">
+                  PROMO
+                </div>
+                <div></div>
+                <div class="basis-1/2 sm:basis-1/3">
+                  <div class="relative font-semibol bg-teal-500 rounded-l-full -mt-4">
+                    <p class="text-white text-sm p-1 text-center">
+                      {{ product.price }}
+                    </p>
+                  </div>
+                </div>
+               </div>
+
+              <!-- Product Info -->
+              <div class="relative mt-4">
+                <h3 class="text-sm font-medium text-gray-900">
+                  {{ product.name }}
+                </h3>
+
+                <!-- Avatar container with slide-down -->
+                <div
+                  class="transition-all duration-300 ease-in-out md:max-h-0 max-h-12 md:opacity-0 opacity-100 md:overflow-hidden group-hover:max-h-12 group-hover:opacity-100"
+                >
+                  <div class="flex items-center space-x-2 mt-2">
+                    <UAvatar
+                      size="sm"
+                      :src="`https://i.pravatar.cc/100?u=${product.id}`"
+                    />
+                    <span class="text-xs text-gray-600">Seller Name</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    </div>
-    </div>
-
-      
-
-    
   </div>
 </template>
+
 
 <script setup>
 const products = [
   {
     id: 1,
-    name: 'Zip Tote Basket',
+    name: 'Akun Facebook + BM Verified Ispol',
     color: 'White and black',
     href: '#',
     imageSrc: 'https://picsum.photos/500/500?random=1',
@@ -62,7 +100,7 @@ const products = [
     href: '#',
     imageSrc: 'https://picsum.photos/500/500?random=3',
     imageAlt: 'Front of tote with monochrome natural canvas body, straps, roll top, and handles.',
-    price: 'Rp. 1.500.000',
+    price: 'Rp. 11.500.000',
   },
   {
     id: 4,
@@ -75,7 +113,7 @@ const products = [
   },
   {
     id: 1,
-    name: 'Zip Tote Basket',
+    name: 'Akun Facebook + BM Verified Ispol',
     color: 'White and black',
     href: '#',
     imageSrc: 'https://picsum.photos/500/500?random=5',
@@ -111,7 +149,7 @@ const products = [
   },
   {
     id: 1,
-    name: 'Zip Tote Basket',
+    name: 'Akun Facebook + BM Verified Ispol',
     color: 'White and black',
     href: '#',
     imageSrc: 'https://picsum.photos/500/500?random=9',

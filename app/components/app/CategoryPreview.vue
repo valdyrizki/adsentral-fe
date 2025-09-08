@@ -13,7 +13,7 @@
               dots
               :autoplay="{ delay: 3000 }"
               :items="categories"
-              :ui="{ item: 'basis-1/3 md:basis-1/6' }"
+              :ui="{ item: 'basis-1/3 md:basis-1/6 hover:transition-all hover:duration-300 hover:ease-in-out hover:-mt-1' }"
               class="mt-4"
             >
               <div class="m-1">
