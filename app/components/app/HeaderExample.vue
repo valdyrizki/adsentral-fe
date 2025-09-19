@@ -38,12 +38,14 @@
                   </div>
                     
                     <!-- LOGO -->
-                     <div class="w-full text-left">
-                        <p class="text-2xl mx-2">ADSENTRAL</p>
+                     <div class="w-full text-left ">
+                        <ULink to="/">
+                          <p class="text-2xl mx-2 text-white">ADSENTRAL</p>
+                        </ULink>
                      </div>
 
                      <div class="basis-1/6 flex md:hidden pr-4">
-                        <LazyAppAuthButtons />
+                        <AppAuthButtons />
                       </div>
 
                      
@@ -61,8 +63,9 @@
             </UButtonGroup>
             </div>
 
+            <!-- DESKTOP -->
             <div class="basis-1/6 hidden md:flex">
-              <LazyAppAuthButtons />
+              <AppAuthButtons />
             </div>
 
             
@@ -75,6 +78,7 @@
 
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+
 
 const items = ref<NavigationMenuItem[]>([
   {

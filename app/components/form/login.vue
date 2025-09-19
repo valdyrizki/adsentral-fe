@@ -1,10 +1,21 @@
 <script setup>
+import { useToast } from "#imports" // Nuxt UI toast
+import { useAuth } from '~/composables/useAuth'
+
     const email = ref('');
     const password = ref ('');
     const router = useRouter()
+    
 
     const config = useRuntimeConfig()
     const api = config.public.apiBase
+    const { setToken } = useAuth()
+
+    const toast = useToast()
+
+    const emit = defineEmits(["login-success"])
+
+    
 
     const handleLogin = async() =>{
 
@@ -23,26 +34,39 @@
                     }
                 })
 
-        console.log(response.data);
+          console.log(response.data);
 
-        //save token
-        localStorage.setItem('token', response.data.token);
+          //save token
+          setToken(response.data.token);
 
-        //save user detail
+          //save user detail
+          // localStorage.setItem('user', response.data.token);
 
-        //alert success
+          //alert success
+          toast.add({
+            title: "Login Berhasil 🎉",
+            description: "Anda akan diarahkan ke dashboard...",
+            color: "success"
+          })
 
+          // emit ke parent supaya modal close
+          emit("login-success")
 
 
         }catch(e){
             console.log();
             ("ERROR GUYS");
+            toast.add({
+              title: "Login Gagal ❌",
+              description: "Periksa kembali email dan password",
+              color: "error"
+            })
+
         }
 
-        
-
-
     }
+
+    
 
 </script>
 
@@ -73,5 +97,6 @@
                 Don’t have an account yet? <a href="#" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</a>
             </p>
         </form>
+
     </div>
 </template>

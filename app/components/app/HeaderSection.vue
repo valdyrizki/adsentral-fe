@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup>
   // in <script setup>
   defineProps({
     title: String,
@@ -27,7 +27,9 @@
 
     <!-- Button -->
     <div class="basis-1/12 p-4">
-      <UButton color="primary" label="Lihat Semua" trailing-icon="i-lucide-arrow-right"/>
+      <ULink to="/category">
+        <UButton color="primary" label="Lihat Semua" trailing-icon="i-lucide-arrow-right"/>
+      </ULink>
     </div>
   </div>
 </template>

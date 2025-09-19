@@ -17,28 +17,14 @@
               class="mt-4"
             >
               <div class="m-1">
-                  <a href={{ item.name }} >
+                  <!-- <a href={{ item.name }} > -->
                   <NuxtImg :src="item.image_url" class="mx-auto rounded-2xl"    />
                   <!-- <UB class="text-center mx-auto text-white">{{ item.name }}</h1> -->
-                    <div class="w-full bg-amber-800 justify-items-center mx-auto flex items-center">
+                    <div class="w-full justify-items-center mx-auto flex items-center">
                       <UButton color="neutral" :label="item.name" class="bg-gray-200 opacity-75  mx-auto -mt-10 text-black hover:text-white" />
                     </div>
-                </a>
+                <!-- </a> -->
               </div>
-
-            <!-- <div class="bg-primary flex flex-col items-center justify-center h-64">
-              <a href="{{ item.name }}" class="flex flex-col items-center">
-                <NuxtImg 
-                  src="https://picsum.photos/640/640?random=1" 
-                  width="200" 
-                  height="100" 
-                  class="mx-auto"
-                />
-                <h1 class="text-center mt-4">{{ item.name }}</h1>
-              </a>
-            </div> -->
-
-              
             </UCarousel>
         </div>
       </div>
@@ -50,7 +36,7 @@
   
 </template>
 
-<script lang="ts" setup>
+<script setup>
 
   const toast = useToast()
 

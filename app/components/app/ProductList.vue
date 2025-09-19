@@ -26,7 +26,7 @@
                 <img
                   :src="product.imageSrc"
                   :alt="product.imageAlt"
-                  class="size-full object-cover hover:scale-125 block transition"
+                  class="size-full object-cover hover:scale-115 block transition"
                 />
               </div>
 
