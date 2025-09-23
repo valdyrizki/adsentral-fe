@@ -16,16 +16,25 @@
       <div>
         <!-- PRODUCT LIST -->
         <div class="mx-auto w-full p-4">
-          <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+          <div v-if="productStore.loading">
+              <AppLoadingSkeleton/>
+          </div>
+          <div v-else-if="productStore.error">
+            <h1>{{ productStore.error }}</h1>
+
+          </div>
+          <div v-else>
+            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-6 xxl:grid-cols-8 gap-4">
             <div
-              v-for="product in products"
+              v-for="product in productStore.products.content"
               :key="product.id"
               class="relative group border border-transparent hover:border hover:rounded-2xl hover:border-blue-200 p-1 transition-all duration-300 ease-in-out"
             >
               <div class="relative aspect-square w-full overflow-hidden rounded-lg">
                 <img
-                  :src="product.imageSrc"
-                  :alt="product.imageAlt"
+                  :src="product.banner_url"
+                  :alt="product.name"
                   class="size-full object-cover hover:scale-115 block transition"
                 />
               </div>
@@ -33,13 +42,13 @@
               <!-- UnderImage -->
                <div class="flex justify-between">
                 <div class="basis-1/3">
-                  PROMO
+                  
                 </div>
                 <div></div>
                 <div class="basis-1/2 sm:basis-1/3">
-                  <div class="relative font-semibol bg-teal-500 rounded-l-full -mt-4">
+                  <div class="relative font-semibol bg-primary rounded-l-full -mt-4">
                     <p class="text-white text-sm p-1 text-center">
-                      {{ product.price }}
+                      {{ product.sell_price }}
                     </p>
                   </div>
                 </div>
@@ -60,11 +69,12 @@
                       size="sm"
                       :src="`https://i.pravatar.cc/100?u=${product.id}`"
                     />
-                    <span class="text-xs text-gray-600">Seller Name</span>
+                    <span class="text-xs text-gray-600">{{ product.merchant_name }}</span>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </div>
@@ -73,115 +83,7 @@
 </template>
 
 
-<script setup>
-const products = [
-  {
-    id: 1,
-    name: 'Akun Facebook + BM Verified Ispol',
-    color: 'White and black',
-    href: '#',
-    imageSrc: 'https://picsum.photos/500/500?random=1',
-    imageAlt: 'Front of zip tote bag with white canvas, black canvas straps and handle, and black zipper pulls.',
-    price: 'Rp.50.000',
-  },
-  {
-    id: 2,
-    name: 'Zip High Wall Tote',
-    color: 'White and blue',
-    href: '#',
-    imageSrc: 'https://picsum.photos/500/500?random=2',
-    imageAlt: 'Front of zip tote bag with white canvas, blue canvas straps and handle, and front zipper pocket.',
-    price: 'Rp. 120.000',
-  },
-  {
-    id: 3,
-    name: 'Halfsize Tote',
-    color: 'Clay',
-    href: '#',
-    imageSrc: 'https://picsum.photos/500/500?random=3',
-    imageAlt: 'Front of tote with monochrome natural canvas body, straps, roll top, and handles.',
-    price: 'Rp. 11.500.000',
-  },
-  {
-    id: 4,
-    name: 'High Wall Tote',
-    color: 'Black and orange',
-    href: '#',
-    imageSrc: 'https://picsum.photos/500/500?random=4',
-    imageAlt: 'Front of zip tote bag with black canvas, black handles, and orange drawstring top.',
-    price: 'Rp. 1.500.000',
-  },
-  {
-    id: 1,
-    name: 'Akun Facebook + BM Verified Ispol',
-    color: 'White and black',
-    href: '#',
-    imageSrc: 'https://picsum.photos/500/500?random=5',
-    imageAlt: 'Front of zip tote bag with white canvas, black canvas straps and handle, and black zipper pulls.',
-    price: 'Rp.50.000',
-  },
-  {
-    id: 2,
-    name: 'Zip High Wall Tote',
-    color: 'White and blue',
-    href: '#',
-    imageSrc: 'https://picsum.photos/500/500?random=6',
-    imageAlt: 'Front of zip tote bag with white canvas, blue canvas straps and handle, and front zipper pocket.',
-    price: 'Rp. 120.000',
-  },
-  {
-    id: 3,
-    name: 'Halfsize Tote',
-    color: 'Clay',
-    href: '#',
-    imageSrc: 'https://picsum.photos/500/500?random=7',
-    imageAlt: 'Front of tote with monochrome natural canvas body, straps, roll top, and handles.',
-    price: 'Rp. 1.500.000',
-  },
-  {
-    id: 4,
-    name: 'High Wall Tote',
-    color: 'Black and orange',
-    href: '#',
-    imageSrc: 'https://picsum.photos/500/500?random=8',
-    imageAlt: 'Front of zip tote bag with black canvas, black handles, and orange drawstring top.',
-    price: 'Rp. 1.500.000',
-  },
-  {
-    id: 1,
-    name: 'Akun Facebook + BM Verified Ispol',
-    color: 'White and black',
-    href: '#',
-    imageSrc: 'https://picsum.photos/500/500?random=9',
-    imageAlt: 'Front of zip tote bag with white canvas, black canvas straps and handle, and black zipper pulls.',
-    price: 'Rp.50.000',
-  },
-  {
-    id: 2,
-    name: 'Zip High Wall Tote',
-    color: 'White and blue',
-    href: '#',
-    imageSrc: 'https://picsum.photos/500/500?random=10',
-    imageAlt: 'Front of zip tote bag with white canvas, blue canvas straps and handle, and front zipper pocket.',
-    price: 'Rp. 120.000',
-  },
-  {
-    id: 3,
-    name: 'Halfsize Tote',
-    color: 'Clay',
-    href: '#',
-    imageSrc: 'https://picsum.photos/500/500?random=11',
-    imageAlt: 'Front of tote with monochrome natural canvas body, straps, roll top, and handles.',
-    price: 'Rp. 1.500.000',
-  },
-  {
-    id: 4,
-    name: 'High Wall Tote',
-    color: 'Black and orange',
-    href: '#',
-    imageSrc: 'https://picsum.photos/500/500?random=12',
-    imageAlt: 'Front of zip tote bag with black canvas, black handles, and orange drawstring top.',
-    price: 'Rp. 1.500.000',
-  },
-]
+<script setup lang="ts">
+  const productStore  = useProductStore()
+  productStore.fetchProducts();
 </script>

@@ -36,7 +36,7 @@ export const validateToken = async (api) => {
 }
 
 export const isLoggedIn = () =>{
-  if(validateToken){}
+  // if(validateToken){}
 
 }
 

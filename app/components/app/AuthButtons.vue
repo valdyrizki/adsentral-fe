@@ -54,7 +54,6 @@ import { useAuth } from '~/composables/useAuth'
 const isLoggedIn: Ref<boolean> = ref(false)
 const config = useRuntimeConfig()
 const api = config.public.apiBase
-const toast = useToast()
 const isLoginOpen = ref(false)
 const isRegisterOpen = ref(false)
 const { token } = useAuth()
@@ -78,9 +77,9 @@ const itemsProfile = ref<DropdownMenuItem[]>([
   }
 ])
 
-watchEffect(async() => {
+onMounted( async() =>{
   console.log(token);
-  
+    
   if(token != null){
     const isValid = await validateToken(api)
     if (isValid) {
@@ -89,7 +88,6 @@ watchEffect(async() => {
       isLoggedIn.value = false;
     }
   }
-  
 })
 
 </script>
