@@ -8,8 +8,12 @@
           <UButton color="neutral" variant="subtle" icon="mynaui:envelope" />
         </UChip>
       </div>
+      
+        <UChip :text="totalItems" color="error" size="3xl">
+          <UButton to="/cart" color="neutral" variant="soft" icon="mynaui:cart" />
+        </UChip>
 
-      <div v-if="isLoggedIn">
+      <div v-if="authStore.user?.token">
         <UDropdownMenu
         size="xl"
         :items="itemsProfile"
@@ -48,15 +52,12 @@
 
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
-import { useAuth } from '~/composables/useAuth'
 
+const authStore  = useAuthStore()
+const toast = useToast()
 
-const isLoggedIn: Ref<boolean> = ref(false)
-const config = useRuntimeConfig()
-const api = config.public.apiBase
 const isLoginOpen = ref(false)
 const isRegisterOpen = ref(false)
-const { token } = useAuth()
 
 const handleLoginSuccess = () => {
   isLoginOpen.value = false
@@ -68,26 +69,54 @@ const handleRegisterSuccess = () => {
 
 const itemsProfile = ref<DropdownMenuItem[]>([
   {
+    label: 'Account Info',
+    icon: 'mdi:user',
+    onSelect(e) {
+        toast.add({
+          title: "Hello "+authStore.user?.user.username,
+          description: "Anda sudah login menggunakan email : "+authStore.user?.user.email,
+          color: "info"
+        })
+    },
+  },
+  {
     label: 'Billing',
     icon: 'i-lucide-credit-card'
   },
   {
     label: 'Settings',
-    icon: 'i-lucide-cog'
+    icon: 'i-lucide-cog',
+  },
+  {
+    label: 'Logout',
+    icon: 'material-symbols:logout',
+    onSelect(e) {
+        authStore.logout()
+        toast.add({
+          title: "Logout Berhasil 🎉",
+          description: "anda sudah keluar dari profil anda...",
+          color: "success"
+        })
+    },
   }
 ])
 
-onMounted( async() =>{
-  console.log(token);
-    
-  if(token != null){
-    const isValid = await validateToken(api)
-    if (isValid) {
-      isLoggedIn.value = true;
-    } else {
-      isLoggedIn.value = false;
-    }
-  }
-})
+
+
+const cartStore = useCartStore()
+const { items, totalItems } = storeToRefs(cartStore)
+
+const cartOptions = computed(() =>
+  items.value.map(item => ({
+    label: item.product?.name || 'Loading...',
+    avatar: {
+      src: item.product?.banner_url || '/placeholder.png'
+    },
+    badge: String(item.quantity),
+    slot: item.product?.sell_price 
+      ? `Rp ${(item.product.sell_price * item.quantity).toLocaleString('id-ID')}` 
+      : ''
+  }))
+)
 
 </script>

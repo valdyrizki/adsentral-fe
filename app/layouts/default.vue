@@ -7,7 +7,7 @@
     <!-- HEADER -->
     <div>
       <!-- <AppHeader/> -->
-      <app-header-example/>
+      <AppHeader/>
     </div>
     
     <!-- MAIN/ -->

@@ -43,7 +43,6 @@
 </template>
 
 <script setup lang="ts">
-import { useCategoryStore } from '~/stores/category'
 const categoryStore  = useCategoryStore()
-categoryStore.fetchCategories();
+categoryStore.getCategoriesStore();
 </script>

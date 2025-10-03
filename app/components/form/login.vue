@@ -1,70 +1,80 @@
-<script setup>
+<script setup lang="ts">
 import { useToast } from "#imports" // Nuxt UI toast
-import { useAuth } from '~/composables/useAuth'
 
-    const email = ref('');
-    const password = ref ('');
-    const router = useRouter()
-    
+  const email = ref<string>('');
+  const password = ref<string>('');
+  const loading = ref<boolean>(true)
 
-    const config = useRuntimeConfig()
-    const api = config.public.apiBase
-    const { setToken } = useAuth()
+  const toast = useToast()
 
-    const toast = useToast()
+  const emit = defineEmits(["login-success"])
 
-    const emit = defineEmits(["login-success"])
+  const authStore  = useAuthStore()
 
-    
-
-    const handleLogin = async() =>{
-
-        console.log("EMAIL : "+email.value);
-        console.log("PASS : "+password.value);
-        
-
-        try{
-            const response = await $fetch(
-                api+'/user/login',
-                {
-                    method : 'POST',
-                    body : {
-                        email : email.value,
-                        password : password.value
-                    }
-                })
-
-          console.log(response.data);
-
-          //save token
-          setToken(response.data.token);
-
-          //save user detail
-          // localStorage.setItem('user', response.data.token);
-
-          //alert success
-          toast.add({
-            title: "Login Berhasil 🎉",
-            description: "Anda akan diarahkan ke dashboard...",
-            color: "success"
-          })
-
-          // emit ke parent supaya modal close
-          emit("login-success")
-
-
-        }catch(e){
-            console.log();
-            ("ERROR GUYS");
-            toast.add({
-              title: "Login Gagal ❌",
-              description: "Periksa kembali email dan password",
-              color: "error"
-            })
-
-        }
-
+  const doLogin = async() =>{
+    loading.value = true;
+    try {
+      await authStore.authLogin(email.value,password.value)      
+      toast.add({
+        title: "Login Berhasil 🎉",
+        description: "Anda akan diarahkan ke dashboard...",
+        color: "success"
+      })
+      authStore.restoreAuth()
+      
+      
+      
+    // simpan token di cookie / localStorage / useState
+    } catch (err) {
+      console.error('Login gagal:', err)
+      toast.add({
+        title: "Login Gagal ❌",
+        description: "Periksa kembali email dan password",
+        color: "error"
+      })
     }
+    
+    // try{
+    //   const response = await $fetch(
+    //       api+'/user/login',
+    //       {
+    //           method : 'POST',
+    //           body : {
+    //               email : email.value,
+    //               password : password.value
+    //           }
+    //       })
+
+    //   console.log(response.data);
+
+    //   //save token
+    //   // setToken(response.data.token);
+
+    //   //save user detail
+    //   // localStorage.setItem('user', response.data.token);
+
+    //   //alert success
+    //   toast.add({
+    //     title: "Login Berhasil 🎉",
+    //     description: "Anda akan diarahkan ke dashboard...",
+    //     color: "success"
+    //   })
+
+    //   // emit ke parent supaya modal close
+    //   emit("login-success")
+
+
+    // }catch(e){
+    //     console.log();
+    //     ("ERROR GUYS");
+    //     toast.add({
+    //       title: "Login Gagal ❌",
+    //       description: "Periksa kembali email dan password",
+    //       color: "error"
+    //     })
+
+    // }
+  }
 
     
 
@@ -92,7 +102,7 @@ import { useAuth } from '~/composables/useAuth'
                 </div>
                 <a href="#" class="text-sm font-medium hover:underline dark:text-primary-500">Forgot password?</a>
             </div>
-            <button type="submit" @click.prevent="handleLogin" class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Sign in</button>
+            <button type="submit" @click.prevent="doLogin" class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Sign in</button>
             <p class="text-sm font-light text-gray-500 dark:text-gray-400">
                 Don’t have an account yet? <a href="#" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</a>
             </p>

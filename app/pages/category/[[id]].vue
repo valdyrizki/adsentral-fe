@@ -39,10 +39,10 @@
           <!-- PRODUCT LIST -->
           <div class="mx-auto w-full p-4">
 
-            <div v-if="productStore.loading">
+            <div v-if="loadingProduct">
                 <AppLoadingSkeleton/>
             </div>
-            <div v-else-if="productStore.error">
+            <div v-else-if="errorProduct">
               <UAlert
                 title="Terjadi Kesalahan"
                 description="Maaf, terjadi error di server kami saat memanggil list produk."
@@ -54,7 +54,7 @@
             <div v-else>
               <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-6 xxl:grid-cols-8 gap-4">
               <div
-                v-for="product in productStore.products.content"
+                v-for="product in productPagination?.content"
                 :key="product.id"
                 class="relative group border border-transparent hover:border hover:rounded-2xl hover:border-blue-200 p-1 transition-all duration-300 ease-in-out"
               >
@@ -75,7 +75,7 @@
                   <div class="basis-1/2 sm:basis-1/3">
                     <div class="relative font-semibol bg-primary rounded-l-full -mt-4">
                       <p class="text-white text-sm p-1 text-center">
-                        {{ product.sell_price }}
+                        {{ product.sell_price.toLocaleString('id-ID') }}
                       </p>
                     </div>
                   </div>
@@ -111,22 +111,41 @@
 </template>
 
 <script lang="ts" setup>
-const categoryStore  = useCategoryStore()
-const productStore = useProductStore();
-const route = useRoute()
-const selectedCategoryId : Ref<number | undefined> = ref(route.params.id as number | undefined)
+import { useProductsApi } from '~/composables/api/product';
+import type { PageResponse } from '~/types/PageResponse';
+import type { ProductResponse } from '~/types/ProductResponse';
 
-categoryStore.fetchCategories();
+  const categoryStore  = useCategoryStore()
+  const route = useRoute()
+  const selectedCategoryId : Ref<number | undefined> = ref(route.params.id as number | undefined)
 
-function selectCategory(id: number) {
-  selectedCategoryId.value = id
-  productStore.getProductByCategoryId(id)
-}
+  const loadingProduct = ref<boolean>(true)
+  const errorProduct = ref<string | null | any >(null)
+  const productPagination = ref<PageResponse<ProductResponse[]>>()
 
-//on setup
-if (selectedCategoryId.value) {
-  selectCategory(selectedCategoryId.value);
-}
+  // Ambil API function
+  const { getProductsByCategoryId } = useProductsApi()
+
+  categoryStore.getCategoriesStore();
+
+  async function selectCategory(id: number) {
+    selectedCategoryId.value = id
+
+    // fungsi Fetch data getProductByCategoryId di server-side (Nuxt auto-handle hydration)
+    try { 
+      loadingProduct.value = true
+      productPagination.value = await getProductsByCategoryId(id, 0, 10, '') // page=0, size=10
+    } catch (err: any) {
+      errorProduct.value = err.statusMessage || 'Failed to load products'
+    } finally {
+      loadingProduct.value = false
+    }
+  }
+
+  //on setup
+  if (selectedCategoryId.value) {
+    selectCategory(selectedCategoryId.value);
+  }
 
 
 </script>

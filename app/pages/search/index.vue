@@ -29,7 +29,7 @@
           <!-- PRODUCT LIST DUMMY -->
           <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-6 xxl:grid-cols-8 gap-4">
             <div
-              v-for="product in productStore.products.content"
+              v-for="product in productStore.products"
               :key="product.id"
               class="relative group border border-transparent hover:border hover:rounded-2xl hover:border-blue-200 p-1 transition-all duration-300 ease-in-out"
             >
@@ -72,17 +72,30 @@
 
           <!-- PAGINATION UI -->
           <div class="flex justify-center items-center gap-2 mt-8">
-            <button class="px-3 py-1 rounded border" :disabled="productStore.products.page === 1" @click="currentPage--">&lt;</button>
-            <span v-for="page in productStore.products.total_pages" :key="page">
-              <button
-                class="px-3 py-1 rounded border"
-                :class="{ 'bg-blue-500 text-white': page === productStore.products.page }"
+            <UButton 
+              class="px-3 py-1 rounded border border-blue-500" 
+              :disabled="productStore.page === 1" 
+              :color="productStore.page === 1 ? 'primary' : 'neutral'"
+              :variant="productStore.page === 1 ? 'solid' : 'outline'"
+              @click="currentPage--">&lt;
+            </UButton>
+            <span v-for="page in productStore.totalPages" :key="page">
+              <UButton
+                size="xl"
+                :color="page === productStore.page ? 'primary' : 'neutral'"
+                :variant="page === productStore.page ? 'solid' : 'outline'"
+                class="px-3 py-1 rounded border border-blue-500"
                 @click="currentPage = page"
               >
                 {{ page }}
-              </button>
+              </UButton>
             </span>
-            <button class="px-3 py-1 rounded border" :disabled="currentPage === productStore.products.total_pages" @click="currentPage++">&gt;</button>
+            <UButton 
+            class="px-3 py-1 rounded border border-blue-500" 
+            :disabled="currentPage === productStore.totalPages" 
+            :color="currentPage === productStore.totalPages ? 'primary' : 'neutral'"
+            :variant="currentPage === productStore.totalPages ? 'solid' : 'outline'"
+            @click="currentPage++">&gt;</UButton>
           </div>
         </div>
       </div>
