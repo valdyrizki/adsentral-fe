@@ -89,7 +89,7 @@
           </dl>
 
           <div class="mt-6">
-            <UInputMenu v-model="value" :items="items" arrow class="w-full justify-center" size="xl" open-on-focus  />
+            <UInputMenu v-model="cartStore.payment_method" :items="items" arrow class="w-full justify-center" size="xl" open-on-focus  />
             <UButton size="xl" class="w-full justify-center mt-4" label="Checkout" trailing-icon="i-lucide-arrow-right" variant="solid" @click="checkout" />
           </div>
         </section>
@@ -102,7 +102,6 @@
 import type { CartItem } from '~/types/CartItem';
 
 const items = ref(['QRIS', 'Transfer Bank (Manual)'])
-const value = ref('QRIS')
 
 
 //add to cart
@@ -113,11 +112,9 @@ const deleteCartItem = (cartItem:CartItem) =>{
   cartStore.items = cartStore.items.filter(item => item !== cartItem)
 }
 
-const checkStock = (cartItem:CartItem) =>{
-  console.log("Qty : "+cartItem.quantity);
-  console.log("Stock : "+cartItem.product?.stock);
+const checkStock = async (cartItem:CartItem) =>{
   try{
-    cartStore.checkValidQty(cartItem)
+    await cartStore.checkValidQty(cartItem)
   }catch(e:any){
     toast.add({
       title: "Invalid data",
@@ -134,10 +131,19 @@ const checkout = async () =>{
 
   //update data stock from backend
   try{
-    await cartStore.updateDataFromBackend()
+    await cartStore.checkout()
+    cartStore.clearCart()
+  
+    toast.add({
+      title: "Berhasil",
+      description: "Checkout berhasil",
+      color: "success",
+      icon: "material-symbols:check-circle-outline"
+    })
+
   }catch(e:any){
     toast.add({
-      title: "Terdapat perubahan data",
+      title: "Terjadi kesalahan",
       description: e.message,
       color: "error",
       icon: "material-symbols:error-outline"
