@@ -210,11 +210,8 @@ export const useCartStore = defineStore('cart', {
 
         // ✅ Fetch data produk terbaru dari backend (bulk by IDs)
         const data = await createTransaction(request)
-
-        console.log(data);
-        
-
         if (data) {
+          this.clearCart()
           return data
         }else{
           throw new Error("Transaksi gagal, silahkan coba lagi")

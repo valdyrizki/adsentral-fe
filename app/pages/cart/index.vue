@@ -132,14 +132,14 @@ const checkout = async () =>{
   //update data stock from backend
   try{
     await cartStore.checkout()
-    cartStore.clearCart()
-  
     toast.add({
       title: "Berhasil",
       description: "Checkout berhasil",
       color: "success",
       icon: "material-symbols:check-circle-outline"
     })
+
+    navigateTo("/transaction")
 
   }catch(e:any){
     toast.add({
