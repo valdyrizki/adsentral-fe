@@ -70,7 +70,7 @@ export const useProductsApi = () => {
   
 
   // GET products by id
-  const getProductById = async (id:string[]) => {
+  const getProductById = async (id:string) => {
     const { data, error } = await useFetch<WebResponse<ProductResponse>>(`${config.public.apiBase}/product/${id}`, {
       method: 'GET',
       key: `product-${id}`, // cache per request

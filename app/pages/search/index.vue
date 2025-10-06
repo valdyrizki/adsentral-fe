@@ -29,7 +29,7 @@
           <!-- PRODUCT LIST DUMMY -->
           <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-6 xxl:grid-cols-8 gap-4">
             <div
-              v-for="product in productStore.products"
+              v-for="product in productPagination?.content"
               :key="product.id"
               class="relative group border border-transparent hover:border hover:rounded-2xl hover:border-blue-200 p-1 transition-all duration-300 ease-in-out"
             >
@@ -74,16 +74,16 @@
           <div class="flex justify-center items-center gap-2 mt-8">
             <UButton 
               class="px-3 py-1 rounded border border-blue-500" 
-              :disabled="productStore.page === 1" 
-              :color="productStore.page === 1 ? 'primary' : 'neutral'"
-              :variant="productStore.page === 1 ? 'solid' : 'outline'"
+              :disabled="productPagination?.page === 1" 
+              :color="productPagination?.page === 1 ? 'primary' : 'neutral'"
+              :variant="productPagination?.page === 1 ? 'solid' : 'outline'"
               @click="currentPage--">&lt;
             </UButton>
-            <span v-for="page in productStore.totalPages" :key="page">
+            <span v-for="page in productPagination?.total_pages" :key="page">
               <UButton
                 size="xl"
-                :color="page === productStore.page ? 'primary' : 'neutral'"
-                :variant="page === productStore.page ? 'solid' : 'outline'"
+                :color="page === productPagination?.page ? 'primary' : 'neutral'"
+                :variant="page === productPagination?.page ? 'solid' : 'outline'"
                 class="px-3 py-1 rounded border border-blue-500"
                 @click="currentPage = page"
               >
@@ -92,9 +92,9 @@
             </span>
             <UButton 
             class="px-3 py-1 rounded border border-blue-500" 
-            :disabled="currentPage === productStore.totalPages" 
-            :color="currentPage === productStore.totalPages ? 'primary' : 'neutral'"
-            :variant="currentPage === productStore.totalPages ? 'solid' : 'outline'"
+            :disabled="currentPage === productPagination?.total_pages" 
+            :color="currentPage === productPagination?.total_pages ? 'primary' : 'neutral'"
+            :variant="currentPage === productPagination?.total_pages ? 'solid' : 'outline'"
             @click="currentPage++">&gt;</UButton>
           </div>
         </div>
@@ -105,12 +105,33 @@
 
 
 <script setup lang="ts">
-  const productStore  = useProductStore()
-  productStore.fetchProducts();
+import { useProductsApi } from '~/composables/api/product'
+import type { PageResponse } from '~/types/PageResponse'
+import type { ProductResponse } from '~/types/ProductResponse'
+
 
   const selectedSort = ref(null)
   const minPrice = ref(null)
   const maxPrice = ref(null)
   const currentPage = ref()
+
+  // Ambil API function
+const { getProducts } = useProductsApi()
+
+// Reactive state
+const loading = ref<boolean>(true)
+const error = ref<string | null | any >(null)
+const productPagination = ref<PageResponse<ProductResponse[]>>()
+
+
+  // fungsi Fetch data di server-side (Nuxt auto-handle hydration)
+  try { 
+    loading.value = true
+    productPagination.value = await getProducts(1, 10, '') // page=0, size=10
+  } catch (err: any) {
+    error.value = err.statusMessage || 'Failed to load products'
+  } finally {
+    loading.value = false
+  }
   
 </script>

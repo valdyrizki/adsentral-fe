@@ -84,6 +84,11 @@ const itemsProfile = ref<DropdownMenuItem[]>([
     icon: 'i-lucide-credit-card'
   },
   {
+    label: 'Order History',
+    icon: 'i-lucide-package',
+    to: '/transaction'
+  },
+  {
     label: 'Settings',
     icon: 'i-lucide-cog',
   },
