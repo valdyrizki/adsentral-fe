@@ -11,14 +11,18 @@
   },
   "dependencies": {
     "@nuxt/image": "^1.11.0",
-    "@nuxt/ui": "^3.3.2",
+    "@nuxt/ui": "^4.0.1",
     "@pinia/nuxt": "^0.11.2",
+    "dayjs": "^1.11.18",
+    "maska": "^3.2.0",
     "nuxt": "^4.0.3",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.5.0",
     "typescript": "^5.9.2",
+    "v-money3": "^3.24.1",
     "vue": "^3.5.19",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "vue-the-mask": "^0.11.1"
   },
   "devDependencies": {
     "prettier": "3.6.2"

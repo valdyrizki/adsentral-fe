@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia'
 import { useAuthApi } from '~/composables/api/auth'
 import type { LoginResponse } from '~/types/LoginResponse'
+import type { MerchantRequest } from '~/types/MerchantRequest'
+import type { UserResponse } from '~/types/UserResponse'
 
 export const useAuthStore = defineStore('authStore', {
   state: () => ({
-    user: useCookie<LoginResponse | null>('user', { secure: true }).value, // ambil token dari cookie saat init
+    auth: useCookie<LoginResponse | null>('user', { secure: true }).value, // ambil token dari cookie saat init
     loading: false as boolean,
     error: null as string | null,
   }),
@@ -12,15 +14,13 @@ export const useAuthStore = defineStore('authStore', {
     async authLogin(email:string, password:string) {
       this.loading = true
       const { login } = useAuthApi()
+
       try {
         const data = await login(email,password);
         
+        const authCookie = useCookie<LoginResponse | null>('auth', { secure: true })
+        authCookie.value = data // simpan di cookie
 
-        console.log("tessss");
-        console.log(data.user);
-        const userCookie = useCookie<LoginResponse | null>('user', { secure: true })
-        userCookie.value = data // simpan di cookie
-        console.log("Berhhasil");
         return data;
       } catch (err: any) {
         console.log(err.message);
@@ -37,15 +37,27 @@ export const useAuthStore = defineStore('authStore', {
     },
 
     async logout() {
-      this.user = null
-      const userCookie = useCookie<LoginResponse | null>('user', { secure: true })
-      userCookie.value = null
+      
+      this.auth = null
+      const authCookie = useCookie<LoginResponse | null>('auth', { secure: true })
+      authCookie.value = null
+
+      const merchantCookie = useCookie<MerchantRequest | null>('merchant', { secure: true })
+      merchantCookie.value = null
+
+      const merchantStore = useMerchantStore()
+      merchantStore.merchant = null
+      
     },
 
     async restoreAuth() {
       // kalau user refresh, isi ulang dari cookie
-      const userCookie = useCookie<LoginResponse | null>('user', { secure: true })
-      this.user = userCookie.value
+      const authCookie = useCookie<LoginResponse | null>('auth', { secure: true })
+      this.auth = authCookie.value
+    },
+
+    updateUserAuth(user:UserResponse){
+      this.auth!.user = user
     }
   },
   persist:true

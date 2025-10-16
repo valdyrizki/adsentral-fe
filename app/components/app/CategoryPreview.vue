@@ -23,11 +23,13 @@
               >
                 <div class="m-1">
                     <!-- <a href={{ item.name }} > -->
-                    <NuxtImg :src="item.image_url" class="mx-auto rounded-2xl"    />
-                    <!-- <UB class="text-center mx-auto text-white">{{ item.name }}</h1> -->
-                      <div class="w-full justify-items-center mx-auto flex items-center">
-                        <UButton color="neutral" :label="item.name" class="bg-gray-200 opacity-75  mx-auto -mt-10 text-black hover:text-white" />
-                      </div>
+                    <NuxtLink :to="`/category/${item.id}`">
+                      <NuxtImg :src="item.image_url" class="mx-auto rounded-2xl" loading="lazy"    />
+                      <!-- <UB class="text-center mx-auto text-white">{{ item.name }}</h1> -->
+                        <div class="w-full justify-items-center mx-auto flex items-center">
+                          <UButton color="neutral" :label="item.name" class="bg-gray-200 opacity-75  mx-auto -mt-10 text-black hover:text-white" />
+                        </div>
+                    </NuxtLink>
                   <!-- </a> -->
                 </div>
               </UCarousel>
@@ -35,9 +37,6 @@
         </div>
       </div>
       
-      
-          
-
   </div>
   
 </template>

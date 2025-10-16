@@ -1,6 +1,8 @@
 import type { TransactionRequest } from "~/types/TransactionRequest"
-import type { TransactionResponse } from "~/types/TransactionResponse"
 import type { WebResponse } from "~/types/WebResponse"
+import type { PageResponse } from "~/types/PageResponse"
+import type { CreateTransactionResponse } from "~/types/CreateTransactionResponse"
+import type { TransactionResponse } from "~/types/TransactionResponse"
 
 // composables/api/products.ts
 export const useTransactionApi = () => {
@@ -13,14 +15,14 @@ export const useTransactionApi = () => {
     try {
       console.log(request);
       
-      const res = await $fetch<WebResponse<TransactionResponse>>(
+      const res = await $fetch<WebResponse<CreateTransactionResponse>>(
         `${config.public.apiBase}/tx/create`,
         {
           method: 'POST',
           body: request ,
           headers: {
             'Content-Type': 'application/json',
-            'X-API-TOKEN': useUserStore.user?.token || '',
+            'X-API-TOKEN': useUserStore.auth?.token || '',
           },
         }
       )
@@ -44,5 +46,68 @@ export const useTransactionApi = () => {
     }
   }
 
-  return { createTransaction }
+  // GET transaction dengan pagination + search
+    const getBuyerTransactions = async (page = 0, size = 10, keyword = '') => {
+      const { data, error } = await useFetch<WebResponse<PageResponse<TransactionResponse[]>>>(`${config.public.apiBase}/tx/buyer`, {
+        method: 'GET',
+        query: {
+          page,
+          size,
+          keyword
+        },
+        headers: {
+            'Content-Type': 'application/json',
+            'X-API-TOKEN': useUserStore.auth?.token || '',
+          },
+        key: `transactions-${page}-${size}-${keyword}`, // cache per request
+      })
+  
+      //throw Error
+      if (error.value) {
+        throw createError({
+          statusCode: error.value.statusCode,
+          statusMessage: error.value.message || 'Failed to fetch transactions',
+        })
+      }
+  
+      //throw Error 2
+      if(data.value?.status !== 'success'){
+        throw createError({
+          statusCode: 400,
+          statusMessage: data.value?.message || 'Failed to fetch transactions',
+        })
+      }
+      return data.value?.data
+    }
+
+    // GET transaction dengan pagination + search
+    const getTransactionById = async (id: string) => {
+      const { data, error } = await useFetch<WebResponse<TransactionResponse>>(`${config.public.apiBase}/tx/get/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-TOKEN': useUserStore.auth?.token || '',
+        },
+        key: `transaction-${id}`, // cache per request
+      })
+
+      //throw Error
+      if (error.value) {
+        throw createError({
+          statusCode: error.value.statusCode,
+          statusMessage: error.value.message || 'Failed to fetch transaction',
+        })
+      }
+
+      //throw Error 2
+      if(data.value?.status !== 'success'){
+        throw createError({
+          statusCode: 400,
+          statusMessage: data.value?.message || 'Failed to fetch transaction',
+        })
+      }
+      return data.value?.data
+    }
+
+  return { createTransaction, getBuyerTransactions, getTransactionById }
 }

@@ -1,5 +1,5 @@
 import type { PageResponse } from "~/types/PageResponse"
-import type { ProductResponse } from "~/types/ProductResponse"
+import type { ProductResponse } from "~/types/product/ProductResponse"
 import type { WebResponse } from "~/types/WebResponse"
 
 // composables/api/products.ts
@@ -67,7 +67,35 @@ export const useProductsApi = () => {
     return data.value?.data
   }
 
-  
+  // GET products by category id
+  const getProductsByMerchantId = async (id:string, page = 0, size = 10, keyword = '') => {
+    const { data, error } = await useFetch<WebResponse<PageResponse<ProductResponse[]>>>(`${config.public.apiBase}/products/merchant/${id}`, {
+      method: 'GET',
+      query: {
+        page,
+        size,
+        keyword
+      },
+      key: `products-by-merchant-${id}-${page}-${size}-${keyword}`, // cache per request
+    })
+
+    //throw Error
+    if (error.value) {
+      throw createError({
+        statusCode: error.value.statusCode,
+        statusMessage: error.value.message || 'Failed to fetch products',
+      })
+    }
+
+    //throw Error 2
+    if(data.value?.status !== 'success'){
+      throw createError({
+        statusCode: 400,
+        statusMessage: data.value?.message || 'Failed to fetch products',
+      })
+    }
+    return data.value?.data
+  }
 
   // GET products by id
   const getProductById = async (id:string) => {
@@ -127,5 +155,5 @@ export const useProductsApi = () => {
     }
   }
 
-  return { getProducts, getProductsByCategoryId, getProductById, getProductsByIds }
+  return { getProducts, getProductsByCategoryId, getProductById, getProductsByIds, getProductsByMerchantId }
 }

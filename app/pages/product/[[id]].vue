@@ -100,21 +100,23 @@
 
                 <div class="flex flex-row gap-2">
                   <div class="basis-auto">
-                    <UAvatar
-                    src="https://github.com/benjamincanac.png"
-                    :chip="{
-                      inset: true,
-                      color: 'success'
-                    }"
-                    
-                    size="3xl"
-                  />
+                    <NuxtLink :to="`/merchant/${product?.merchant_id}`" class="text-xs text-gray-600 hover:underline">
+                      <UAvatar
+                      src="https://github.com/benjamincanac.png"
+                      :chip="{
+                        inset: true,
+                        color: 'success'
+                      }"
+                      
+                      size="3xl"
+                    />
+                    </NuxtLink>
                   </div>
 
                   <div class="basis-auto">
-                    <div class="text-2xl">
+                    <NuxtLink :to="`/merchant/${product?.merchant_id}`" class="text-2xl hover:underline">
                       {{ product?.merchant_name }}
-                    </div>
+                    </NuxtLink>
                     <div class="flex flex-row gap-2 items-center">
                       <div class="basis-auto">
                         <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
@@ -183,7 +185,7 @@
 
 <script setup lang="ts" >
 import { useProductsApi } from '~/composables/api/product'
-import type { ProductResponse } from '~/types/ProductResponse'
+import type { ProductResponse } from '~/types/product/ProductResponse'
 
 
 const qty = ref<number>(1)

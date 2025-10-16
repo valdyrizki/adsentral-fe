@@ -1,4 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
@@ -24,7 +25,8 @@ export default defineNuxtConfig({
 
     // tersedia di client & server
     public: {
-      apiBase: process.env.API_BASE || 'http://localhost:8080/api'
+      apiBase: process.env.API_BASE || 'http://localhost:8080/api',
+      backendUrl: process.env.BACKEND_URL || 'http://localhost:8080'
     }
   }
 

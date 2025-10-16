@@ -5,6 +5,6 @@ export interface UserResponse {
   full_name: string | null
   phone_number: string | null
   birth_date: string | null
-  avatar: string | null
+  avatar_url: string | null
   address: string | null
 }

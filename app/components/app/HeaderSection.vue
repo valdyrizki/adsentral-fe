@@ -4,7 +4,7 @@
     title: String,
     description: String,
     to: String,
-    icon: String
+    icon: String,
   })
 </script>
 
@@ -27,7 +27,7 @@
 
     <!-- Button -->
     <div class="basis-1/12 p-4">
-      <ULink to="/category">
+      <ULink v-if="to" :to="to">
         <UButton color="primary" label="Lihat Semua" trailing-icon="i-lucide-arrow-right"/>
       </ULink>
     </div>

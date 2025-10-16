@@ -1,95 +1,128 @@
-<script setup>
-import { ref } from 'vue'
-import { useRouter, useRuntimeConfig } from '#imports'
-
-const name = ref('')
-const email = ref('')
-const password = ref('')
-const confirmPassword = ref('')
-
-const router = useRouter()
-const config = useRuntimeConfig()
-const api = config.public.apiBase
-
-const handleRegister = async () => {
-  if (password.value !== confirmPassword.value) {
-    alert("Password dan Konfirmasi Password tidak sama!")
-    return
-  }
-
-  try {
-    const response = await $fetch(api + '/user/register', {
-      method: 'POST',
-      body: {
-        name: name.value,
-        email: email.value,
-        password: password.value
-      }
-    })
-
-    console.log(response.data)
-
-    // Simpan token (kalau API return token setelah register)
-    if (response.data?.token) {
-      localStorage.setItem('token', response.data.token)
-    }
-
-    alert("Registrasi berhasil!")
-    router.push('/login') // arahkan ke login setelah daftar
-
-  } catch (e) {
-    console.log(e)
-    alert("Terjadi kesalahan saat registrasi")
-  }
-}
-</script>
-
 <template>
   <div class="w-full brounded-lg md:mt-0 sm:max-w-md xl:p-0">
-    <form class="space-y-4 md:space-y-6" @submit.prevent="handleRegister">
+    <div class="space-y-4 md:space-y-6">
       <div>
-        <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Full Name</label>
-        <input v-model="name" type="text" id="name" name="name" placeholder="Your Name"
-          class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 
-          focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 
-          dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <label for="fullname" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Full Name</label>
+        <UInput v-model="registerRequest.full_name" id="fullname" placeholder="Your Fullname" class="block" size="lg"/>
       </div>
 
       <div>
-        <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your Email</label>
-        <input v-model="email" type="email" id="email" name="email" placeholder="name@company.com"
-          class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 
-          focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 
-          dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
+        <UInput v-model="registerRequest.email" id="email" placeholder="Your Email" class="block" size="lg"/>
+      </div>
+
+      <div>
+        <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Username</label>
+        <UInput v-model="registerRequest.username" id="username" placeholder="Your Username" class="block" size="lg"/>
+      </div>
+
+      <div>
+        <label for="phone_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone Number</label>
+        <UInput v-model="registerRequest.phone_number" id="phone_number" placeholder="Your Phone Number" class="block" size="lg"/>
       </div>
 
       <div>
         <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
-        <input v-model="password" type="password" id="password" name="password" placeholder="••••••••"
-          class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 
-          focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 
-          dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <UInput type="password" v-model="registerRequest.password" id="password" placeholder="Your Password" class="block" size="lg"/>
       </div>
 
       <div>
         <label for="confirmPassword" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm Password</label>
-        <input v-model="confirmPassword" type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••"
-          class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 
-          focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 
-          dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <UInput type="password" v-model="confirmPassword" id="confirmPassword" placeholder="Your Password" class="block" size="lg"/>
       </div>
 
-      <button type="submit"
-        class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none 
-        focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center 
-        dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
-        Sign up
-      </button>
+      <UButton :loading="loading" type="submit" size="lg" class="w-full flex justify-center items-center" @click="handleRegister">
+        Daftar
+      </UButton>
 
       <p class="text-sm font-light text-gray-500 dark:text-gray-400">
         Already have an account? 
-        <a href="/login" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign in</a>
+        <NuxtLink to="/login" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign in</NuxtLink>
       </p>
-    </form>
+    </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter, useRuntimeConfig } from '#imports'
+import { NuxtLink, UButton, UInput } from '#components'
+import type { RegisterRequest } from '~/types/RegisterRequest'
+import { useUserApi } from '~/composables/api/user'
+
+const confirmPassword = ref('')
+
+const registerRequest = reactive({
+  username: '',
+  email: '',
+  password: '',
+  full_name: null,
+  phone_number: null
+} as Partial<RegisterRequest>)
+  
+
+const router = useRouter()
+const config = useRuntimeConfig()
+const api = config.public.apiBase
+const toast = useToast()
+const errors = ref<string[]>([])
+const {registerUser} = useUserApi()
+const loading = ref<boolean>(false)
+
+const emit = defineEmits(["register-success"])
+
+const handleRegister = async () => {
+
+  console.log(registerRequest);
+  
+  errors.value = []
+  loading.value = true;
+
+  if(registerRequest.full_name === '' || registerRequest.email === '' || registerRequest.password === ''){
+    errors.value.push("All fields are required")
+  }
+  if (registerRequest.email && !/\S+@\S+\.\S+/.test(registerRequest.email)) {
+    errors.value.push("Email is not valid")
+  }
+  if (registerRequest.password !== confirmPassword.value) {
+    errors.value.push("Password and Confirm Password do not match")
+  }
+
+    if (errors.value.length > 0) {
+
+    loading.value = false;
+    toast.add({
+      title: "Gagal Simpan User ❌",
+      description: errors.value.join(", "),
+      color: "error"
+    })
+
+    
+    return
+  }
+
+  try {
+    const response = await registerUser(registerRequest as RegisterRequest)
+
+    console.log(response)
+    toast.add({
+      title: "Register Berhasil✅",
+      description: "Anda telah berhasil mendaftar, silahkan login.",
+      color: "success"
+    })
+    // router.push('/login') // arahkan ke login setelah daftar
+    emit('register-success')
+    navigateTo("/login")
+
+  } catch (e:any) {
+    console.log(e)
+    toast.add({
+      title: "Gagal Register ❌",
+      description: e.message || 'Failed to register',
+      color: "error"
+    })
+  } finally {
+    loading.value = false
+  }
+}
+</script>

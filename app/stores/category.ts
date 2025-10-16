@@ -8,6 +8,14 @@ export const useCategoryStore = defineStore('categoryStore', {
     loading: false as boolean,
     error: null as string | null,
   }),
+  getters: {
+    categoryItemsSelect: (state) => state.categories.forEach((category) => {
+      return {
+        label: category.name,
+        value: category.id
+      }
+    }),
+  },
   actions: {
     async getCategoriesStore() {
       if(this.categories.length > 0) return

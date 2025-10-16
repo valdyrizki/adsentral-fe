@@ -107,7 +107,7 @@
 <script setup lang="ts">
 import { useProductsApi } from '~/composables/api/product'
 import type { PageResponse } from '~/types/PageResponse'
-import type { ProductResponse } from '~/types/ProductResponse'
+import type { ProductResponse } from '~/types/product/ProductResponse'
 
 
   const selectedSort = ref(null)

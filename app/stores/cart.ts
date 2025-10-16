@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { useProductsApi } from '~/composables/api/product'
 import { useTransactionApi } from '~/composables/api/transaction'
 import type { CartItem } from '~/types/CartItem'
-import type { ProductResponse } from '~/types/ProductResponse'
+import type { ProductResponse } from '~/types/product/ProductResponse'
 import type { TransactionDetailRequest } from '~/types/TransactionDetailRequest'
 import type { TransactionRequest } from '~/types/TransactionRequest'
 import { useAuthStore } from './auth'
@@ -90,9 +90,9 @@ export const useCartStore = defineStore('cart', {
     async validation() {
 
       const useUserStore = useAuthStore()
-      console.log(useUserStore.user);
+      console.log(useUserStore.auth);
       
-      if(useUserStore.user === undefined || useUserStore.user === null){
+      if(useUserStore.auth === undefined || useUserStore.auth === null){
         throw new Error("Silahkan login untuk melanjutkan checkout")
       }
 

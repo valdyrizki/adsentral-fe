@@ -1,4 +1,4 @@
-import type { ProductResponse } from "./ProductResponse"
+import type { ProductResponse } from "./product/ProductResponse"
 
 export interface CartItem {
   merchant_id: number

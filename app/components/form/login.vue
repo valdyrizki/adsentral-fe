@@ -1,85 +1,3 @@
-<script setup lang="ts">
-import { useToast } from "#imports" // Nuxt UI toast
-
-  const email = ref<string>('');
-  const password = ref<string>('');
-  const loading = ref<boolean>(true)
-
-  const toast = useToast()
-
-  const emit = defineEmits(["login-success"])
-
-  const authStore  = useAuthStore()
-
-  const doLogin = async() =>{
-    loading.value = true;
-    try {
-      await authStore.authLogin(email.value,password.value)      
-      toast.add({
-        title: "Login Berhasil 🎉",
-        description: "Anda akan diarahkan ke dashboard...",
-        color: "success"
-      })
-      authStore.restoreAuth()
-      
-      
-      
-    // simpan token di cookie / localStorage / useState
-    } catch (err) {
-      console.error('Login gagal:', err)
-      toast.add({
-        title: "Login Gagal ❌",
-        description: "Periksa kembali email dan password",
-        color: "error"
-      })
-    }
-    
-    // try{
-    //   const response = await $fetch(
-    //       api+'/user/login',
-    //       {
-    //           method : 'POST',
-    //           body : {
-    //               email : email.value,
-    //               password : password.value
-    //           }
-    //       })
-
-    //   console.log(response.data);
-
-    //   //save token
-    //   // setToken(response.data.token);
-
-    //   //save user detail
-    //   // localStorage.setItem('user', response.data.token);
-
-    //   //alert success
-    //   toast.add({
-    //     title: "Login Berhasil 🎉",
-    //     description: "Anda akan diarahkan ke dashboard...",
-    //     color: "success"
-    //   })
-
-    //   // emit ke parent supaya modal close
-    //   emit("login-success")
-
-
-    // }catch(e){
-    //     console.log();
-    //     ("ERROR GUYS");
-    //     toast.add({
-    //       title: "Login Gagal ❌",
-    //       description: "Periksa kembali email dan password",
-    //       color: "error"
-    //     })
-
-    // }
-  }
-
-    
-
-</script>
-
 <template>
     <div class="w-full brounded-lg md:mt-0 sm:max-w-md xl:p-0">
         <form class="space-y-4 md:space-y-6" action="#">
@@ -102,11 +20,59 @@ import { useToast } from "#imports" // Nuxt UI toast
                 </div>
                 <a href="#" class="text-sm font-medium hover:underline dark:text-primary-500">Forgot password?</a>
             </div>
-            <button type="submit" @click.prevent="doLogin" class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Sign in</button>
+            <!-- <button type="submit" @click.prevent="doLogin" class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Sign in</button> -->
+            <UButton type="submit" size="lg" class="w-full flex justify-center items-center" :loading="loading" @click.prevent="doLogin">
+                Sign in
+            </UButton>
+            
             <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-                Don’t have an account yet? <a href="#" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</a>
+                Don’t have an account yet? <NuxtLink to="/register" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</NuxtLink>
             </p>
         </form>
 
     </div>
 </template>
+
+<script setup lang="ts">
+import { useToast } from "#imports" // Nuxt UI toast
+
+  const email = ref<string>('');
+  const password = ref<string>('');
+  const loading = ref<boolean>(false)
+
+  const toast = useToast()
+
+  const emit = defineEmits(["login-success"])
+
+  const authStore  = useAuthStore()
+
+  const doLogin = async() =>{
+    loading.value = true;
+    try {
+      await authStore.authLogin(email.value,password.value)      
+      toast.add({
+        title: "Login Berhasil 🎉",
+        description: "Anda akan diarahkan ke dashboard...",
+        color: "success"
+      })
+      authStore.restoreAuth()
+      emit('login-success')
+      navigateTo("/")
+      
+      
+    // simpan token di cookie / localStorage / useState
+    } catch (err) {
+      console.error('Login gagal:', err)
+      toast.add({
+        title: "Login Gagal ❌",
+        description: "Periksa kembali email dan password",
+        color: "error"
+      })
+    } finally {
+      loading.value = false
+    }
+  }
+
+    
+
+</script>

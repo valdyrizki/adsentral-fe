@@ -13,7 +13,7 @@
           <UButton to="/cart" color="neutral" variant="soft" icon="mynaui:cart" />
         </UChip>
 
-      <div v-if="authStore.user?.token">
+      <div v-if="authStore.auth?.token">
         <UDropdownMenu
         size="xl"
         :items="itemsProfile"
@@ -71,16 +71,10 @@ const itemsProfile = ref<DropdownMenuItem[]>([
   {
     label: 'Account Info',
     icon: 'mdi:user',
-    onSelect(e) {
-        toast.add({
-          title: "Hello "+authStore.user?.user.username,
-          description: "Anda sudah login menggunakan email : "+authStore.user?.user.email,
-          color: "info"
-        })
-    },
+    to: '/profile'
   },
   {
-    label: 'Billing',
+    label: 'Saldo',
     icon: 'i-lucide-credit-card'
   },
   {
@@ -91,6 +85,16 @@ const itemsProfile = ref<DropdownMenuItem[]>([
   {
     label: 'Settings',
     icon: 'i-lucide-cog',
+  },
+  {
+    label: 'Create Merchant',
+    icon: 'material-symbols:store',
+    to: '/merchant/create'
+  },
+  {
+    label: 'Merchant Center',
+    icon: 'material-symbols:store',
+    to: '/seller/dashboard'
   },
   {
     label: 'Logout',
