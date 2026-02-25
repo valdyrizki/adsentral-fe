@@ -1,17 +1,20 @@
 <template>
   <div class="flex gap-4 justify-center md:justify-end">
       <div class="hidden md:flex gap-2">
+        
+      </div>
+      <div flex class="flex gap-2">
         <UChip :text="5" color="error" size="3xl">
           <UButton color="neutral" variant="subtle" icon="material-symbols:notifications-rounded" />
         </UChip>
         <UChip :text="5" color="error" size="3xl">
-          <UButton color="neutral" variant="subtle" icon="mynaui:envelope" />
+          <UButton to="/chat" color="neutral" variant="subtle" icon="mynaui:envelope" />
         </UChip>
-      </div>
-      
         <UChip :text="totalItems" color="error" size="3xl">
           <UButton to="/cart" color="neutral" variant="soft" icon="mynaui:cart" />
         </UChip>
+      </div>
+        
 
       <div v-if="authStore.auth?.token">
         <UDropdownMenu
@@ -75,7 +78,8 @@ const itemsProfile = ref<DropdownMenuItem[]>([
   },
   {
     label: 'Saldo',
-    icon: 'i-lucide-credit-card'
+    icon: 'i-lucide-credit-card',
+    to: '/balance'
   },
   {
     label: 'Order History',

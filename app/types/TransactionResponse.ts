@@ -13,7 +13,10 @@ export interface TransactionResponse {
   paid_at: string | null;  // LocalDateTime → string, bisa null kalau belum dibayar
   created_at: string;      // LocalDateTime → string
   updated_at: string | null; // LocalDateTime → string | null
-  buyer_email: string;
+  buyer_id: string;
+  buyer_username: string;
+  buyer_fullname: string;
+  buyer_avatar_url: string;
   seller_email: string;
   product: ProductResponse
 }

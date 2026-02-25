@@ -2,14 +2,14 @@
   <div class="bg-white">
     <div class="mx-auto max-w-2xl px-2 pt-4 pb-4  lg:max-w-7xl lg:px-4">
       <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Shopping Cart</h1>
-      <form class="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
+      <form class="mt-6 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
         <section aria-labelledby="cart-heading" class="lg:col-span-7">
           <h2 id="cart-heading" class="sr-only">Items in your shopping cart</h2>
 
           <ul role="list" class="divide-y divide-gray-200 border-t border-b border-gray-200">
             <li v-for="cartItem in cartStore.items" :key="cartItem.product_id" class="flex py-6 sm:py-10">
               <div class="shrink-0">
-                <img :src="cartItem.product?.banner_url" :alt="cartItem.product?.name" class="size-24 rounded-md object-cover sm:size-48" />
+                <img :src="config.public.backendUrl +'/'+ cartItem.product?.banner_url" :alt="cartItem.product?.name" class="size-24 rounded-md object-cover sm:size-48" />
               </div>
 
               <div class="ml-4 flex flex-1 flex-col justify-between sm:ml-6">
@@ -22,7 +22,7 @@
                     </div>
                     <div class="mt-1 text-sm">
                       <div class="text-gray-500 flex gap-2">
-                        <UAvatar :src="cartItem.product?.merchant_logo" size="xs" /> 
+                        <UAvatar :src="config.public.backendUrl +'/'+ cartItem.product?.merchant_logo" size="xs" /> 
                         {{ cartItem.product?.merchant_name }}
                       </div>
                     </div>
@@ -89,8 +89,30 @@
           </dl>
 
           <div class="mt-6">
-            <UInputMenu v-model="cartStore.payment_method" :items="items" arrow class="w-full justify-center" size="xl" open-on-focus  />
-            <UButton size="xl" class="w-full justify-center mt-4" label="Checkout" trailing-icon="i-lucide-arrow-right" variant="solid" @click="checkout" />
+            <div v-if="paymentMethodLoading ">
+              <AppLoadingSkeleton />
+            </div>
+            <div v-else>
+              <PaymentMethodSelector
+                v-model="cartStore.payment_method"
+                :methods="paymentMethod"
+                type="payment"
+              />
+            </div>           
+            <UButton 
+            size="xl" 
+            class="w-full justify-center mt-4" 
+            :label="
+              loading ? 'Please Wait'
+              : isSaldoInsufficient ? 'Saldo Tidak Cukup'
+              : 'Checkout'
+            "
+            trailing-icon="i-lucide-arrow-right" 
+            variant="solid" 
+            @click="checkout" 
+            :loading="loading" 
+            :disabled="isSaldoInsufficient || loading"
+            />
           </div>
         </section>
       </form>
@@ -99,14 +121,24 @@
 </template>
 
 <script setup lang="ts">
+import PaymentMethodSelector from '~/components/u/PaymentMethodSelector.vue';
+import { useBalanceApi } from '~/composables/api/balance';
+import { usePaymentMethodApi } from '~/composables/api/payment-method';
 import type { CartItem } from '~/types/CartItem';
 
-const items = ref(['QRIS', 'Transfer Bank (Manual)'])
+// reactive state
+const loading = ref<boolean>(false)
 
+// composables api
+const { paymentMethod, fetchPaymentMethod,paymentMethodLoading } = usePaymentMethodApi()
+const { balance } = useBalanceApi()
 
 //add to cart
 const cartStore = useCartStore()
 const toast = useToast()
+
+//Ambil config
+const config = useRuntimeConfig()
 
 const deleteCartItem = (cartItem:CartItem) =>{
   cartStore.items = cartStore.items.filter(item => item !== cartItem)
@@ -116,21 +148,38 @@ const checkStock = async (cartItem:CartItem) =>{
   try{
     await cartStore.checkValidQty(cartItem)
   }catch(e:any){
+    loading.value = false
     toast.add({
       title: "Invalid data",
       description: e.message,
       color: "error",
       icon: "material-symbols:error-outline"
     })
+  }finally{
+    loading.value = false
   }
   
 }
 
 const checkout = async () =>{
-  console.log(cartStore.items);
+  console.log(balance.value);
+  console.log(cartStore.subTotal);
+  console.log(isSaldoInsufficient.value);
+  
+  
+  if(isSaldoInsufficient.value){
+    toast.add({
+      title: "Saldo tidak cukup",
+      description: "Silakan pilih metode pembayaran lain atau top up saldo Anda.",
+      color: "error",
+      icon: "material-symbols:error-outline"
+    })
+    return
+  }
 
   //update data stock from backend
   try{
+    loading.value = true 
     await cartStore.checkout()
     toast.add({
       title: "Berhasil",
@@ -138,20 +187,31 @@ const checkout = async () =>{
       color: "success",
       icon: "material-symbols:check-circle-outline"
     })
+    loading.value = false
 
     navigateTo("/transaction")
 
   }catch(e:any){
+    loading.value = false
     toast.add({
       title: "Terjadi kesalahan",
       description: e.message,
       color: "error",
       icon: "material-symbols:error-outline"
-    })
-    
-    
+    }) 
+  }finally{
+    loading.value = false
   }
-  
 }
+
+  onMounted(async () => {
+    await fetchPaymentMethod()
+  })
+
+  const isSaldoInsufficient = computed(() => {
+  if (cartStore.payment_method !== 'SALDO') return false
+  
+  return balance.value < cartStore.subTotal
+})
 
 </script>

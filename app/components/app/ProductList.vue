@@ -68,13 +68,13 @@ const { getProducts } = useProductsApi()
 // Reactive state
 const loading = ref<boolean>(true)
 const error = ref<string | null | any >(null)
-const productPagination = ref<PageResponse<ProductResponse[]>>()
+const productPagination = ref<PageResponse<ProductResponse>>()
 
 
   // fungsi Fetch data di server-side (Nuxt auto-handle hydration)
   try { 
     loading.value = true
-    productPagination.value = await getProducts(1, 10, '') // page=0, size=10
+    productPagination.value = await getProducts(0, 12, '') // page=0, size=10
   } catch (err: any) {
     error.value = err.statusMessage || 'Failed to load products'
   } finally {

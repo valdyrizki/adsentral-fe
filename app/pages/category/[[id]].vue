@@ -80,7 +80,7 @@ import type { ProductResponse } from '~/types/product/ProductResponse';
 
   const loadingProduct = ref<boolean>(true)
   const errorProduct = ref<string | null | any >(null)
-  const productPagination = ref<PageResponse<ProductResponse[]>>()
+  const productPagination = ref<PageResponse<ProductResponse>>()
 
   // Ambil API function
   const { getProductsByCategoryId } = useProductsApi()

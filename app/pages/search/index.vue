@@ -121,7 +121,7 @@ const { getProducts } = useProductsApi()
 // Reactive state
 const loading = ref<boolean>(true)
 const error = ref<string | null | any >(null)
-const productPagination = ref<PageResponse<ProductResponse[]>>()
+const productPagination = ref<PageResponse<ProductResponse>>()
 
 
   // fungsi Fetch data di server-side (Nuxt auto-handle hydration)

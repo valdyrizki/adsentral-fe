@@ -1,11 +1,17 @@
 import type { WebResponse } from "~/types/WebResponse"
 import type { MerchantRequest } from "~/types/MerchantRequest"
 import type { MerchantResponse } from "~/types/MerchantResponse"
+import { get } from "@nuxt/ui/runtime/utils/index.js"
 
 // composables/api/Merchant.ts
 export const useMerchantApi = () => {
   const config = useRuntimeConfig()
   const useUserStore = useAuthStore()
+
+  const getHeaders = () => ({
+    'Content-Type': 'application/json',
+    'X-API-TOKEN': useUserStore.auth?.token || ''
+  })
 
 
   // GET Merchant dengan pagination + search
@@ -24,9 +30,7 @@ export const useMerchantApi = () => {
         {
           method: 'POST',
           body: formData ,
-          headers: {
-            'X-API-TOKEN': useUserStore.auth?.token || '',
-          },
+          headers: getHeaders(),
         }
       )
 
@@ -49,34 +53,55 @@ export const useMerchantApi = () => {
     }
   }
 
-    // GET Merchant by id
-    const getMerchant = async () => {
-      const { data, error } = await useFetch<WebResponse<MerchantRequest>>(`${config.public.apiBase}/merchant`, {
-        method: 'GET',
-        key: `my-merchant`, // cache per request
-        headers: {
-            'Content-Type': 'application/json',
-            'X-API-TOKEN': useUserStore.auth?.token || '',
-          },
+  const getMerchantById = async (id : any) => {
+    const { data, error } = await useFetch<WebResponse<MerchantResponse>>(`${config.public.apiBase}/merchant/get/${id}`, {
+      method: 'GET',
+      key: `my-merchant`, // cache per request
+      headers: getHeaders(),
+    })
+
+    //throw Error
+    if (error.value) {
+      throw createError({
+        statusCode: error.value.statusCode,
+        statusMessage: error.value.message || 'Failed to fetch Merchant',
       })
-  
-      //throw Error
-      if (error.value) {
-        throw createError({
-          statusCode: error.value.statusCode,
-          statusMessage: error.value.message || 'Failed to fetch Merchant',
-        })
-      }
-  
-      //throw Error 2
-      if(data.value?.status !== 'success'){
-        throw createError({
-          statusCode: 400,
-          statusMessage: data.value?.message || 'Failed to fetch Merchant',
-        })
-      }
-      return data.value?.data
     }
 
-  return { registerMerchant, getMerchant }
+    //throw Error 2
+    if(data.value?.status !== 'success'){
+      throw createError({
+        statusCode: 400,
+        statusMessage: data.value?.message || 'Failed to fetch Merchant',
+      })
+    }
+    return data.value?.data
+  }
+
+  const getMyMerchant = async () => {
+    const { data, error } = await useFetch<WebResponse<MerchantRequest>>(`${config.public.apiBase}/merchant`, {
+      method: 'GET',
+      key: `my-merchant`, // cache per request
+      headers: getHeaders(),
+    })
+
+    //throw Error
+    if (error.value) {
+      throw createError({
+        statusCode: error.value.statusCode,
+        statusMessage: error.value.message || 'Failed to fetch Merchant',
+      })
+    }
+
+    //throw Error 2
+    if(data.value?.status !== 'success'){
+      throw createError({
+        statusCode: 400,
+        statusMessage: data.value?.message || 'Failed to fetch Merchant',
+      })
+    }
+    return data.value?.data
+  }
+
+  return { registerMerchant, getMerchantById, getMyMerchant }
 }

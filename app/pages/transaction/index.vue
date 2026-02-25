@@ -11,68 +11,100 @@
 
         <div class="space-y-16 sm:space-y-24">
           <div class="bg-gray-100">
-            <div v-for="transaction in transactionPagination?.content" :key="transaction.id" class="flex border-b border-gray-200 px-4 py-6 sm:px-6 lg:px-8">
-              <div class="flex flex-row gap-4 w-full">
-                <div class="flex-none">
-                  <div class=" sm:order-first">
-                    <img :src="transaction.product.banner_url" :alt="transaction.product.name" class=" size-40 rounded-lg object-cover " />
-                  </div>
-                </div>
-                  <div class="flex-grow flex flex-col">
-                    <!-- Konten atas yang akan memenuhi ruang -->
-                    <div class="flex flex-col gap-1">
+            
+            <!-- LOADING -->
+            <div v-if="loading" class="p-6">
+              <AppLoadingSkeleton/>
+            </div>
 
-                      <NuxtLink :to="`/transaction/${transaction.id}`" class="font-medium text-gray-900">#{{ transaction.id }}</NuxtLink>
+            <!-- ERROR -->
+            <div v-else-if="error" class="p-6">
+              <UAlert
+                title="Terjadi Kesalahan"
+                :description="error"
+                icon="icon-park-solid:error"
+                color="error"
+              />
+            </div>
 
-                      <div class="flex flex-row gap-2">
-                        <div class="basis-auto">
-                          <UAvatar
-                          src="https://github.com/benjamincanac.png"
-                          :chip="{
-                            inset: true,
-                            color: 'success'
-                          }"
-                          size="xs"
-                        />
-                      </div>
-                      <NuxtLink :to="`/merchant/${transaction.product.merchant_id}`">{{ transaction.product.merchant_name }}</NuxtLink>
+            <!-- EMPTY -->
+            <div v-else-if="transactionPagination?.content.length === 0" class="p-6">
+              <UAlert
+                title="Belum ada transaksi"
+                description="Transaksi anda akan muncul di sini"
+                icon="ix:anomaly-found"
+                color="neutral"
+              />
+            </div>
+
+             <!-- DATA -->
+            <div v-else>
+              <div v-for="transaction in transactionPagination?.content" :key="transaction.id" class="flex border-b border-gray-200 px-4 py-6 sm:px-6 lg:px-8">
+                <div class="flex flex-row gap-4 w-full">
+                  <div class="flex-none">
+                    <div class=" sm:order-first">
+                      <img :src="config.public.backendUrl +'/'+ transaction.product?.banner_url" :alt="transaction.product.name" class=" size-40 rounded-lg object-cover " />
                     </div>
-                    <div>
-                      <h3 class="text-lg font-medium text-gray-900">{{ transaction.product.name }}</h3>
-                    </div>
                   </div>
+                    <div class="flex-grow flex flex-col">
+                      <!-- Konten atas yang akan memenuhi ruang -->
+                      <div class="flex flex-col gap-1">
+                          
+                        <NuxtLink :to="`/transaction/${transaction.id}`" class="font-medium text-gray-900">#{{ transaction.id }}</NuxtLink>
 
-                    <!-- Konten bawah yang akan didorong ke bawah -->
-                    <div class="mt-auto flex flex-col sm:flex-row gap-1 sm:gap-4 pt-4 sm:pt-0"> <!-- Gunakan 'mt-auto' untuk mendorong ke bawah -->
-                      <div class="flex flex-row gap-1">
-                        <UIcon name="fa6-solid:rupiah-sign" class="size-5 text-gray-400" />
-                        <div class="font-medium">
-                          {{ transaction.price.toLocaleString('id-ID') }}
+                        
+                        <div class="flex flex-row gap-2">
+                          <div class="basis-auto">
+                            <UAvatar
+                            src="https://github.com/benjamincanac.png"
+                            :chip="{
+                              inset: true,
+                              color: 'success'
+                            }"
+                            size="xs"
+                          />
+                        </div>
+                          <NuxtLink :to="`/merchant/${transaction.product.merchant_id}`">{{ transaction.product.merchant_name }}</NuxtLink>
+                        </div>
+                        <div>
+                          <p class="text-gray-900">{{ transaction.product.name }}</p>
+                        </div>
+                    </div>
+
+                      <!-- Konten bawah yang akan didorong ke bawah -->
+                      <div class="mt-auto flex flex-col sm:flex-row gap-1 sm:gap-4 pt-4 sm:pt-0"> <!-- Gunakan 'mt-auto' untuk mendorong ke bawah -->
+                        <div class="flex flex-row gap-1">
+                          <UIcon name="fa6-solid:rupiah-sign" class="size-5 text-gray-400" />
+                          <div class="font-medium">
+                            {{ transaction.price.toLocaleString('id-ID') }}
+                          </div>
+                        </div>
+
+                        <div class="col-span-3 flex flex-row gap-1">
+                          <UIcon name="mdi:calendar" class="size-5 text-gray-400" />
+                          <div class="font-medium">
+                            {{ dayjs(transaction.created_at).format("YYYY-MM-DD HH:mm:ss")}}
+                          </div>
                         </div>
                       </div>
+                  </div>
+                  <div class="ml-auto flex-none">   
+                    <div class="flex flex-col gap-2 items-end">
 
-                      <div class="col-span-3 flex flex-row gap-1">
-                        <UIcon name="mdi:calendar" class="size-5 text-gray-400" />
-                        <div class="font-medium">
-                          {{ dayjs(transaction.created_at).format("YYYY-MM-DD HH:mm:ss")}}
-                        </div>
-                      </div>
-                    </div>
-                </div>
-                <div class="ml-auto flex-none">   
-                  <div class="flex flex-col gap-2 items-end">
+                      <TransactionStatusBadge :status="transaction?.status" />                
+                      <UButton icon="uiw:message" size="xs" color="primary" variant="outline">Chat Penjual</UButton>
+                      <UButton v-if="transaction.status === 'DONE' || transaction.status === 'COMPLETE'" icon="mdi:cart-outline" color="primary" variant="soft" size="xs" @click="addToCart">Beli Lagi</UButton>
+                      <UButton v-if="transaction.status === 'UNPAID'" icon="material-symbols:cancel" color="error" variant="soft" size="xs" @click="addToCart">Batalkan</UButton>
+                      <UButton v-if="transaction.status === 'DELIVERED' || transaction.status === 'DONE' " icon="material-symbols:help-outline-rounded" color="error" variant="solid" size="xs" @click="addToCart">Tangguhkan</UButton>
 
-                    <UBadge icon="material-symbols:check" size="lg" color="primary" variant="solid" :label="transaction.status" />
-                    <UButton icon="uiw:message" size="xs" color="primary" variant="outline">Chat Penjual</UButton>
-                    <UButton icon="mdi:cart-outline" color="primary" variant="soft" size="xs" @click="addToCart">Beli Lagi</UButton>
-                    <UButton icon="material-symbols:cancel" color="error" variant="soft" size="xs" @click="addToCart">Batalkan</UButton>
-                    <UButton icon="material-symbols:help-outline-rounded" color="error" variant="solid" size="xs" @click="addToCart">Tangguhkan</UButton>
-
-                  </div> 
-                 
+                    </div> 
+                  
+                  </div>
                 </div>
               </div>
             </div>
+
+
           </div>
         </div>
       </div>
@@ -82,6 +114,7 @@
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
+import TransactionStatusBadge from '~/components/app/TransactionStatusBadge.vue'
 import { useTransactionApi } from '~/composables/api/transaction'
 import type { PageResponse } from '~/types/PageResponse'
 import type { TransactionResponse } from '~/types/TransactionResponse'
@@ -94,7 +127,10 @@ const { getBuyerTransactions } = useTransactionApi()
 // Reactive state
 const loading = ref<boolean>(true)
 const error = ref<string | null | any >(null)
-const transactionPagination = ref<PageResponse<TransactionResponse[]>>()
+const transactionPagination = ref<PageResponse<TransactionResponse>>()
+
+//Ambil config
+const config = useRuntimeConfig()
 
 
   // fungsi Fetch data di server-side (Nuxt auto-handle hydration)

@@ -1,7 +1,7 @@
 // types/status.ts
 export enum Status {
   ACTIVE = 'ACTIVE',
-  NONACTIVE = 'NONACTIVE',
+  INACTIVE = 'INACTIVE',
   SUSPEND = 'SUSPEND',
   DELETED = 'DELETED'
 }

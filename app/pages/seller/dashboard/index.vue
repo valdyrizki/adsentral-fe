@@ -80,7 +80,7 @@ const { getBuyerTransactions } = useTransactionApi()
 // Reactive state
 const loading = ref<boolean>(true)
 const error = ref<string | null | any >(null)
-const transactionPagination = ref<PageResponse<TransactionResponse[]>>()
+const transactionPagination = ref<PageResponse<TransactionResponse>>()
 
 
   // fungsi Fetch data di server-side (Nuxt auto-handle hydration)

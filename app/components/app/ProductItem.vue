@@ -3,7 +3,7 @@
     <NuxtLink :to="`/product/${product.id}`" >
       <div class="relative aspect-square w-full overflow-hidden rounded-lg">
         <img
-          :src="product.banner_url"
+          :src="config.public.backendUrl +'/'+ product?.banner_url"
           :alt="product.name"
           class="size-full object-cover hover:scale-115 block transition"
         />
@@ -39,8 +39,10 @@
           <NuxtLink :to="`/merchant/${product.merchant_id}`" class="text-xs text-gray-600 hover:underline">
           <UAvatar
             size="sm"
-            :src="`https://i.pravatar.cc/100?u=${product.id}`"
+            :src="config.public.backendUrl +'/'+ product?.merchant_logo"
           />
+                                  <UAvatar  size="xs" /> 
+
           <span class="text-xs text-gray-600">{{ product.merchant_name }}</span>
           </NuxtLink>
         </div>
@@ -51,6 +53,10 @@
 
 <script lang="ts" setup>
 import type { ProductResponse } from '~/types/product/ProductResponse';
+
+//Ambil config
+const config = useRuntimeConfig()
+const backendUrl = config.public.backendUrl
 
 defineProps<{
   product: ProductResponse

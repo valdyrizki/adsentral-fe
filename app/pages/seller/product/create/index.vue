@@ -32,25 +32,39 @@
           <div>
             <div class="font-medium p-4">Foto Utama <UBadge color="error">WAJIB</UBadge></div>
             <UFileUpload 
-        label="Gambar Utama"
-        description="SVG, PNG, JPG or GIF (max. 2MB)"
-        class="w-96 min-h-48" />
+              label="Gambar Utama"
+              description="SVG, PNG, JPG or GIF (max. 2MB)"
+              class="w-96 min-h-48"
+              v-model="productRequest.banner"
+              @change="bannerValidation()"
+               />
+            <p v-if="errors.banner" class="mt-1 text-sm text-red-500">{{ errors.banner }}</p>
+
           </div>
 
-          <div class="font-medium p-4">Foto Tambahan</div>
+          <div class="font-medium p-4">Foto Tambahan (Opsional)</div>
           <div class="flex gap-4">
             <UFileUpload 
-        label="Gambar Utama"
-        description="SVG, PNG, JPG or GIF (max. 2MB)"
-        class="w-64 min-h-24" />
-        <UFileUpload 
-        label="Gambar Utama"
-        description="SVG, PNG, JPG or GIF (max. 2MB)"
-        class="w-64 min-h-24" />
-        <UFileUpload 
-        label="Gambar Utama"
-        description="SVG, PNG, JPG or GIF (max. 2MB)"
-        class="w-64 min-h-24" />
+              label="Gambar Utama"
+              description="SVG, PNG, JPG or GIF (max. 2MB)"
+              class="w-64 min-h-24"
+              v-model="productRequest.product_image1" 
+              @change="productImageValidation"
+            />
+            <UFileUpload 
+              label="Gambar Utama"
+              description="SVG, PNG, JPG or GIF (max. 2MB)"
+              class="w-64 min-h-24"
+              v-model="productRequest.product_image2"
+              @change="productImageValidation" 
+            />
+            <UFileUpload 
+              label="Gambar Utama"
+              v-model="productRequest.product_image3"
+              description="SVG, PNG, JPG or GIF (max. 2MB)"
+              class="w-64 min-h-24"
+              @change="productImageValidation" 
+              />
           </div>
           
         </div>
@@ -59,7 +73,7 @@
 
         <div>
           <div class="font-medium mb-4">Detail Produk</div>
-          <form class="space-y-4 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
+          <UForm class="space-y-4 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2" :errors="errors">
             <div>
               <label for="product_name" class="block text-sm font-medium text-gray-900">Nama Produk <span class="text-red-500">*</span></label>
               <div class="mt-1">
@@ -71,12 +85,48 @@
                   label="Nama Produk"
                   label-for="product_name"
                   v-model="productRequest.name"
+                  error="Terjadi Kesalahan"
                 />
                 <p class="mt-2 text-sm text-gray-500">Masukkan nama produk yang jelas dan deskriptif.</p>
+                <p v-if="errors.name" class="mt-1 text-sm text-red-500">{{ errors.name }}</p>
               </div>
             </div>
 
             <div>
+              <label for="slug" class="block text-sm font-medium text-gray-900">Slug <span class="text-red-500">*</span></label>
+              <div class="mt-1">
+                <UInput
+                  v-model="productRequest.slug"
+                  label="Slug"
+                  id="slug"
+                  name="slug"
+                  class="block w-full text-base text-gray-900"
+                  error="Terjadi Kesalahan"
+                  disabled
+                />             
+                <p class="mt-2 text-sm text-gray-500">Otomatis dihasilkan dari nama produk.</p>
+                <p v-if="errors.slug" class="mt-1 text-sm text-red-500">{{ errors.slug }}</p>
+              </div>
+            </div>
+
+            <div>
+              <label for="sell_price" class="block text-sm font-medium text-gray-900">Harga Jual <span class="text-red-500">*</span></label>
+              <div class="mt-1">
+                <UInputCurrency
+                  v-model="productRequest.sell_price"
+                  label="Harga Jual"
+                  id="sell_price"
+                  name="sell_price"
+                  class="block w-full text-base text-gray-900"
+                  @change="handleChange"
+                />             
+                <p class="mt-2 text-sm text-gray-500">Masukan Harga Jual</p>
+                <p v-if="errors.sell_price" class="mt-1 text-sm text-red-500">{{ errors.sell_price }}</p>
+                
+              </div>
+            </div>
+
+            <div class="col-span-2">
               <label for="description" class="block text-sm font-medium text-gray-900">Description <span class="text-red-500">*</span></label>
               <div class="mt-1">
                 <UTextarea
@@ -93,21 +143,6 @@
             </div>
 
             <div>
-              <label for="sell_price" class="block text-sm font-medium text-gray-900">Harga Jual <span class="text-red-500">*</span></label>
-              <div class="mt-1">
-                <UInputCurrency
-                  v-model="productRequest.sell_price"
-                  label="Harga Dasar"
-                  id="base_price"
-                  name="base_price"
-                  class="block w-full text-base text-gray-900"
-                  @change="handleChange"
-                />             
-                <p class="mt-2 text-sm text-gray-500">Masukan Harga Jual</p>
-              </div>
-            </div>
-
-            <div>
               <label for="stock" class="block text-sm font-medium text-gray-900">Stock <span class="text-red-500">*</span></label>
               <div class="mt-1">
                 <UInputNumber 
@@ -117,6 +152,7 @@
                 class="block w-full text-base text-gray-900" 
                 placeholder="Stock"/>
                 <p class="mt-2 text-sm text-gray-500">Kosong = unlimited, 0 = habis, > 0 = jumlah.</p>
+                <p v-if="errors.stock" class="mt-1 text-sm text-red-500">{{ errors.stock }}</p>
               </div>
             </div>
 
@@ -130,32 +166,37 @@
                   placeholder="Category"
                   label="Category"
                   label-for="category_id"
-                  v-model="selectedCategory"
-                  :items="categoryStore.categoryItemsSelect"
+                  v-model="productRequest.category_id"
+                  :items="categoryItemsSelect"
                   @change="handleCategoryChange"
                 />
                 <p class="mt-2 text-sm text-gray-500">Masukkan nama produk yang jelas dan deskriptif.</p>
+                <p v-if="errors.category_id" class="mt-1 text-sm text-red-500">{{ errors.category_id }}</p>
               </div>
             </div>
 
+              <!-- Distributor -->
             <div>
-              <label for="product_name" class="block text-sm font-medium text-gray-900">Nama Produk <span class="text-red-500">*</span></label>
+              <label for="distributor" class="block text-sm font-medium text-gray-900">
+                Distributor
+              </label>
               <div class="mt-1">
                 <UInput
-                  name="product_name"
-                  id="product_name"
+                  name="distributor"
+                  id="distributor"
                   class="block w-full text-base text-gray-900"
-                  placeholder="Nama Produk"
-                  label="Nama Produk"
-                  label-for="product_name"
-                  v-model="productRequest.name"
+                  placeholder="Nama Distributor"
+                  v-model="productRequest.distributor"
                 />
-                <p class="mt-2 text-sm text-gray-500">Masukkan nama produk yang jelas dan deskriptif.</p>
+                <p class="mt-2 text-sm text-gray-500">Masukkan nama distributor (Opsional).</p>
               </div>
             </div>
 
-
-          </form>
+            <div class="mx-auto col-span-2">
+              <UButton icon="uiw:save" color="primary" variant="solid" size="xl" @click="handleSubmit" >Save Product</UButton>
+            </div>
+            
+          </UForm>
         </div>
           
 
@@ -165,19 +206,73 @@
 </template>
 
 <script lang="ts" setup>
-import { ProductRequest } from '~/types/product/ProductRequest'
+import { useProductsApi } from '~/composables/api/product';
+import { validateImage } from '~/helper/imageHelper';
+import { ProductRequest } from '~/types/product/ProductRequest';
+
+/* Validasi images
+    1. tidak boleh menggunakan gambar yang sama
+    2. max 5MB/image
+    3. size lebih kecil dari 1024x768px
+  */
+const bannerValidation = async() =>{
+  if (!productRequest.banner) return
+
+  try {
+    await validateImage(productRequest.banner)
+  } catch (err: any) {
+    productRequest.banner = null
+    alert(err)
+  }
+}
+
+const productImageValidation  = async() =>{
+  if(productRequest.product_image1 != null){
+    try {
+      await validateImage(productRequest.product_image1)
+    } catch (err: any) {
+      productRequest.product_image1 = null
+      alert(err)
+    }
+  }
+
+  if(productRequest.product_image2 != null){
+    try {
+      await validateImage(productRequest.product_image2)
+    } catch (err: any) {
+      productRequest.product_image2 = null
+      alert(err)
+    }
+  }
+
+  if(productRequest.product_image3 != null){
+    try {
+    await validateImage(productRequest.product_image3)
+    } catch (err: any) {
+      productRequest.product_image3 = null
+      alert(err)
+    }
+  }
+}
+
 
 definePageMeta({
   layout: "dashboard",
   label: "Create Products",
+  ssr: false,
   // middleware: ["auth", "seller-only"] // opsional kalau mau validasi role
 })
 
 const productRequest = reactive<ProductRequest>(new ProductRequest())
-const selectedCategory = ref(null)
+const selectedCategory = ref(0)
+const { createProduct } = useProductsApi()
 
-console.log(categoryStore.categoryItemsSelect);
+// Store for categories
+const categoryStore  = useCategoryStore()
+categoryStore.getCategoriesStore();
+const { categoryItemsSelect } = storeToRefs(categoryStore)
 
+// Pagination options
 const perPageitems = ref([5, 10, 25, 50])
 const perPageValue = ref(5)
 const search = ref('')
@@ -189,9 +284,107 @@ const handleCategoryChange = () => {
 const handleChange = () => {
   console.log(productRequest)
 }
-//category
-  const categoryStore  = useCategoryStore()
-  categoryStore.getCategoriesStore();
+
+const errors = reactive<Record<string, string>>({})
+const validateProduct = (): boolean => {
+  Object.keys(errors).forEach(key => delete errors[key])
+
+  // name
+  if (!productRequest.name.trim()) {
+    errors.name = 'Nama produk tidak boleh kosong'
+  } else if (productRequest.name.length > 255) {
+    errors.name = 'Nama produk maksimal 255 karakter'
+  }
+
+  // slug
+  if (!productRequest.slug.trim()) {
+    errors.slug = 'Slug tidak boleh kosong'
+  } else if (productRequest.slug.length > 255) {
+    errors.slug = 'Slug maksimal 255 karakter'
+  }
+
+  // description
+  if (!productRequest.description.trim()) {
+    errors.description = 'Deskripsi produk wajib diisi'
+  }
+
+  // sell_price
+  if (productRequest.sell_price === null || productRequest.sell_price === undefined) {
+    errors.sell_price = 'Harga jual wajib diisi'
+  } else if (Number(productRequest.sell_price) < 1000) {
+    errors.sell_price = 'Harga jual minimal Rp.1.000'
+  }
+
+  // category_id
+  if (!productRequest.category_id || productRequest.category_id <= 0) {
+    errors.category_id = 'Kategori wajib dipilih'
+  }
+
+  // category_id
+  if (productRequest.stock != null && productRequest.stock < 0) {
+    errors.stock = 'Stok tidak boleh negatif'
+  }
+
+  // banner
+  if (!productRequest.banner) {
+    errors.banner = 'Banner produk wajib diisi'
+  }
+
+  return Object.keys(errors).length === 0
+}
+const toast = useToast()
+const loading = ref<boolean>(true)
+const handleSubmit = async () =>{
+  console.log(productRequest);
+
+  //validasi
+  productImageValidation()
+  bannerValidation()
+
+  if (!validateProduct()) {
+    return
+  }
+
+  // ✅ Submit ke backend (nanti pakai FormData) versi create merchant 
+  try { 
+    loading.value = true
+    await createProduct(productRequest)
+    
+    toast.add({
+      title: "Berhasil membuat product ✅",
+      description: "Anda akan diarahkan ke menu list product.",
+      color: "success"
+    })
+
+    navigateTo("/seller/product")
+    
+  } catch (err: any) {
+    toast.add({
+      title: "Gagal Simpan User ❌",
+      description: err.message || "Terjadi kesalahan",
+      color: "error"
+    })
+  } finally {
+    loading.value = false
+  }
+
+
+}
+
+
+//Auto isi input slug
+watch(
+  () => productRequest.name,
+  (newName) => {
+    if (!newName) {
+      productRequest.slug = ''
+      return
+    }
+
+    productRequest.slug = slugify(newName)
+  }
+)
+
 
 </script>
 

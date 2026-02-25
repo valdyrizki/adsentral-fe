@@ -4,5 +4,5 @@ export interface PageResponse<T = unknown> {
   total_elements : number
   total_pages : number
   last : boolean
-  content : T
+  content : T[]
 }

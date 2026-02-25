@@ -18,4 +18,5 @@ export interface ProductResponse {
   status: string;      // Status enum dari BE, di TS biasanya string
   created_at: string;   // LocalDateTime → string (ISO date format)
   updated_at: string | null; // bisa null kalau belum di-update
+  product_image_url: string[]
 }

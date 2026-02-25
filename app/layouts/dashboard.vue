@@ -8,6 +8,11 @@ const items: NavigationMenuItem[][] = [[
     to: '/seller/dashboard',
   },
   {
+    label: 'Chat',
+    icon: 'mdi:chat',
+    to: '/seller/chat'
+  },
+  {
     label: 'Products',
     icon: 'i-lucide-package',
     to: '/seller/product'
@@ -15,14 +20,14 @@ const items: NavigationMenuItem[][] = [[
   {
     label: 'Orders',
     icon: 'i-lucide-shopping-cart',
-    to: '/seller/orders'
+    to: '/seller/order'
 
   },
-  {
-    label: 'Customers',
-    icon: 'i-lucide-users',
-    to: '/seller/customers'
-  },
+  // {
+  //   label: 'Customers',
+  //   icon: 'i-lucide-users',
+  //   to: '/seller/customers'
+  // },
   {
     label: 'Settings',
     icon: 'i-lucide-settings',

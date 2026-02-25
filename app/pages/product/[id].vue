@@ -7,17 +7,16 @@
         <UBreadcrumb :items="breadcrumb" />
       </nav>
 
-      <div v-if="loading">
+      <div v-if="pending">
               <AppLoadingSkeleton/>
       </div>
-      <div v-else-if="error">
+      <div v-else-if="product == null">
         <UAlert
             title="Terjadi Kesalahan"
-            :description="error"
+            description="Produk tidak ditemukan atau telah dihapus."
             icon="icon-park-solid:error"
-            color="error"
-          />
-
+            color="neutral"
+        />
       </div>
       <div v-else>
         <!-- HEADER PRODUCT & ACTION -->
@@ -25,7 +24,7 @@
           <div class="m-2 md:m-4">
             <div class="flex md:flex-row flex-col gap-4">
               <div class="basis-1/3">
-                <NuxtImg :src="product?.banner_url" class="mx-auto"  width="300" height="300"   />
+                <img :src="config.public.backendUrl +'/'+ product?.banner_url" alt="Product Banner"  class="mx-auto"  width="300" height="300"   />
               </div>
               <div class="ml-4 basis-auto">
                 <p class="text-2xl "> {{ product?.name }} </p>
@@ -55,14 +54,10 @@
                 </div>
 
                 <div class="flex flex-row gap-2 pt-2">
-                  <UButton icon="uiw:message" size="md" color="primary" variant="outline">Chat Penjual</UButton>
+                  <UButton icon="uiw:message" size="md" color="primary" variant="outline" @click="isChatOpen = true">Chat Penjual</UButton>
                   <UButton icon="mdi:cart-outline" color="primary" variant="soft" size="xl" class="basis-auto" @click="addToCart">Masukan Keranjang</UButton>
-                  <UButton trailing-icon="i-lucide-arrow-right" color="primary" variant="solid" size="xl" class="basis-auto">Beli Sekarang</UButton>
+                  <UButton trailing-icon="i-lucide-arrow-right" color="primary" variant="solid" size="xl" class="basis-auto" @click="buyNow">Beli Sekarang</UButton>
                 </div>
-
-                
-
-                  
               </div>
             </div>
           </div>
@@ -77,7 +72,7 @@
                   Gambar Produk
                 </div>
 
-                <div v-if="randomImage.length === 0" class="flex flex-col *:**:items-center justify-center">
+                <div v-if="product?.product_image_url.length == 0" class="flex flex-col *:**:items-center justify-center">
                   <h1 class="mx-auto text-center pt-4 md:pt-10">Tidak ada gambar lain</h1>
                 </div>
                 <div v-else>
@@ -85,12 +80,12 @@
                     v-slot="{ item }"
                     :auto-scroll="{ startDelay: 100 }"
                     loop
-                    :items="randomImage"
-                    :ui="{ item: 'basis-1/3 hover:transition-all hover:duration-300 hover:ease-in-out hover:-mt-1' }"
+                    :items="product?.product_image_url"
+                    :ui="{ item: 'basis-1/2 hover:transition-all hover:duration-300 hover:ease-in-out hover:-mt-1' }"
                     class="mt-4"
                   >
                     <div class="m-1">
-                      <NuxtImg :src="item.url" class="mx-auto rounded-2xl"    />
+                      <img :src="config.public.backendUrl +'/'+ item" class="mx-auto rounded-2xl"    />
                     </div>
                   </UCarousel>
                 </div>
@@ -102,7 +97,7 @@
                   <div class="basis-auto">
                     <NuxtLink :to="`/merchant/${product?.merchant_id}`" class="text-xs text-gray-600 hover:underline">
                       <UAvatar
-                      src="https://github.com/benjamincanac.png"
+                      :src="config.public.backendUrl +'/'+ product?.merchant_logo"
                       :chip="{
                         inset: true,
                         color: 'success'
@@ -110,6 +105,8 @@
                       
                       size="3xl"
                     />
+
+                    
                     </NuxtLink>
                   </div>
 
@@ -181,24 +178,39 @@
       
     </div>
   </div>
+
+  <ChatModal
+    v-model="isChatOpen"
+    :product="product"
+    :merchant-id="product?.merchant_id"
+  />
+
 </template>
 
 <script setup lang="ts" >
+import ChatModal from '~/components/form/ChatModal.vue'
 import { useProductsApi } from '~/composables/api/product'
 import type { ProductResponse } from '~/types/product/ProductResponse'
 
-
+//reactive state
+const isChatOpen = ref(false)
 const qty = ref<number>(1)
 
-// Ambil API function
-const { getProductById } = useProductsApi()
-
+//ambil config
+const config = useRuntimeConfig()
 const route = useRoute()
 const toast = useToast()
 
-const product = ref<ProductResponse>()
-const loading = ref<boolean>(true)
-const error = ref<string | null | any >(null)
+//store
+const useUserStore = useAuthStore()
+
+// Ambil API function
+const { fetchProductById } = useProductsApi()
+
+// ✅ SSR SAFE FETCH
+  const {data: product,pending,refresh} = await useAsyncData<ProductResponse>(
+    `product-${route.params.id}`, () => fetchProductById(route.params.id as string)
+  )
 
 //add to cart
 const cartStore = useCartStore()
@@ -228,28 +240,28 @@ const addToCart = async() =>{
       icon: "material-symbols:error-outline"
     })
   }
+}
+
+//Beli sekarang
+const buyNow = async() =>{
+  try{
+    cartStore.addToCart(qty.value,product.value)
+    navigateTo("/cart")
+    
+  }catch(e:any){
+    toast.add({
+      title: "Terjadi Kesalahan",
+      description: e.message,
+      color: "error",
+      icon: "material-symbols:error-outline"
+    })
+  }
   
   
 }
 
 
-  try { 
-    loading.value = true
-    product.value = await getProductById(route.params.id as string) // page=0, size=10
-  } catch (err: any) {
-    error.value = err.statusMessage || 'Failed to load products'
-  } finally {
-    loading.value = false
-  } 
-
-const randomImage = [
-  { name: 'International delivery',  url: 'https://picsum.photos/500/500?random=1' },
-  { name: 'International delivery',  url: 'https://picsum.photos/500/500?random=2' },
-  { name: 'International delivery',  url: 'https://picsum.photos/500/500?random=3' },
-  { name: 'International delivery',  url: 'https://picsum.photos/500/500?random=4' },
-  { name: 'International delivery',  url: 'https://picsum.photos/500/500?random=5' },
-]
-
+  
 const items = ref([
   {
     label: 'Deskripsi Produk',

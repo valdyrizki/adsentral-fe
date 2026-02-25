@@ -9,12 +9,11 @@ export const useCategoryStore = defineStore('categoryStore', {
     error: null as string | null,
   }),
   getters: {
-    categoryItemsSelect: (state) => state.categories.forEach((category) => {
-      return {
-        label: category.name,
-        value: category.id
-      }
-    }),
+  categoryItemsSelect: (state) =>
+    state.categories.map(category => ({
+      label: category.name,
+      value: category.id
+    }))
   },
   actions: {
     async getCategoriesStore() {

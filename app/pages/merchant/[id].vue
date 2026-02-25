@@ -6,7 +6,8 @@
         
         <!-- Banner / Foto Sampul -->
         <div class="w-full h-60 relative rounded-t-2xl overflow-hidden">
-          <NuxtImg src="https://picsum.photos/500/500?random=7" alt="Banner" 
+          <NuxtImg :src="config.public.backendUrl +'/'+ merchant?.banner_url" alt="Banner" 
+          
           class="object-fill max-h-60 mx-auto" />
           <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50 rounded-t-2xl"></div>
         </div>
@@ -19,7 +20,7 @@
                 <div class="flex gap-4">
                   <!-- Foto Profil -->
                   <div class="w-32 h-32 relative rounded-full overflow-hidden border-4 border-white">
-                    <NuxtImg src="https://picsum.photos/200/200?random=7" alt="Foto Profil" class="object-cover w-full h-full" />
+                    <NuxtImg :src="config.public.backendUrl +'/'+ merchant?.logo_url" alt="Foto Profil" class="object-cover w-full h-full" />
                   </div>
 
                   <!-- Nama & Rating -->
@@ -100,7 +101,7 @@
             <div class="flex flex-col sm:flex-row gap-8 sm:gap-4 p-4">
               <div class="mx-auto w-full p-4">
 
-                <div v-if="loading">
+                <!-- <div v-if="loading">
                     <AppLoadingSkeleton/>
                 </div>
                 <div v-else-if="error">
@@ -131,7 +132,41 @@
                       <AppProductItem :product="product" />
                     </div>
                   </div>
+                </div> -->
+
+                <div v-if="loading">
+                  <AppLoadingSkeleton/>
                 </div>
+                <div v-else-if="error">
+                  <UAlert
+                      title="Terjadi Kesalahan"
+                      description="Merchant tidak ditemukan"
+                      icon="icon-park-solid:error"
+                      color="error"
+                    />
+                </div>
+                <div v-else-if="productPagination?.content.length === 0">
+                  <UAlert
+                      title="Tidak ada data untuk ditampilkan"
+                      description=""
+                      icon="ix:anomaly-found"
+                      color="neutral"
+                    />
+
+                </div>
+                <div v-else>
+                  <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-6 xxl:grid-cols-8 gap-4">
+                    <div
+                      v-for="product in productPagination?.content"
+                      :key="product.id"
+                      class="relative group border border-transparent hover:border hover:rounded-2xl hover:border-blue-200 p-1 transition-all duration-300 ease-in-out"
+                    >
+                      <AppProductItem :product="product" />
+                    </div>
+                  </div>
+                </div>
+
+
               </div>
             </div>
           </div>
@@ -147,12 +182,19 @@
 
 <script lang="ts" setup>
 import { NuxtImg } from '#components';
+import type { AppLoadingSkeleton } from '#components';
 import { useProductsApi } from '~/composables/api/product';
+import { useMerchantApi } from '~/composables/api/merchant';
 import type { PageResponse } from '~/types/PageResponse';
 import type { ProductResponse } from '~/types/product/ProductResponse';
+import type { MerchantResponse } from '~/types/MerchantResponse';
 
 // Ambil API function
-const { getProductsByMerchantId } = useProductsApi()
+const { fetchProductsByMerchantId } = useProductsApi()
+const { getMerchantById } = useMerchantApi()
+
+//Ambil config
+const config = useRuntimeConfig()
 
 //ambil route param
 const route = useRoute() 
@@ -160,17 +202,29 @@ const route = useRoute()
 // Reactive state
 const loading = ref<boolean>(true)
 const error = ref<string | null | any >(null)
-const productPagination = ref<PageResponse<ProductResponse[]>>()
+const productPagination = ref<PageResponse<ProductResponse>>()
+const merchant = ref<MerchantResponse>()
 
 
   // fungsi Fetch data di server-side (Nuxt auto-handle hydration)
-  try { 
+  try {
     loading.value = true
-    productPagination.value = await getProductsByMerchantId(route.params.id as string, 1, 12, '') // page=0, size=10
+    productPagination.value = await fetchProductsByMerchantId(route.params.id as string, 0, 12, '') // page=0, size=10
   } catch (err: any) {
     error.value = err.statusMessage || 'Failed to load products'
   } finally {
     loading.value = false
   }
+
+    // fungsi Fetch data di server-side (Nuxt auto-handle hydration)
+  try {
+    loading.value = true
+    merchant.value = await getMerchantById(route.params.id) // page=0, size=10
+  } catch (err: any) {
+    error.value = err.statusMessage || 'Failed to load products'
+  } finally {
+    loading.value = false
+  }
+
 
 </script>
