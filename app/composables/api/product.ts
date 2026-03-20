@@ -44,36 +44,38 @@ export const useProductsApi = () => {
   }
 
   // GET products by category id
-  const getProductsByCategoryId = async (id:number, page = 0, size = 10, keyword = '') => {
-    const { data, error } = await useFetch<WebResponse<PageResponse<ProductResponse>>>(`${config.public.apiBase}/product/category/${id}`, {
-      method: 'GET',
-      query: {
-        page,
-        size,
-        keyword
-      },
-      key: `products-by-category-${id}-${page}-${size}-${keyword}`, // cache per request
-    })
+  const fetchProductsByCategoryId = async (id:number, page = 0, size = 10, keyword = '', sort = 'terbaru')
+  : Promise<PageResponse<ProductResponse>> => {
 
-    //throw Error
-    if (error.value) {
+    try{
+      const res = await $fetch<WebResponse<PageResponse<ProductResponse>>>(
+        `${config.public.apiBase}/product/category/${id}`,
+        { headers: getHeaders(),
+          query: {
+            page,
+            size,
+            keyword,
+            sort
+          },
+        },
+      )
+
+      if (res.status !== 'success' || !res.data) {
+        throw new Error(res.message)
+      }
+
+      return res.data
+
+    } catch (err:any) {
+      console.error('Failed fetch product', err)
       throw createError({
-        statusCode: error.value.statusCode,
-        statusMessage: error.value.message || 'Failed to fetch products',
+        statusCode: err.statusCode || 500,
+        statusMessage: err.message || 'Failed to fetch product',
       })
     }
-
-    //throw Error 2
-    if(data.value?.status !== 'success'){
-      throw createError({
-        statusCode: 400,
-        statusMessage: data.value?.message || 'Failed to fetch products',
-      })
-    }
-    return data.value?.data
   }
-
-  const fetchProductsByMerchantId = async (merchantId:any, page = 0, size = 10, keyword = '')
+  
+  const fetchProductsByMerchantId = async (merchantId:any, page = 0, size = 10, keyword = '', sort = 'terbaru')
   : Promise<PageResponse<ProductResponse>> => {
     try{
       const res = await $fetch<WebResponse<PageResponse<ProductResponse>>>(
@@ -82,9 +84,10 @@ export const useProductsApi = () => {
           query: {
             page,
             size,
-            keyword
-        },
+            keyword,
+            sort
           },
+        },
       )
 
       if (res.status !== 'success' || !res.data) {
@@ -136,40 +139,82 @@ export const useProductsApi = () => {
     return data.value?.data
   }
 
-  // GET products by category id
-  const fetchMyProduct = async (page = 0, size = 10, keyword = '', refresh = false) => {
-    try {
-      const response = await $fetch<WebResponse<PageResponse<ProductResponse>>
-      >(`${config.public.apiBase}/products/my`, {
-        method: 'GET',
+  // // GET products by category id
+  // const fetchMyProduct = async (page = 0, size = 10, keyword = ''): Promise<PageResponse<ProductResponse> | undefined> => {
+  //   try {
+  //     const response = await $fetch<WebResponse<PageResponse<ProductResponse>>
+  //     >(`${config.public.apiBase}/products/my`, {
+  //       method: 'GET',
+  //       query: {
+  //         page,
+  //         size,
+  //         keyword
+  //       },
+  //       headers: getHeaders(),
+  //     })
+
+  //     // Validasi status dari backend
+  //     if (response.status !== 'success') {
+  //       throw createError({
+  //         statusCode: 400,
+  //         statusMessage: response.message || 'Failed to fetch products',
+  //       })
+  //     }
+
+  //     return response.data as PageResponse<ProductResponse>
+
+  //   } catch (err: any) {
+  //     throw createError({
+  //       statusCode: err?.statusCode || err?.response?.status || 500,
+  //       statusMessage:
+  //         err?.statusMessage ||
+  //         err?.response?._data?.message ||
+  //         'Failed to fetch products',
+  //     })
+  //   }
+  // }
+
+  const fetchMyProduct = async (
+    page: number = 0,
+    size: number = 10,
+    keyword: string = ''
+  ): Promise<PageResponse<ProductResponse>> => {
+    try{
+      const res = await $fetch<WebResponse<PageResponse<ProductResponse>>>(
+      `${config.public.apiBase}/products/my`,
+      {
+        headers: getHeaders(),
         query: {
           page,
           size,
           keyword
-        },
-        headers: getHeaders(),
-      })
-
-      // Validasi status dari backend
-      if (response.status !== 'success') {
-        throw createError({
-          statusCode: 400,
-          statusMessage: response.message || 'Failed to fetch products',
-        })
+        }
       }
-
-      return response.data
-
-    } catch (err: any) {
+    )
+    
+    if (!res.data) {
       throw createError({
-        statusCode: err?.statusCode || err?.response?.status || 500,
-        statusMessage:
-          err?.statusMessage ||
-          err?.response?._data?.message ||
-          'Failed to fetch products',
+        statusCode: 400,
+        statusMessage: 'Failed to fetch transactions',
       })
     }
+    
+    return res.data
+
+    } 
+    catch (err:any) {
+      console.error('Failed fetch transactions', err)
+      throw createError({ 
+        statusCode: err.statusCode || 500,
+        statusMessage: err.message || 'Failed to fetch transactions',
+      })
+    }
+
   }
+
+
+
+
 
   const fetchProductById = async (id : string)
     : Promise<ProductResponse> => {
@@ -421,5 +466,5 @@ export const useProductsApi = () => {
       }
     }
 
-  return { getProducts, getProductsByCategoryId, fetchProductById, getProductsByIds, fetchProductsByMerchantId,getMyProducts, fetchMyProduct, getMyProductById, createProduct, updateProduct, deactivateProduct, activateProduct }
+  return { getProducts, fetchProductsByCategoryId, fetchProductById, getProductsByIds, fetchProductsByMerchantId,getMyProducts, fetchMyProduct, getMyProductById, createProduct, updateProduct, deactivateProduct, activateProduct }
 }

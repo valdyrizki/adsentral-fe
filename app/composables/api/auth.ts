@@ -4,7 +4,7 @@ import type { WebResponse } from "~/types/WebResponse"
 export const useAuthApi = () => {
   const config = useRuntimeConfig()
 
-  const login = async (email: string, password: string): Promise<LoginResponse> => {
+  const fetchLogin = async (email: string, password: string): Promise<LoginResponse> => {
     try {
       const res = await $fetch<WebResponse<LoginResponse>>(
         `${config.public.apiBase}/user/login`,
@@ -33,5 +33,5 @@ export const useAuthApi = () => {
     }
   }
 
-  return { login }
+  return { fetchLogin }
 }

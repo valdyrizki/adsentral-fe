@@ -28,7 +28,8 @@ export default defineNuxtConfig({
       apiBase: process.env.API_BASE || 'http://localhost:8080/api',
       backendUrl: process.env.BACKEND_URL || 'http://localhost:8080'
     }
-  }
+  },
+  ssr: true
 
 
 })

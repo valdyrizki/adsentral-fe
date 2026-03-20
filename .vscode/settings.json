@@ -8,5 +8,9 @@
   "tailwindCSS.classAttributes": ["class", "ui"],
   "tailwindCSS.experimental.classRegex": [
     ["ui:\\s*{([^)]*)\\s*}", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-  ]
+  ],
+  "editor.inlineSuggest.enabled": true,
+  "editor.inlineSuggest.edits.showCollapsed": true,
+  
+  
 }

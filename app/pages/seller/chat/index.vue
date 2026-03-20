@@ -283,7 +283,7 @@ import type { ProductResponse } from '~/types/product/ProductResponse'
 import { useDebounceFn } from '@vueuse/core'
 
 definePageMeta({
-  layout: "dashboard",
+  layout: "seller",
   label: "Chat",
   // middleware: ["auth", "seller-only"] // opsional kalau mau validasi role
 })

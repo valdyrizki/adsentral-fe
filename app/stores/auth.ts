@@ -11,12 +11,12 @@ export const useAuthStore = defineStore('authStore', {
     error: null as string | null,
   }),
   actions: {
-    async authLogin(email:string, password:string) {
+    async login(email:string, password:string) {
       this.loading = true
-      const { login } = useAuthApi()
+      const { fetchLogin } = useAuthApi()
 
       try {
-        const data = await login(email,password);
+        const data = await fetchLogin(email,password);
         
         const authCookie = useCookie<LoginResponse | null>('auth', { secure: true })
         authCookie.value = data // simpan di cookie

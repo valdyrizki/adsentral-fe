@@ -4,7 +4,7 @@
     <div class="flex gap-4 mt-2">
       <div>
         <div class="text-sm text-gray-500">Per Page</div>
-        <UInputMenu v-model="perPageValue" :items="perPageitems" @change="getProduct" />
+        <UInputMenu v-model="perPageValue" :items="perPageitems" @change="perPageHandler" />
       </div>
       <div>
         <div class="text-sm text-gray-500">Search</div>
@@ -34,14 +34,14 @@
         <div v-else-if="error">
           <UAlert
               title="Terjadi Kesalahan"
-              :description="error"
+              :description="error.message"
               icon="icon-park-solid:error"
               color="error"
             />
         </div>
         <div v-else-if="productPagination?.content.length === 0">
           <UAlert
-              title="Anda belum mempunyai produk untuk dijual"
+              title="Produk anda tidak ditemukan"
               description=""
               icon="ix:anomaly-found"
               color="neutral"
@@ -70,7 +70,7 @@
                       <NuxtLink :to="`/seller/product/edit/${product.id}`" class="font-medium text-gray-900">ID : #{{ product.id }}</NuxtLink>
                     </div>
                   <div>
-                    <h3 class="text-lg font-medium text-gray-900">{{ product.name }}</h3>
+                    <h3 class="text-lg font-medium text-gray-900">{{ limitWords(product.name, 15) }}</h3>
                   </div>
                 </div>
 
@@ -113,6 +113,18 @@
               </div>
             </div>
           </div>
+          
+          <!-- Pagination -->
+          <div v-if="productPagination && productPagination.total_pages > 1 && !loading" class="flex justify-center items-center pt-4">
+            <UPagination
+              :page="page + 1"
+              :total="productPagination.total_elements"
+              :items-per-page="perPageValue"
+              :sibling-count="1"
+              show-edges
+              @update:page="onPageChange"
+            />
+          </div>
         </div>
 
       </div>
@@ -121,128 +133,133 @@
 </template>
 
 <script lang="ts" setup>
-definePageMeta({
-  layout: "dashboard",
-  label: "Products",
-  // middleware: ["auth", "seller-only"] // opsional kalau mau validasi role
-})
+  definePageMeta({
+    layout: "seller",
+    label: "Products",
+    // middleware: ["auth", "seller-only"] // opsional kalau mau validasi role
+  })
 
-const page = ref(0)
-const perPageitems = ref([5, 10, 25, 50])
-const perPageValue = ref(5)
-const search = ref('')
-const toast = useToast()
+  import dayjs from 'dayjs';
+  import { useProductsApi } from '~/composables/api/product';
+  import type { PageResponse } from '~/types/PageResponse';
+  import type { ProductResponse } from '~/types/product/ProductResponse';
 
-import dayjs from 'dayjs';
-import { useProductsApi } from '~/composables/api/product';
-import type { PageResponse } from '~/types/PageResponse';
-import type { ProductResponse } from '~/types/product/ProductResponse';
-
-// Ambil API function
-const { getMyProducts,fetchMyProduct,deactivateProduct,activateProduct } = useProductsApi()
-
-//Ambil config
-const config = useRuntimeConfig()
-
-// Reactive state
-const loading = ref<boolean>(true)
-const error = ref<string | null | any >(null)
-const productPagination = ref<PageResponse<ProductResponse>>()
-
-const getMyProductsPagination = async (page: number, perPageValue: number, search : string) => {
-  // fungsi Fetch data di server-side (Nuxt auto-handle hydration)
-  try { 
-    loading.value = true
-    productPagination.value = await fetchMyProduct(page, perPageValue, search) // page=0, size=10
-    console.log(productPagination.value);
-    
-  } catch (err: any) {
-    console.log(err);
-    
-    error.value = err.statusMessage || 'Failed to load products'
-  } finally {
-    loading.value = false
-  }
-}
-
-const getProduct = () =>{
-  getMyProductsPagination(0, perPageValue.value, search.value)
-}
-
-getMyProductsPagination(0, perPageValue.value, search.value)
+  //paging ref
+  const page = ref(0)
+  const perPageitems = ref([5, 10, 25, 50])
+  const perPageValue = ref(5)
+  const keyword = ref('') /** Nilai search yang dipakai ke API (setelah debounce / enter) */
   
-const deactivateHandler = async(id:number) => {
-  try { 
-    loading.value = true
-    await deactivateProduct(id)
-    await getProduct();
-    
-    toast.add({
-      title: "Berhasil ✅",
-      description: "produk anda telah ditangguhkan.",
-      color: "success"
-    })
-    
-  } catch (err: any) {
-    toast.add({
-      title: "Gagal Simpan User ❌",
-      description: err.message || "Terjadi kesalahan",
-      color: "error"
-    })
-  } finally {
-    loading.value = false
-  }
-}
+  //product ref
+  const search = ref<string>('')
+  const sortBy = ref<string>('terbaru')
+  const sortOption = ref([
+    { label: 'Terbaru', value: 'terbaru' },
+    { label: 'Termurah', value: 'termurah' },
+    { label: 'Termahal', value: 'termahal' },
+    { label: 'Terlaris', value: 'terlaris' },
+    { label: 'Nama', value: 'nama' },
+  ])
 
-const activateHandler = async(id:number) => {
-  try { 
-    loading.value = true
-    await activateProduct(id)
-    await getProduct();
+  // toast
+  const toast = useToast()
 
-    toast.add({
-      title: "Berhasil ✅",
-      description: "produk anda telah diaktifkan.",
-      color: "success"
-    })
-    
-  } catch (err: any) {
-    toast.add({
-      title: "Gagal Simpan User ❌",
-      description: err.message || "Terjadi kesalahan",
-      color: "error"
-    })
-  } finally {
-    loading.value = false
-  }
-}
 
-let searchTimeout: NodeJS.Timeout | null = null
+  // Ambil API function
+  const { fetchMyProduct,deactivateProduct,activateProduct } = useProductsApi()
 
-watch(search, (newValue) => {
-  if (searchTimeout) {
-    clearTimeout(searchTimeout)
+  //Ambil config
+  const config = useRuntimeConfig()
+
+  // ✅ SSR SAFE FETCH — watch page, perPageValue, keyword agar refetch saat filter/search berubah
+  const { data: productPagination, pending: loading, error, refresh } = await useAsyncData<PageResponse<ProductResponse>>(
+    'seller-my-products',
+    () => fetchMyProduct(page.value, perPageValue.value, keyword.value),
+    {
+      watch: [page, perPageValue, keyword]
+    }
+  )
+
+  const onPageChange = (newPage: number) => {
+    page.value = newPage - 1
   }
 
-  searchTimeout = setTimeout(() => {
-    getProduct()
-  }, 2000) // 2 detik
-})
-
-const handleSearchEnter = () =>{
-  if (searchTimeout) {
-    clearTimeout(searchTimeout)
+  const perPageHandler = async () => {
+    page.value = 0
+    refresh()
   }
 
-  page.value = 0
-  getProduct()
-}
+  let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
+  watch(search, () => {
+    if (searchTimeout) clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(() => {
+      page.value = 0
+      keyword.value = search.value
+    }, 500)
+  })
 
+  const handleSearchEnter = () => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout)
+      searchTimeout = null
+    }
+    page.value = 0
+    keyword.value = search.value
+  }
 
+  const limitWords = (text: string, maxWords: number) => {
+    if (!text) return ''
+    const words = text.trim().split(/\s+/)
+    if (words.length <= maxWords) return text
+    return words.slice(0, maxWords).join(' ') + '...'
+  }
 
+  //START OF ACTION BUTTON
+  const deactivateHandler = async(id:number) => {
+    try { 
+      loading.value = true
+      await deactivateProduct(id)
+      await refresh();
+      
+      toast.add({
+        title: "Berhasil ✅",
+        description: "produk anda telah ditangguhkan.",
+        color: "success"
+      })
+      
+    } catch (err: any) {
+      toast.add({
+        title: "Gagal Simpan User ❌",
+        description: err.message || "Terjadi kesalahan",
+        color: "error"
+      })
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const activateHandler = async(id:number) => {
+    try { 
+      loading.value = true
+      await activateProduct(id)
+      await refresh();
+
+      toast.add({
+        title: "Berhasil ✅",
+        description: "produk anda telah diaktifkan.",
+        color: "success"
+      })
+      
+    } catch (err: any) {
+      toast.add({
+        title: "Gagal Simpan User ❌",
+        description: err.message || "Terjadi kesalahan",
+        color: "error"
+      })
+    } finally {
+      loading.value = false
+    }
+  }
+  //END OF ACTION BUTTON
 </script>
-
-<style>
-
-</style>

@@ -2,7 +2,7 @@ export default defineAppConfig({
   ui: {
     colors: {
       primary: 'blue',
-      secondary: 'yellow',
+      secondary: 'to-blue-400',
       tertiary: 'yellow',
     }
   }

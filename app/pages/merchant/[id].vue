@@ -4,148 +4,143 @@
     <div class="mx-auto  px-4 py-4 sm:px-6 sm:py-6 max-w-7xl lg:px-8">
       <div class="mx-auto mt-4 flow-root pb-10  ">
         
-        <!-- Banner / Foto Sampul -->
-        <div class="w-full h-60 relative rounded-t-2xl overflow-hidden">
-          <NuxtImg :src="config.public.backendUrl +'/'+ merchant?.banner_url" alt="Banner" 
-          
-          class="object-fill max-h-60 mx-auto" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50 rounded-t-2xl"></div>
+        <div v-if="loadingMechant">
+          <AppLoadingSkeleton/>
         </div>
+        <!-- MERCHANT -->
+        <div v-else>
+          <!-- Banner / Foto Sampul -->
+          <div class="w-full h-60 relative rounded-t-2xl overflow-hidden">
+            <NuxtImg :src="config.public.backendUrl +'/'+ merchant?.banner_url" alt="Banner" 
+            
+            class="object-fill max-h-60 mx-auto" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50 rounded-t-2xl"></div>
+          </div>
 
-        <div>
-          <div class="mx-auto mt-4 flow-root border rounded-2xl border-blue-200 bg-gray-100">
-            <div class="flex flex-col sm:flex-row gap-8 sm:gap-4 p-4">
-              <div class="basis-1/3">
+          <div>
+            <div class="mx-auto mt-4 flow-root border rounded-2xl border-blue-200 bg-gray-100">
+              <div class="flex flex-col sm:flex-row gap-8 sm:gap-4 p-4">
+                <div class="basis-1/3">
 
-                <div class="flex gap-4">
-                  <!-- Foto Profil -->
-                  <div class="w-32 h-32 relative rounded-full overflow-hidden border-4 border-white">
-                    <NuxtImg :src="config.public.backendUrl +'/'+ merchant?.logo_url" alt="Foto Profil" class="object-cover w-full h-full" />
-                  </div>
-
-                  <!-- Nama & Rating -->
-                  <div class="flex flex-col">
-                    <p class="font-bold">NAMA MERCHANT</p>
-                    <p class="text-sm text-gray-500">RATING</p>
-                                        <!-- Tombol Follow & Chat-->
-                    <div class="flex gap-2 mt-auto">
-                      <UButton icon="uiw:plus" color="primary" variant="solid" size="xs" >Follow</UButton>
-                      <UButton icon="uiw:message" size="xs" color="primary" variant="outline">Chat Penjual</UButton>
+                  <div class="flex gap-4">
+                    <!-- Foto Profil -->
+                    <div class="w-32 h-32 relative rounded-full overflow-hidden border-4 border-white">
+                      <NuxtImg :src="config.public.backendUrl +'/'+ merchant?.logo_url" alt="Foto Profil" class="object-cover w-full h-full" />
                     </div>
+
+                    <!-- Nama & Rating -->
+                    <div class="flex flex-col">
+                      <p class="font-bold">NAMA MERCHANT</p>
+                      <p class="text-sm text-gray-500">RATING</p>
+                                          <!-- Tombol Follow & Chat-->
+                      <div class="flex gap-2 mt-auto">
+                        <UButton icon="uiw:plus" color="primary" variant="solid" size="xs" >Follow</UButton>
+                        <UButton icon="uiw:message" size="xs" color="primary" variant="outline">Chat Penjual</UButton>
+                      </div>
+                    </div>
+
                   </div>
 
+                  
                 </div>
 
-                
-              </div>
+                <!-- Detail & Info Merchant -->
+                <div class="basis-2/3">
+                  <div class="flex gap-4">
+                    <div class="flex flex-col gap-2">
+                      <div class="flex flex-row gap-1 items-center">
+                        <UIcon name="majesticons:box" class="size-5" />
+                        Produk : 10
+                      </div>
+                      
+                      <div class="flex flex-row gap-1 items-center">
+                        <UIcon name="gridicons:add-outline" class="size-5" />
+                        Bergabung : 28 Sep 2018 05:27
+                      </div>
+                      
+                      <div class="flex flex-row gap-1 items-center">
+                        <UIcon name="gis:search-country" class="size-5" />
+                        Negara : Indonesia
+                      </div>
+                      
+                      <div class="flex flex-row gap-1 items-center">
+                        <UIcon name="mingcute:time-line" class="size-5" />
+                        Jam Operasional : 13.00-22.00 WIB
+                      </div>
+                    </div>
 
-              <!-- Detail & Info Merchant -->
-              <div class="basis-2/3">
-                <div class="flex gap-4">
-                  <div class="flex flex-col gap-2">
-                    <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="majesticons:box" class="size-5" />
-                      Produk : 10
+                    <!-- baris kedua -->
+                    <div class="flex flex-col gap-2">
+                      <div class="flex flex-row gap-1 items-center">
+                        <UIcon name="majesticons:box" class="size-5" />
+                        Produk : 10
+                      </div>
+                      
+                      <div class="flex flex-row gap-1 items-center">
+                        <UIcon name="gridicons:add-outline" class="size-5" />
+                        Bergabung : 28 Sep 2018 05:27
+                      </div>
+                      
+                      <div class="flex flex-row gap-1 items-center">
+                        <UIcon name="gis:search-country" class="size-5" />
+                        Negara : Indonesia
+                      </div>
+                      
+                      <div class="flex flex-row gap-1 items-center">
+                        <UIcon name="mingcute:time-line" class="size-5" />
+                        Jam Operasional : 13.00-22.00 WIB
+                      </div>
                     </div>
-                    
-                    <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="gridicons:add-outline" class="size-5" />
-                      Bergabung : 28 Sep 2018 05:27
-                    </div>
-                    
-                    <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="gis:search-country" class="size-5" />
-                      Negara : Indonesia
-                    </div>
-                    
-                    <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="mingcute:time-line" class="size-5" />
-                      Jam Operasional : 13.00-22.00 WIB
-                    </div>
+
                   </div>
-
-                  <!-- baris kedua -->
-                   <div class="flex flex-col gap-2">
-                    <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="majesticons:box" class="size-5" />
-                      Produk : 10
-                    </div>
-                    
-                    <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="gridicons:add-outline" class="size-5" />
-                      Bergabung : 28 Sep 2018 05:27
-                    </div>
-                    
-                    <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="gis:search-country" class="size-5" />
-                      Negara : Indonesia
-                    </div>
-                    
-                    <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="mingcute:time-line" class="size-5" />
-                      Jam Operasional : 13.00-22.00 WIB
-                    </div>
-                  </div>
-
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        
-
-
+        <!-- PRODUCTS -->
         <div>
           <div class="mx-auto mt-4 flow-root border rounded-2xl border-blue-200 bg-gray-100">
             <div class="flex flex-col sm:flex-row gap-8 sm:gap-4 p-4">
               <div class="mx-auto w-full p-4">
-
-                <!-- <div v-if="loading">
-                    <AppLoadingSkeleton/>
-                </div>
-                <div v-else-if="error">
-                  <UAlert
-                      title="Terjadi Kesalahan"
-                      :description="error"
-                      icon="icon-park-solid:error"
-                      color="error"
-                    />
-
-                </div>
-                <div v-else-if="productPagination?.content.length === 0">
-                  <UAlert
-                    title="Tidak ada data untuk ditampilkan"
-                    description=""
-                    icon="ix:anomaly-found"
-                    color="neutral"
-                  />
-
-                </div>
-                <div v-else>
-                  <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-6 xxl:grid-cols-8 gap-4">
-                    <div
-                      v-for="product in productPagination?.content"
-                      :key="product.id"
-                      class="relative group border border-transparent hover:border hover:rounded-2xl hover:border-blue-200 p-1 transition-all duration-300 ease-in-out"
-                    >
-                      <AppProductItem :product="product" />
+                <!-- SEARCH -->
+                <div class="flex flex-col md:flex-row md:items-center gap-2 mb-4">
+                    <!-- Search Input -->
+                    <div class="flex-1">
+                      <UInput
+                        v-model="search"
+                        placeholder="Cari produk..."
+                        icon="i-heroicons-magnifying-glass"
+                        class="w-full"
+                        clearable
+                        @keyup.enter="handleSearchEnter"
+                      />
+                    </div>
+                    <!-- Sort Select -->
+                    <div>
+                      <USelect
+                        v-model="sortBy"
+                        :items="sortOption"
+                        placeholder="Urutkan"
+                        class="w-48"
+                        @change="sortHandler"
+                      />
                     </div>
                   </div>
-                </div> -->
 
-                <div v-if="loading">
+                <div v-if="loadingProducts">
                   <AppLoadingSkeleton/>
                 </div>
-                <div v-else-if="error">
+                <div v-else-if="errorProducts">
                   <UAlert
                       title="Terjadi Kesalahan"
-                      description="Merchant tidak ditemukan"
+                      :description="errorProducts.message"
                       icon="icon-park-solid:error"
                       color="error"
                     />
                 </div>
-                <div v-else-if="productPagination?.content.length === 0">
+                <div v-else-if="productsPagination?.content.length === 0">
                   <UAlert
                       title="Tidak ada data untuk ditampilkan"
                       description=""
@@ -157,12 +152,24 @@
                 <div v-else>
                   <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-6 xxl:grid-cols-8 gap-4">
                     <div
-                      v-for="product in productPagination?.content"
+                      v-for="product in productsPagination?.content"
                       :key="product.id"
                       class="relative group border border-transparent hover:border hover:rounded-2xl hover:border-blue-200 p-1 transition-all duration-300 ease-in-out"
                     >
                       <AppProductItem :product="product" />
                     </div>
+                  </div>
+                  
+                  <!-- Pagination -->
+                  <div v-if="productsPagination && productsPagination.total_pages > 1 && !loadingProducts" class="flex justify-center items-center pt-4">
+                    <UPagination
+                      :page="page + 1"
+                      :total="productsPagination.total_elements"
+                      :items-per-page="perPageValue"
+                      :sibling-count="1"
+                      show-edges
+                      @update:page="onPageChange"
+                    />
                   </div>
                 </div>
 
@@ -181,49 +188,120 @@
 </template>
 
 <script lang="ts" setup>
-import { NuxtImg } from '#components';
-import type { AppLoadingSkeleton } from '#components';
-import { useProductsApi } from '~/composables/api/product';
-import { useMerchantApi } from '~/composables/api/merchant';
-import type { PageResponse } from '~/types/PageResponse';
-import type { ProductResponse } from '~/types/product/ProductResponse';
-import type { MerchantResponse } from '~/types/MerchantResponse';
+  import { NuxtImg } from '#components';
+  import type { AppLoadingSkeleton } from '#components';
+  import { useProductsApi } from '~/composables/api/product';
+  import { useMerchantApi } from '~/composables/api/merchant';
+  import type { PageResponse } from '~/types/PageResponse';
+  import type { ProductResponse } from '~/types/product/ProductResponse';
+  import type { MerchantResponse } from '~/types/MerchantResponse';
 
-// Ambil API function
-const { fetchProductsByMerchantId } = useProductsApi()
-const { getMerchantById } = useMerchantApi()
+  // Ambil API function
+  const { fetchProductsByMerchantId } = useProductsApi()
+  const { fetchMerchantById } = useMerchantApi()
 
-//Ambil config
-const config = useRuntimeConfig()
+  //Ambil config
+  const config = useRuntimeConfig()
 
-//ambil route param
-const route = useRoute() 
+  //ambil route param
+  const route = useRoute() 
+  const router = useRouter()
 
-// Reactive state
-const loading = ref<boolean>(true)
-const error = ref<string | null | any >(null)
-const productPagination = ref<PageResponse<ProductResponse>>()
-const merchant = ref<MerchantResponse>()
+  //paging ref
+  const page = ref(0)
+  const perPageValue = ref(12)
+  const keyword = ref('') /** Nilai search yang dipakai ke API (setelah debounce / enter) */
+  const toast = useToast()
 
+  //product ref
+  const search = ref<string>('')
+  const sortBy = ref<string>('terbaru')
+  const sortOption = ref([
+    { label: 'Terbaru', value: 'terbaru' },
+    { label: 'Termurah', value: 'termurah' },
+    { label: 'Termahal', value: 'termahal' },
+    { label: 'Terlaris', value: 'terlaris' },
+    { label: 'Nama', value: 'nama' },
+  ])
 
-  // fungsi Fetch data di server-side (Nuxt auto-handle hydration)
-  try {
-    loading.value = true
-    productPagination.value = await fetchProductsByMerchantId(route.params.id as string, 0, 12, '') // page=0, size=10
-  } catch (err: any) {
-    error.value = err.statusMessage || 'Failed to load products'
-  } finally {
-    loading.value = false
+  // ✅ SSR SAFE FETCH — watch page, perPageValue, keyword agar refetch saat filter/search berubah
+  const { 
+    data: productsPagination, 
+    pending:loadingProducts, 
+    error:errorProducts, 
+    refresh:refreshProducts } 
+    = await useAsyncData<PageResponse<ProductResponse>>(
+    `products-by-merchant-${route.params.id}`,
+    () => fetchProductsByMerchantId(route.params.id as string, page.value, perPageValue.value, keyword.value, sortBy.value),
+    {
+      watch: [page, keyword, sortBy]
+    }
+  )
+
+  // ✅ SSR SAFE FETCH — watch page, perPageValue, keyword agar refetch saat filter/search berubah
+    const { 
+    data: merchant, 
+    pending:loadingMechant, 
+    error:errorMechant, 
+    refresh:refreshMechant } 
+    = await useAsyncData<MerchantResponse>(
+    `mechant-by-id-${route.params.id}`,
+    () => fetchMerchantById(route.params.id as string),
+  )
+
+  //PAGINATION HANDLER
+  const onPageChange = (newPage: number) => {
+    page.value = newPage - 1
+    router.push({
+      query: {
+        ...route.query,
+        search: search.value.trim() !== '' ? search.value : undefined,
+        page: page.value + 1,
+        sort: sortBy.value
+      }
+    })
   }
 
-    // fungsi Fetch data di server-side (Nuxt auto-handle hydration)
-  try {
-    loading.value = true
-    merchant.value = await getMerchantById(route.params.id) // page=0, size=10
-  } catch (err: any) {
-    error.value = err.statusMessage || 'Failed to load products'
-  } finally {
-    loading.value = false
+  //SEARCH HANDLER
+  let searchTimeout: ReturnType<typeof setTimeout> | null = null
+
+  const updateSearch = () => {
+    page.value = 0
+    keyword.value = search.value
+    router.push({
+      query: {
+        ...route.query,
+        search: search.value,
+        page: page.value + 1,
+        sort: sortBy.value
+      }
+    })
+  }
+
+  const handleSearchEnter = () => {
+    if (searchTimeout) clearTimeout(searchTimeout)
+    updateSearch()
+  }
+
+  watch(search, () => {
+    if (searchTimeout) clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(() => {
+      updateSearch()
+    }, 500)
+  })
+
+  //SORT HANDLER
+  const sortHandler = () =>{
+    page.value = 0
+    keyword.value = search.value
+    router.push({
+      query: {
+        ...route.query,
+        search: search.value.trim() !== '' ? search.value : undefined,
+        page: page.value + 1,
+        sort: sortBy.value
+      }
+    })
   }
 
 

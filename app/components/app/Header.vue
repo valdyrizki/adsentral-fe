@@ -2,83 +2,77 @@
   <header class="bg-gradient-to-br from-blue-600 to-teal-800 w-full text-white">
     <div class="h-auto">
       
-        <!-- informasi (desktop only) -->
-         <div class="border-b border-blue-500">
-            <div class="hidden md:flex w-3/4 mx-auto justify-between items-center py-2 ">
-                <div class="basis-1/4">
-                    <p class="text-xs mx-2">Hubungi Kami : 085855558813</p>
-                    </div>
-                    <div></div>
-                    <div class="basis-2/4">
-                    <p class="text-xs text-right mx-2">
-                        Panduan Belanja | Panduan Berjualan | Tentang Kami | Blogs | Karir | Pusat Bantuan
-                    </p>
-                </div>
-            </div>
-         </div>
-      
+      <!-- informasi (desktop only) -->
+      <div class="border-b border-blue-500">
+        <div class="hidden md:flex w-3/4 mx-auto justify-between items-center py-2 ">
+          <div class="basis-1/4">
+            <p class="text-xs mx-2">Hubungi Kami : 085855558813</p>
+          </div>
+          <div></div>
+          <div class="basis-2/4">
+            <p class="text-xs text-right mx-2">
+              Panduan Belanja | Panduan Berjualan | Tentang Kami | Blogs | Karir | Pusat Bantuan
+            </p>
+          </div>
+        </div>
+      </div>
 
       <!-- header utama -->
-       <div class="w-full py-4">
+      <div class="w-full py-4">
         <div class="flex flex-col md:flex-row w-full md:w-3/4 mx-auto justify-between items-center gap-4 ">
-            <!-- Logo -->
-            <div class="w-full md:basis-1/6 md:text-left">
-                
-                
-                <div class="flex">
-                  <!-- Drawer -->
-                  <div class="visible md:hidden basis1/4 pl-4">
-                      <UDrawer direction="left">
-                          <UButton color="info" trailing-icon="game-icons:hamburger-menu" />
+          <!-- Logo -->
+          <div class="w-full md:basis-1/6 md:text-left">
 
-                          <template #content>
-                            <LazyAppSidebar class="min-w-96 min-h-96 size-full m-4" />
-                          </template>
-                      </UDrawer>
-                  </div>
-                    
-                    <!-- LOGO -->
-                     <div class="w-full text-left ">
-                        <ULink to="/">
-                          <p class="text-2xl mx-2 text-white">ADSENTRAL</p>
-                        </ULink>
-                     </div>
+            <div class="flex">
+              <!-- Drawer -->
+              <div class="visible md:hidden basis1/4 pl-4">
+                <UDrawer direction="left">
+                  <UButton color="info" trailing-icon="game-icons:hamburger-menu" />
 
-                     <div class="basis-1/6 flex md:hidden pr-4">
-                        <AppAuthButtons />
-                      </div>
+                  <template #content>
+                    <LazyAppSidebar class="min-w-96 min-h-96 size-full m-4" />
+                  </template>
+                </UDrawer>
+              </div>
 
-                     
-                </div>
-                 
+              <!-- LOGO -->
+              <div class="w-full text-left ">
+                <ULink to="/">
+                  <p class="text-2xl mx-2 text-white">ADSENTRAL</p>
+                </ULink>
+              </div>
+
+              <div class="basis-1/6 flex md:hidden pr-4">
+                <AppAuthButtons />
+              </div>
+
             </div>
+          </div>
 
-            <!-- Search box -->
-            <div class="basis-2/3 w-full md:w-auto">
+          <!-- Search box -->
+          <div class="basis-2/3 w-full md:w-auto">
             <UFieldGroup class="w-full mx-auto px-4">
               <UInput color="neutral" variant="outline" size="xl" placeholder="Search..." class="w-full" />
               <UTooltip text="Search">
-              <UButton color="neutral" variant="subtle" icon="mdi:magnify" />
+                <UButton color="neutral" variant="subtle" icon="mdi:magnify" />
               </UTooltip>
             </UFieldGroup>
-            </div>
+          </div>
 
-            <!-- DESKTOP -->
-            <div class="basis-1/6 hidden md:flex">
-              <AppAuthButtons />
-            </div>
+          <!-- DESKTOP -->
+          <div class="basis-1/6 hidden md:flex">
+            <AppAuthButtons />
+          </div>
 
-            
         </div>
-    </div>
-      
+      </div>
+
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
-
 
 const items = ref<NavigationMenuItem[]>([
   {

@@ -83,7 +83,7 @@ import type { ProductResponse } from '~/types/product/ProductResponse';
   const productPagination = ref<PageResponse<ProductResponse>>()
 
   // Ambil API function
-  const { getProductsByCategoryId } = useProductsApi()
+  const { fetchProductsByCategoryId } = useProductsApi()
 
   categoryStore.getCategoriesStore();
 
@@ -93,7 +93,7 @@ import type { ProductResponse } from '~/types/product/ProductResponse';
     // fungsi Fetch data getProductByCategoryId di server-side (Nuxt auto-handle hydration)
     try { 
       loadingProduct.value = true
-      productPagination.value = await getProductsByCategoryId(id, 0, 10, '') // page=0, size=10
+      productPagination.value = await fetchProductsByCategoryId(id, 0, 10, '') // page=0, size=10
     } catch (err: any) {
       errorProduct.value = err.statusMessage || 'Failed to load products'
     } finally {

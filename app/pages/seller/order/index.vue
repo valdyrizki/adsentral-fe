@@ -119,6 +119,18 @@
           </div>
         </div>
 
+        <!-- Pagination -->
+        <div v-if="transactionPagination && transactionPagination.total_pages > 1 && !pending" class="flex justify-center items-center pt-4">
+          <UPagination
+            :page="page + 1"
+            :total="transactionPagination.total_elements"
+            :items-per-page="perPageValue"
+            :sibling-count="1"
+            show-edges
+            @update:page="onPageChange"
+          />
+        </div>
+
       </div>
     </UCard>
   </div>
@@ -135,11 +147,11 @@
 </template>
 
 <script lang="ts" setup>
-definePageMeta({
-  layout: "dashboard",
-  label: "Orders",
-  // middleware: ["auth", "seller-only"] // opsional kalau mau validasi role
-})
+  definePageMeta({
+    layout: "seller",
+    label: "Orders",
+    // middleware: ["auth", "seller-only"] // opsional kalau mau validasi role
+  })
 
   import dayjs from 'dayjs';
   import TransactionStatusBadge from '~/components/app/TransactionStatusBadge.vue';
@@ -163,6 +175,8 @@ definePageMeta({
   const page = ref(0)
   const perPageItems = [5, 10, 25, 50]
   const perPageValue = ref(5)
+  const keyword = ref('')
+
   const search = ref('')
 
   // 🔥 SEARCH DEBOUNCE
@@ -172,7 +186,7 @@ definePageMeta({
   const {data: transactionPagination,pending,error,refresh} = await useAsyncData<PageResponse<TransactionResponse>>(
     'my-tx-seller', () => fetchTxSeller(page.value, perPageValue.value, search.value),
     {
-      watch: [page, perPageValue]
+      watch: [page, perPageValue, keyword]
     }
   )
 
@@ -240,7 +254,9 @@ definePageMeta({
     }
   }
 
-
+  const onPageChange = (newPage: number) => {
+    page.value = newPage - 1
+  }
 
   const openRejectModal = (txId: string) => {
       console.log('OPEN MODAL', txId)

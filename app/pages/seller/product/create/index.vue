@@ -193,7 +193,7 @@
             </div>
 
             <div class="mx-auto col-span-2">
-              <UButton icon="uiw:save" color="primary" variant="solid" size="xl" @click="handleSubmit" >Save Product</UButton>
+              <UButton :loading="loading" icon="uiw:save" color="primary" variant="solid" size="xl" @click="handleSubmit" >Save Product</UButton>
             </div>
             
           </UForm>
@@ -257,7 +257,7 @@ const productImageValidation  = async() =>{
 
 
 definePageMeta({
-  layout: "dashboard",
+  layout: "seller",
   label: "Create Products",
   ssr: false,
   // middleware: ["auth", "seller-only"] // opsional kalau mau validasi role
@@ -333,7 +333,7 @@ const validateProduct = (): boolean => {
   return Object.keys(errors).length === 0
 }
 const toast = useToast()
-const loading = ref<boolean>(true)
+const loading = ref<boolean>(false)
 const handleSubmit = async () =>{
   console.log(productRequest);
 

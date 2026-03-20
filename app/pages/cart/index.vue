@@ -133,12 +133,13 @@ const loading = ref<boolean>(false)
 const { paymentMethod, fetchPaymentMethod,paymentMethodLoading } = usePaymentMethodApi()
 const { balance } = useBalanceApi()
 
-//add to cart
+//store
 const cartStore = useCartStore()
-const toast = useToast()
 
 //Ambil config
 const config = useRuntimeConfig()
+const toast = useToast()
+
 
 const deleteCartItem = (cartItem:CartItem) =>{
   cartStore.items = cartStore.items.filter(item => item !== cartItem)

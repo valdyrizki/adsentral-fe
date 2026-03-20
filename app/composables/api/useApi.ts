@@ -21,7 +21,7 @@ export const useApi = async (request: string, options: any = {}) => {
 
   // Default setup API
   const customFetch = $fetch.create({
-    baseURL: config.public.apiBaseUrl || 'http://localhost:8080', // Sesuaikan URL Backend
+    baseURL: (config.public as any).apiBaseUrl || 'http://localhost:8080', // Sesuaikan URL Backend
     
     // 1. Selalu tempelkan Access Token di setiap request
     onRequest({ options }) {

@@ -69,7 +69,7 @@ import type { PageResponse } from '~/types/PageResponse'
 import type { TransactionResponse } from '~/types/TransactionResponse'
 
 definePageMeta({
-  layout: "dashboard",
+  layout: "seller",
   label: "Dashboard",
   // middleware: ["auth", "seller-only"] // opsional kalau mau validasi role
 })

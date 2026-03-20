@@ -325,6 +325,9 @@ import { useDebounceFn } from '@vueuse/core'
   const config = useRuntimeConfig()
   const toast = useToast()
 
+  //store
+  const authStore  = useAuthStore() 
+
   //composables api
   const {fetchBuyerConversation,fetchSendChat,fetchChatByConversation} = useChatApi()
   const {fetchProductsByMerchantId} = useProductsApi()
@@ -605,12 +608,24 @@ const openChatProductModalHandler = async() =>{
 
 }
 
-const handleChatProductModalSubmit = (product:ProductResponse) =>{
-  if(product) {
-    attachedProduct.value = product
-    chatRequest.value.productId = product.id
+  const handleChatProductModalSubmit = (product:ProductResponse) =>{
+    if(product) {
+      attachedProduct.value = product
+      chatRequest.value.productId = product.id
+    }
   }
-}
+
+  onMounted(() => {
+    if(!authStore.auth){
+      toast.add({
+        title: "Unauthorized",
+        description: "Silahkan login / daftar untuk mengakses fitur chat",
+        color: "error",
+        icon: "material-symbols:error-outline"
+      })
+      navigateTo("/login")
+    }
+  })
 
 
 </script>

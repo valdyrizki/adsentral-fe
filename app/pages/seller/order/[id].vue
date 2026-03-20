@@ -376,7 +376,7 @@
 <script setup lang="ts">
 
 definePageMeta({
-  layout: "dashboard",
+  layout: "seller",
   label: "Orders",
   // middleware: ["auth", "seller-only"] // opsional kalau mau validasi role
 })

@@ -8,7 +8,7 @@
       </nav>
 
       <div v-if="pending">
-              <AppLoadingSkeleton/>
+        <AppLoadingSkeleton/>
       </div>
       <div v-else-if="product == null">
         <UAlert

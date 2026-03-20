@@ -226,7 +226,7 @@
             </div>
 
             <div class="mx-auto col-span-2">
-              <UButton icon="uiw:edit" color="primary" variant="solid" size="xl" @click="handleSubmit" >Edit Product</UButton>
+              <UButton :loading="loading" icon="uiw:edit" color="primary" variant="solid" size="xl" @click="handleSubmit" >Edit Product</UButton>
             </div>
             
           </UForm>
@@ -291,7 +291,7 @@ const productImageValidation  = async() =>{
 
 
 definePageMeta({
-  layout: "dashboard",
+  layout: "seller",
   label: "Edit Products",
   ssr: false,
   // middleware: ["auth", "seller-only"] // opsional kalau mau validasi role
@@ -378,7 +378,7 @@ const validateProduct = (): boolean => {
 
 // Reactive state
 const toast = useToast()
-const loading = ref<boolean>(true)
+const loading = ref<boolean>(false)
 const error = ref<string | null | any >(null)
 const product = ref<ProductResponse>()
 

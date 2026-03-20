@@ -28,7 +28,7 @@
     <!-- Product Info -->
     <div class="relative mt-4">
       <NuxtLink :to="`/product/${product.id}`" class="text-sm font-medium text-gray-900">
-        {{ product.name }}
+        {{ limitWords(product.name, 15) }}
       </NuxtLink>
 
       <!-- Avatar container with slide-down -->
@@ -61,6 +61,13 @@ const backendUrl = config.public.backendUrl
 defineProps<{
   product: ProductResponse
 }>();
+
+  const limitWords = (text: string, maxWords: number) => {
+    if (!text) return ''
+    const words = text.trim().split(/\s+/)
+    if (words.length <= maxWords) return text
+    return words.slice(0, maxWords).join(' ') + '...'
+  }
 </script>
 
 <style>

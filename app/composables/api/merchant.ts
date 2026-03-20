@@ -30,7 +30,9 @@ export const useMerchantApi = () => {
         {
           method: 'POST',
           body: formData ,
-          headers: getHeaders(),
+          headers: {
+            'X-API-TOKEN': useUserStore.auth?.token || ''
+          }
         }
       )
 
@@ -53,30 +55,38 @@ export const useMerchantApi = () => {
     }
   }
 
-  const getMerchantById = async (id : any) => {
-    const { data, error } = await useFetch<WebResponse<MerchantResponse>>(`${config.public.apiBase}/merchant/get/${id}`, {
-      method: 'GET',
-      key: `my-merchant`, // cache per request
-      headers: getHeaders(),
-    })
+  const fetchMerchantById = async (id : any) : Promise<MerchantResponse> => {
+    try{
+      const { data, error } = await useFetch<WebResponse<MerchantResponse>>(`${config.public.apiBase}/merchant/get/${id}`, {
+        method: 'GET',
+        headers: getHeaders(),
+        key: `merchant-${id}`, // cache per request
+      })
 
-    //throw Error
-    if (error.value) {
+      if (error.value) {
+        throw createError({
+          statusCode: error.value.statusCode,
+          statusMessage: error.value.message || 'Failed to fetch Merchant',
+        })
+      }
+
+      if (!data.value || data.value.status !== 'success' || !data.value.data) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: data.value?.message || 'Failed to fetch Merchant',
+        })
+      }
+
+      return data.value.data
+    } catch (err:any) {
+      console.error('Failed fetch product', err)
       throw createError({
-        statusCode: error.value.statusCode,
-        statusMessage: error.value.message || 'Failed to fetch Merchant',
+        statusCode: err.statusCode || 500,
+        statusMessage: err.message || 'Failed to fetch product',
       })
     }
-
-    //throw Error 2
-    if(data.value?.status !== 'success'){
-      throw createError({
-        statusCode: 400,
-        statusMessage: data.value?.message || 'Failed to fetch Merchant',
-      })
-    }
-    return data.value?.data
   }
+  
 
   const getMyMerchant = async () => {
     const { data, error } = await useFetch<WebResponse<MerchantRequest>>(`${config.public.apiBase}/merchant`, {
@@ -103,5 +113,5 @@ export const useMerchantApi = () => {
     return data.value?.data
   }
 
-  return { registerMerchant, getMerchantById, getMyMerchant }
+  return { registerMerchant, fetchMerchantById, getMyMerchant }
 }
