@@ -1,5 +1,6 @@
 import type { FileManagementResponse } from "../file-management/FileManagementResponse";
 import type { ProductResponse } from "../product/ProductResponse";
+import type { TransactionResponse } from "../TransactionResponse";
 
 export interface ChatResponse {
   id: number
@@ -8,6 +9,7 @@ export interface ChatResponse {
   sender_type: string
   message: string
   product?: ProductResponse | null
+  transaction?: TransactionResponse | null
   file:FileManagementResponse | null
   status: string
   created_at: string // ISO date

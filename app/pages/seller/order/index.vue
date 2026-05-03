@@ -182,11 +182,17 @@
   // 🔥 SEARCH DEBOUNCE
   let searchTimeout: NodeJS.Timeout | null = null
 
-  // ✅ SSR SAFE FETCH
-  const {data: transactionPagination,pending,error,refresh} = await useAsyncData<PageResponse<TransactionResponse>>(
+  // ✅ SSR SAFE FETCH NEW
+  const { 
+    data: transactionPagination, 
+    pending:pending, 
+    error, 
+    refresh } 
+    = await useAsyncData<PageResponse<TransactionResponse>>(
     'my-tx-seller', () => fetchTxSeller(page.value, perPageValue.value, search.value),
     {
-      watch: [page, perPageValue, keyword]
+      watch: [page, perPageValue, keyword],
+      server: false, // Hanya fetch di client
     }
   )
 

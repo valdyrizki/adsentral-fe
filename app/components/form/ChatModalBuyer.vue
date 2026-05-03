@@ -7,7 +7,26 @@
             <p class="text-sm"> Produk Terkait : </p>
             <div class="flex gap-4">
               <NuxtImg :src="config.public.backendUrl +'/'+ product.banner_url" width="50" height="50" />
-              <p class="text-sm">{{ product.name }}</p>
+              <div class="flex flex-col">
+                <p class="text-sm">{{ product.name }}</p>
+                <p class="text-sm text-error">Rp. {{ product.sell_price.toLocaleString('id-ID') }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <USeparator class="mt-4"/>
+        </div>
+
+        <div v-if="transaction">
+          <div class="flex flex-col gap-2 border-1 border-gray-300 p-4 rounded-2xl bg-blue-100">
+            <p class="text-sm"> Transaksi Terkait : </p>
+            <div class="flex gap-4">
+              <NuxtImg :src="config.public.backendUrl +'/'+ transaction.product.banner_url" width="50" height="50" />
+                <div class="flex flex-col">
+                  <p class="text-sm"><UBadge>#{{ transaction.id }}</UBadge></p>
+                  <p class="text-sm">{{ transaction.product.name }}</p>
+                  <p class="text-sm text-error">{{transaction.qty}} x {{transaction.price.toLocaleString('id-ID')}} = Rp. {{ transaction.total_price.toLocaleString('id-ID') }}</p>
+              </div>
             </div>
           </div>
           
@@ -70,7 +89,7 @@
             color="primary"
             icon="mdi:send"
             :loading="isSubmitting"
-            :disabled="!message.trim() || message.trim().length < 10"
+            :disabled="!message.trim() || message.trim().length < 5"
             @click="submit"
           >
             Kirim Pesan
@@ -85,6 +104,7 @@
 <script setup lang="ts">
 import { useChatApi } from '~/composables/api/chat';
 import type { ProductResponse } from '~/types/product/ProductResponse';
+import type { TransactionResponse } from '~/types/TransactionResponse';
 
   const props = defineProps<{
     modelValue: boolean
@@ -93,6 +113,7 @@ import type { ProductResponse } from '~/types/product/ProductResponse';
     error?: string | null
     buyerId?: number
     merchantId?: number
+    transaction?: TransactionResponse
   }>()
 
   // Ambil API function
@@ -132,7 +153,7 @@ import type { ProductResponse } from '~/types/product/ProductResponse';
 
   // 🔥 VALIDATION
   const isValid = computed(() => {
-    return message.value.trim().length >= 10
+    return message.value.trim().length >= 5
   })
 
   // Watcher untuk validasi pesan
@@ -157,7 +178,8 @@ import type { ProductResponse } from '~/types/product/ProductResponse';
       if(props.product?.id) formData.append("productId", props.product?.id.toString() || '')
       formData.append("message", message.value)
       if(props.merchantId) formData.append("receiverId", props.merchantId.toString() || '')
-      
+      if(props.transaction?.id) formData.append("transactionId", props.transaction?.id.toString() || '')
+
       await fetchSendChat(formData)
       toast.add({
         title: "Berhasil",
@@ -168,11 +190,12 @@ import type { ProductResponse } from '~/types/product/ProductResponse';
       message.value = '' // reset textarea
       navigateTo("/chat")
       emit('update:modelValue', false)
-    } catch (err) {
-      console.error(err)
+    } catch (err:any) {
+      console.log(err.statusMessage)
+      console.log(err.message)
       toast.add({
         title: 'Gagal Mengirim Pesan',
-        description: "Terjadi kesalahan saat mengirim pesan, silakan coba lagi nanti.",
+        description: err.statusMessage || err.message || 'Terjadi kesalahan saat mengirim pesan',
         color: "error",
         icon: "i-heroicons-x-circle-solid"
       })

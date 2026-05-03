@@ -39,6 +39,13 @@
 
              <!-- DATA -->
             <div v-else>
+              <div class="flex justify-between items-center p-4 sm:px-6 lg:px-8">
+                <h2 class="text-2xl font-bold tracking-tight text-gray-900">Riwayat Saldo</h2>
+                <div>
+                  <USelect v-model="perPageValue" :items="perPageItems" />
+                </div>
+              </div>
+              <USeparator />
               <div v-for="transaction in transactionPagination?.content" :key="transaction.id" class="flex border-b border-gray-200 px-4 py-6 sm:px-6 lg:px-8">
                 <div class="flex flex-row gap-4 w-full">
                   <div class="flex-none">
@@ -76,7 +83,7 @@
                         <div class="flex flex-row gap-1">
                           <UIcon name="fa6-solid:rupiah-sign" class="size-5 text-gray-400" />
                           <div class="font-medium">
-                            {{ transaction.price.toLocaleString('id-ID') }}
+                            {{ transaction.price.toLocaleString('id-ID') }} x {{ transaction.qty }} = Rp. {{ transaction.total_price.toLocaleString('id-ID') }}
                           </div>
                         </div>
 
@@ -92,7 +99,7 @@
                     <div class="flex flex-col gap-2 items-end">
 
                       <TransactionStatusBadge :status="transaction?.status" />                
-                      <UButton icon="uiw:message" size="xs" color="primary" variant="outline">Chat Penjual</UButton>
+                      <UButton icon="uiw:message" size="xs" color="primary" variant="outline" @click="openChatHandler(transaction)">Chat Penjual</UButton>
                       <UButton v-if="transaction.status === 'DONE' || transaction.status === 'COMPLETE'" icon="mdi:cart-outline" color="primary" variant="soft" size="xs" @click="addToCart">Beli Lagi</UButton>
                       <UButton v-if="transaction.status === 'UNPAID'" icon="material-symbols:cancel" color="error" variant="soft" size="xs" @click="addToCart">Batalkan</UButton>
                       <UButton v-if="transaction.status === 'DELIVERED' || transaction.status === 'DONE' " icon="material-symbols:help-outline-rounded" color="error" variant="solid" size="xs" @click="addToCart">Tangguhkan</UButton>
@@ -102,6 +109,19 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Pagination -->
+              <div v-if="transactionPagination &&  !loading" class="flex justify-center items-center p-4">
+                <UPagination
+                  :page="page + 1"
+                  :total="transactionPagination.total_elements"
+                  :items-per-page="perPageValue"
+                  :sibling-count="1"
+                  show-edges
+                  @update:page="onPageChange"
+                />
+              </div>
+
             </div>
 
 
@@ -110,41 +130,68 @@
       </div>
     </div>
   </div>
+
+  <ChatModalBuyer
+    v-model="isChatOpen"
+    :transaction="selectedTransaction"
+    :merchant-id="selectedTransaction?.product.merchant_id"
+  />
 </template>
 
 <script setup lang="ts">
-import dayjs from 'dayjs'
-import TransactionStatusBadge from '~/components/app/TransactionStatusBadge.vue'
-import { useTransactionApi } from '~/composables/api/transaction'
-import type { PageResponse } from '~/types/PageResponse'
-import type { TransactionResponse } from '~/types/TransactionResponse'
-
+  import dayjs from 'dayjs'
+  import TransactionStatusBadge from '~/components/app/TransactionStatusBadge.vue'
+  import ChatModalBuyer from '~/components/form/ChatModalBuyer.vue'
+  import { useTransactionApi } from '~/composables/api/transaction'
+  import type { PageResponse } from '~/types/PageResponse'
+  import type { TransactionResponse } from '~/types/TransactionResponse'
 
 
 // Ambil API function
-const { getBuyerTransactions } = useTransactionApi()
+  const { fetchBuyerTransactions } = useTransactionApi()
 
 // Reactive state
-const loading = ref<boolean>(true)
-const error = ref<string | null | any >(null)
-const transactionPagination = ref<PageResponse<TransactionResponse>>()
+  const error = ref<string | null | any >(null)
+  const isChatOpen = ref(false)
+  const selectedTransaction = ref()
+  
+  //paging ref
+  const page = ref(0)
+  const perPageValue = ref<number>(10)
+  const perPageItems = ref<number[]>([5, 10, 25, 50, 100])
 
-//Ambil config
-const config = useRuntimeConfig()
+  //Ambil config
+  const config = useRuntimeConfig()
 
-
-  // fungsi Fetch data di server-side (Nuxt auto-handle hydration)
-  try { 
-    loading.value = true
-    transactionPagination.value = await getBuyerTransactions() // page=0, size=10
-  } catch (err: any) {
-    error.value = err.statusMessage || 'Failed to load transactions'
-  } finally {
-    loading.value = false
-  }
+  // ✅ SSR SAFE FETCH NEW
+  const { 
+    data: transactionPagination, 
+    pending:loading, 
+    error:errorTransactionPagination, 
+    refresh:refreshTransactionPagination } 
+    = await useAsyncData<PageResponse<TransactionResponse>>(
+    `transaction-page-${perPageValue.value}-${page.value}`,
+    () => fetchBuyerTransactions(page.value, perPageValue.value),
+    {
+      watch: [page, perPageValue], // Refetch saat page atau perPageValue berubah
+      server: false, // Hanya fetch di client
+    }
+  )
 
 
   const addToCart = () => {
     alert('Add to cart clicked!')
+  }
+
+  const openChatHandler = (transaction: TransactionResponse) => {
+    isChatOpen.value = true
+    selectedTransaction.value = transaction
+    console.log("openChatHandler called with transaction:", transaction);
+    
+  }
+
+  //PAGINATION HANDLER
+  const onPageChange = (newPage: number) => {
+    page.value = newPage - 1
   }
 </script>

@@ -13,14 +13,14 @@
                 <UIcon name="mdi:dollar" class="size-5" />
                 Saldo Efektif
               </p> 
-              <UButton size="xs" label="Refresh" icon="mdi:refresh" color="neutral" variant="outline" @click="refreshBalance()" />
+              <UButton size="xs" label="Refresh" icon="mdi:refresh" color="neutral" variant="outline" @click="handleRefresh()" />
               </div>
               <div>
                 <h2 v-if="balanceLoading" class="text-3xl font-bold mt-1">
                   <USkeleton class="h-10 w-50 mb-2 rounded-lg bg-gray-300" />
                 </h2>
                 <h2 v-else="balanceLoading" class="text-3xl font-bold mt-1">
-                  {{ formatRupiah(balance) }}
+                  {{ formatRupiah(balanceStore.balance) }}
                 </h2>
               </div>
               <div class="flex flex-row gap-4 justify-items-center mt-4">
@@ -33,11 +33,14 @@
                   </UModal>
                 </div>
                 <div>
-                  <UButton size="xl" label="Deposit" icon="mdi:cash-plus" color="neutral" variant="outline" @click="isDepositModalOpen = true" />
-                  <UModal v-model:open="isDepositModalOpen" title="Deposit">
+                  <UButton size="xl" label="Deposit" icon="mdi:cash-plus" color="neutral" variant="outline" @click="isDepositOpen = true" />
+                  <UModal v-model:open="isDepositOpen" title="Deposit">
                     <template #body>
-                      <FormDeposit @deposit-success="handleDepositSuccess" />
-                    </template>
+                      <FormDeposit 
+                        :loading="submittingDeposit"
+                        @submit="handleDepositSubmit"
+                        @cancel="isDepositOpen = false"
+/>                    </template>
                   </UModal>
                 </div>    
               </div> 
@@ -53,13 +56,12 @@
             <h2 class="text-2xl font-bold tracking-tight text-gray-900">Riwayat Saldo</h2>
             <div>
               <USelect v-model="perPageValue" :items="perPageItems" />
-
             </div>
           </div>
           <USeparator class="mt-2"/>
 
           <!-- LOADING -->
-          <div v-if="balanceLoading" class="p-6">
+          <div v-if="loadingDepositHistory" class="p-6">
             <AppLoadingSkeleton/>
           </div>
 
@@ -74,7 +76,7 @@
           </div>
 
           <!-- EMPTY -->
-          <div v-else-if="!depositHistory?.content?.length" class="p-6">
+          <div v-else-if="!depositHistoryPagination?.content?.length && !authStore.isInitializing" class="p-6">
             <UAlert
               title="Belum ada transaksi"
               description="Transaksi anda akan muncul di sini"
@@ -85,13 +87,15 @@
 
           <!-- DATA -->
           <div v-else>
-            <div v-for="deposit in depositHistory?.content" :key="deposit.id" class="flex border-b border-gray-200 px-4 py-6 sm:px-6 lg:px-8">
+            <div v-for="deposit in depositHistoryPagination?.content" :key="deposit.id" class="flex border-b border-gray-200 px-4 py-6 sm:px-6 lg:px-8">
               <div class="flex flex-row gap-4 w-full">
                 <div class="flex-grow flex flex-col">
                   <!-- Konten atas yang akan memenuhi ruang -->
                   <div class="flex flex-col gap-1">
-                    <div>
-                      <UBadge class="bg-success" label="DEPOSIT" />
+                    <div class="flex gap-2">
+                      <UBadge class="bg-success" label="DEPOSIT" icon="mdi:money" />
+                      <UBadge class="bg-info" :label="deposit.payment_method" icon="mdi:credit-card" />
+                      
                     </div>
                     <div class="flex flex-row gap-2">
                       <!-- <NuxtLink :to="`/transaction/${deposit.id}`" class="font-medium text-gray-900">#{{ deposit.payment_id }}</NuxtLink> -->
@@ -123,11 +127,22 @@
                     <PaymentStatusBadge :status="deposit?.status" class="mb-2" />                
                     <UButton v-if="deposit.status === 'DONE' || deposit.status === 'COMPLETE'" icon="mdi:cart-outline" color="primary" variant="soft" size="xs" @click="addToCart">Beli Lagi</UButton>
                     <UButton v-if="deposit.status === 'UNPAID'" icon="mdi:payment" color="primary" variant="soft" size="xs" @click="addToCart">Bayar</UButton>
-                    <UButton v-if="deposit.status === 'UNPAID'" icon="material-symbols:cancel" color="error" variant="soft" size="xs" @click="cancelHandle">Batalkan</UButton>
-
+                    <UButton v-if="deposit.status === 'UNPAID'" icon="material-symbols:cancel" color="error" variant="soft" size="xs" @click="() => cancelHandle(deposit)">Batalkan</UButton>
                   </div> 
                 </div>
               </div>
+            </div>
+
+            <!-- Pagination -->
+            <div v-if="depositHistoryPagination &&  !loadingDepositHistory" class="flex justify-center items-center pt-4">
+              <UPagination
+                :page="page + 1"
+                :total="depositHistoryPagination.total_elements"
+                :items-per-page="perPageValue"
+                :sibling-count="1"
+                show-edges
+                @update:page="onPageChange"
+              />
             </div>
           </div>
 
@@ -142,50 +157,90 @@
   import dayjs from 'dayjs'
   import PaymentStatusBadge from '~/components/app/PaymentStatusBadge.vue'
   import { useBalanceApi } from '~/composables/api/balance'
-
-
-  // Ambil API function
+  import type { StringIdRequest } from '~/types/StringIdRequest'
+  import { useToast } from "#imports" // Nuxt UI toast
+  import type { DepositRequest } from '~/types/balance/DepositRequest'
+import type { DepositResponse } from '~/types/balance/DepositResponse'
+import type { PageResponse } from '~/types/PageResponse'
 
   // Reactive state
   const error = ref<string | null | any >(null)
-  const perPageValue = ref<number>(10)
-  const perPageItems = ref<number[]>([10, 25, 50, 100])
   const isWithdrawalModalOpen = ref(false)
-  const isDepositModalOpen = ref(false)
+  const isDepositOpen = ref(false)
+  const submittingDeposit = ref(false)
+  const toast = useToast()
+  const { confirm, close } = useConfirm()
+
+  //paging ref
+  const page = ref(0)
+  const perPageValue = ref<number>(10)
+  const perPageItems = ref<number[]>([5, 10, 25, 50, 100])
 
   //fetch
-  const { fetchDepositHistory,fetchBalance,balance,balanceHeld,depositHistory, balanceLoading  } = useBalanceApi()
+  const { fetchDepositHistory,fetchBalance, fetchDepositCancel, fetchDepositBalance  } = useBalanceApi()
 
-  // onMounted(() => {
-  //   fetchBalance()
-  //   fetchDepositHistory()
-  // })
+  //store
+  const balanceStore = useBalanceStore()
+  const authStore  = useAuthStore()
 
-await useAsyncData('balance-data', async () => {
-  await Promise.all([
-    fetchBalance(),
-    fetchDepositHistory()
-  ])
-})
+  const { 
+    data: balanceData, 
+    pending:balanceLoading, 
+    error:errorBalance, 
+    refresh:refreshBalance } 
+  = await useAsyncData(
+    `balance-page`,
+    async () => {
+      const res = await fetchBalance();
+      // Store update DI SINI, bukan di composable
+      balanceStore.setBalance(res.balance)
+    },
+    { server: false }
+  )
 
-  const refreshBalance = async () => {
-    try {
-      await fetchBalance()
-      await fetchDepositHistory()
-    } catch (err) {
-      console.error('Failed to refresh balance', err)
+  // ✅ SSR SAFE FETCH NEW
+  const { 
+    data: depositHistoryPagination, 
+    pending:loadingDepositHistory, 
+    error:errorDepositHistory, 
+    refresh:refreshDepositHistory } 
+    = await useAsyncData<PageResponse<DepositResponse>>(
+    `deposit-history-page-${perPageValue.value}-${page.value}`,
+    () => fetchDepositHistory(page.value, perPageValue.value),
+    {
+      watch: [page, perPageValue], // Refetch saat page atau perPageValue berubah
+      server: false, // Hanya fetch di client
     }
-  }
+  )
 
-  //Ambil config
-  const config = useRuntimeConfig()
+// const { data, pending:balanceLoading, error:errorBalance, refresh } = await useAsyncData(
+//   'balance-page',
+//   async () => {
+//     const [balance, history] = await Promise.all([
+//       fetchBalance(),
+//       fetchDepositHistory(0, perPageValue.value),
+//     ])
+    
+//     // Store update DI SINI, bukan di composable
+//     balanceStore.setBalance(balance.balance)
+//     balanceStore.setDepositHistory(history)
+    
+//     return { balance, history }
+//   },
+//   { server: false }
+// )
+
+async function handleRefresh() {
+  await refreshBalance()
+  await refreshDepositHistory()
+}
 
   const handleWithdrawalSuccess = () => {
     isWithdrawalModalOpen.value = false
   }
 
   const handleDepositSuccess = () => {
-    isDepositModalOpen.value = false
+    isDepositOpen.value = false
   }
 
   const addToCart = () => {
@@ -199,8 +254,81 @@ const formatRupiah = (val:any) => {
   }).format(val)
 }
 
-const cancelHandle = () => {
-  alert('Cancel clicked!')
+  const cancelHandle = async (deposit: DepositResponse) => {
+    const yes = await confirm({
+      title: 'Batalkan Deposit?',
+      message: 'Deposit yang dibatalkan tidak bisa dikembalikan. Yakin?',
+      confirmText: 'Ya, Batalkan',
+      cancelText: 'Tidak',
+      confirmColor: 'error',
+    })
+
+    if (!yes) return
+
+
+    // loadingDepositHistory.value = true;
+    try {
+
+      await fetchDepositCancel(deposit.payment_id)
+
+      toast.add({
+      title: "Deposit Berhasil Dibatalkan 🎉",
+      description: "Deposit Anda telah berhasil dibatalkan.",
+      color: "success"
+    })
+      await refreshDepositHistory()
+    } catch (err) {
+      console.error('Cancel Deposit gagal:', err)
+      toast.add({
+        title: "Deposit Gagal dibatalkan ❌",
+        description: "Lakukan refresh, lalu coba lagi",
+        color: "error"
+      })
+    } finally {
+      // loadingDepositHistory.value = false
+      close()  // tutup dialog setelah action selesai
+    }
+
+  }
+
+  // Deposit action
+async function handleDepositSubmit(payload: DepositRequest) {
+  submittingDeposit.value = true
+  try {
+    const deposit = await fetchDepositBalance(payload)
+    
+    toast.add({
+      title: 'Deposit Dibuat',
+      description: 'Silakan lanjutkan pembayaran',
+      color: 'success',
+      icon: 'material-symbols:check-circle-outline',
+    })
+    
+    isDepositOpen.value = false
+    await refreshBalance()
+    
+    // Optional: redirect ke halaman payment
+    if (deposit.checkout_url) {
+      window.open(deposit.checkout_url, '_blank')
+    }
+  } catch (err: any) {
+    toast.add({
+      title: 'Deposit Gagal',
+      description: err.statusMessage || 'Terjadi kesalahan',
+      color: 'error',
+      icon: 'material-symbols:error-outline',
+    })
+  } finally {
+    submittingDeposit.value = false
+    refreshDepositHistory() // Refresh riwayat setelah deposit dibuat
+  }
 }
+
+  //PAGINATION HANDLER
+  const onPageChange = (newPage: number) => {
+    page.value = newPage - 1
+  }
+
+
 
 </script>

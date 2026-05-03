@@ -12,7 +12,13 @@
 
   <!-- Chart example -->
   <div class="mt-6">
-    <UCard>
+
+    <!-- Loading -->
+    <div v-if="productLoading">
+      <AppLoadingSkeleton/>
+    </div>
+
+    <UCard v-else>
       <template #header>
         <div class="text-lg font-semibold">Form Edit Product</div>
       </template>
@@ -33,7 +39,7 @@
             <div class="font-medium p-4">Foto Utama <UBadge color="error">WAJIB</UBadge></div>
             <div class="flex gap-4 sm:flex-row flex-col">
               <img 
-                v-if="product?.banner_url " 
+                v-if="product?.banner_url" 
                 :src="config.public.backendUrl +'/'+ product?.banner_url" :alt="product.name"
                 class="w-64 min-h-48 rounded object-cover border"
               />
@@ -301,7 +307,7 @@ const productRequest = reactive<ProductRequest>(new ProductRequest())
 const selectedCategory = ref(0)
 
 // Ambil API function
-const { updateProduct,getMyProductById } = useProductsApi()
+const { updateProduct,fetchMyProductById } = useProductsApi()
 
 //ambil route param
 const route = useRoute() 
@@ -376,90 +382,86 @@ const validateProduct = (): boolean => {
 }
 
 
-// Reactive state
-const toast = useToast()
-const loading = ref<boolean>(false)
-const error = ref<string | null | any >(null)
-const product = ref<ProductResponse>()
+  // Reactive state
+  const toast = useToast()
+  const loading = ref<boolean>(false)
+  const error = ref<string | null | any >(null)
 
   // fungsi Fetch data di server-side (Nuxt auto-handle hydration)
-  try {
-    loading.value = true
-    product.value = await getMyProductById(route.params.id as string) // page=0, size=10
-  } catch (err: any) {
-    error.value = err.statusMessage || 'Failed to load products'
-  } finally {
-    loading.value = false
-    console.log(product.value);
+  const { 
+  data: product, 
+  pending: productLoading
+} = await useAsyncData<ProductResponse>(
+  `get-product-${route.params.id}`,
+  async () => {
+    const res = await fetchMyProductById(route.params.id as string)
 
-    if(product.value){
-      productRequest.id = product.value.id
-      productRequest.name = product.value.name
-      productRequest.slug = product.value.slug
-      productRequest.description = product.value.description
-      productRequest.base_price = product.value.base_price
-      productRequest.sell_price = product.value.sell_price
-      productRequest.stock = product.value.stock
-      productRequest.distributor = product.value.distributor
-      productRequest.category_id = product.value.category_id
-    }
-    
-    
+    // isi form
+    productRequest.id = res.id
+    productRequest.name = res.name
+    productRequest.slug = res.slug
+    productRequest.description = res.description
+    productRequest.base_price = res.base_price
+    productRequest.sell_price = res.sell_price
+    productRequest.stock = res.stock
+    productRequest.distributor = res.distributor
+    productRequest.category_id = res.category_id
 
+    return res // ✅ PENTING
+  },
+  { server: false }
+)
 
+  const handleSubmit = async () =>{
+    console.log(productRequest);
 
-  }
+    //validasi
+    productImageValidation()
+    bannerValidation()
 
-const handleSubmit = async () =>{
-  console.log(productRequest);
-
-  //validasi
-  productImageValidation()
-  bannerValidation()
-
-  if (!validateProduct()) {
-    return
-  }
-
-  // ✅ Submit ke backend (nanti pakai FormData) versi create merchant 
-  try { 
-    loading.value = true
-    await updateProduct(productRequest)
-    
-    toast.add({
-      title: "Berhasil membuat product ✅",
-      description: "Anda akan diarahkan ke menu list product.",
-      color: "success"
-    })
-
-    navigateTo("/seller/product")
-    
-  } catch (err: any) {
-    toast.add({
-      title: "Gagal Simpan User ❌",
-      description: err.message || "Terjadi kesalahan",
-      color: "error"
-    })
-  } finally {
-    loading.value = false
-  }
-
-
-}
-
-
-//Auto isi input slug
-watch(
-  () => productRequest.name,
-  (newName) => {
-    if (!newName) {
-      productRequest.slug = ''
+    if (!validateProduct()) {
       return
     }
 
-    productRequest.slug = slugify(newName)
+    // ✅ Submit ke backend (nanti pakai FormData) versi create merchant 
+    try { 
+      loading.value = true
+      await updateProduct(productRequest)
+      
+      toast.add({
+        title: "Berhasil membuat product ✅",
+        description: "Anda akan diarahkan ke menu list product.",
+        color: "success"
+      })
+
+      navigateTo("/seller/product")
+      
+    } catch (err: any) {
+      toast.add({
+        title: "Gagal Simpan User ❌",
+        description: err.message || "Terjadi kesalahan",
+        color: "error"
+      })
+    } finally {
+      loading.value = false
+    }
+
+
   }
-)
+
+
+  //Auto isi input slug
+  watch(
+    () => productRequest.name,
+    (newName) => {
+      if (!newName) {
+        productRequest.slug = ''
+        return
+      }
+
+      productRequest.slug = slugify(newName)
+    }
+  )
 
 
 </script>

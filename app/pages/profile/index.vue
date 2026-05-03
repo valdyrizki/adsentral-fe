@@ -16,9 +16,9 @@
              <div class="col-span-2 mx-auto">
               <div class="mt-2 flex sm:flex-row flex-col gap-4">
 
-                <div  class="mb-4 text-center">
+                <div v-if="profile?.avatar_url" class="mb-4 text-center">
                   <label for="avatar_url" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Avatar</label>
-                  <NuxtImg :src="`${config.public.backendUrl + authStore.auth?.user?.avatar_url}`" alt="Avatar" class="w-32 h-32 rounded-full object-cover mx-auto"/>
+                  <NuxtImg :src="`${config.public.backendUrl + profile?.avatar_url}`" alt="Avatar" class="w-32 h-32 rounded-full object-cover mx-auto"/>
                 </div>
                 <div>
                   <UFileUpload 
@@ -133,21 +133,29 @@ import { useAuthStore } from '~/stores/auth';
 import { ref } from 'vue';
 import type { UserRequest } from '~/types/UserRequest';
 import { useUserApi } from '~/composables/api/user';
+import type { UserResponse } from '~/types/UserResponse';
 
   const toast = useToast()
   const authStore  = useAuthStore()
-  const userRequest = reactive<Partial<UserRequest>>({
-    ...authStore.auth?.user
-  })
+  const userRequest = reactive<Partial<UserRequest>>({})
   const { updateProfile } = useUserApi()
   const config = useRuntimeConfig()
 
   const confirm_password = ref<string>("");
   const errors = ref<string[]>([])
 
-  console.log(userRequest);
+  const { fetchMe  } = useUserApi()
 
-  console.log(authStore.auth?.user?.avatar_url);
+  const {
+    data: profile, 
+    pending, 
+    error, 
+    refresh 
+  } = await useAsyncData<UserResponse>(
+    `my-profile`, () => fetchMe(),
+    { server: false }
+  )
+
   
   
   
@@ -209,8 +217,18 @@ import { useUserApi } from '~/composables/api/user';
   // ✅ Submit ke backend (nanti pakai FormData)
   try { 
     loading.value = true
-    const data = await updateProfile(userRequest as UserRequest)
-    authStore.updateUserAuth(data)
+
+    const formData = new FormData()
+    if (userRequest.username) formData.append("username", userRequest.username)
+    if (userRequest.full_name) formData.append("fullName", userRequest.full_name)
+    if (userRequest.phone_number) formData.append("phoneNumber", userRequest.phone_number)
+    if (userRequest.address) formData.append("address", userRequest.address)
+    if (userRequest.birth_date) formData.append("birthDate", userRequest.birth_date)
+    if (userRequest.new_password) formData.append("newPassword", userRequest.new_password)
+    if (userRequest.old_password) formData.append("oldPassword", userRequest.old_password)
+    if (userRequest.avatar) formData.append("avatar", userRequest.avatar as File)
+
+    const data = await updateProfile(formData)
     toast.add({
       title: "Berhasil Simpan User ✅",
       description: "Profil Anda telah diperbarui.",
@@ -226,6 +244,22 @@ import { useUserApi } from '~/composables/api/user';
     })
   } finally {
     loading.value = false
+    refresh() // Refresh data profil setelah update
+    userRequest.avatar = null
   }
 }
+
+watch(profile, (val) => {
+  if (!val) return
+
+  Object.assign(userRequest, {
+    username: val.username,
+    email: val.email,
+    full_name: val.full_name,
+    phone_number: val.phone_number,
+    address: val.address,
+    birth_date: val.birth_date,
+    avatar_url: val.avatar_url
+  })
+}, { immediate: true })
 </script>

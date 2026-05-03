@@ -158,7 +158,7 @@
   //Ambil config
   const config = useRuntimeConfig()
 
-  // ✅ SSR SAFE FETCH — watch page, perPageValue, keyword agar refetch saat filter/search berubah
+  // ✅ SSR SAFE FETCH NEW
   const { data: productPagination, pending: loading, error, refresh } = await useAsyncData<PageResponse<ProductResponse>>(
     'seller-my-products',
     () => fetchMyProduct(page.value, perPageValue.value, keyword.value),

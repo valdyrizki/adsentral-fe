@@ -1,26 +1,13 @@
-<script setup lang="ts">
-
-</script>
-
 <template>
-  <div>
-    <!-- HEADER -->
-    <div>
-      <!-- <AppHeader/> -->
-      <AppHeader/>
-    </div>
+  <div class="min-h-screen bg-white flex flex-col">
+    <AppHeader/>
     
-    <!-- MAIN/ -->
-    <div>
-      <slot/> 
-    </div>
+    <main class="flex-1">
+      <slot/>
+    </main>
+    
+    <AppFooter class="mt-10"/>
 
-    <div class="mt-10">
-      <AppFooter/>
-    </div>
+
   </div>
-</template>;
-
-
-
-
+</template>

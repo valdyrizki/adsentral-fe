@@ -1,7 +1,7 @@
 
 export interface PaymentMethodResponse {
   id: string;
-  paymentGateway: string;
+  payment_gateway: string;
   description: string;
   status: string;
 }

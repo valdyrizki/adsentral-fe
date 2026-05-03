@@ -6,12 +6,24 @@
       <div class="border-b border-blue-500">
         <div class="hidden md:flex w-3/4 mx-auto justify-between items-center py-2 ">
           <div class="basis-1/4">
-            <p class="text-xs mx-2">Hubungi Kami : 085855558813</p>
+            <ULink to="/hubungi-kami" class="text-xs mx-2 text-white/90 hover:text-white transition-colors">
+              Hubungi Kami : 085855558813
+            </ULink>
           </div>
           <div></div>
           <div class="basis-2/4">
-            <p class="text-xs text-right mx-2">
-              Panduan Belanja | Panduan Berjualan | Tentang Kami | Blogs | Karir | Pusat Bantuan
+            <p class="text-xs text-right mx-2 flex items-center justify-end gap-2 flex-wrap">
+              <ULink to="/panduan-belanja" class="text-white/90 hover:text-white transition-colors">Panduan Belanja</ULink>
+              <span class="opacity-50">|</span>
+              <ULink to="/panduan-berjualan" class="text-white/90 hover:text-white transition-colors">Panduan Berjualan</ULink>
+              <span class="opacity-50">|</span>
+              <ULink to="/tentang-kami" class="text-white/90 hover:text-white transition-colors">Tentang Kami</ULink>
+              <span class="opacity-50">|</span>
+              <ULink to="/blog" class="text-white/90 hover:text-white transition-colors">Blogs</ULink>
+              <span class="opacity-50">|</span>
+              <ULink to="/karir" class="text-white/90 hover:text-white transition-colors">Karir</ULink>
+              <span class="opacity-50">|</span>
+              <ULink to="/pusat-bantuan" class="text-white/90 hover:text-white transition-colors">Pusat Bantuan</ULink>
             </p>
           </div>
         </div>
@@ -50,17 +62,25 @@
           </div>
 
           <!-- Search box -->
-          <div class="basis-2/3 w-full md:w-auto">
+          <div class="basis-1/2 w-full md:w-auto">
             <UFieldGroup class="w-full mx-auto px-4">
-              <UInput color="neutral" variant="outline" size="xl" placeholder="Search..." class="w-full" />
+              <UInput
+                v-model="searchQuery"
+                color="neutral"
+                variant="outline"
+                size="xl"
+                placeholder="Search..."
+                class="w-full"
+                @keyup.enter="doSearch"
+              />
               <UTooltip text="Search">
-                <UButton color="neutral" variant="subtle" icon="mdi:magnify" />
+                <UButton color="neutral" variant="subtle" icon="mdi:magnify" @click="doSearch" />
               </UTooltip>
             </UFieldGroup>
           </div>
 
           <!-- DESKTOP -->
-          <div class="basis-1/6 hidden md:flex">
+          <div class="basis-1/3 hidden md:flex justify-end">
             <AppAuthButtons />
           </div>
 
@@ -73,6 +93,15 @@
 
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+
+const router = useRouter()
+const route = useRoute()
+const searchQuery = ref((route.query.q as string) || '')
+
+const doSearch = () => {
+  const q = searchQuery.value.trim()
+  if (q) router.push({ path: '/search', query: { q } })
+}
 
 const items = ref<NavigationMenuItem[]>([
   {
@@ -189,4 +218,6 @@ const items = ref<NavigationMenuItem[]>([
     disabled: true
   }
 ])
+
+
 </script>

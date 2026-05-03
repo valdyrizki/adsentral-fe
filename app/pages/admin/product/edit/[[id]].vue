@@ -301,7 +301,7 @@ const productRequest = reactive<ProductRequest>(new ProductRequest())
 const selectedCategory = ref(0)
 
 // Ambil API function
-const { updateProduct,getMyProductById } = useProductsApi()
+const { updateProduct,fetchMyProductById } = useProductsApi()
 
 //ambil route param
 const route = useRoute() 
@@ -385,7 +385,7 @@ const product = ref<ProductResponse>()
   // fungsi Fetch data di server-side (Nuxt auto-handle hydration)
   try {
     loading.value = true
-    product.value = await getMyProductById(route.params.id as string) // page=0, size=10
+    product.value = await fetchMyProductById(route.params.id as string) // page=0, size=10
   } catch (err: any) {
     error.value = err.statusMessage || 'Failed to load products'
   } finally {

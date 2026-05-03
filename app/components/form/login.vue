@@ -33,17 +33,26 @@
 </template>
 
 <script setup lang="ts">
+
+definePageMeta({
+  layout: "default"  // ✅ explicit!
+})
+
 import { useToast } from "#imports" // Nuxt UI toast
+import { useAuthApi } from "~/composables/api/auth";
 
   const email = ref<string>('');
   const password = ref<string>('');
   const loading = ref<boolean>(false)
+
+  const { fetchLogin } = useAuthApi()
 
   const toast = useToast()
 
   const emit = defineEmits(["login-success"])
 
   const authStore  = useAuthStore()
+  const balanceStore = useBalanceStore()
 
   const loginHandler = async(): Promise<void> =>{
     //validation
@@ -68,28 +77,42 @@ import { useToast } from "#imports" // Nuxt UI toast
 
     loading.value = true;
     try {
-      await authStore.login(email.value,password.value)      
+      await fetchLogin(email.value,password.value )
+      await authStore.loadUserProfile() // Load profil user setelah login sukses
+      await balanceStore.loadBalance() // Load balance setelah login sukses
+
       toast.add({
         title: "Login Berhasil 🎉",
         description: "Selamat datang kembali! Silakan mulai berinteraksi dengan aplikasi kami.",
         color: "success"
       })
-      authStore.restoreAuth()
+      
+      // authStore.restoreAuth()
       emit('login-success')
-      navigateTo("/")
       
+      const role = authStore.role
+      if (role === 'SELLER') {
+        navigateTo('/seller/dashboard')
+      } else if (role === 'SUPER_ADMIN') {
+        navigateTo('/admin/dashboard')
+      } else if (role === 'ADMIN') {
+         navigateTo('/admin/dashboard')
+      }else{
+        navigateTo('/')
+      }
+
       
-    // simpan token di cookie / localStorage / useState
-    } catch (err) {
-      console.error('Login gagal:', err)
-      toast.add({
+        // simpan token di cookie / localStorage / useState
+      } catch (err) {
+        console.error('Login gagal:', err)
+        toast.add({
         title: "Login Gagal ❌",
         description: "Periksa kembali email dan password Anda, pastikan sudah benar.",
         color: "error"
       })
-    } finally {
-      loading.value = false
-    }
+      } finally {
+        loading.value = false
+      }
   }
 
   

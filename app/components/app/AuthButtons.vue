@@ -1,9 +1,9 @@
 <template>
-  <div class="flex gap-4 justify-center md:justify-end">
-      <div class="hidden md:flex gap-2">
-        
-      </div>
-      <div flex class="flex gap-2">
+  <ClientOnly >
+    
+  <div class="flex gap-2 items-center">
+    <!-- Always visible -->
+    <div flex class="flex gap-2">
         <UChip :text="5" color="error" size="3xl">
           <UButton color="neutral" variant="subtle" icon="material-symbols:notifications-rounded" />
         </UChip>
@@ -14,39 +14,37 @@
           <UButton to="/cart" color="neutral" variant="soft" icon="mynaui:cart" />
         </UChip>
       </div>
-        
+    
+    
 
-      <div v-if="authStore.auth?.token">
-        <UDropdownMenu
-        size="xl"
-        :items="itemsProfile"
-        :content="{
-          align: 'start'
-        }"
-      >
-
-    <UButton size="xl" label="Profile" icon="i-lucide-user" color="neutral" variant="outline" />
-  </UDropdownMenu>
-      </div>
-      <div v-else>
-        <div class="flex gap-2">
-          <UButton @click="isRegisterOpen = true">Daftar</UButton>
-          <UModal v-model:open="isRegisterOpen" title="Register">
-            <template #body>
-              <FormRegister @register-success="handleRegisterSuccess" />
-            </template>
-          </UModal>
-
-          <UButton @click="isLoginOpen = true">Masuk</UButton>
-          <UModal v-model:open="isLoginOpen" title="Login">
-            <template #body>
-              <FormLogin @login-success="handleLoginSuccess" />
-            </template>
-          </UModal>
-        </div>
-      </div>
-      
+  <!-- Auth conditional -->
+    <div v-if="authStore.isInitializing">
+      <USkeleton class="h-10 w-32" />
     </div>
+    <UDropdownMenu v-else-if="authStore.accessToken" :items="itemsProfile">
+      <UButton label="Profile" icon="i-lucide-user" size="xl" color="neutral" variant="outline"/>
+    </UDropdownMenu>
+    <div v-else>
+      <div class="flex gap-2">
+        <UButton @click="isRegisterOpen = true">Daftar</UButton>
+        <UModal v-model:open="isRegisterOpen" title="Register">
+          <template #body>
+            <FormRegister @register-success="handleRegisterSuccess" />
+          </template>
+        </UModal>
+
+        <UButton @click="isLoginOpen = true">Masuk</UButton>
+        <UModal v-model:open="isLoginOpen" title="Login">
+          <template #body>
+            <FormLogin @login-success="handleLoginSuccess" />
+          </template>
+        </UModal>
+      </div>
+    </div>
+      
+  </div>
+  
+  </ClientOnly>
 </template>
 
 <style>
@@ -70,49 +68,45 @@ const handleRegisterSuccess = () => {
   isRegisterOpen.value = false
 }
 
-const itemsProfile = ref<DropdownMenuItem[]>([
-  {
-    label: 'Account Info',
-    icon: 'mdi:user',
-    to: '/profile'
-  },
-  {
-    label: 'Saldo',
-    icon: 'i-lucide-credit-card',
-    to: '/balance'
-  },
-  {
-    label: 'Order History',
-    icon: 'i-lucide-package',
-    to: '/transaction'
-  },
-  {
-    label: 'Settings',
-    icon: 'i-lucide-cog',
-  },
-  {
-    label: 'Create Merchant',
-    icon: 'material-symbols:store',
-    to: '/merchant/create'
-  },
-  {
-    label: 'Merchant Center',
-    icon: 'material-symbols:store',
-    to: '/seller/dashboard'
-  },
-  {
-    label: 'Logout',
-    icon: 'material-symbols:logout',
-    onSelect(e) {
-        authStore.logout()
-        toast.add({
-          title: "Logout Berhasil 🎉",
-          description: "anda sudah keluar dari profil anda...",
-          color: "success"
-        })
-    },
-  }
-])
+const balanceStore = useBalanceStore()
+
+const itemsProfile = computed<DropdownMenuItem[]>(() => {
+  const role = authStore.role
+
+  const merchantItem: DropdownMenuItem = 
+    role === 'SELLER' ? { label: 'Kelola Toko', icon: 'material-symbols:store', to: '/seller/dashboard' }
+    : role === 'ADMIN' ? { label: 'Dashboard Admin', icon: 'material-symbols:dashboard', to: '/admin/dashboard' }
+    : { label: 'Buat Merchant', icon: 'material-symbols:store-outline', to: '/merchant/create' }
+
+  return [
+    [
+      { label: 'Account Info', icon: 'mdi:user', to: '/profile' },
+      {
+        label: 'Saldo : ' + `Rp ${balanceStore.balance.toLocaleString('id-ID')}`,
+        icon: 'i-lucide-credit-card',
+        to: '/balance'
+      },
+      { label: 'Order History', icon: 'i-lucide-package', to: '/transaction' },
+      { label: 'Riwayat Pembayaran', icon: 'i-heroicons-credit-card', to: '/payment' },
+    ],
+    [merchantItem],
+    [
+      { label: 'Settings', icon: 'i-lucide-cog' },
+      {
+        label: 'Logout',
+        icon: 'material-symbols:logout',
+        onSelect() {
+          authStore.logout()
+          toast.add({
+            title: 'Logout Berhasil 🎉',
+            description: 'anda sudah keluar dari profil anda...',
+            color: 'success',
+          })
+        },
+      },
+    ],
+  ]
+})
 
 
 

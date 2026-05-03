@@ -7,7 +7,7 @@ export const useCategoryApi = () => {
 
 
   // GET categories dengan pagination + search
-  const getCategories = async (): Promise<CategoryResponse[]> => {
+  const fetchCategories = async (): Promise<CategoryResponse[]> => {
     const { data, error } = await useFetch<WebResponse<CategoryResponse[]>>(`${config.public.apiBase}/categories`, {
       method: 'GET',
       key: `categories`, // cache per request
@@ -31,5 +31,5 @@ export const useCategoryApi = () => {
     return data.value?.data
   }
 
-  return { getCategories }
+  return { fetchCategories }
 }

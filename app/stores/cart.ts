@@ -90,9 +90,8 @@ export const useCartStore = defineStore('cart', {
     async validation() {
 
       const useUserStore = useAuthStore()
-      console.log(useUserStore.auth);
       
-      if(useUserStore.auth === undefined || useUserStore.auth === null){
+      if(!useUserStore.isAuthenticated){
         throw new Error("Silahkan login untuk melanjutkan checkout")
       }
 

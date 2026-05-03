@@ -125,7 +125,18 @@
                               <NuxtImg :src="config.public.backendUrl +'/'+ chat.product.banner_url" width="50" height="50" />
                               <div>
                                 <p class="text-sm">{{ chat.product.name }}</p>
-                                <p class="text-sm text-error">{{ chat.product.sell_price.toLocaleString('id-ID') }}</p>
+                                <p class="text-sm text-error">Rp. {{ chat.product.sell_price.toLocaleString('id-ID') }}</p>
+                              </div>
+                            </NuxtLink>
+                          </div>
+                          
+                          <div v-if="chat.transaction">
+                            <NuxtLink :to="'/seller/order/'+chat.transaction.id" class="flex items-center gap-4 mb-2 p-2 border rounded-lg border-blue-500 bg-gray-100">
+                              <NuxtImg :src="config.public.backendUrl +'/'+ chat.transaction.product.banner_url" width="50" height="50" />
+                              <div class="flex flex-col">
+                                <p class="text-sm"><UBadge>#{{ chat.transaction.id }}</UBadge></p>
+                                <p class="text-sm">{{ chat.transaction.product.name }}</p>
+                                <p class="text-sm text-error">{{chat.transaction.qty}} x {{chat.transaction.price.toLocaleString('id-ID')}} = Rp. {{ chat.transaction.total_price.toLocaleString('id-ID') }}</p>
                               </div>
                             </NuxtLink>
                           </div>
@@ -345,9 +356,18 @@ definePageMeta({
     debouncedSearch()
   })
 
-  // ✅ SSR SAFE FETCH
-  const {data: conversations,pending: pendingConversation,refresh:refreshConversations} = await useAsyncData<PageResponse<ConversationResponse>>(
-    `conversation-seller`, () => fetchSellerConversation(conversationPageValue.value, conversationPerPageValue.value,conversationKeyword.value)
+    // ✅ SSR SAFE FETCH NEW
+  const { 
+    data: conversations, 
+    pending:pendingConversation, 
+    error, 
+    refresh: refreshConversations } 
+    = await useAsyncData<PageResponse<ConversationResponse>>(
+    'conversation-seller', () => fetchSellerConversation(conversationPageValue.value, conversationPerPageValue.value,conversationKeyword.value),
+    {
+      // watch: [page, perPageValue, keyword],
+      server: false, // Hanya fetch di client
+    }
   )
 
   //load chat by conversation id
@@ -424,11 +444,11 @@ definePageMeta({
       await nextTick()
       scrollToBottom()
       
-    } catch (err) {
+    } catch (err : any) {
       console.error(err)
-      toast.add({
-        title: 'Error',
-        description: 'Gagal mengirim pesan',
+        toast.add({
+        title: 'Gagal mengirim pesan',
+        description: err.statusMessage || err.message || 'Terjadi kesalahan saat mengirim pesan',
         color: 'error',
         duration: 3000
       })

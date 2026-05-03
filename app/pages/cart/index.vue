@@ -95,7 +95,7 @@
             <div v-else>
               <PaymentMethodSelector
                 v-model="cartStore.payment_method"
-                :methods="paymentMethod"
+                :methods="paymentMethodData ?? []"
                 type="payment"
               />
             </div>           
@@ -122,16 +122,17 @@
 
 <script setup lang="ts">
 import PaymentMethodSelector from '~/components/u/PaymentMethodSelector.vue';
-import { useBalanceApi } from '~/composables/api/balance';
+import { useBalanceStore } from '~/stores/balance';
 import { usePaymentMethodApi } from '~/composables/api/payment-method';
 import type { CartItem } from '~/types/CartItem';
+import type { PaymentMethodResponse } from '~/types/payment-method/PaymentMethodResponse';
 
 // reactive state
 const loading = ref<boolean>(false)
 
 // composables api
-const { paymentMethod, fetchPaymentMethod,paymentMethodLoading } = usePaymentMethodApi()
-const { balance } = useBalanceApi()
+const { fetchPaymentMethod,paymentMethodLoading } = usePaymentMethodApi()
+const { balance } = useBalanceStore()
 
 //store
 const cartStore = useCartStore()
@@ -162,12 +163,11 @@ const checkStock = async (cartItem:CartItem) =>{
   
 }
 
+
+  // ===== CONFIRM =====
+  const { confirm, close } = useConfirm()
+
 const checkout = async () =>{
-  console.log(balance.value);
-  console.log(cartStore.subTotal);
-  console.log(isSaldoInsufficient.value);
-  
-  
   if(isSaldoInsufficient.value){
     toast.add({
       title: "Saldo tidak cukup",
@@ -177,6 +177,16 @@ const checkout = async () =>{
     })
     return
   }
+
+  const yes = await confirm({
+      title: 'Konfirmasi Pembelian?',
+      message: 'Apakah anda yakin ingin melakukan pembelian ini?',
+      confirmText: 'Ya, Lanjutkan',
+      cancelText: 'Tidak',
+      confirmColor: 'primary',
+    })
+    
+  if (!yes) return
 
   //update data stock from backend
   try{
@@ -202,17 +212,24 @@ const checkout = async () =>{
     }) 
   }finally{
     loading.value = false
+    close()
   }
 }
 
-  onMounted(async () => {
-    await fetchPaymentMethod()
-  })
+    const { 
+    data: paymentMethodData, 
+    pending:paymenMethodLoading, 
+    error:errorPaymentMethod, 
+    refresh:refreshPaymentMethod } 
+  = await useAsyncData<PaymentMethodResponse[]>(
+    `payment-method-cart-page`, async () =>  await fetchPaymentMethod(),
+    { server: false }
+  )
 
   const isSaldoInsufficient = computed(() => {
   if (cartStore.payment_method !== 'SALDO') return false
   
-  return balance.value < cartStore.subTotal
+  return balance < cartStore.subTotal
 })
 
 </script>

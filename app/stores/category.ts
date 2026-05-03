@@ -20,9 +20,9 @@ export const useCategoryStore = defineStore('categoryStore', {
       if(this.categories.length > 0) return
 
       this.loading = true
-      const { getCategories } = useCategoryApi()
+      const { fetchCategories } = useCategoryApi()
       try {
-        this.categories = await getCategories()
+        this.categories = await fetchCategories()
       } catch (err: any) {
         this.error = err.message || 'Failed to fetch categories'
       } finally {

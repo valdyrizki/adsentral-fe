@@ -10,6 +10,8 @@ export interface ProductResponse {
   sell_price: number;   // BigDecimal → number
   stock: number;
   sold: number;
+  average_rating: number;   // ✅ TAMBAHAN — BigDecimal serialized as number
+  review_count: number;     // ✅ TAMBAHAN
   distributor: string;
   category_id: number;
   category_name: string;

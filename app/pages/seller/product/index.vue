@@ -55,49 +55,49 @@
                   <img :src="config.public.backendUrl +'/'+ product?.banner_url" :alt="product.name" class=" size-40 rounded-lg object-cover " />
                 </div>
               </div>
-                <div class="flex-grow flex flex-col">
-                  <!-- Konten atas yang akan memenuhi ruang -->
-                  <div class="flex flex-col gap-1">
-                    <div class="flex flex-row gap-2">
-                      <UBadge
-                        icon="mdi:tag"
-                        size="lg"
-                        :color="product.status === 'ACTIVE' ? 'primary' : 'error'"
-                        variant="solid"
-                        :label="product.status"
-                      />
+              <div class="flex-grow flex flex-col">
+                <!-- Konten atas yang akan memenuhi ruang -->
+                <div class="flex flex-col gap-1">
+                  <div class="flex flex-row gap-2">
+                    <UBadge
+                      icon="mdi:tag"
+                      size="lg"
+                      :color="product.status === 'ACTIVE' ? 'primary' : 'error'"
+                      variant="solid"
+                      :label="product.status"
+                    />
 
-                      <NuxtLink :to="`/seller/product/edit/${product.id}`" class="font-medium text-gray-900">ID : #{{ product.id }}</NuxtLink>
-                    </div>
-                  <div>
-                    <h3 class="text-lg font-medium text-gray-900">{{ limitWords(product.name, 15) }}</h3>
+                    <NuxtLink :to="`/seller/product/edit/${product.id}`" class="font-medium text-gray-900">ID : #{{ product.id }}</NuxtLink>
+                  </div>
+                <div>
+                  <h3 class="text-lg font-medium text-gray-900">{{ limitWords(product.name, 15) }}</h3>
+                </div>
+              </div>
+
+              <!-- Konten bawah yang akan didorong ke bawah -->
+              <div class="mt-auto flex flex-col sm:flex-row gap-1 sm:gap-4 pt-4 sm:pt-0"> <!-- Gunakan 'mt-auto' untuk mendorong ke bawah -->
+                <div class="flex flex-row gap-1">
+                  <UIcon name="fa6-solid:rupiah-sign" class="size-5 text-gray-400" />
+                  <div class="font-medium">
+                    {{ product.sell_price.toLocaleString('id-ID') }}
                   </div>
                 </div>
 
-                  <!-- Konten bawah yang akan didorong ke bawah -->
-                  <div class="mt-auto flex flex-col sm:flex-row gap-1 sm:gap-4 pt-4 sm:pt-0"> <!-- Gunakan 'mt-auto' untuk mendorong ke bawah -->
-                    <div class="flex flex-row gap-1">
-                      <UIcon name="fa6-solid:rupiah-sign" class="size-5 text-gray-400" />
-                      <div class="font-medium">
-                        {{ product.sell_price.toLocaleString('id-ID') }}
-                      </div>
-                    </div>
+                <div class="col-span-3 flex flex-row gap-1">
+                  <UIcon name="mdi:calendar" class="size-5 text-gray-400" />
+                  <div class="font-medium">
+                    {{ dayjs(product.created_at).format("YYYY-MM-DD HH:mm:ss")}}
+                  </div>
+                </div>
 
-                    <div class="col-span-3 flex flex-row gap-1">
-                      <UIcon name="mdi:calendar" class="size-5 text-gray-400" />
-                      <div class="font-medium">
-                        {{ dayjs(product.created_at).format("YYYY-MM-DD HH:mm:ss")}}
-                      </div>
-                    </div>
-
-                    <!-- TERJUAL -->
-                    <div class="col-span-3 flex flex-row gap-1">
-                      <UIcon name="mdi:cart" class="size-5 text-gray-400" />
-                      <div class="font-medium">
-                        {{ product.sold }} Terjual
-                      </div>
+                  <!-- TERJUAL -->
+                  <div class="col-span-3 flex flex-row gap-1">
+                    <UIcon name="mdi:cart" class="size-5 text-gray-400" />
+                    <div class="font-medium">
+                      {{ product.sold }} Terjual
                     </div>
                   </div>
+                </div>
               </div>
               <div class="ml-auto flex-none">   
                 <div class="flex flex-col gap-2 items-end">
@@ -171,12 +171,18 @@
   //Ambil config
   const config = useRuntimeConfig()
 
-  // ✅ SSR SAFE FETCH — watch page, perPageValue, keyword agar refetch saat filter/search berubah
-  const { data: productPagination, pending: loading, error, refresh } = await useAsyncData<PageResponse<ProductResponse>>(
-    'seller-my-products',
-    () => fetchMyProduct(page.value, perPageValue.value, keyword.value),
+    // ✅ SSR SAFE FETCH NEW
+  const { 
+    data: productPagination, 
+    pending:loading, 
+    error, 
+    refresh } 
+    = await useAsyncData<PageResponse<ProductResponse>>(
+    `seller-my-products-${perPageValue.value}-${page.value}-${keyword.value}`,
+    () => fetchMyProduct(page.value, perPageValue.value,keyword.value),
     {
-      watch: [page, perPageValue, keyword]
+      watch: [page, perPageValue, keyword], // Refetch saat page atau perPageValue berubah
+      server: false, // Hanya fetch di client
     }
   )
 

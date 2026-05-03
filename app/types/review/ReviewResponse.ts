@@ -7,7 +7,7 @@ export interface ReviewResponse {
   reviewed_username: string;
   reviewer_id: number;
   reviewer_username: string;
-  review_type: string; // enum dikirim sebagai string
+  user_type: string; // enum dikirim sebagai string
   rating: number;
   comment: string;
   created_at: string; // ISO string dari LocalDateTime

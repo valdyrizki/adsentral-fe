@@ -345,9 +345,18 @@ definePageMeta({
     debouncedSearch()
   })
 
-  // ✅ SSR SAFE FETCH
-  const {data: conversations,pending: pendingConversation,refresh:refreshConversations} = await useAsyncData<PageResponse<ConversationResponse>>(
-    `conversation-seller`, () => fetchSellerConversation(conversationPageValue.value, conversationPerPageValue.value,conversationKeyword.value)
+    // ✅ SSR SAFE FETCH NEW
+  const { 
+    data: conversations, 
+    pending:pendingConversation, 
+    error, 
+    refresh: refreshConversations } 
+    = await useAsyncData<PageResponse<ConversationResponse>>(
+    'conversation-seller', () => fetchSellerConversation(conversationPageValue.value, conversationPerPageValue.value,conversationKeyword.value),
+    {
+      // watch: [page, perPageValue, keyword],
+      server: false, // Hanya fetch di client
+    }
   )
 
   //load chat by conversation id

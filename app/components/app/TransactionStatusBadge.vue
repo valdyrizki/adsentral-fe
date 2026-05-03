@@ -11,7 +11,7 @@ const statusMap = {
     label: 'Menunggu Pembayaran'
   },
   PAID: {
-    color: 'secondary',
+    color: 'info',
     label: 'Menunggu konfirmasi dari seller'
   },
   EXPIRED: {

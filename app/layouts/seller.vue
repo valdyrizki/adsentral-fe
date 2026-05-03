@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+const merchantStore = useMerchantStore()
+const authStore = useAuthStore()
+const config = useRuntimeConfig()
 
 const items: NavigationMenuItem[][] = [[
   {
@@ -21,7 +24,11 @@ const items: NavigationMenuItem[][] = [[
     label: 'Orders',
     icon: 'i-lucide-shopping-cart',
     to: '/seller/order'
-
+  },
+  {
+    label: 'Saldo',
+    icon: 'i-heroicons-banknotes',
+    to: '/seller/balance'
   },
   // {
   //   label: 'Customers',
@@ -102,12 +109,13 @@ const items: NavigationMenuItem[][] = [[
 
       <template #footer="{ collapsed }">
         <UButton
-          :avatar="{ src: 'https://i.pravatar.cc/100?img=5' }"
-          :label="collapsed ? undefined : 'Seller Name'"
+          :avatar="{ src: authStore.user?.avatar_url ?? undefined }"
+          :label="collapsed ? undefined : (merchantStore.merchant?.name ?? authStore.user?.username ?? 'Seller')"
           color="neutral"
           variant="ghost"
           class="w-full"
           :block="collapsed"
+          to="/profile"
         />
       </template>
     </UDashboardSidebar>

@@ -1,110 +1,161 @@
-// app/composables/useApi.ts
+// composables/useApi.ts
 
-// Variabel global di luar fungsi untuk menahan state antrean
-let isRefreshing = false;
-let failedQueue: Array<{ resolve: (token: string) => void; reject: (err: any) => void }> = [];
+import type { FetchOptions } from 'ofetch';
 
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token as string);
-    }
-  });
-  failedQueue = [];
-};
-
-export const useApi = async (request: string, options: any = {}) => {
+/**
+ * Composable untuk HTTP client dengan auto auth handling.
+ * 
+ * Fitur:
+ * - Auto attach access token ke header X-API-TOKEN
+ * - Auto include credentials (cookie refresh token)
+ * - Auto refresh token saat access token expired (401 TOKEN_EXPIRED)
+ * - Single-flight pattern: refresh hanya 1x meskipun banyak request paralel kena 401
+ * - Auto retry request asli setelah refresh sukses
+ * - Auto logout & redirect ke /login kalau refresh gagal
+ * 
+ * Penggunaan:
+ *   const api = useApi();
+ *   const result = await api<WebResponse<UserProfile>>('/api/user/profile');
+ */
+export const useApi = () => {
+  const authStore = useAuthStore();
   const config = useRuntimeConfig();
-  const accessToken = useCookie('access_token'); // Tempat Anda menyimpan Access Token
+  const router = useRouter();
 
-  // Default setup API
-  const customFetch = $fetch.create({
-    baseURL: (config.public as any).apiBaseUrl || 'http://localhost:8080', // Sesuaikan URL Backend
-    
-    // 1. Selalu tempelkan Access Token di setiap request
+  const apiFetch = $fetch.create({
+    baseURL: config.public.apiBase as string,
+    credentials: 'include', // Wajib: biar browser kirim & terima cookie HttpOnly
+
+    /**
+     * Interceptor sebelum request dikirim.
+     * Attach access token dari Pinia ke header X-API-TOKEN.
+     */
     onRequest({ options }) {
-      if (accessToken.value) {
-        options.headers = {
-          ...options.headers,
-          Authorization: `Bearer ${accessToken.value}`,
-        };
+      if (authStore.accessToken) {
+        // Convert headers ke object supaya bisa di-spread
+        const headers = new Headers(options.headers as HeadersInit | undefined);
+        headers.set('X-API-TOKEN', authStore.accessToken);
+        options.headers = headers;
       }
-      // WAJIB: Agar browser mau mengirimkan HttpOnly Cookie (Refresh Token) ke Backend
-      options.credentials = 'include'; 
     },
 
-    // 2. Tangani jika terjadi error dari Backend
-    async onResponseError({ request: req, options: opts, response }) {
-      // Jika error 401 (Unauthorized / Token Expired)
-      if (response.status === 401) {
-        
-        // Cek apakah endpoint yang gagal adalah endpoint refresh itu sendiri
-        // Jika ya, berarti Refresh Token-nya juga sudah mati.
-        if (req.toString().includes('/api/auth/refresh')) {
-          accessToken.value = null;
-          navigateTo('/login'); // Lempar ke halaman login
-          return Promise.reject(response._data);
-        }
-
-        // Jika belum ada proses refresh yang berjalan, mulai refresh
-        if (!isRefreshing) {
-          isRefreshing = true;
-
-          try {
-            // Panggil API Refresh di Backend
-            // (Browser akan otomatis menyisipkan HttpOnly Cookie refreshToken di sini)
-            const refreshResponse: any = await $fetch('/api/auth/refresh', {
-              baseURL: config.public.apiBaseUrl || 'http://localhost:8080',
-              method: 'POST',
-              credentials: 'include', // Wajib untuk cross-origin HttpOnly cookie
-            });
-
-            // Ambil Access Token baru dari response JSON
-            const newAccessToken = refreshResponse.data.accessToken;
-            
-            // Update cookie access_token di Nuxt
-            accessToken.value = newAccessToken;
-
-            // Lepaskan semua antrean request yang tadi tertahan
-            processQueue(null, newAccessToken);
-
-            // Ulangi request asli yang tadi gagal (dengan token baru)
-            opts.headers = {
-              ...opts.headers,
-              Authorization: `Bearer ${newAccessToken}`
-            };
-            return await $fetch(req, opts);
-
-          } catch (refreshError) {
-            // Jika proses refresh gagal (misal session dihapus di DB Backend)
-            processQueue(refreshError, null);
-            accessToken.value = null;
-            navigateTo('/login');
-            return Promise.reject(refreshError);
-          } finally {
-            isRefreshing = false;
-          }
-        } 
-        
-        // Jika sedang ada proses refresh yang berjalan (isRefreshing = true),
-        // antre request ini sampai token baru didapatkan
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then((token) => {
-          // Setelah token baru dapat, ulangi request-nya
-          opts.headers = {
-            ...opts.headers,
-            Authorization: `Bearer ${token}`
-          };
-          return $fetch(req, opts);
-        }).catch((err) => {
-          return Promise.reject(err);
-        });
+    /**
+     * Interceptor saat response error.
+     * Handle 401 dengan strategi refresh-then-retry.
+     */
+    async onResponseError({ response, request, options }) {
+      // Kita hanya handle 401, error lain (400, 403, 500, dll) biarkan lewat
+      console.log(response.status);
+      
+      if (response.status !== 401) {
+        return;
       }
-    }
+
+      // Ekstrak error code dari response body
+      // BE kita kirim { status, message } dengan message = "TOKEN_EXPIRED" dll
+      const errorCode = (response._data as { message?: string })?.message;
+
+      // Ambil URL request untuk check khusus
+      const requestUrl = 
+        typeof request === 'string' 
+          ? request 
+          : (request as Request).url;
+
+      // ============================================================
+      // CASE 1: Endpoint /refresh sendiri yang kena 401.
+      // Ini artinya refresh token pun sudah invalid/expired.
+      // Jangan retry (bisa bikin infinite loop) — langsung logout.
+      // ============================================================
+      if (requestUrl.includes('/api/user/refresh')) {
+          console.warn(`Refresh failed: ${errorCode} → forcing logout`);
+  
+          // Untuk debugging, bedakan log per kasus
+          if (errorCode === 'REFRESH_TOKEN_EXPIRED') {
+            console.info('Refresh token expired (30 hari). Normal — user perlu login ulang.');
+          } else if (errorCode === 'REFRESH_TOKEN_INVALID_SIGNATURE') {
+            console.error('⚠️ Refresh token signature invalid. Mungkin tampered atau bug di BE.');
+          } else if (errorCode === 'USER_NOT_FOUND' || errorCode === 'SESSION_NOT_FOUND') {
+            console.error('⚠️ Anomali: refresh token valid tapi user/session hilang.');
+          }
+        
+        await handleAuthFailure();
+        return;
+      }
+
+      // ============================================================
+      // CASE 2: Request ini sudah pernah di-retry sebelumnya.
+      // Artinya: kita sudah refresh token, retry, tapi masih kena 401.
+      // Menyerah — logout.
+      // ============================================================
+      if ((options as ExtendedFetchOptions)._retried) {
+        console.log("MASUK CASE 2");
+        await handleAuthFailure();
+        return;
+      }
+
+      // ============================================================
+      // CASE 3: TOKEN_EXPIRED — case yang paling umum.
+      // Refresh token, lalu retry request asli.
+      // ============================================================
+      if (errorCode === 'TOKEN_EXPIRED') {
+        console.log("MASUK CASE 3");
+        try {
+          // Panggil refresh. Kalau ada refresh lain yang sedang jalan,
+          // method ini akan reuse promise yang sama (single-flight).
+          const newAccessToken = await authStore.refresh();
+
+          // Tandai request ini sudah di-retry supaya tidak loop
+          (options as ExtendedFetchOptions)._retried = true;
+
+          // Update headers dengan token baru
+          const headers = new Headers(options.headers as HeadersInit | undefined);
+          headers.set('X-API-TOKEN', newAccessToken);
+          options.headers = headers;
+
+          // Retry request asli dengan token baru
+          // Return hasilnya supaya caller dapat data yang benar
+          return await $fetch(request as string, options as any);
+        } catch (refreshError) {
+          // Refresh gagal = refresh token invalid/expired
+          await handleAuthFailure();
+        }
+        return;
+      }
+
+      // ============================================================
+      // CASE 4: Error 401 jenis lain.
+      // Misal: TOKEN_INVALID_SIGNATURE, TOKEN_MALFORMED, USER_SUSPENDED,
+      //        USER_INACTIVE, TOKEN_MISSING, dll.
+      // Semua ini butuh user re-login, tidak bisa di-resolve dengan refresh.
+      // ============================================================
+      await handleAuthFailure();
+    },
   });
 
-  return customFetch(request, options);
+  /**
+   * Helper: clear auth state & redirect ke halaman login.
+   * Dipanggil saat semua upaya auto-recovery gagal.
+   */
+  async function handleAuthFailure(): Promise<void> {
+    authStore.clearAuth();
+
+    // Hanya redirect kalau bukan sedang di halaman public
+    // (menghindari redirect loop kalau sudah di /login)
+    const publicRoutes = ['/login', '/register', '/forgot-password'];
+
+    if (!publicRoutes.includes(router.currentRoute.value.path)) {
+      // runWithContext diperlukan karena fungsi ini dipanggil dari dalam
+      // async interceptor ofetch yang sudah di luar Vue/Nuxt setup context
+      await navigateTo('/login');}
+  }
+
+  return apiFetch;
+};
+
+/**
+ * Helper type untuk menandai request yang sudah di-retry.
+ * Extends FetchOptions dengan flag internal _retried.
+ */
+type ExtendedFetchOptions = FetchOptions & {
+  _retried?: boolean;
 };

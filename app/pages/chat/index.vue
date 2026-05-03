@@ -17,7 +17,6 @@
                   v-model="conversationKeyword"
                   placeholder="Cari percakapan..."
                   class="w-full rounded-t-lg border-b-0 focus:ring-0 focus:border-gray-300 my-2"
-                  prefix="i-heroicons-magnifying-glass-solid"
                   icon="mdi:magnify"
                   @onEnter="async () => {
                     await refreshConversations()
@@ -126,7 +125,17 @@
                               <NuxtImg :src="config.public.backendUrl +'/'+ chat.product.banner_url" width="50" height="50" />
                               <div>
                                 <p class="text-sm">{{ chat.product.name }}</p>
-                                <p class="text-sm text-error">{{ chat.product.sell_price.toLocaleString('id-ID') }}</p>
+                                <p class="text-sm text-error">Rp. {{ chat.product.sell_price.toLocaleString('id-ID') }}</p>
+                              </div>
+                            </NuxtLink>
+                          </div>
+                          <div v-if="chat.transaction">
+                            <NuxtLink :to="'/transaction/'+chat.transaction.id" class="flex items-center gap-4 mb-2 p-2 border rounded-lg border-blue-500 bg-gray-100">
+                              <NuxtImg :src="config.public.backendUrl +'/'+ chat.transaction.product.banner_url" width="50" height="50" />
+                              <div class="flex flex-col">
+                                <p class="text-sm"><UBadge>#{{ chat.transaction.id }}</UBadge></p>
+                                <p class="text-sm">{{ chat.transaction.product.name }}</p>
+                                <p class="text-sm text-error">{{chat.transaction.qty}} x {{chat.transaction.price.toLocaleString('id-ID')}} = Rp. {{ chat.transaction.total_price.toLocaleString('id-ID') }}</p>
                               </div>
                             </NuxtLink>
                           </div>
@@ -271,6 +280,7 @@
 </template>
 
 <script setup lang="ts">
+
 import dayjs from 'dayjs'
 import LoadingSkeleton from '~/components/app/LoadingSkeleton.vue'
 import ChatProductModal from '~/components/form/ChatProductModal.vue'
@@ -282,6 +292,7 @@ import type { ConversationResponse } from '~/types/chat/ConversationResponse'
 import type { PageResponse } from '~/types/PageResponse'
 import type { ProductResponse } from '~/types/product/ProductResponse'
 import { useDebounceFn } from '@vueuse/core'
+
 
   // Reactive state
   const loadingChat = ref<boolean>(false)
@@ -310,6 +321,8 @@ import { useDebounceFn } from '@vueuse/core'
   const chatKeyword = ref<string>('')
   const isSubmitting = ref(false)
   const chatContainer = ref<HTMLElement | null>(null)
+    
+    
 
 
   //Chat Request
@@ -343,10 +356,21 @@ import { useDebounceFn } from '@vueuse/core'
     debouncedSearch()
   })
 
-  // ✅ SSR SAFE FETCH
-  const {data: conversations,pending: pendingConversation,refresh:refreshConversations} = await useAsyncData<PageResponse<ConversationResponse>>(
-    `conversation-buyer`, () => fetchBuyerConversation(conversationPageValue.value, conversationPerPageValue.value,conversationKeyword.value)
-  )
+  // ✅ SSR SAFE FETCH NEW
+const { data: conversations, pending: pendingConversation, refresh: refreshConversations } = await useAsyncData<PageResponse<ConversationResponse>>(
+  `conversation-buyer`,
+  () => {
+    return fetchBuyerConversation(
+      conversationPageValue.value,
+      conversationPerPageValue.value,
+      conversationKeyword.value
+    )
+  },
+  {
+    server: false  // ← TAMBAH INI
+  }
+)
+
 
   //load chat by conversation id
   const loadChatByConversation = async (conversation: ConversationResponse) => {
@@ -422,11 +446,11 @@ import { useDebounceFn } from '@vueuse/core'
       await nextTick()
       scrollToBottom()
       
-    } catch (err) {
+    } catch (err : any) {
       console.error(err)
       toast.add({
-        title: 'Error',
-        description: 'Gagal mengirim pesan',
+        title: 'Gagal mengirim pesan',
+        description: err.statusMessage || err.message || 'Terjadi kesalahan saat mengirim pesan',
         color: 'error',
         duration: 3000
       })
@@ -615,17 +639,17 @@ const openChatProductModalHandler = async() =>{
     }
   }
 
-  onMounted(() => {
-    if(!authStore.auth){
-      toast.add({
-        title: "Unauthorized",
-        description: "Silahkan login / daftar untuk mengakses fitur chat",
-        color: "error",
-        icon: "material-symbols:error-outline"
-      })
-      navigateTo("/login")
-    }
-  })
+  // onMounted(() => {
+  //   if(!authStore.accessToken){
+  //     toast.add({
+  //       title: "Unauthorized",
+  //       description: "Silahkan login / daftar untuk mengakses fitur chat",
+  //       color: "error",
+  //       icon: "material-symbols:error-outline"
+  //     })
+  //     navigateTo("/login")
+  //   }
+  // })
 
 
 </script>

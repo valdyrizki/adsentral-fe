@@ -7,4 +7,5 @@ export interface UserResponse {
   birth_date: string | null
   avatar_url: string | null
   address: string | null
+  role: 'BUYER' | 'SELLER' | 'ADMIN' | 'SUPER_ADMIN'  // ✅ TAMBAHAN
 }

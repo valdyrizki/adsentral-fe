@@ -74,6 +74,18 @@ import { useMerchantStore } from '#imports';
 
   const toast = useToast()
   const authStore  = useAuthStore()
+
+  // Guard: seller sudah punya toko, arahkan ke dashboard
+  if (authStore.isSeller) {
+    toast.add({
+      title: 'Anda sudah memiliki toko',
+      description: 'Kelola toko Anda melalui Seller Dashboard.',
+      color: 'info',
+      icon: 'material-symbols:store',
+    })
+    await navigateTo('/seller/dashboard')
+  }
+
   const merchantRequest = reactive<MerchantRequest>({
     name: '',
     description: '',
@@ -83,7 +95,6 @@ import { useMerchantStore } from '#imports';
   })
   const { registerMerchant } = useMerchantApi()
   const merchantStore = useMerchantStore()
-  const config = useRuntimeConfig()
 
   const errors = ref<string[]>([])
   
@@ -148,9 +159,11 @@ import { useMerchantStore } from '#imports';
       color: "success"
     })
 
-    navigateTo("/seller/dashboard")
 
     await merchantStore.setMyMerchant()
+    await authStore.loadUserProfile()
+    
+    navigateTo("/seller/dashboard")
     
   } catch (err: any) {
     errors.value.push(err.statusMessage || 'Failed to update profile')
@@ -161,7 +174,6 @@ import { useMerchantStore } from '#imports';
     })
   } finally {
     loading.value = false
-    
   }
 }
 </script>

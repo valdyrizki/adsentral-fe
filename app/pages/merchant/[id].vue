@@ -30,12 +30,22 @@
 
                     <!-- Nama & Rating -->
                     <div class="flex flex-col">
-                      <p class="font-bold">NAMA MERCHANT</p>
-                      <p class="text-sm text-gray-500">RATING</p>
-                                          <!-- Tombol Follow & Chat-->
+                      <p class="font-bold">{{ merchant?.name }}</p>
+
+                      <!-- RATING -->
+                      <div v-if="merchant?.average_rating != null && merchant.average_rating > 0" class="flex items-center gap-1 text-sm">
+                        <UIcon name="material-symbols:star-rounded" class="text-yellow-400 size-4" />
+                        <span class="font-medium">{{ merchant.average_rating.toFixed(1) }}</span>
+                        <span class="text-gray-500">({{ merchant.review_count }} ulasan)</span>
+                      </div>
+                      <div v-else class="text-sm text-gray-400">
+                        Toko baru
+                      </div>
+                      
+                      <!-- Tombol Follow & Chat-->
                       <div class="flex gap-2 mt-auto">
                         <UButton icon="uiw:plus" color="primary" variant="solid" size="xs" >Follow</UButton>
-                        <UButton icon="uiw:message" size="xs" color="primary" variant="outline">Chat Penjual</UButton>
+                        <UButton icon="uiw:message" size="xs" color="primary" variant="outline" @click="isChatOpen = true" >Chat Penjual</UButton>
                       </div>
                     </div>
 
@@ -185,6 +195,11 @@
     </div>
     
   </div>
+
+    <ChatModalBuyer
+      v-model="isChatOpen"
+      :merchant-id="merchant?.id"
+    />
 </template>
 
 <script lang="ts" setup>
@@ -195,6 +210,7 @@
   import type { PageResponse } from '~/types/PageResponse';
   import type { ProductResponse } from '~/types/product/ProductResponse';
   import type { MerchantResponse } from '~/types/MerchantResponse';
+  import ChatModalBuyer from '~/components/form/ChatModalBuyer.vue';
 
   // Ambil API function
   const { fetchProductsByMerchantId } = useProductsApi()
@@ -211,7 +227,10 @@
   const page = ref(0)
   const perPageValue = ref(12)
   const keyword = ref('') /** Nilai search yang dipakai ke API (setelah debounce / enter) */
+  
   const toast = useToast()
+
+  const isChatOpen = ref(false)
 
   //product ref
   const search = ref<string>('')
@@ -224,7 +243,7 @@
     { label: 'Nama', value: 'nama' },
   ])
 
-  // ✅ SSR SAFE FETCH — watch page, perPageValue, keyword agar refetch saat filter/search berubah
+  // ✅ SSR SAFE FETCH NEW
   const { 
     data: productsPagination, 
     pending:loadingProducts, 
@@ -238,11 +257,11 @@
     }
   )
 
-  // ✅ SSR SAFE FETCH — watch page, perPageValue, keyword agar refetch saat filter/search berubah
+  // ✅ SSR SAFE FETCH NEW
     const { 
     data: merchant, 
     pending:loadingMechant, 
-    error:errorMechant, 
+    error:errorMechant,  
     refresh:refreshMechant } 
     = await useAsyncData<MerchantResponse>(
     `mechant-by-id-${route.params.id}`,

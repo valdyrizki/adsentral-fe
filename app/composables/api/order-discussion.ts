@@ -1,75 +1,50 @@
 // composables/useOrderDiscussion.ts
-import type { OrderDiscussionRequest } from '~/types/order-discussion/OrderDiscussionRequest'
 import type { OrderDiscussionResponse } from '~/types/order-discussion/OrderDiscussionResponse'
 import type { WebResponse } from '~/types/WebResponse'
+import { useApi } from './useApi'
+import type { TransactionResponse } from '~/types/TransactionResponse'
+import type { PageResponse } from '~/types/PageResponse'
 
 export const useOrderDiscussionApi = () => {
-  const config = useRuntimeConfig()
-  const useUserStore = useAuthStore()
+  const api = useApi()
 
-  const getHeaders = () => ({
-    'Content-Type': 'application/json',
-    'X-API-TOKEN': useUserStore.auth?.token || ''
-  })
-
-  const fetchOrderDiscussionByTxId = async (txId : string)
-  : Promise<OrderDiscussionResponse[]> => {
-    try{
-      const res = await $fetch<WebResponse<OrderDiscussionResponse[]>>(
-        `${config.public.apiBase}/order/discussion/transaction/${txId}`,
-        { headers: getHeaders() }
-      )
-
+  const fetchOrderDiscussionByTxId = async (txId: string, page = 0, size = 20) => {
+    try {
+      const res = await api<WebResponse<PageResponse<OrderDiscussionResponse>>>(`/order/discussion/transaction/${txId}`, {
+        query: { page, size },
+      })
       if (res.status !== 'success' || !res.data) {
-        throw new Error(res.message)
+        throw createError({ statusCode: 400, statusMessage: res.message || 'Failed to fetch order discussions' })
       }
-
       return res.data
+    } catch (err: any) {
+      throw createError({ statusCode: err.statusCode || 500, statusMessage: err.message || 'Failed to fetch order discussions' })
+    }
+  }
 
-    } catch (err:any) {
-      console.error('Failed fetch discussion', err)
+  
+  const fetchCreateOrderDiscussion = async (formData: FormData) => {
+    try {
+      const res = await api<WebResponse<OrderDiscussionResponse>>(`/order/discussion/create`, {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!res || res.status !== 'success') {
+        throw createError({
+          statusCode: 400,
+          statusMessage: res?.message || 'Create Discussion failed',
+        })
+      }
+      return res.data
+    } catch (err: any) {
+      console.log(err)
       throw createError({
         statusCode: err.statusCode || 500,
-        statusMessage: err.message || 'Failed to fetch orderDiscussion',
+        statusMessage: err.response._data.message || 'Transaction failed, server error',
       })
     }
   }
 
-    const fetchCreateOrderDiscussion = async (formData:FormData) => {
-      try {
-        const res = await $fetch<WebResponse<OrderDiscussionResponse>>(
-          `${config.public.apiBase}/order/discussion/create`,
-          {
-            method: 'POST',
-            body: formData,
-            headers: {
-              'X-API-TOKEN': useUserStore.auth?.token || ''
-            },
-          }
-        )
-  
-        if (!res || res.status !== 'success') {
-          throw createError({
-            statusCode: 400,
-            statusMessage: res?.message || 'Create Discussion failed',
-          })
-        }
-  
-        return res.data
-  
-      } catch (err: any) {
-        console.log(err);
-        
-        throw createError({
-          statusCode: err.statusCode || 500,
-          statusMessage: err.response._data.message || 'Transaction failed, server error',
-        })
-      }
-    }
-
-  return {
-    fetchOrderDiscussionByTxId,
-    fetchCreateOrderDiscussion
-  }
-
+  return { fetchOrderDiscussionByTxId, fetchCreateOrderDiscussion }
 }

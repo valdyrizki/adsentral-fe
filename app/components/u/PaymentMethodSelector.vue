@@ -1,3 +1,4 @@
+
 <template>
   <div class="space-y-3">
     <div
@@ -29,11 +30,11 @@
             {{ method.description }}
           </div>
           <div class="text-sm text-red-500" v-if="method.id === 'SALDO'">
-            <div v-if="balanceLoading">
+            <div v-if="balanceStore.loading">
               <USkeleton class="w-50 h-5 bg-gray-300" />
             </div>   
             <div v-else>
-              Saldo: Rp{{ balance.toLocaleString() }}  
+              Saldo: Rp{{ balanceStore.balance.toLocaleString() }}  
             </div>        
           </div>
         </div>
@@ -45,13 +46,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { PaymentMethodResponse } from '~/types/payment-method/PaymentMethodResponse'
-import { useBalanceApi } from '~/composables/api/balance'
 
 const props = defineProps<{
   methods: PaymentMethodResponse[]
   modelValue: string | null
   type?: 'deposit' | 'withdrawal' | 'payment' | null
 }>()
+
+const balanceStore = useBalanceStore()
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
@@ -61,13 +63,6 @@ const select = (id: string) => {
   emit('update:modelValue', id)
 }
 
-// composable api
-const { balance, fetchBalance, balanceLoading } = useBalanceApi()
-
-// Fetch balance on component mount
-onMounted(async () => {
-  await fetchBalance()
-})
 
 /**
  * Filter:

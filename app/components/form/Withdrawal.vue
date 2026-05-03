@@ -27,6 +27,7 @@
 
 <script setup lang="ts">
 import { useToast } from "#imports" // Nuxt UI toast
+import { useAuthApi } from "~/composables/api/auth";
 
     const cartStore = useCartStore()
 
@@ -41,18 +42,18 @@ import { useToast } from "#imports" // Nuxt UI toast
 
     const emit = defineEmits(["withdrawal-success"])
 
-    const authStore  = useAuthStore()
+    const {fetchLogin}  = useAuthApi()
 
     const doLogin = async() =>{
         loading.value = true;
         try {
-        await authStore.authLogin(email.value,password.value)      
+        await fetchLogin(email.value,password.value)      
         toast.add({
             title: "Login Berhasil 🎉",
             description: "Anda akan diarahkan ke dashboard...",
             color: "success"
         })
-        authStore.restoreAuth()
+        // authStore.restoreAuth()
         emit('withdrawal-success')
         navigateTo("/")
         

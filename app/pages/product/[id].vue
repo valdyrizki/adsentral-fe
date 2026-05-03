@@ -28,17 +28,22 @@
               </div>
               <div class="ml-4 basis-auto">
                 <p class="text-2xl "> {{ product?.name }} </p>
-                <div class="flex gap-2 mt-2 md:mt-4">
-                  <p>5</p>
-                  <div>
-                    <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
-                    <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
-                    <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
-                    <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
-                    <UIcon name="i-heroicons-star-20-solid" :class="['bg-gray-300']" />
+                <div class="flex gap-2 mt-2 justify-between">
+                  <div class="flex gap-2">
+                    <p>5</p>
+                    <div>
+                      <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
+                      <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
+                      <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
+                      <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
+                      <UIcon name="i-heroicons-star-20-solid" :class="['bg-gray-300']" />
+                    </div>
+                    <p>( 527 review )</p>
+                  </div>
+                  <div class="flex flex-row gap-2 items-center">
+                    <UBadge>5 Terjual</UBadge>
                   </div>
                   
-                  <p>( 527 review )</p>
                 </div>
                 <USeparator class="py-4" />
                 <div>
@@ -114,13 +119,17 @@
                     <NuxtLink :to="`/merchant/${product?.merchant_id}`" class="text-2xl hover:underline">
                       {{ product?.merchant_name }}
                     </NuxtLink>
-                    <div class="flex flex-row gap-2 items-center">
-                      <div class="basis-auto">
-                        <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
-                        <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
-                        <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
-                        <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
-                        <UIcon name="i-heroicons-star-20-solid" :class="['bg-gray-300']" />
+                    <div v-if="merchantLoading">
+                      <AppLoadingSkeleton/>
+                    </div>
+                    <div v-else class="flex flex-row gap-2 items-center">
+                      <div v-if="merchant?.average_rating != null && merchant.average_rating > 0" class="flex items-center gap-1 text-sm">
+                        <UIcon name="material-symbols:star-rounded" class="text-yellow-400 size-4" />
+                        <span class="font-medium">{{ merchant.average_rating.toFixed(1) }}</span>
+                        <span class="text-gray-500">({{ merchant.review_count }} ulasan)</span>
+                      </div>
+                      <div v-else class="text-sm text-gray-400">
+                        Toko baru
                       </div>
                       <div class="basis-auto">
                         <div class="">(1564 Terjual)</div>
@@ -179,7 +188,7 @@
     </div>
   </div>
 
-  <ChatModal
+  <ChatModalBuyer
     v-model="isChatOpen"
     :product="product"
     :merchant-id="product?.merchant_id"
@@ -188,8 +197,10 @@
 </template>
 
 <script setup lang="ts" >
-import ChatModal from '~/components/form/ChatModal.vue'
+import ChatModalBuyer from '~/components/form/ChatModalBuyer.vue'
+import { useMerchantApi } from '~/composables/api/merchant'
 import { useProductsApi } from '~/composables/api/product'
+import type { MerchantResponse } from '~/types/MerchantResponse'
 import type { ProductResponse } from '~/types/product/ProductResponse'
 
 //reactive state
@@ -206,11 +217,29 @@ const useUserStore = useAuthStore()
 
 // Ambil API function
 const { fetchProductById } = useProductsApi()
+const { fetchMerchantById } = useMerchantApi()
 
-// ✅ SSR SAFE FETCH
-  const {data: product,pending,refresh} = await useAsyncData<ProductResponse>(
-    `product-${route.params.id}`, () => fetchProductById(route.params.id as string)
-  )
+// ✅ SSR SAFE FETCH OLD
+const { data: product, pending, refresh } = await useAsyncData<ProductResponse>(
+  `product-${route.params.id}`,
+  () => fetchProductById(route.params.id as string)
+)
+
+  const {
+  data: merchant,
+  pending: merchantLoading,
+  refresh: refreshMerchant
+} = await useAsyncData<MerchantResponse | null>(
+  () => `merchant-${product.value?.merchant_id}`,  // ✅ key dinamis
+  () => {
+    if (!product.value?.merchant_id) return Promise.resolve(null)
+    return fetchMerchantById(product.value.merchant_id)
+  },
+  {
+    watch: [() => product.value?.merchant_id],  // ✅ re-fetch saat merchant_id berubah
+    immediate: !!product.value?.merchant_id,    // ✅ skip initial run kalau product belum ada
+  }
+)
 
 //add to cart
 const cartStore = useCartStore()

@@ -26,8 +26,10 @@ watch(
 )
 
 function handleChange(val: string) {
+  const stringVal = String(val ?? '')
+  
   // 🚨 hanya izinkan angka
-  const numericOnly = val.replace(/[^\d]/g, '')
+  const numericOnly = stringVal.replace(/[^\d]/g, '')
 
   // parse ke number
   const parsed = Number(numericOnly) || 0

@@ -31,6 +31,17 @@
         {{ limitWords(product.name, 15) }}
       </NuxtLink>
 
+      <!-- Rating -->
+      <!-- Pattern minimal — di product card atau detail -->
+      <div v-if="product.review_count > 0" class="flex items-center gap-1 text-sm">
+        <UIcon name="material-symbols:star-rounded" class="text-yellow-400 size-4" />
+        <span class="font-medium">{{ product.average_rating.toFixed(1) }}</span>
+        <span class="text-gray-500">({{ product.review_count }})</span>
+      </div>
+      <!-- <div v-else class="text-sm text-gray-400">
+        Belum ada review
+      </div> -->
+
       <!-- Avatar container with slide-down -->
       <div
         class="transition-all duration-300 ease-in-out md:max-h-0 max-h-12 md:opacity-0 opacity-100 md:overflow-hidden group-hover:max-h-12 group-hover:opacity-100"
@@ -41,7 +52,7 @@
             size="sm"
             :src="config.public.backendUrl +'/'+ product?.merchant_logo"
           />
-                                  <UAvatar  size="xs" /> 
+        <UAvatar  size="xs" />
 
           <span class="text-xs text-gray-600">{{ product.merchant_name }}</span>
           </NuxtLink>
@@ -54,20 +65,18 @@
 <script lang="ts" setup>
 import type { ProductResponse } from '~/types/product/ProductResponse';
 
-//Ambil config
 const config = useRuntimeConfig()
-const backendUrl = config.public.backendUrl
 
-defineProps<{
+const props = defineProps<{
   product: ProductResponse
-}>();
+}>()
 
-  const limitWords = (text: string, maxWords: number) => {
-    if (!text) return ''
-    const words = text.trim().split(/\s+/)
-    if (words.length <= maxWords) return text
-    return words.slice(0, maxWords).join(' ') + '...'
-  }
+const limitWords = (text: string, maxWords: number) => {
+  if (!text) return ''
+  const words = text.trim().split(/\s+/)
+  if (words.length <= maxWords) return text
+  return words.slice(0, maxWords).join(' ') + '...'
+}
 </script>
 
 <style>

@@ -1,30 +1,18 @@
 import type { SystemSettingRequest } from '~/types/system-setting/SystemSettingRequest'
-import type { SystemSettingResponse } from '~/types/system-setting/SystemSettingResponse'
 import type { WebResponse } from '~/types/WebResponse'
 import { useSystemSettingStore } from '~/stores/system-setting'
+import { useApi } from './useApi'
+import type { SystemSettingResponse } from '~/types/system-setting/SystemSettingResponse'
 
 export const useSystemSettingApi = () => {
-  const config = useRuntimeConfig()
   const systemSettingStore = useSystemSettingStore()
-  const authStore = useAuthStore()
-
-  const getHeaders = () => ({
-    'Content-Type': 'application/json',
-    'X-API-TOKEN': authStore.auth?.token || '',
-  })
+  const api = useApi()
 
   const fetchPublicSystemSetting = async () => {
     try {
       systemSettingStore.setLoading(true)
-
-      const res = await $fetch<WebResponse<SystemSettingResponse[]>>(
-        `${config.public.apiBase}/system/settings`,
-      )
-
-      if (res.status !== 'success') {
-        throw new Error(res.message)
-      }
-
+      const res = await api<WebResponse<SystemSettingResponse[]>>('/system/settings')
+      if (res.status !== 'success') throw new Error(res.message)
       systemSettingStore.setSystemSettings(res.data || [])
       return res.data
     } catch (err: any) {
@@ -38,21 +26,13 @@ export const useSystemSettingApi = () => {
     }
   }
 
-  const fetchAllSystemSetting = async () => {
+  const fetchAllSystemSetting = async (): Promise<SystemSettingResponse[] > => {
     try {
       systemSettingStore.setLoading(true)
-
-      const res = await $fetch<WebResponse<SystemSettingResponse[]>>(
-        `${config.public.apiBase}/system/settings/all`,
-        {headers: getHeaders()},
-      )
-
-      if (res.status !== 'success') {
-        throw new Error(res.message)
-      }
-
+      const res = await api<WebResponse<SystemSettingResponse[]>>('/system/settings/all')
+      if (res.status !== 'success') throw new Error(res.message)
       systemSettingStore.setSystemSettings(res.data || [])
-      return res.data
+      return res.data || []
     } catch (err: any) {
       console.error('Failed fetch System Setting', err)
       throw createError({
@@ -65,46 +45,28 @@ export const useSystemSettingApi = () => {
   }
 
   const createSystemSetting = async (body: SystemSettingRequest) => {
-    const res = await $fetch<WebResponse<SystemSettingResponse>>(
-      `${config.public.apiBase}/system/setting/create`,
-      {
-        method: 'POST',
-        headers: getHeaders(),
-        body,
-      },
-    )
-    if (res.status !== 'success') {
-      throw new Error(res.message)
-    }
+    const res = await api<WebResponse<SystemSettingResponse>>('/system/setting/create', {
+      method: 'POST',
+      body,
+    })
+    if (res.status !== 'success') throw new Error(res.message)
     return res.data
   }
 
   const updateSystemSetting = async (id: string, body: SystemSettingRequest) => {
-    const res = await $fetch<WebResponse<SystemSettingResponse>>(
-      `${config.public.apiBase}/system/setting/update/${id}`,
-      {
-        method: 'PATCH',
-        headers: getHeaders(),
-        body,
-      },
-    )
-    if (res.status !== 'success') {
-      throw new Error(res.message)
-    }
+    const res = await api<WebResponse<SystemSettingResponse>>(`/system/setting/update/${id}`, {
+      method: 'PATCH',
+      body,
+    })
+    if (res.status !== 'success') throw new Error(res.message)
     return res.data
   }
 
   const deleteSystemSetting = async (id: string) => {
-    const res = await $fetch<WebResponse<void>>(
-      `${config.public.apiBase}/system/setting/delete/${id}`,
-      {
-        method: 'DELETE',
-        headers: getHeaders(),
-      },
-    )
-    if (res.status !== 'success') {
-      throw new Error(res.message)
-    }
+    const res = await api<WebResponse<void>>(`/system/setting/delete/${id}`, {
+      method: 'DELETE',
+    })
+    if (res.status !== 'success') throw new Error(res.message)
   }
 
   return {
@@ -115,6 +77,5 @@ export const useSystemSettingApi = () => {
     createSystemSetting,
     updateSystemSetting,
     deleteSystemSetting,
-    
   }
 }

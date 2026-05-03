@@ -6,7 +6,7 @@
         <AppHeaderSection
           title="Product"
           description="Cari produk yang kamu cari disini!"
-          to="/product"
+          to="/category"
           icon="material-symbols:shopping-bag-sharp"
         />
       </div>
