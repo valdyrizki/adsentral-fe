@@ -136,10 +136,10 @@
   </div>
 
   <RejectTxModal
-    v-model="isRejectingModal"
-    :loading="rejectingId === selectedTxId"
-    :error="rejectError"
-    @submit="handleReject"
+    v-model="isRejectingTxModal"
+    :loading="rejectingTxId === selectedTxId"
+    :error="rejectTxError"
+    @submit="handeRejectTxSubmit"
   />
 
 
@@ -155,6 +155,7 @@
 
   import dayjs from 'dayjs';
   import TransactionStatusBadge from '~/components/app/TransactionStatusBadge.vue';
+  import RejectTxModal from '~/components/form/RejectTxModal.vue';
   import { useTransactionApi } from '~/composables/api/transaction'
   import type { PageResponse } from '~/types/PageResponse';
   import type { TransactionResponse } from '~/types/TransactionResponse';
@@ -163,7 +164,11 @@
   const selectedTxId = ref<string | null>(null)
   const rejectingId  = ref<string | null>(null) //untuk fungsi loading button
   const isRejectingModal = ref<boolean>(false)
-  const rejectError = ref<string | null>(null)
+
+  //rejecting modal
+  const rejectingTxId  = ref<string | null>(null)
+  const isRejectingTxModal = ref<boolean>(false)
+  const rejectTxError = ref<string | null>(null)
 
   // Ambil API function
   const { fetchTxSeller, fetchConfirmTx, fetchRejectTx } = useTransactionApi()
@@ -265,10 +270,39 @@
   }
 
   const openRejectModal = (txId: string) => {
-      console.log('OPEN MODAL', txId)
-
+    console.log('OPEN MODAL', txId)
     selectedTxId.value = txId
-    isRejectingModal.value = true
+    isRejectingTxModal.value = true
+  }
+
+  const handeRejectTxSubmit = async (reason: string) => {
+    if (!selectedTxId.value) return
+
+    try {
+      rejectingTxId.value = selectedTxId.value
+
+      await fetchRejectTx(selectedTxId.value as string, reason)
+
+      useToast().add({
+        title: 'Berhasil',
+        description: 'Pesanan berhasil ditolak',
+        color: 'success'
+      })
+
+      isRejectingTxModal.value = false
+      selectedTxId.value = null
+
+      await refresh()
+
+    } catch (err: any) {
+      useToast().add({
+        title: 'Gagal',
+        description: err.message || 'Gagal menolak pesanan',
+        color: 'error'
+      })
+    } finally {
+      rejectingTxId.value = null
+    }
   }
 
 

@@ -73,9 +73,7 @@
                 class="w-full"
                 @keyup.enter="doSearch"
               />
-              <UTooltip text="Search">
-                <UButton color="neutral" variant="subtle" icon="mdi:magnify" @click="doSearch" />
-              </UTooltip>
+              <UButton color="neutral" variant="subtle" icon="mdi:magnify" @click="doSearch" />
             </UFieldGroup>
           </div>
 

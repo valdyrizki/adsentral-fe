@@ -46,5 +46,19 @@ export const useOrderDiscussionApi = () => {
     }
   }
 
-  return { fetchOrderDiscussionByTxId, fetchCreateOrderDiscussion }
+  const fetchFileOrderByTxId = async (txId: string, page = 0, size = 5) => {
+    try {
+      const res = await api<WebResponse<PageResponse<OrderDiscussionResponse>>>(`/order/file/transaction/${txId}`, {
+        query: { page, size },
+      })
+      if (res.status !== 'success' || !res.data) {
+        throw createError({ statusCode: 400, statusMessage: res.message || 'Failed to fetch file orders' })
+      }
+      return res.data
+    } catch (err: any) {
+      throw createError({ statusCode: err.statusCode || 500, statusMessage: err.message || 'Failed to fetch file orders' })
+    }
+  }
+
+  return { fetchOrderDiscussionByTxId, fetchCreateOrderDiscussion, fetchFileOrderByTxId }
 }

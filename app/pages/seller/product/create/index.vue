@@ -127,18 +127,20 @@
             </div>
 
             <div class="col-span-2">
-              <label for="description" class="block text-sm font-medium text-gray-900">Description <span class="text-red-500">*</span></label>
+              <label for="description" class="block text-sm font-medium text-gray-900">
+                Description <span class="text-red-500">*</span>
+              </label>
               <div class="mt-1">
-                <UTextarea
-                  name="description"
-                  id="description"
-                  class="block w-full text-base text-gray-900"
-                  placeholder="Description"
-                  label="Description"
-                  label-for="description"
+                <RichTextEditor
                   v-model="productRequest.description"
-                />                
-                <p class="mt-2 text-sm text-gray-500">Masukkan deskripsi produk yang jelas dan deskriptif.</p>
+                  placeholder="Tulis deskripsi produk yang detail..."
+                />
+                <p class="mt-2 text-sm text-gray-500">
+                  Gunakan format yang jelas: list untuk fitur, heading untuk bagian, dll.
+                </p>
+                <p v-if="errors.description" class="mt-1 text-sm text-red-500">
+                  {{ errors.description }}
+                </p>
               </div>
             </div>
 
@@ -206,6 +208,7 @@
 </template>
 
 <script lang="ts" setup>
+import RichTextEditor from '~/components/form/RichTextEditor.vue';
 import { useProductsApi } from '~/composables/api/product';
 import { validateImage } from '~/helper/imageHelper';
 import { ProductRequest } from '~/types/product/ProductRequest';

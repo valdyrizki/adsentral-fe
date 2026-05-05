@@ -18,6 +18,18 @@
       <AppLoadingSkeleton/>
     </div>
 
+    <!-- Product Not Found -->
+    <UCard v-else-if="!authStore.isInitializing && (productError || !product)">
+      <div class="flex flex-col items-center justify-center py-16 gap-4 text-center">
+        <UIcon name="i-lucide-package-x" class="size-16 text-gray-400" />
+        <div class="text-xl font-semibold text-gray-700">Produk Tidak Ditemukan</div>
+        <div class="text-sm text-gray-500">Produk yang Anda cari tidak ditemukan atau tidak dapat diakses.</div>
+        <NuxtLink to="/seller/product">
+          <UButton icon="i-lucide-arrow-left" variant="outline" color="primary">Kembali ke Daftar Produk</UButton>
+        </NuxtLink>
+      </div>
+    </UCard>
+
     <UCard v-else>
       <template #header>
         <div class="text-lg font-semibold">Form Edit Product</div>
@@ -166,18 +178,22 @@
             </div>
 
             <div class="col-span-2">
-              <label for="description" class="block text-sm font-medium text-gray-900">Description <span class="text-red-500">*</span></label>
+              <label for="description" class="block text-sm font-medium text-gray-900">
+                Description <span class="text-red-500">*</span>
+              </label>
               <div class="mt-1">
-                <UTextarea
-                  name="description"
-                  id="description"
-                  class="block w-full text-base text-gray-900"
-                  placeholder="Description"
-                  label="Description"
-                  label-for="description"
-                  v-model="productRequest.description"
-                />                
-                <p class="mt-2 text-sm text-gray-500">Masukkan deskripsi produk yang jelas dan deskriptif.</p>
+                <ClientOnly>
+                  <RichTextEditor v-model="productRequest.description" />
+                  <template #fallback>
+                    <UTextarea v-model="productRequest.description" />
+                  </template>
+                </ClientOnly>
+                <p class="mt-2 text-sm text-gray-500">
+                  Gunakan format yang jelas: list untuk fitur, heading untuk bagian, dll.
+                </p>
+                <p v-if="errors.description" class="mt-1 text-sm text-red-500">
+                  {{ errors.description }}
+                </p>
               </div>
             </div>
 
@@ -245,6 +261,7 @@
 </template>
 
 <script lang="ts" setup>
+import RichTextEditor from '~/components/form/RichTextEditor.vue';
 import { useProductsApi } from '~/composables/api/product';
 import { validateImage } from '~/helper/imageHelper';
 import { ProductRequest } from '~/types/product/ProductRequest';
@@ -320,6 +337,8 @@ const categoryStore  = useCategoryStore()
 categoryStore.getCategoriesStore();
 const { categoryItemsSelect } = storeToRefs(categoryStore)
 
+const authStore  = useAuthStore()
+
 // Pagination options
 const perPageitems = ref([5, 10, 25, 50])
 const perPageValue = ref(5)
@@ -388,26 +407,31 @@ const validateProduct = (): boolean => {
   const error = ref<string | null | any >(null)
 
   // fungsi Fetch data di server-side (Nuxt auto-handle hydration)
-  const { 
-  data: product, 
-  pending: productLoading
-} = await useAsyncData<ProductResponse>(
+  const {
+  data: product,
+  pending: productLoading,
+  error: productError
+} = await useAsyncData<ProductResponse | null>(
   `get-product-${route.params.id}`,
   async () => {
-    const res = await fetchMyProductById(route.params.id as string)
+    try {
+      const res = await fetchMyProductById(route.params.id as string)
 
-    // isi form
-    productRequest.id = res.id
-    productRequest.name = res.name
-    productRequest.slug = res.slug
-    productRequest.description = res.description
-    productRequest.base_price = res.base_price
-    productRequest.sell_price = res.sell_price
-    productRequest.stock = res.stock
-    productRequest.distributor = res.distributor
-    productRequest.category_id = res.category_id
+      // isi form
+      productRequest.id = res.id
+      productRequest.name = res.name
+      productRequest.slug = res.slug
+      productRequest.description = res.description
+      productRequest.base_price = res.base_price
+      productRequest.sell_price = res.sell_price
+      productRequest.stock = res.stock
+      productRequest.distributor = res.distributor
+      productRequest.category_id = res.category_id
 
-    return res // ✅ PENTING
+      return res
+    } catch {
+      return null
+    }
   },
   { server: false }
 )

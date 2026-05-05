@@ -227,17 +227,14 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
   const perPageItems = [10, 20, 50, 100]
   const search = ref('')
   const keyword = ref('')
-  const filterStatus = ref('')
+  const filterStatus = ref('ALL')
 
   const statusOptions = [
-    { label: 'Semua Status', value: '' },
+    { label: 'Semua Status', value: 'ALL' },
     { label: 'Menunggu Bayar', value: 'UNPAID' },
-    { label: 'Menunggu Konfirmasi', value: 'PAID' },
-    { label: 'Diproses', value: 'IN_PROGRESS' },
-    { label: 'Selesai', value: 'DONE' },
+    { label: 'Dibayar', value: 'PAID' },
     { label: 'Dibatalkan', value: 'CANCELLED' },
     { label: 'Ditolak', value: 'REJECTED' },
-    { label: 'Arbitrage', value: 'ARBITRAGE' },
   ]
 
   let searchTimeout: ReturnType<typeof setTimeout> | null = null
@@ -266,7 +263,7 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
 
     return [
       { label: 'Total Payment', value: total.toString(), icon: 'i-heroicons-credit-card', bgColor: 'bg-blue-50', iconColor: 'text-blue-500' },
-      { label: 'Menunggu Konfirmasi', value: paid.toString(), icon: 'i-heroicons-clock', bgColor: 'bg-yellow-50', iconColor: 'text-yellow-500' },
+      { label: 'Lunas', value: paid.toString(), icon: 'i-heroicons-clock', bgColor: 'bg-yellow-50', iconColor: 'text-yellow-500' },
       { label: 'Selesai', value: done.toString(), icon: 'i-heroicons-check-circle', bgColor: 'bg-green-50', iconColor: 'text-green-500' },
       { label: 'Total Nominal', value: 'Rp ' + totalAmount.toLocaleString('id-ID'), icon: 'i-heroicons-banknotes', bgColor: 'bg-purple-50', iconColor: 'text-purple-500' },
     ]

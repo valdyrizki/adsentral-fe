@@ -29,16 +29,18 @@
               <div class="ml-4 basis-auto">
                 <p class="text-2xl "> {{ product?.name }} </p>
                 <div class="flex gap-2 mt-2 justify-between">
-                  <div class="flex gap-2">
-                    <p>5</p>
-                    <div>
-                      <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
-                      <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
-                      <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
-                      <UIcon name="i-heroicons-star-20-solid" :class="['bg-yellow-300']" />
-                      <UIcon name="i-heroicons-star-20-solid" :class="['bg-gray-300']" />
+                  <div class="flex gap-2 items-center">
+                    <p class="font-medium">{{ avgRating.toFixed(1) }}</p>
+                    <div class="flex gap-0.5">
+                      <UIcon
+                        v-for="i in 5"
+                        :key="i"
+                        name="i-heroicons-star-20-solid"
+                        :class="i <= Math.round(avgRating) ? 'text-yellow-400' : 'text-gray-300'"
+                        class="size-4"
+                      />
                     </div>
-                    <p>( 527 review )</p>
+                    <p class="text-sm text-gray-500">( {{ reviews?.total_elements ?? 0 }} ulasan )</p>
                   </div>
                   <div class="flex flex-row gap-2 items-center">
                     <UBadge>5 Terjual</UBadge>
@@ -48,7 +50,7 @@
                 <USeparator class="py-4" />
                 <div>
                   <div class="text-5xl text-red-500">
-                    Rp {{ product?.sell_price.toLocaleString('id-ID')  }}
+                    Rp {{ product?.sell_price?.toLocaleString('id-ID') ?? '0' }}
                   </div>
                 </div>
                 <USeparator class="py-4" />
@@ -170,14 +172,110 @@
         <!-- DESKRIPSI & RATING -->
         <div class="mx-auto max-w-7xl mt-2 border rounded-2xl overflow-x-hidden border-blue-200 bg-gray-100">
           <div class="m-2 md:m-4">
-            <UTabs size="xl" color="primary" variant="link" :items="items" class="w-full"  >
-              <template #description="{ item }">
-                <p>This is the {{ item.label }} tab.</p>
-                <p>{{item.content}}</p>
+            <UTabs size="xl" color="primary" variant="link" :items="items" class="w-full">
+              <template #description>
+                <div 
+                  class="prose prose-sm md:prose-base max-w-none p-4" 
+                  v-html="sanitizedDescription"
+                ></div>
               </template>
-              <template #review="{ item }">
-                <p>This is the {{ item.label }} tab.</p>
-                <p>{{item.label}}</p>
+              
+              <template #review>
+                <div class="p-4">
+                  <!-- Filter -->
+                  <div class="flex flex-col sm:flex-row gap-3 mb-5">
+                    <UInput
+                      v-model="reviewKeyword"
+                      icon="i-lucide-search"
+                      placeholder="Cari ulasan..."
+                      class="sm:w-64"
+                    />
+                    <div class="flex gap-2 flex-wrap items-center">
+                      <UButton
+                        size="sm"
+                        :variant="reviewRating === null ? 'solid' : 'outline'"
+                        color="primary"
+                        @click="reviewRating = null; reviewPage = 1"
+                      >Semua</UButton>
+                      <UButton
+                        v-for="r in [5, 4, 3, 2, 1]"
+                        :key="r"
+                        size="sm"
+                        :variant="reviewRating === r ? 'solid' : 'outline'"
+                        color="primary"
+                        @click="reviewRating = r; reviewPage = 1"
+                      >
+                        <UIcon name="i-heroicons-star-20-solid" class="size-3 text-yellow-400" />
+                        {{ r }}
+                      </UButton>
+                    </div>
+                  </div>
+
+                  <!-- Loading -->
+                  <div v-if="reviewLoading">
+                    <AppLoadingSkeleton />
+                  </div>
+
+                  <!-- Empty -->
+                  <div v-else-if="!reviews?.content?.length" class="flex flex-col items-center justify-center py-12 gap-3 text-center">
+                    <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="size-12 text-gray-300" />
+                    <p class="text-gray-500">Tidak ada ulasan yang ditemukan.</p>
+                  </div>
+
+                  <!-- Review List -->
+                  <div v-else class="space-y-4">
+                    <!-- Summary -->
+                    <div class="flex items-center gap-3 pb-4 border-b">
+                      <div class="text-4xl font-bold text-yellow-500">{{ avgRating.toFixed(1) }}</div>
+                      <div>
+                        <div class="flex gap-0.5">
+                          <UIcon
+                            v-for="i in 5"
+                            :key="i"
+                            name="i-heroicons-star-20-solid"
+                            :class="i <= Math.round(avgRating) ? 'text-yellow-400' : 'text-gray-300'"
+                            class="size-5"
+                          />
+                        </div>
+                        <p class="text-sm text-gray-500 mt-0.5">{{ reviews.total_elements }} ulasan</p>
+                      </div>
+                    </div>
+
+                    <!-- Each Review -->
+                    <div
+                      v-for="review in reviews.content"
+                      :key="review.id"
+                      class="flex gap-4 border-b pb-4 last:border-0 last:pb-0"
+                    >
+                      <UAvatar :alt="review.reviewer_username" size="md" />
+                      <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                          <span class="font-medium text-sm">{{ review.reviewer_username }}</span>
+                          <span class="text-xs text-gray-400">{{ formatDate(review.created_at) }}</span>
+                        </div>
+                        <div class="flex gap-0.5 mt-1">
+                          <UIcon
+                            v-for="i in 5"
+                            :key="i"
+                            name="i-heroicons-star-20-solid"
+                            :class="i <= review.rating ? 'text-yellow-400' : 'text-gray-300'"
+                            class="size-4"
+                          />
+                        </div>
+                        <p class="mt-2 text-sm text-gray-700 whitespace-pre-line">{{ review.comment }}</p>
+                      </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div v-if="reviews.total_pages > 1" class="flex justify-center pt-4">
+                      <UPagination
+                        v-model:page="reviewPage"
+                        :total="reviews.total_elements"
+                        :items-per-page="reviewSize"
+                      />
+                    </div>
+                  </div>
+                </div>
               </template>
             </UTabs>
           </div>
@@ -200,8 +298,16 @@
 import ChatModalBuyer from '~/components/form/ChatModalBuyer.vue'
 import { useMerchantApi } from '~/composables/api/merchant'
 import { useProductsApi } from '~/composables/api/product'
+import { useReviewApi } from '~/composables/api/review'
 import type { MerchantResponse } from '~/types/MerchantResponse'
 import type { ProductResponse } from '~/types/product/ProductResponse'
+import type { ReviewResponse } from '~/types/review/ReviewResponse'
+import type { PageResponse } from '~/types/PageResponse'
+import DOMPurify from 'isomorphic-dompurify'
+import dayjs from 'dayjs'
+import 'dayjs/locale/id'
+
+dayjs.locale('id')
 
 //reactive state
 const isChatOpen = ref(false)
@@ -218,6 +324,7 @@ const useUserStore = useAuthStore()
 // Ambil API function
 const { fetchProductById } = useProductsApi()
 const { fetchMerchantById } = useMerchantApi()
+const { fetchReviewByProduct } = useReviewApi()
 
 // ✅ SSR SAFE FETCH OLD
 const { data: product, pending, refresh } = await useAsyncData<ProductResponse>(
@@ -240,6 +347,54 @@ const { data: product, pending, refresh } = await useAsyncData<ProductResponse>(
     immediate: !!product.value?.merchant_id,    // ✅ skip initial run kalau product belum ada
   }
 )
+
+const reviewPage = ref(1)
+const reviewSize = ref(5)
+const reviewRating = ref<number | null>(null)
+const reviewKeyword = ref('')
+const reviewKeywordDebounced = ref('')
+
+let _kwTimer: ReturnType<typeof setTimeout>
+watch(reviewKeyword, (val) => {
+  clearTimeout(_kwTimer)
+  _kwTimer = setTimeout(() => {
+    reviewKeywordDebounced.value = val
+    reviewPage.value = 1
+  }, 400)
+})
+
+const {
+  data: reviews,
+  pending: reviewLoading,
+} = await useAsyncData<PageResponse<ReviewResponse> | null>(
+  `reviews-${route.params.id}`,
+  async () => {
+    if (!product.value?.id) return null
+    try {
+      return await fetchReviewByProduct(
+        product.value.id,
+        reviewPage.value - 1,
+        reviewSize.value,
+        reviewKeywordDebounced.value || undefined,
+        reviewRating.value ?? undefined,
+      )
+    } catch {
+      return null
+    }
+  },
+  {
+    server: false,
+    watch: [reviewPage, reviewRating, reviewKeywordDebounced],
+  }
+)
+
+const avgRating = computed(() => {
+  const content = reviews.value?.content
+  if (!content?.length) return 0
+  return content.reduce((sum, r) => sum + r.rating, 0) / content.length
+})
+
+const formatDate = (iso: string) => dayjs(iso).format('D MMM YYYY')
 
 //add to cart
 const cartStore = useCartStore()
@@ -295,8 +450,7 @@ const items = ref([
   {
     label: 'Deskripsi Produk',
     icon: 'majesticons:box',
-    content: product.value?.description,
-    slot:'description' as const
+    slot: 'description' as const
   },
   {
     label: 'Review Pembeli',
@@ -319,7 +473,34 @@ const breadcrumb = ref([
   }
 ])
 
+// ✅ Sanitize description sebelum render
+const sanitizedDescription = computed(() => {
+  if (!product.value?.description) return ''
+  
+  // Whitelist tag yang aman untuk produk description
+  return DOMPurify.sanitize(product.value.description, {
+    ALLOWED_TAGS: [
+      'p', 'br', 'strong', 'em', 'u', 's', 
+      'h2', 'h3', 'ul', 'ol', 'li', 
+      'blockquote', 'a', 'hr'
+    ],
+    ALLOWED_ATTR: ['href', 'target', 'rel'],
+  })
+})
+
 
 
 
 </script>
+
+<style>
+/* Fix spacing TipTap output: <p> nested di <li> */
+.prose li > p {
+  margin: 0;
+}
+
+/* Hide paragraph kosong dari double-enter user */
+.prose p:empty {
+  display: none;
+}
+</style>

@@ -139,16 +139,48 @@
     </div>
 
     <!-- Pengiriman Pesanan -->
-    <div class="mt-4  w-full bg-green-100 p-2 rounded-lg overflow-hidden" v-if="latestFileOrder">
-      <div class="flex flex-col gap-4 text-center">
-        <div>
+    <div class="mt-4 w-full bg-green-100 p-2 rounded-lg overflow-hidden" v-if="fileOrders && fileOrders.total_elements > 0">
+      <div class="flex flex-col gap-3">
+        <div class="text-center font-medium">
           <h1>Order sudah dikirim penjual!</h1>
         </div>
-        <div>
-          <p class="text-gray-600">{{ latestFileOrder?.message ?? "Download filenya dibawah ini ya"}} </p>
+
+        <div v-if="pendingFileOrders" class="text-center py-2">
+          <AppLoadingSkeleton />
         </div>
-        <div v-if="latestFileOrder.file">
-          <UButton icon="mdi:download" color="primary" variant="solid" size="md" @click="downloadFile(latestFileOrder.file.url)">{{ latestFileOrder.file.ori_name }}</UButton>
+
+        <div v-else class="flex flex-col gap-2">
+          <div
+            v-for="fileOrder in fileOrders.content"
+            :key="fileOrder.id"
+            class="flex flex-col sm:flex-row items-center justify-between gap-2 bg-white rounded-lg p-3"
+          >
+            <div class="flex flex-col gap-1 text-sm text-gray-600 text-center sm:text-left">
+              <span>{{ fileOrder.message || "Download filenya dibawah ini ya" }}</span>
+              <span class="text-xs text-gray-400">{{ dayjs(fileOrder.created_at).format('D MMM YYYY HH:mm') }}</span>
+            </div>
+            <UButton
+              v-if="fileOrder.file"
+              icon="mdi:download"
+              color="primary"
+              variant="solid"
+              size="sm"
+              class="flex-none"
+              @click="downloadFile(fileOrder.file.url)"
+            >
+              {{ fileOrder.file.ori_name }}
+            </UButton>
+          </div>
+        </div>
+
+        <div v-if="fileOrders.total_pages > 1" class="flex justify-center pt-1">
+          <UPagination
+            :page="fileOrderPage + 1"
+            :total="fileOrders.total_elements"
+            :items-per-page="fileOrderSize"
+            :sibling-count="1"
+            @update:page="(p: number) => { fileOrderPage = p - 1 }"
+          />
         </div>
       </div>
     </div>
@@ -312,6 +344,7 @@
               </div>
               <USeparator />
             </div>
+          </div>
 
           <div v-if="orderDiscussions && orderDiscussions.total_pages > 1" class="flex justify-center pt-3">
             <UPagination
@@ -323,7 +356,7 @@
               @update:page="(p : any) => { discussionPage = p - 1 }"
             />
           </div>
-          </div>
+
         </div>
       </div>
     </div>
@@ -388,7 +421,7 @@ import type { PageResponse } from '~/types/PageResponse'
 
   // Ambil API function
   const { fetchTransactionById, fetchCompleteTx, fetchCancelArbitrage, fetchRefundTx, fetchRejectCancelRequest, fetchAcceptCancelRequest } = useTransactionApi()
-  const { fetchCreateOrderDiscussion, fetchOrderDiscussionByTxId } = useOrderDiscussionApi()
+  const { fetchCreateOrderDiscussion, fetchOrderDiscussionByTxId, fetchFileOrderByTxId } = useOrderDiscussionApi()
   const { fetchCreateReview,fetchReviewByTransaction,fetchUpdateReview } = useReviewApi()
 
   // Ambil parameter route
@@ -481,16 +514,18 @@ const selectRating = ref<SelectItem[]>(
     }
   )
 
-  const latestFileOrder = computed(() => {
-    if (!orderDiscussions.value?.content) return null
+  const fileOrderPage = ref(0)
+  const fileOrderSize = ref(1)
 
-    return orderDiscussions.value.content
-      .filter(d => d.is_file_order)
-      .sort((a, b) =>
-        new Date(b.created_at).getTime() -
-        new Date(a.created_at).getTime()
-      )[0] || null
-  })
+  const {
+    data: fileOrders,
+    pending: pendingFileOrders,
+    refresh: refreshFileOrders,
+  } = useAsyncData<PageResponse<OrderDiscussionResponse>>(
+    () => `file-orders-${route.params.id}-${fileOrderPage.value}`,
+    () => fetchFileOrderByTxId(route.params.id as string, fileOrderPage.value, fileOrderSize.value),
+    { watch: [fileOrderPage], server: false }
+  )
 
 
   const handleRefundTxSubmit = async (reason: string) => {
@@ -619,6 +654,7 @@ const selectRating = ref<SelectItem[]>(
 
       if(isFileOrder) {
         await refreshTransaction() // refresh transaction untuk update status ke DELIVERED jika kirim orderan (file)
+        await refreshFileOrders()
       }
 
       discussionMessage.value = '' // reset textarea
@@ -668,6 +704,7 @@ const isImage = (format?: string) => {
     refreshTransaction()
     refreshOrderDiscussion()
     refreshReviews()
+    refreshFileOrders()
   }
 
 

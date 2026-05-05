@@ -136,6 +136,7 @@ const { balance } = useBalanceStore()
 
 //store
 const cartStore = useCartStore()
+const balanceStore = useBalanceStore()
 
 //Ambil config
 const config = useRuntimeConfig()
@@ -198,8 +199,8 @@ const checkout = async () =>{
       color: "success",
       icon: "material-symbols:check-circle-outline"
     })
-    loading.value = false
 
+    balanceStore.loadBalance({force:true})
     navigateTo("/transaction")
 
   }catch(e:any){

@@ -1,6 +1,7 @@
 // composables/useReview.ts
 import type { ReviewRequest } from '~/types/review/ReviewRequest'
 import type { ReviewResponse } from '~/types/review/ReviewResponse'
+import type { PageResponse } from '~/types/PageResponse'
 import type { WebResponse } from '~/types/WebResponse'
 import { useApi } from './useApi'
 
@@ -29,9 +30,19 @@ export const useReviewApi = () => {
     }
   }
 
-  const fetchReviewByProduct = async (productId: number): Promise<ReviewResponse[]> => {
+  const fetchReviewByProduct = async (
+    productId: number,
+    page = 0,
+    size = 5,
+    keyword?: string,
+    rating?: number,
+  ): Promise<PageResponse<ReviewResponse>> => {
     try {
-      const res = await api<WebResponse<ReviewResponse[]>>(`/review/product/${productId}`)
+      const params: Record<string, any> = { page, size }
+      if (keyword) params.keyword = keyword
+      if (rating != null) params.rating = rating
+
+      const res = await api<WebResponse<PageResponse<ReviewResponse>>>(`/review/product/${productId}`, { params })
       if (res.status !== 'success' || !res.data) throw new Error(res.message)
       return res.data
     } catch (err: any) {
