@@ -146,6 +146,7 @@ export const useProductsApi = () => {
       if (request.category_id) formData.append("categoryId", request.category_id.toString())
       if (request.distributor) formData.append("distributor", request.distributor)
       if (request.status) formData.append("status", request.status)
+      if (request.delivery_days) formData.append("deliveryDays", request.delivery_days.toString())
       console.log(formData.values)
 
       const res = await api<WebResponse<ProductResponse>>('/product/create', {
@@ -181,6 +182,7 @@ export const useProductsApi = () => {
       if (request.category_id) formData.append("categoryId", request.category_id.toString())
       if (request.distributor) formData.append("distributor", request.distributor)
       if (request.status) formData.append("status", request.status)
+      if (request.delivery_days) formData.append("deliveryDays", request.delivery_days.toString())
 
       const res = await api<WebResponse<ProductResponse>>(`/product/update/${request.id}`, {
         method: 'PATCH',

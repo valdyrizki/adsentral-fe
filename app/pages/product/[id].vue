@@ -54,9 +54,33 @@
                   </div>
                 </div>
                 <USeparator class="py-4" />
-                <div class="flex flex-row gap-2 justify-center md:justify-normal">       
+
+                <!-- Informasi Stock -->
+                <div class="flex flex-wrap gap-4 text-sm">
+                  <div class="flex items-center gap-1.5">
+                    <UIcon name="majesticons:box" class="size-4 text-gray-400" />
+                    <span class="text-gray-500">Stok:</span>
+                    <span v-if="product?.stock === null || product?.stock === undefined" class="font-medium text-green-600">Tidak terbatas</span>
+                    <span v-else-if="product.stock === 0" class="font-medium text-red-500">Habis</span>
+                    <span v-else class="font-medium text-gray-800">{{ product.stock.toLocaleString('id-ID') }}</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <UIcon name="mdi:shopping-outline" class="size-4 text-gray-400" />
+                    <span class="text-gray-500">Terjual:</span>
+                    <span class="font-medium text-gray-800">{{ product?.sold?.toLocaleString('id-ID') ?? 0 }}</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <UIcon name="mdi:truck-delivery-outline" class="size-4 text-gray-400" />
+                    <span class="text-gray-500">Estimasi Pengiriman:</span>
+                    <span v-if="product?.delivery_days" class="font-medium text-blue-600">{{ product.delivery_days }} hari</span>
+                    <span v-else class="font-medium text-gray-400">-</span>
+                  </div>
+                </div>
+
+                <USeparator class="py-4" />
+                <div class="flex flex-row gap-2 justify-center md:justify-normal">
                   <div class="">
-                    <UInputNumber v-model="qty" size="xl"/> 
+                    <UInputNumber v-model="qty" :max="product?.stock ?? undefined" size="xl"/>
                   </div>
                 </div>
 

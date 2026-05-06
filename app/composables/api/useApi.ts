@@ -141,9 +141,11 @@ export const useApi = () => {
 
     // Hanya redirect kalau bukan sedang di halaman public
     // (menghindari redirect loop kalau sudah di /login)
-    const publicRoutes = ['/login', '/register', '/forgot-password'];
+    const publicRoutes = ['/login', '/register', '/forgot-password', '/product', '/category', '/merchant', '/'];
 
-    if (!publicRoutes.includes(router.currentRoute.value.path)) {
+    const currentPath = router.currentRoute.value.path
+    const isPublic = publicRoutes.some(r => currentPath === r || currentPath.startsWith(r + '/'))
+    if (!isPublic) {
       // runWithContext diperlukan karena fungsi ini dipanggil dari dalam
       // async interceptor ofetch yang sudah di luar Vue/Nuxt setup context
       await navigateTo('/login');}

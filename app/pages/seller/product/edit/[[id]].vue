@@ -230,6 +230,23 @@
               </div>
             </div>
 
+            <div>
+              <label for="delivery_days" class="block text-sm font-medium text-gray-900">Estimasi Pengiriman (Hari) <span class="text-red-500">*</span></label>
+              <div class="mt-1">
+                <UInputNumber
+                  v-model="productRequest.delivery_days"
+                  orientation="vertical"
+                  name="delivery_days"
+                  id="delivery_days"
+                  class="block w-full text-base text-gray-900"
+                  placeholder="Hari"
+                  :min="1"
+                />
+                <p class="mt-2 text-sm text-gray-500">Estimasi jumlah hari pengiriman ke pembeli.</p>
+                <p v-if="errors.delivery_days" class="mt-1 text-sm text-red-500">{{ errors.delivery_days }}</p>
+              </div>
+            </div>
+
               <!-- Distributor -->
             <div>
               <label for="distributor" class="block text-sm font-medium text-gray-900">
@@ -387,9 +404,16 @@ const validateProduct = (): boolean => {
     errors.category_id = 'Kategori wajib dipilih'
   }
 
-  // category_id
+  // stock
   if (productRequest.stock != null && productRequest.stock < 0) {
     errors.stock = 'Stok tidak boleh negatif'
+  }
+
+  // delivery_days
+  if (productRequest.delivery_days === null || productRequest.delivery_days === undefined) {
+    errors.delivery_days = 'Estimasi pengiriman wajib diisi'
+  } else if (productRequest.delivery_days < 1) {
+    errors.delivery_days = 'Estimasi pengiriman minimal 1 hari'
   }
 
   // banner
@@ -425,6 +449,7 @@ const validateProduct = (): boolean => {
       productRequest.base_price = res.base_price
       productRequest.sell_price = res.sell_price
       productRequest.stock = res.stock
+      productRequest.delivery_days = res.delivery_days
       productRequest.distributor = res.distributor
       productRequest.category_id = res.category_id
 

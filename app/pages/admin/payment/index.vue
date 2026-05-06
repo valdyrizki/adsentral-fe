@@ -271,7 +271,7 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
 
   // ===== HELPERS =====
   function canConfirm(payment: PaymentResponse) {
-    return payment.status === 'UNPAID' && payment.payment_type === 'DEPOSIT'
+    return payment.status === 'UNPAID' && (payment.payment_type === 'DEPOSIT' || payment.payment_method?.id === 'MANUAL_BANK')
   }
 
   function onPageChange(newPage: number) {

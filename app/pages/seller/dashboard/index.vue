@@ -67,7 +67,7 @@
             >
               Refresh
             </UButton>
-            <UButton size="xs" to="/balance" variant="soft" color="primary" trailing-icon="i-heroicons-arrow-right">
+            <UButton size="xs" to="/seller/balance" variant="soft" color="primary" trailing-icon="i-heroicons-arrow-right">
               Kelola Saldo
             </UButton>
           </div>

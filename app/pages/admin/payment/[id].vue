@@ -187,7 +187,7 @@
               :key="tx.id"
               class="flex flex-col sm:flex-row sm:items-center gap-4 py-4 px-2 hover:bg-gray-50 rounded-xl transition-colors"
             >
-              <NuxtLink :to="`/admin/transaction/${tx.id}`" class="flex items-center gap-4 flex-1 min-w-0">
+              <NuxtLink :to="`/admin/order/${tx.id}`" class="flex items-center gap-4 flex-1 min-w-0">
                 <!-- Product Image -->
                 <NuxtImg 
                   :src="config.public.backendUrl +'/'+ tx.product?.banner_url" 
@@ -327,10 +327,10 @@ function applyTxSearch() {
   refreshTx()
 }
 
-// ===== HELPERS =====
-function canConfirm(payment: PaymentResponse) {
-    return payment.status === 'UNPAID' && payment.payment_type === 'DEPOSIT'
-}
+  // ===== HELPERS =====
+  function canConfirm(payment: PaymentResponse) {
+    return payment.status === 'UNPAID' && (payment.payment_type === 'DEPOSIT' || payment.payment_method?.id === 'MANUAL_BANK')
+  }
 
 
 

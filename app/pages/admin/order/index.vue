@@ -110,7 +110,7 @@
               label="Detail"
             />
 
-            <UButton
+            <!-- <UButton
               v-if="tx.status === 'PAID'"
               icon="mdi:check-circle"
               size="xs"
@@ -132,7 +132,7 @@
               @click="openRejectModal(tx.id)"
             >
               Tolak
-            </UButton>
+            </UButton> -->
           </div>
         </div>
       </div>
@@ -254,11 +254,11 @@ const rejectingId = ref<string | null>(null)
 const isRejectingModal = ref(false)
 const rejectError = ref<string | null>(null)
 
-function openRejectModal(txId: string) {
-  selectedTxId.value = txId
-  rejectError.value = null
-  isRejectingModal.value = true
-}
+// function openRejectModal(txId: string) {
+//   selectedTxId.value = txId
+//   rejectError.value = null
+//   isRejectingModal.value = true
+// }
 
 async function handleReject(reason: string) {
   if (!selectedTxId.value) return

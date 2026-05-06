@@ -99,13 +99,117 @@
           </div>
         </div>
 
-        <div class="mt-4  w-full bg-red-100 p-2 rounded-lg overflow-hidden" v-if="transaction?.status === 'REJECT'">
-          <div class="flex flex-col gap-4 text-center">
-            <div>
-              <h1>Pembeli menolak pesanan!</h1>
+        <!-- COUNTDOWN Auto Cancel Jika buyer tidak melakukan pembayaran > 24 jam -->
+        <div
+          v-if="transaction?.status === 'UNPAID'"
+          class="mt-4 w-full p-3 rounded-lg overflow-hidden border"
+          :class="isCountdownExpired ? 'bg-red-50 border-red-300' : 'bg-orange-50 border-orange-200'"
+        >
+          <div class="flex flex-col items-center gap-2 text-center py-1">
+            <div class="flex items-center gap-2">
+              <UIcon
+                name="mdi:clock-alert-outline"
+                class="size-5"
+                :class="isCountdownExpired ? 'text-red-500' : 'text-orange-500'"
+              />
+              <span class="font-semibold" :class="isCountdownExpired ? 'text-red-600' : 'text-orange-600'">
+                {{ isCountdownExpired ? 'Waktu Pembayaran Habis!' : 'Batas Waktu Pembayaran' }}
+              </span>
             </div>
-            <div>
-              <p class="text-gray-600">{{ transaction?.tx_description ?? "Tidak ada alasan penolakan"  }} </p>
+
+            <div v-if="!isCountdownExpired" class="text-4xl font-mono font-bold tracking-widest text-orange-600">
+              {{ countdownDisplay }}
+            </div>
+
+            <p class="text-sm" :class="isCountdownExpired ? 'text-red-500' : 'text-orange-500'">
+              {{ isCountdownExpired
+                ? 'Transaksi akan dibatalkan otomatis oleh sistem.'
+                : 'Segera lakukan pembayaran sebelum transaksi dibatalkan otomatis.'
+              }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Menunggu Konfirmasi Seller -->
+        <div class="mt-4 w-full bg-blue-50 border border-blue-200 p-3 rounded-lg overflow-hidden" v-if="transaction?.status === 'PAID'">
+          <div class="flex flex-col items-center gap-2 text-center py-1">
+            <div class="flex items-center gap-2">
+              <UIcon name="mdi:clock-outline" class="size-5 text-blue-500" />
+              <span class="font-semibold text-blue-700">Menunggu Konfirmasi Penjual</span>
+            </div>
+            <p class="text-sm text-blue-600">Penjual sedang memproses pesanan Anda. Pesanan akan otomatis dibatalkan jika penjual tidak merespons dalam waktu:</p>
+            <div v-if="!isConfirmExpired" class="text-4xl font-mono font-bold tracking-widest text-blue-600">
+              {{ confirmCountdownDisplay }}
+            </div>
+            <div v-else class="text-sm font-medium text-red-500">
+              Batas waktu habis — sistem akan memproses pembatalan otomatis.
+            </div>
+          </div>
+        </div>
+
+        <!-- Estimasi Pengiriman (IN_PROGRESS) -->
+        <div
+          v-if="transaction?.status === 'IN_PROGRESS'"
+          class="mt-4 w-full p-3 rounded-lg overflow-hidden border"
+          :class="isDeliveryExpired ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-200'"
+        >
+          <div class="flex flex-col items-center gap-2 text-center py-1">
+            <div class="flex items-center gap-2">
+              <UIcon
+                name="mdi:truck-delivery-outline"
+                class="size-5"
+                :class="isDeliveryExpired ? 'text-red-500' : 'text-blue-500'"
+              />
+              <span class="font-semibold" :class="isDeliveryExpired ? 'text-red-600' : 'text-blue-600'">
+                {{ isDeliveryExpired ? 'Estimasi Pengiriman Terlewat!' : 'Menunggu Pengiriman Pesanan' }}
+              </span>
+            </div>
+            <p class="text-sm" :class="isDeliveryExpired ? 'text-red-500' : 'text-blue-500'">
+              {{ isDeliveryExpired
+                ? 'Estimasi pengiriman telah terlewat. Silakan hubungi penjual.'
+                : `Penjual sedang memproses pesananmu, estimasi dikirim sebelum ${deliveryDeadlineDisplay}`
+              }}
+            </p>
+          </div>
+        </div>
+
+        <!-- REJECT: Pembeli menolak + countdown 24 jam pemrosesan -->
+        <div v-if="transaction?.status === 'REJECT'" class="mt-4 flex flex-col gap-3">
+          <div class="w-full bg-red-100 p-2 rounded-lg overflow-hidden">
+            <div class="flex flex-col gap-4 text-center">
+              <div>
+                <h1>Anda telah menolak pesanan ini!</h1>
+              </div>
+              <div>
+                <p class="text-gray-600">{{ transaction?.tx_description ?? "Tidak ada alasan penolakan" }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="w-full p-3 rounded-lg overflow-hidden border"
+            :class="isRejectExpired ? 'bg-red-50 border-red-300' : 'bg-orange-50 border-orange-200'"
+          >
+            <div class="flex flex-col items-center gap-2 text-center py-1">
+              <div class="flex items-center gap-2">
+                <UIcon
+                  name="mdi:clock-alert-outline"
+                  class="size-5"
+                  :class="isRejectExpired ? 'text-red-500' : 'text-orange-500'"
+                />
+                <span class="font-semibold" :class="isRejectExpired ? 'text-red-600' : 'text-orange-600'">
+                  {{ isRejectExpired ? 'Batas Waktu Habis!' : 'Menunggu Pemrosesan Penolakan' }}
+                </span>
+              </div>
+              <div v-if="!isRejectExpired" class="text-4xl font-mono font-bold tracking-widest text-orange-600">
+                {{ rejectCountdownDisplay }}
+              </div>
+              <p class="text-sm" :class="isRejectExpired ? 'text-red-500' : 'text-orange-500'">
+                {{ isRejectExpired
+                  ? 'Transaksi akan diproses pembatalan otomatis oleh sistem.'
+                  : 'Penolakan Anda sedang diproses. Sistem akan memproses pembatalan otomatis.'
+                }}
+              </p>
             </div>
           </div>
         </div>
@@ -164,6 +268,37 @@
             <div>
               <p class="text-gray-600">{{ transaction?.tx_description ?? "Tidak ada catatan"}} </p>
             </div>
+          </div>
+        </div>
+
+        <!-- COUNTDOWN Auto Complete Jika buyer tidak merespon dalam 24 jam setelah DELIVERED -->
+        <div
+          v-if="transaction?.status === 'DELIVERED'"
+          class="mt-4 w-full p-3 rounded-lg overflow-hidden border"
+          :class="isDeliveredExpired ? 'bg-red-50 border-red-300' : 'bg-green-50 border-green-200'"
+        >
+          <div class="flex flex-col items-center gap-2 text-center py-1">
+            <div class="flex items-center gap-2">
+              <UIcon
+                name="mdi:package-check"
+                class="size-5"
+                :class="isDeliveredExpired ? 'text-red-500' : 'text-green-500'"
+              />
+              <span class="font-semibold" :class="isDeliveredExpired ? 'text-red-600' : 'text-green-700'">
+                {{ isDeliveredExpired ? 'Batas Waktu Habis!' : 'Batas Waktu Konfirmasi Pesanan' }}
+              </span>
+            </div>
+
+            <div v-if="!isDeliveredExpired" class="text-4xl font-mono font-bold tracking-widest text-green-700">
+              {{ deliveredCountdownDisplay }}
+            </div>
+
+            <p class="text-sm" :class="isDeliveredExpired ? 'text-red-500' : 'text-green-600'">
+              {{ isDeliveredExpired
+                ? 'Pesanan akan diselesaikan otomatis oleh sistem.'
+                : 'Segera konfirmasi penerimaan pesanan sebelum pesanan diselesaikan otomatis.'
+              }}
+            </p>
           </div>
         </div>
 
@@ -246,6 +381,35 @@
             <div>
               <UBadge class="text-sm" color="error">Dana dikembalikan kepada pembeli !</UBadge>
             </div>
+          </div>
+        </div>
+
+        <!-- COUNTDOWN Kliring Dana (done_at + 24 jam) -->
+        <div
+          v-if="transaction?.status === 'DONE'"
+          class="mt-4 w-full p-3 rounded-lg overflow-hidden border"
+          :class="isKliringExpired ? 'bg-green-50 border-green-300' : 'bg-blue-50 border-blue-200'"
+        >
+          <div class="flex flex-col items-center gap-2 text-center py-1">
+            <div class="flex items-center gap-2">
+              <UIcon
+                name="mdi:bank-transfer"
+                class="size-5"
+                :class="isKliringExpired ? 'text-green-600' : 'text-blue-500'"
+              />
+              <span class="font-semibold" :class="isKliringExpired ? 'text-green-700' : 'text-blue-700'">
+                {{ isKliringExpired ? 'Transaksi Selesai Diproses!' : 'Transaksi Sedang Diproses' }}
+              </span>
+            </div>
+            <div v-if="!isKliringExpired" class="text-4xl font-mono font-bold tracking-widest text-blue-600">
+              {{ kliringCountdownDisplay }}
+            </div>
+            <p class="text-sm" :class="isKliringExpired ? 'text-green-600' : 'text-blue-500'">
+              {{ isKliringExpired
+                ? 'Proses penyelesaian transaksi telah selesai.'
+                : 'Transaksi Anda sedang dalam proses penyelesaian oleh sistem.'
+              }}
+            </p>
           </div>
         </div>
 
@@ -870,6 +1034,215 @@ const isImage = (format?: string) => {
     }
   }
 
+  // ===== COUNTDOWN AUTO CANCEL =====
+  const countdownSeconds = ref(0)
+  let countdownTimer: ReturnType<typeof setInterval> | null = null
+
+  const updateCountdown = () => {
+    if (!transaction.value?.expired_at) return
+    countdownSeconds.value = Math.max(0, dayjs(transaction.value.expired_at).diff(dayjs(), 'second'))
+  }
+
+  const countdownDisplay = computed(() => {
+    const s = countdownSeconds.value
+    const h = Math.floor(s / 3600)
+    const m = Math.floor((s % 3600) / 60)
+    const sec = s % 60
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+  })
+
+  const isCountdownExpired = computed(() => countdownSeconds.value <= 0)
+
+  watch(
+    () => transaction.value?.status,
+    (status) => {
+      if (status === 'UNPAID') {
+        updateCountdown()
+        if (!countdownTimer) {
+          countdownTimer = setInterval(updateCountdown, 1000)
+        }
+      } else {
+        if (countdownTimer) {
+          clearInterval(countdownTimer)
+          countdownTimer = null
+        }
+      }
+    },
+    { immediate: true }
+  )
+
+  onUnmounted(() => {
+    if (countdownTimer) clearInterval(countdownTimer)
+    if (confirmTimer) clearInterval(confirmTimer)
+    if (deliveredTimer) clearInterval(deliveredTimer)
+    if (rejectTimer) clearInterval(rejectTimer)
+    if (kliringTimer) clearInterval(kliringTimer)
+  })
+
+  // ===== COUNTDOWN KONFIRMASI SELLER (paid_at + 24 jam) =====
+  const confirmSeconds = ref(0)
+  let confirmTimer: ReturnType<typeof setInterval> | null = null
+
+  const updateConfirmCountdown = () => {
+    if (!transaction.value?.paid_at) return
+    confirmSeconds.value = Math.max(0, dayjs(transaction.value.paid_at).add(24, 'hour').diff(dayjs(), 'second'))
+  }
+
+  const confirmCountdownDisplay = computed(() => {
+    const s = confirmSeconds.value
+    const h = Math.floor(s / 3600)
+    const m = Math.floor((s % 3600) / 60)
+    const sec = s % 60
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+  })
+
+  const isConfirmExpired = computed(() => confirmSeconds.value <= 0)
+
+  watch(
+    () => transaction.value?.status,
+    (status) => {
+      if (status === 'PAID') {
+        updateConfirmCountdown()
+        if (!confirmTimer) {
+          confirmTimer = setInterval(updateConfirmCountdown, 1000)
+        }
+      } else {
+        if (confirmTimer) {
+          clearInterval(confirmTimer)
+          confirmTimer = null
+        }
+      }
+    },
+    { immediate: true }
+  )
+
+  // ===== COUNTDOWN AUTO COMPLETE (delivered_at + 24 jam) =====
+  const deliveredSeconds = ref(0)
+  let deliveredTimer: ReturnType<typeof setInterval> | null = null
+
+  const updateDeliveredCountdown = () => {
+    if (!transaction.value?.delivered_at) return
+    deliveredSeconds.value = Math.max(0, dayjs(transaction.value.delivered_at).add(24, 'hour').diff(dayjs(), 'second'))
+  }
+
+  const deliveredCountdownDisplay = computed(() => {
+    const s = deliveredSeconds.value
+    const h = Math.floor(s / 3600)
+    const m = Math.floor((s % 3600) / 60)
+    const sec = s % 60
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+  })
+
+  const isDeliveredExpired = computed(() => deliveredSeconds.value <= 0)
+
+  watch(
+    () => transaction.value?.status,
+    (status) => {
+      if (status === 'DELIVERED') {
+        updateDeliveredCountdown()
+        if (!deliveredTimer) {
+          deliveredTimer = setInterval(updateDeliveredCountdown, 1000)
+        }
+      } else {
+        if (deliveredTimer) {
+          clearInterval(deliveredTimer)
+          deliveredTimer = null
+        }
+      }
+    },
+    { immediate: true }
+  )
+
+  // ===== ESTIMASI PENGIRIMAN (confirmed_at + delivery_days) =====
+  const deliveryDeadline = computed(() => {
+    const confirmedAt = transaction.value?.confirmed_at
+    const deliveryDays = transaction.value?.product?.delivery_days
+    if (!confirmedAt || !deliveryDays) return null
+    return dayjs(confirmedAt).add(deliveryDays, 'day')
+  })
+
+  const deliveryDeadlineDisplay = computed(() =>
+    deliveryDeadline.value ? deliveryDeadline.value.format('D MMM YYYY HH:mm') : '-'
+  )
+
+  const isDeliveryExpired = computed(() =>
+    !!deliveryDeadline.value && dayjs().isAfter(deliveryDeadline.value)
+  )
+
+  // ===== COUNTDOWN PEMROSESAN PENOLAKAN (rejected_at + 24 jam) =====
+  const rejectSeconds = ref(0)
+  let rejectTimer: ReturnType<typeof setInterval> | null = null
+
+  const updateRejectCountdown = () => {
+    if (!transaction.value?.rejected_at) return
+    rejectSeconds.value = Math.max(0, dayjs(transaction.value.rejected_at).add(24, 'hour').diff(dayjs(), 'second'))
+  }
+
+  const rejectCountdownDisplay = computed(() => {
+    const s = rejectSeconds.value
+    const h = Math.floor(s / 3600)
+    const m = Math.floor((s % 3600) / 60)
+    const sec = s % 60
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+  })
+
+  const isRejectExpired = computed(() => rejectSeconds.value <= 0)
+
+  watch(
+    () => transaction.value?.status,
+    (status) => {
+      if (status === 'REJECT') {
+        updateRejectCountdown()
+        if (!rejectTimer) {
+          rejectTimer = setInterval(updateRejectCountdown, 1000)
+        }
+      } else {
+        if (rejectTimer) {
+          clearInterval(rejectTimer)
+          rejectTimer = null
+        }
+      }
+    },
+    { immediate: true }
+  )
+
+  // ===== COUNTDOWN KLIRING DANA (done_at + 24 jam) =====
+  const kliringSeconds = ref(0)
+  let kliringTimer: ReturnType<typeof setInterval> | null = null
+
+  const updateKliringCountdown = () => {
+    if (!transaction.value?.done_at) return
+    kliringSeconds.value = Math.max(0, dayjs(transaction.value.done_at).add(24, 'hour').diff(dayjs(), 'second'))
+  }
+
+  const kliringCountdownDisplay = computed(() => {
+    const s = kliringSeconds.value
+    const h = Math.floor(s / 3600)
+    const m = Math.floor((s % 3600) / 60)
+    const sec = s % 60
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+  })
+
+  const isKliringExpired = computed(() => kliringSeconds.value <= 0)
+
+  watch(
+    () => transaction.value?.status,
+    (status) => {
+      if (status === 'DONE') {
+        updateKliringCountdown()
+        if (!kliringTimer) {
+          kliringTimer = setInterval(updateKliringCountdown, 1000)
+        }
+      } else {
+        if (kliringTimer) {
+          clearInterval(kliringTimer)
+          kliringTimer = null
+        }
+      }
+    },
+    { immediate: true }
+  )
+
   const refreshHandler = () => {
     refreshTransaction()
     refreshOrderDiscussion()
@@ -877,6 +1250,6 @@ const isImage = (format?: string) => {
     refreshFileOrders()
   }
 
-  
+
 
 </script>
