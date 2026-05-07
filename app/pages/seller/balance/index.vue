@@ -37,16 +37,6 @@
           >
             Tarik Dana
           </UButton>
-          <UButton
-            size="sm"
-            color="primary"
-            variant="outline"
-            icon="mdi:cash-plus"
-            class="border-white/30 text-white hover:bg-white/10 flex-1 justify-center"
-            @click="isDepositOpen = true"
-          >
-            Deposit
-          </UButton>
         </div>
       </div>
 
@@ -106,6 +96,159 @@
       </div>
 
     </div>
+
+    <!-- Riwayat Penarikan -->
+    <UCard class="shadow-sm">
+      <template #header>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <p class="font-semibold text-gray-800">Riwayat Penarikan</p>
+          <div class="flex items-center gap-2">
+            <USelect v-model="withdrawalPerPageValue" :items="perPageItems" class="w-24" />
+            <UButton
+              size="sm"
+              icon="mdi:refresh"
+              color="neutral"
+              variant="outline"
+              :loading="withdrawalLoading"
+              @click="refreshWithdrawal()"
+            >
+              Refresh
+            </UButton>
+          </div>
+        </div>
+      </template>
+
+      <!-- Loading -->
+      <AppLoadingSkeleton v-if="withdrawalLoading" />
+
+      <!-- Error -->
+      <UAlert
+        v-else-if="withdrawalError"
+        title="Terjadi Kesalahan"
+        :description="withdrawalError.message || 'Gagal memuat riwayat penarikan'"
+        icon="icon-park-solid:error"
+        color="error"
+        class="mb-4"
+      />
+
+      <!-- Empty -->
+      <div v-else-if="!withdrawalHistory?.content?.length" class="py-12 text-center">
+        <UIcon name="mdi:cash-remove" class="text-4xl text-gray-300 mb-3" />
+        <p class="text-gray-400 text-sm">Belum ada riwayat penarikan.</p>
+      </div>
+
+      <!-- Data -->
+      <div v-else class="divide-y divide-gray-100">
+        <div
+          v-for="item in withdrawalHistory.content"
+          :key="item.id"
+          class="py-4 px-2 hover:bg-gray-50 rounded-xl transition-colors"
+        >
+          <div class="flex items-start gap-4">
+            <!-- Icon -->
+            <div
+              class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+              :class="{
+                'bg-amber-50': item.status === 'PENDING',
+                'bg-green-50': item.status === 'COMPLETED',
+                'bg-red-50': item.status === 'REJECTED',
+                'bg-gray-100': item.status === 'CANCELLED',
+              }"
+            >
+              <UIcon
+                :name="item.status === 'COMPLETED' ? 'mdi:check-circle' : item.status === 'REJECTED' ? 'mdi:close-circle' : item.status === 'CANCELLED' ? 'mdi:cancel' : 'mdi:clock-outline'"
+                class="text-xl"
+                :class="{
+                  'text-amber-500': item.status === 'PENDING',
+                  'text-green-500': item.status === 'COMPLETED',
+                  'text-red-500': item.status === 'REJECTED',
+                  'text-gray-400': item.status === 'CANCELLED',
+                }"
+              />
+            </div>
+
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <p class="text-sm font-medium text-gray-800">{{ item.bank_name }} — {{ item.account_number }}</p>
+                  <p class="text-xs text-gray-500">a.n. {{ item.account_holder_name }}</p>
+                  <p class="text-xs text-gray-400 mt-0.5">{{ dayjs(item.created_at).format('DD MMM YYYY, HH:mm') }}</p>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <p class="text-base font-bold text-red-500">-{{ formatRp(item.amount) }}</p>
+                  <UBadge
+                    :color="item.status === 'COMPLETED' ? 'success' : item.status === 'REJECTED' ? 'error' : item.status === 'CANCELLED' ? 'neutral' : 'warning'"
+                    variant="soft"
+                    size="xs"
+                    class="mt-1"
+                  >
+                    {{ item.status === 'COMPLETED' ? 'Selesai' : item.status === 'REJECTED' ? 'Ditolak' : item.status === 'CANCELLED' ? 'Dibatalkan' : 'Menunggu' }}
+                  </UBadge>
+                </div>
+              </div>
+
+              <!-- Rincian biaya (tampil jika COMPLETED) -->
+              <div v-if="item.status === 'COMPLETED'" class="mt-2 bg-green-50 rounded-lg px-3 py-2 space-y-1">
+                <div class="flex justify-between text-xs text-gray-600">
+                  <span>Jumlah Ditarik</span>
+                  <span>{{ formatRp(item.amount) }}</span>
+                </div>
+                <div class="flex justify-between text-xs text-gray-600">
+                  <span>Biaya Admin</span>
+                  <span class="text-red-500">-{{ formatRp(item.admin_fee) }}</span>
+                </div>
+                <div class="flex justify-between text-xs font-semibold text-green-700 border-t border-green-200 pt-1">
+                  <span>Diterima</span>
+                  <span>{{ formatRp(item.amount_received) }}</span>
+                </div>
+                <div v-if="item.processed_at" class="flex justify-between text-xs text-gray-400">
+                  <span>Waktu Proses</span>
+                  <span>{{ dayjs(item.processed_at).format('DD MMM YYYY, HH:mm') }}</span>
+                </div>
+              </div>
+
+              <!-- Catatan admin jika REJECTED -->
+              <div v-if="item.status === 'REJECTED' && item.admin_notes" class="mt-2 bg-red-50 rounded-lg px-3 py-2">
+                <p class="text-xs text-red-600"><span class="font-medium">Alasan Penolakan:</span> {{ item.admin_notes }}</p>
+              </div>
+
+              <!-- Catatan dari seller -->
+              <p v-if="item.notes" class="text-xs text-gray-400 italic mt-1.5">Catatan: {{ item.notes }}</p>
+
+              <!-- Tombol Cancel (hanya PENDING) -->
+              <div v-if="item.status === 'PENDING'" class="mt-2 flex justify-end">
+                <UButton
+                  size="xs"
+                  color="error"
+                  variant="soft"
+                  icon="mdi:close-circle-outline"
+                  :loading="cancellingId === item.id"
+                  @click="handleCancelWithdrawal(item.id)"
+                >
+                  Batalkan
+                </UButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div
+        v-if="withdrawalHistory && withdrawalHistory.total_pages > 1 && !withdrawalLoading"
+        class="flex justify-center items-center pt-4"
+      >
+        <UPagination
+          :page="withdrawalPage + 1"
+          :total="withdrawalHistory.total_elements"
+          :items-per-page="withdrawalPerPageValue"
+          :sibling-count="1"
+          show-edges
+          @update:page="onWithdrawalPageChange"
+        />
+      </div>
+    </UCard>
 
     <!-- Mutasi Saldo -->
     <UCard class="shadow-sm">
@@ -211,133 +354,10 @@
       </div>
     </UCard>
 
-    <!-- Riwayat Deposit -->
-    <UCard class="shadow-sm">
-      <template #header>
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <p class="font-semibold text-gray-800">Riwayat Deposit</p>
-          <div class="flex items-center gap-2">
-            <USelect v-model="perPageValue" :items="perPageItems" class="w-24" />
-            <UButton
-              size="sm"
-              icon="mdi:refresh"
-              color="neutral"
-              variant="outline"
-              :loading="historyLoading"
-              @click="refreshHistory()"
-            >
-              Refresh
-            </UButton>
-          </div>
-        </div>
-      </template>
-
-      <!-- Loading -->
-      <AppLoadingSkeleton v-if="historyLoading" />
-
-      <!-- Error -->
-      <UAlert
-        v-else-if="historyError"
-        title="Terjadi Kesalahan"
-        :description="historyError.message || 'Gagal memuat riwayat saldo'"
-        icon="icon-park-solid:error"
-        color="error"
-        class="mb-4"
-      />
-
-      <!-- Empty -->
-      <div
-        v-else-if="!depositHistory?.content?.length"
-        class="py-12 text-center"
-      >
-        <UIcon name="i-heroicons-inbox" class="text-4xl text-gray-300 mb-3" />
-        <p class="text-gray-400 text-sm">Belum ada riwayat deposit.</p>
-      </div>
-
-      <!-- Data -->
-      <div v-else class="divide-y divide-gray-100">
-        <div
-          v-for="deposit in depositHistory.content"
-          :key="deposit.id"
-          class="flex items-center gap-4 py-4 px-2 hover:bg-gray-50 rounded-xl transition-colors"
-        >
-          <!-- Icon type -->
-          <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
-            <UIcon name="mdi:cash-plus" class="text-green-500 text-xl" />
-          </div>
-
-          <!-- Info -->
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-              <UBadge color="success" variant="soft" size="xs">DEPOSIT</UBadge>
-              <UBadge color="info" variant="soft" size="xs">{{ deposit.payment_method }}</UBadge>
-            </div>
-            <p class="text-sm font-medium text-gray-800 truncate">#{{ deposit.payment_id }}</p>
-            <p class="text-xs text-gray-400">{{ dayjs(deposit.created_at).format('DD MMM YYYY, HH:mm') }}</p>
-          </div>
-
-          <!-- Jumlah -->
-          <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
-            <p class="text-base font-bold text-green-600">+ {{ formatRp(deposit.amount) }}</p>
-            <AppPaymentStatusBadge :status="deposit.status" />
-          </div>
-
-          <!-- Aksi -->
-          <div class="flex flex-col gap-1 flex-shrink-0 ml-2">
-            <UButton
-              v-if="deposit.status === 'UNPAID'"
-              size="xs"
-              color="primary"
-              variant="soft"
-              icon="mdi:payment"
-            >
-              Bayar
-            </UButton>
-            <UButton
-              v-if="deposit.status === 'UNPAID'"
-              size="xs"
-              color="error"
-              variant="soft"
-              icon="material-symbols:cancel"
-              :loading="cancellingId === deposit.payment_id"
-              @click="handleCancel(deposit)"
-            >
-              Batalkan
-            </UButton>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pagination -->
-      <div
-        v-if="depositHistory && depositHistory.total_pages > 1 && !historyLoading"
-        class="flex justify-center items-center pt-4"
-      >
-        <UPagination
-          :page="page + 1"
-          :total="depositHistory.total_elements"
-          :items-per-page="perPageValue"
-          :sibling-count="1"
-          show-edges
-          @update:page="onPageChange"
-        />
-      </div>
-    </UCard>
-
     <!-- Modals -->
     <UModal v-model:open="isWithdrawalOpen" title="Tarik Dana">
       <template #body>
-        <FormWithdrawal @withdrawal-success="handleWithdrawalSuccess" />
-      </template>
-    </UModal>
-
-    <UModal v-model:open="isDepositOpen" title="Deposit Saldo">
-      <template #body>
-        <FormDeposit
-          :loading="submittingDeposit"
-          @submit="handleDepositSubmit"
-          @cancel="isDepositOpen = false"
-        />
+        <FormWithdrawal @withdrawal-success="handleWithdrawalSuccess" @cancel="isWithdrawalOpen = false" />
       </template>
     </UModal>
 
@@ -347,31 +367,28 @@
 <script lang="ts" setup>
 import dayjs from 'dayjs'
 import { useBalanceApi } from '~/composables/api/balance'
-import type { DepositResponse } from '~/types/balance/DepositResponse'
-import type { DepositRequest } from '~/types/balance/DepositRequest'
 import type { BalanceLogResponse } from '~/types/balance/BalanceLogResponse'
+import type { WithdrawalResponse } from '~/types/balance/WithdrawalResponse'
 import type { PageResponse } from '~/types/PageResponse'
-import type { StringIdRequest } from '~/types/StringIdRequest'
 
 definePageMeta({ layout: 'seller', label: 'Kelola Saldo' })
 
 const balanceStore = useBalanceStore()
 const toast = useToast()
-const { confirm } = useConfirm()
-const { fetchBalance, fetchDepositHistory, fetchDepositBalance, fetchDepositCancel, fetchBalanceLog } = useBalanceApi()
+const { confirm, close: closeConfirm } = useConfirm()
+const { fetchBalance, fetchBalanceLog, fetchWithdrawalHistory, cancelWithdrawal } = useBalanceApi()
 
 // ===== MODAL STATE =====
 const isWithdrawalOpen = ref(false)
-const isDepositOpen = ref(false)
-const submittingDeposit = ref(false)
-const cancellingId = ref<string | null>(null)
 
 // ===== PAGINATION STATE =====
-const page = ref(0)
-const perPageValue = ref(10)
 const perPageItems = [5, 10, 25, 50]
 
-// ===== PAGINATION LOG STATE =====
+// --- Withdrawal History ---
+const withdrawalPage = ref(0)
+const withdrawalPerPageValue = ref(10)
+
+// --- Balance Log ---
 const logPage = ref(0)
 const logPerPageValue = ref(10)
 
@@ -385,16 +402,16 @@ const { pending: balanceLoading, refresh: refreshBalance } = await useAsyncData(
   { server: false }
 )
 
-// ===== FETCH HISTORY =====
+// ===== FETCH WITHDRAWAL HISTORY =====
 const {
-  data: depositHistory,
-  pending: historyLoading,
-  error: historyError,
-  refresh: refreshHistory,
-} = await useAsyncData<PageResponse<DepositResponse>>(
-  () => `seller-deposit-history-${page.value}-${perPageValue.value}`,
-  () => fetchDepositHistory(page.value, perPageValue.value),
-  { watch: [page, perPageValue], server: false }
+  data: withdrawalHistory,
+  pending: withdrawalLoading,
+  error: withdrawalError,
+  refresh: refreshWithdrawal,
+} = await useAsyncData<PageResponse<WithdrawalResponse>>(
+  () => `seller-withdrawal-history-${withdrawalPage.value}-${withdrawalPerPageValue.value}`,
+  () => fetchWithdrawalHistory(withdrawalPage.value, withdrawalPerPageValue.value),
+  { watch: [withdrawalPage, withdrawalPerPageValue], server: false }
 )
 
 // ===== FETCH BALANCE LOG =====
@@ -415,11 +432,11 @@ function formatRp(val: number) {
 }
 
 async function handleRefresh() {
-  await Promise.all([refreshBalance(), refreshHistory(), refreshLog()])
+  await Promise.all([refreshBalance(), refreshWithdrawal(), refreshLog()])
 }
 
-function onPageChange(newPage: number) {
-  page.value = newPage - 1
+function onWithdrawalPageChange(newPage: number) {
+  withdrawalPage.value = newPage - 1
 }
 
 function onLogPageChange(newPage: number) {
@@ -430,46 +447,41 @@ function onLogPageChange(newPage: number) {
 function handleWithdrawalSuccess() {
   isWithdrawalOpen.value = false
   refreshBalance()
-  refreshHistory()
+  refreshWithdrawal()
+  refreshLog()
 }
 
-// ===== DEPOSIT =====
-async function handleDepositSubmit(payload: DepositRequest) {
-  submittingDeposit.value = true
-  try {
-    const deposit = await fetchDepositBalance(payload)
-    toast.add({ title: 'Deposit Dibuat', description: 'Silakan lanjutkan pembayaran', color: 'success' })
-    isDepositOpen.value = false
-    refreshBalance()
-    refreshHistory()
-    if (deposit.checkout_url) window.open(deposit.checkout_url, '_blank')
-  } catch (err: any) {
-    toast.add({ title: 'Deposit Gagal', description: err.statusMessage || 'Terjadi kesalahan', color: 'error' })
-  } finally {
-    submittingDeposit.value = false
-  }
-}
+const cancellingId = ref<string | null>(null)
 
-// ===== CANCEL DEPOSIT =====
-async function handleCancel(deposit: DepositResponse) {
-  const yes = await confirm({
-    title: 'Batalkan Deposit?',
-    message: 'Deposit yang dibatalkan tidak bisa dikembalikan. Yakin?',
+async function handleCancelWithdrawal(id: string) {
+  const ok = await confirm({
+    title: 'Batalkan Penarikan',
+    message: 'Apakah Anda yakin ingin membatalkan permintaan penarikan ini?',
     confirmText: 'Ya, Batalkan',
     cancelText: 'Tidak',
-    confirmColor: 'error',
   })
-  if (!yes) return
+  if (!ok) return
 
-  cancellingId.value = deposit.payment_id
   try {
-    await fetchDepositCancel(deposit.payment_id)
-    toast.add({ title: 'Deposit Dibatalkan', color: 'success' })
-    await Promise.all([refreshBalance(), refreshHistory()])
-  } catch {
-    toast.add({ title: 'Gagal Membatalkan Deposit', color: 'error' })
+    cancellingId.value = id
+    await cancelWithdrawal(id)
+    toast.add({
+      title: 'Penarikan Dibatalkan',
+      description: 'Permintaan penarikan berhasil dibatalkan.',
+      color: 'success',
+      icon: 'mdi:check-circle',
+    })
+    await Promise.all([refreshBalance(), refreshWithdrawal(), refreshLog()])
+  } catch (err: any) {
+    toast.add({
+      title: 'Gagal Membatalkan',
+      description: err.statusMessage || 'Terjadi kesalahan, coba lagi.',
+      color: 'error',
+      icon: 'mdi:close-circle',
+    })
   } finally {
     cancellingId.value = null
+    closeConfirm()
   }
 }
 </script>

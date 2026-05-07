@@ -23,27 +23,18 @@
                   {{ formatRupiah(balanceStore.balance) }}
                 </h2>
               </div>
-              <div class="flex flex-row gap-4 justify-items-center mt-4">
-                <div>
-                  <UButton size="xl" label="Tarik" icon="mdi:cash-minus" color="neutral" variant="outline" @click="isWithdrawalModalOpen = true" />
-                  <UModal v-model:open="isWithdrawalModalOpen" title="Tarik">
-                    <template #body>
-                      <FormWithdrawal @withdrawal-success="handleWithdrawalSuccess" />
-                    </template>
-                  </UModal>
-                </div>
-                <div>
-                  <UButton size="xl" label="Deposit" icon="mdi:cash-plus" color="neutral" variant="outline" @click="isDepositOpen = true" />
-                  <UModal v-model:open="isDepositOpen" title="Deposit">
-                    <template #body>
-                      <FormDeposit 
-                        :loading="submittingDeposit"
-                        @submit="handleDepositSubmit"
-                        @cancel="isDepositOpen = false"
-/>                    </template>
-                  </UModal>
-                </div>    
-              </div> 
+              <div class="flex justify-center mt-4">
+                <UButton size="xl" label="Deposit" icon="mdi:cash-plus" color="neutral" variant="outline" @click="isDepositOpen = true" />
+                <UModal v-model:open="isDepositOpen" title="Deposit">
+                  <template #body>
+                    <FormDeposit
+                      :loading="submittingDeposit"
+                      @submit="handleDepositSubmit"
+                      @cancel="isDepositOpen = false"
+                    />
+                  </template>
+                </UModal>
+              </div>
             </div>
   
           </UCard>
@@ -242,7 +233,6 @@ import type { PageResponse } from '~/types/PageResponse'
 
   // Reactive state
   const error = ref<string | null | any >(null)
-  const isWithdrawalModalOpen = ref(false)
   const isDepositOpen = ref(false)
   const submittingDeposit = ref(false)
   const toast = useToast()
@@ -329,10 +319,6 @@ async function handleRefresh() {
 
   const onLogPageChange = (newPage: number) => {
     logPage.value = newPage - 1
-  }
-
-  const handleWithdrawalSuccess = () => {
-    isWithdrawalModalOpen.value = false
   }
 
   const handleDepositSuccess = () => {

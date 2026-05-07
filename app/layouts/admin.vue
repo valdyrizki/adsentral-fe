@@ -28,6 +28,11 @@ const items: NavigationMenuItem[][] = [[
     icon: 'i-heroicons-credit-card',
     to: '/admin/payment'
   },
+  {
+    label: 'Penarikan Dana',
+    icon: 'mdi:cash-minus',
+    to: '/admin/withdrawal'
+  },
   // {
   //   label: 'Customers',
   //   icon: 'i-lucide-users',

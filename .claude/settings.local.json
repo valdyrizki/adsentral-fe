@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\admin\\\\withdrawal\")",
+      "Bash(Out-Null)"
+    ]
+  }
+}

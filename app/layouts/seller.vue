@@ -36,6 +36,11 @@ const items: NavigationMenuItem[][] = [[
   //   to: '/seller/customers'
   // },
   {
+    label: 'Rekening Bank',
+    icon: 'mdi:bank-outline',
+    to: '/seller/bank-account'
+  },
+  {
     label: 'Settings',
     icon: 'i-lucide-settings',
     children: [
