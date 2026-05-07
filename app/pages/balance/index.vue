@@ -53,7 +53,7 @@
         <!-- Order summary -->
         <section aria-labelledby="summary-heading" class="mt-16 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:col-span-8 lg:mt-0 lg:p-8">
           <div class="flex justify-between items-center">
-            <h2 class="text-2xl font-bold tracking-tight text-gray-900">Riwayat Saldo</h2>
+            <h2 class="text-2xl font-bold tracking-tight text-gray-900">Riwayat Deposit</h2>
             <div>
               <USelect v-model="perPageValue" :items="perPageItems" />
             </div>
@@ -78,8 +78,8 @@
           <!-- EMPTY -->
           <div v-else-if="!depositHistoryPagination?.content?.length && !authStore.isInitializing" class="p-6">
             <UAlert
-              title="Belum ada transaksi"
-              description="Transaksi anda akan muncul di sini"
+              title="Belum ada riwayat deposit"
+              description="Riwayat deposit Anda akan muncul di sini"
               icon="ix:anomaly-found"
               color="neutral"
             />
@@ -90,45 +90,39 @@
             <div v-for="deposit in depositHistoryPagination?.content" :key="deposit.id" class="flex border-b border-gray-200 px-4 py-6 sm:px-6 lg:px-8">
               <div class="flex flex-row gap-4 w-full">
                 <div class="flex-grow flex flex-col">
-                  <!-- Konten atas yang akan memenuhi ruang -->
+                  <!-- Konten atas -->
                   <div class="flex flex-col gap-1">
-                    <div class="flex gap-2">
-                      <UBadge class="bg-success" label="DEPOSIT" icon="mdi:money" />
-                      <UBadge class="bg-info" :label="deposit.payment_method" icon="mdi:credit-card" />
-                      
+                    <div class="flex gap-2 flex-wrap">
+                      <UBadge color="success" label="TOP UP" icon="mdi:cash-plus" />
+                      <UBadge color="info" :label="deposit.payment_method" icon="mdi:credit-card" />
                     </div>
-                    <div class="flex flex-row gap-2">
-                      <!-- <NuxtLink :to="`/transaction/${deposit.id}`" class="font-medium text-gray-900">#{{ deposit.payment_id }}</NuxtLink> -->
-                      <p :to="`/transaction/${deposit.id}`" class="font-medium text-gray-900">#{{ deposit.payment_id }}</p>
-
-                    </div>
+                    <p class="font-medium text-gray-900 text-sm">#{{ deposit.payment_id }}</p>
                   </div>
 
-                  <!-- Konten bawah yang akan didorong ke bawah -->
-                  <div class="mt-auto flex flex-col sm:flex-row gap-1 sm:gap-4 pt-4 sm:pt-0"> <!-- Gunakan 'mt-auto' untuk mendorong ke bawah -->
-                    <div class="flex flex-row gap-1">
-                      <UIcon name="fa6-solid:rupiah-sign" class="size-5 text-gray-400" />
-                      <div class="font-medium">
-                        {{ deposit.amount.toLocaleString('id-ID') }}
+                  <!-- Konten bawah -->
+                  <div class="mt-auto flex flex-col sm:flex-row gap-1 sm:gap-4 pt-4 sm:pt-0">
+                    <div class="flex flex-row gap-1 items-center">
+                      <UIcon name="fa6-solid:rupiah-sign" class="size-4 text-gray-400" />
+                      <div class="font-semibold text-green-700">
+                        + {{ deposit.amount.toLocaleString('id-ID') }}
                       </div>
                     </div>
 
-                    <div class="col-span-3 flex flex-row gap-1">
-                      <UIcon name="mdi:calendar" class="size-5 text-gray-400" />
-                      <div class="font-medium">
-                        {{ dayjs(deposit.created_at).format("YYYY-MM-DD HH:mm:ss")}}
+                    <div class="flex flex-row gap-1 items-center">
+                      <UIcon name="mdi:calendar" class="size-4 text-gray-400" />
+                      <div class="text-sm text-gray-600">
+                        {{ dayjs(deposit.created_at).format("YYYY-MM-DD HH:mm:ss") }}
                       </div>
                     </div>
                   </div>
                 </div>
-                
-                <div class="ml-auto flex-none">   
+
+                <div class="ml-auto flex-none">
                   <div class="flex flex-col gap-2 items-end">
-                    <PaymentStatusBadge :status="deposit?.status" class="mb-2" />                
-                    <UButton v-if="deposit.status === 'DONE' || deposit.status === 'COMPLETE'" icon="mdi:cart-outline" color="primary" variant="soft" size="xs" @click="addToCart">Beli Lagi</UButton>
-                    <UButton v-if="deposit.status === 'UNPAID'" icon="mdi:payment" color="primary" variant="soft" size="xs" @click="addToCart">Bayar</UButton>
+                    <PaymentStatusBadge :status="deposit?.status" class="mb-2" />
+                    <UButton v-if="deposit.status === 'UNPAID'" icon="mdi:open-in-new" color="primary" variant="soft" size="xs" @click="addToCart">Lanjut Bayar</UButton>
                     <UButton v-if="deposit.status === 'UNPAID'" icon="material-symbols:cancel" color="error" variant="soft" size="xs" @click="() => cancelHandle(deposit)">Batalkan</UButton>
-                  </div> 
+                  </div>
                 </div>
               </div>
             </div>
@@ -149,6 +143,88 @@
 
         </section>
       </div>
+
+      <!-- Balance Log -->
+      <section class="mt-8 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:p-8">
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-bold tracking-tight text-gray-900">Mutasi Saldo</h2>
+          <USelect v-model="logPerPageValue" :items="perPageItems" />
+        </div>
+        <USeparator class="mt-2" />
+
+        <!-- LOADING -->
+        <div v-if="loadingBalanceLog" class="p-6">
+          <AppLoadingSkeleton />
+        </div>
+
+        <!-- EMPTY -->
+        <div v-else-if="!balanceLogPagination?.content?.length" class="p-6">
+          <UAlert
+            title="Belum ada mutasi saldo"
+            description="Riwayat mutasi saldo Anda akan muncul di sini"
+            icon="ix:anomaly-found"
+            color="neutral"
+          />
+        </div>
+
+        <!-- DATA -->
+        <div v-else>
+          <div
+            v-for="log in balanceLogPagination?.content"
+            :key="log.id"
+            class="flex items-center border-b border-gray-200 px-4 py-4 gap-4"
+          >
+            <!-- Icon CREDIT / DEBIT -->
+            <div
+              class="flex-none rounded-full p-2"
+              :class="log.type === 'CREDIT' ? 'bg-green-100' : 'bg-red-100'"
+            >
+              <UIcon
+                :name="log.type === 'CREDIT' ? 'mdi:arrow-down-circle' : 'mdi:arrow-up-circle'"
+                class="size-6"
+                :class="log.type === 'CREDIT' ? 'text-green-600' : 'text-red-500'"
+              />
+            </div>
+
+            <!-- Info -->
+            <div class="flex-grow flex flex-col gap-0.5">
+              <p class="font-medium text-gray-800 text-sm">{{ log.description || '-' }}</p>
+              <div class="flex gap-3 text-xs text-gray-500 flex-wrap">
+                <span class="flex items-center gap-1">
+                  <UIcon name="mdi:calendar" class="size-3.5" />
+                  {{ dayjs(log.created_at).format('YYYY-MM-DD HH:mm:ss') }}
+                </span>
+                <span class="flex items-center gap-1">
+                  <UIcon name="mdi:history" class="size-3.5" />
+                  {{ formatRupiah(log.old_balance) }} → {{ formatRupiah(log.new_balance) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Jumlah -->
+            <div class="flex-none text-right">
+              <span
+                class="font-semibold text-base"
+                :class="log.type === 'CREDIT' ? 'text-green-600' : 'text-red-500'"
+              >
+                {{ log.type === 'CREDIT' ? '+' : '-' }}{{ log.amount.toLocaleString('id-ID') }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div v-if="balanceLogPagination && balanceLogPagination.total_pages > 1" class="flex justify-center items-center pt-4">
+            <UPagination
+              :page="logPage + 1"
+              :total="balanceLogPagination.total_elements"
+              :items-per-page="logPerPageValue"
+              :sibling-count="1"
+              show-edges
+              @update:page="onLogPageChange"
+            />
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -161,6 +237,7 @@
   import { useToast } from "#imports" // Nuxt UI toast
   import type { DepositRequest } from '~/types/balance/DepositRequest'
 import type { DepositResponse } from '~/types/balance/DepositResponse'
+import type { BalanceLogResponse } from '~/types/balance/BalanceLogResponse'
 import type { PageResponse } from '~/types/PageResponse'
 
   // Reactive state
@@ -176,8 +253,12 @@ import type { PageResponse } from '~/types/PageResponse'
   const perPageValue = ref<number>(10)
   const perPageItems = ref<number[]>([5, 10, 25, 50, 100])
 
+  //paging log ref
+  const logPage = ref(0)
+  const logPerPageValue = ref<number>(10)
+
   //fetch
-  const { fetchDepositHistory,fetchBalance, fetchDepositCancel, fetchDepositBalance  } = useBalanceApi()
+  const { fetchDepositHistory, fetchBalance, fetchDepositCancel, fetchDepositBalance, fetchBalanceLog } = useBalanceApi()
 
   //store
   const balanceStore = useBalanceStore()
@@ -230,10 +311,25 @@ import type { PageResponse } from '~/types/PageResponse'
 //   { server: false }
 // )
 
+  const {
+    data: balanceLogPagination,
+    pending: loadingBalanceLog,
+    refresh: refreshBalanceLog,
+  } = await useAsyncData<PageResponse<BalanceLogResponse>>(
+    `balance-log-${logPage.value}-${logPerPageValue.value}`,
+    () => fetchBalanceLog(logPage.value, logPerPageValue.value),
+    { watch: [logPage, logPerPageValue], server: false }
+  )
+
 async function handleRefresh() {
   await refreshBalance()
   await refreshDepositHistory()
+  await refreshBalanceLog()
 }
+
+  const onLogPageChange = (newPage: number) => {
+    logPage.value = newPage - 1
+  }
 
   const handleWithdrawalSuccess = () => {
     isWithdrawalModalOpen.value = false

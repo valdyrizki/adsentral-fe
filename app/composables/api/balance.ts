@@ -9,6 +9,7 @@ import type { DepositRequest } from '~/types/balance/DepositRequest'
 import type { StringIdRequest } from '~/types/StringIdRequest'
 import type { DepositResponse } from '~/types/balance/DepositResponse'
 import type { DepositSubmitResponse } from '~/types/balance/DepositSubmitResponse'
+import type { BalanceLogResponse } from '~/types/balance/BalanceLogResponse'
 
 export const useBalanceApi = () => {
   const balanceStore = useBalanceStore()
@@ -63,6 +64,25 @@ export const useBalanceApi = () => {
     return res.data
   }
 
+  const fetchBalanceLog = async (
+    page: number = 0,
+    size: number = 10
+  ): Promise<PageResponse<BalanceLogResponse>> => {
+    const res = await api<WebResponse<PageResponse<BalanceLogResponse>>>(
+      '/balance/log',
+      { params: { page, size } }
+    )
+
+    if (res.status !== 'success' || !res.data) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: res.message || 'Gagal memuat log saldo',
+      })
+    }
+
+    return res.data
+  }
+
   const fetchDepositCancel = async (id: string) => {
     const res = await api<WebResponse>('/balance/deposit/cancel/' + id, {
       method: 'POST',
@@ -86,5 +106,6 @@ export const useBalanceApi = () => {
     fetchDepositBalance,
     fetchDepositHistory,
     fetchDepositCancel,
+    fetchBalanceLog,
   }
 }

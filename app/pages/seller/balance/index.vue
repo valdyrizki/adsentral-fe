@@ -107,11 +107,115 @@
 
     </div>
 
-    <!-- Riwayat Saldo -->
+    <!-- Mutasi Saldo -->
     <UCard class="shadow-sm">
       <template #header>
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <p class="font-semibold text-gray-800">Riwayat Saldo</p>
+          <p class="font-semibold text-gray-800">Mutasi Saldo</p>
+          <div class="flex items-center gap-2">
+            <USelect v-model="logPerPageValue" :items="perPageItems" class="w-24" />
+            <UButton
+              size="sm"
+              icon="mdi:refresh"
+              color="neutral"
+              variant="outline"
+              :loading="logLoading"
+              @click="refreshLog()"
+            >
+              Refresh
+            </UButton>
+          </div>
+        </div>
+      </template>
+
+      <!-- Loading -->
+      <AppLoadingSkeleton v-if="logLoading" />
+
+      <!-- Error -->
+      <UAlert
+        v-else-if="logError"
+        title="Terjadi Kesalahan"
+        :description="logError.message || 'Gagal memuat mutasi saldo'"
+        icon="icon-park-solid:error"
+        color="error"
+        class="mb-4"
+      />
+
+      <!-- Empty -->
+      <div v-else-if="!balanceLog?.content?.length" class="py-12 text-center">
+        <UIcon name="i-heroicons-inbox" class="text-4xl text-gray-300 mb-3" />
+        <p class="text-gray-400 text-sm">Belum ada mutasi saldo.</p>
+      </div>
+
+      <!-- Data -->
+      <div v-else class="divide-y divide-gray-100">
+        <div
+          v-for="log in balanceLog.content"
+          :key="log.id"
+          class="flex items-center gap-4 py-4 px-2 hover:bg-gray-50 rounded-xl transition-colors"
+        >
+          <!-- Icon CREDIT / DEBIT -->
+          <div
+            class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            :class="log.type === 'CREDIT' ? 'bg-green-50' : 'bg-red-50'"
+          >
+            <UIcon
+              :name="log.type === 'CREDIT' ? 'mdi:arrow-down-circle' : 'mdi:arrow-up-circle'"
+              class="text-xl"
+              :class="log.type === 'CREDIT' ? 'text-green-500' : 'text-red-500'"
+            />
+          </div>
+
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-800 truncate">{{ log.description || '-' }}</p>
+            <p class="text-xs text-gray-400">{{ dayjs(log.created_at).format('DD MMM YYYY, HH:mm') }}</p>
+            <p class="text-xs text-gray-400 mt-0.5">
+              {{ formatRp(log.old_balance) }} → {{ formatRp(log.new_balance) }}
+            </p>
+          </div>
+
+          <!-- Jumlah -->
+          <div class="flex-shrink-0 text-right">
+            <p
+              class="text-base font-bold"
+              :class="log.type === 'CREDIT' ? 'text-green-600' : 'text-red-500'"
+            >
+              {{ log.type === 'CREDIT' ? '+' : '-' }}{{ formatRp(log.amount) }}
+            </p>
+            <UBadge
+              :color="log.type === 'CREDIT' ? 'success' : 'error'"
+              variant="soft"
+              size="xs"
+              class="mt-1"
+            >
+              {{ log.type === 'CREDIT' ? 'Masuk' : 'Keluar' }}
+            </UBadge>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div
+        v-if="balanceLog && balanceLog.total_pages > 1 && !logLoading"
+        class="flex justify-center items-center pt-4"
+      >
+        <UPagination
+          :page="logPage + 1"
+          :total="balanceLog.total_elements"
+          :items-per-page="logPerPageValue"
+          :sibling-count="1"
+          show-edges
+          @update:page="onLogPageChange"
+        />
+      </div>
+    </UCard>
+
+    <!-- Riwayat Deposit -->
+    <UCard class="shadow-sm">
+      <template #header>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <p class="font-semibold text-gray-800">Riwayat Deposit</p>
           <div class="flex items-center gap-2">
             <USelect v-model="perPageValue" :items="perPageItems" class="w-24" />
             <UButton
@@ -147,7 +251,7 @@
         class="py-12 text-center"
       >
         <UIcon name="i-heroicons-inbox" class="text-4xl text-gray-300 mb-3" />
-        <p class="text-gray-400 text-sm">Belum ada riwayat transaksi saldo.</p>
+        <p class="text-gray-400 text-sm">Belum ada riwayat deposit.</p>
       </div>
 
       <!-- Data -->
@@ -245,6 +349,7 @@ import dayjs from 'dayjs'
 import { useBalanceApi } from '~/composables/api/balance'
 import type { DepositResponse } from '~/types/balance/DepositResponse'
 import type { DepositRequest } from '~/types/balance/DepositRequest'
+import type { BalanceLogResponse } from '~/types/balance/BalanceLogResponse'
 import type { PageResponse } from '~/types/PageResponse'
 import type { StringIdRequest } from '~/types/StringIdRequest'
 
@@ -253,7 +358,7 @@ definePageMeta({ layout: 'seller', label: 'Kelola Saldo' })
 const balanceStore = useBalanceStore()
 const toast = useToast()
 const { confirm } = useConfirm()
-const { fetchBalance, fetchDepositHistory, fetchDepositBalance, fetchDepositCancel } = useBalanceApi()
+const { fetchBalance, fetchDepositHistory, fetchDepositBalance, fetchDepositCancel, fetchBalanceLog } = useBalanceApi()
 
 // ===== MODAL STATE =====
 const isWithdrawalOpen = ref(false)
@@ -265,6 +370,10 @@ const cancellingId = ref<string | null>(null)
 const page = ref(0)
 const perPageValue = ref(10)
 const perPageItems = [5, 10, 25, 50]
+
+// ===== PAGINATION LOG STATE =====
+const logPage = ref(0)
+const logPerPageValue = ref(10)
 
 // ===== FETCH BALANCE =====
 const { pending: balanceLoading, refresh: refreshBalance } = await useAsyncData(
@@ -288,17 +397,33 @@ const {
   { watch: [page, perPageValue], server: false }
 )
 
+// ===== FETCH BALANCE LOG =====
+const {
+  data: balanceLog,
+  pending: logLoading,
+  error: logError,
+  refresh: refreshLog,
+} = await useAsyncData<PageResponse<BalanceLogResponse>>(
+  () => `seller-balance-log-${logPage.value}-${logPerPageValue.value}`,
+  () => fetchBalanceLog(logPage.value, logPerPageValue.value),
+  { watch: [logPage, logPerPageValue], server: false }
+)
+
 // ===== HELPERS =====
 function formatRp(val: number) {
   return 'Rp ' + val.toLocaleString('id-ID')
 }
 
 async function handleRefresh() {
-  await Promise.all([refreshBalance(), refreshHistory()])
+  await Promise.all([refreshBalance(), refreshHistory(), refreshLog()])
 }
 
 function onPageChange(newPage: number) {
   page.value = newPage - 1
+}
+
+function onLogPageChange(newPage: number) {
+  logPage.value = newPage - 1
 }
 
 // ===== WITHDRAWAL =====
