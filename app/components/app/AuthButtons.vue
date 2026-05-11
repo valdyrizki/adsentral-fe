@@ -88,6 +88,7 @@ const itemsProfile = computed<DropdownMenuItem[]>(() => {
       },
       { label: 'Order History', icon: 'i-lucide-package', to: '/transaction' },
       { label: 'Riwayat Pembayaran', icon: 'i-heroicons-credit-card', to: '/payment' },
+      { label: 'Riwayat Penalty', icon: 'i-heroicons-shield-exclamation', to: '/penalty' },
     ],
     [merchantItem],
     [

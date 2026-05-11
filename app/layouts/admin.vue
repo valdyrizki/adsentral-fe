@@ -33,6 +33,14 @@ const items: NavigationMenuItem[][] = [[
     icon: 'mdi:cash-minus',
     to: '/admin/withdrawal'
   },
+  {
+    label: 'Penalty',
+    icon: 'i-heroicons-shield-exclamation',
+    children: [
+      { label: 'Penalty Rule', to: '/admin/penalty-rule' },
+      { label: 'Manage Penalty', to: '/admin/penalty' },
+    ]
+  },
   // {
   //   label: 'Customers',
   //   icon: 'i-lucide-users',

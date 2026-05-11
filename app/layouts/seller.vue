@@ -41,6 +41,11 @@ const items: NavigationMenuItem[][] = [[
     to: '/seller/bank-account'
   },
   {
+    label: 'Penalty',
+    icon: 'i-heroicons-shield-exclamation',
+    to: '/seller/penalty'
+  },
+  {
     label: 'Settings',
     icon: 'i-lucide-settings',
     children: [
@@ -143,7 +148,7 @@ const items: NavigationMenuItem[][] = [[
         <div>
           <slot/>
         </div>
-        
+
       </main>
     </div>
     

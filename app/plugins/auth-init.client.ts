@@ -1,21 +1,27 @@
 // app/plugins/auth-init.client.ts
 
-import type { UserResponse } from "~/types/UserResponse"
+import { useSystemSettingApi } from "~/composables/api/system-setting"
 
 export default defineNuxtPlugin(async () => {
-
-
   const authStore = useAuthStore()
   const balanceStore = useBalanceStore()
   const config = useRuntimeConfig()
+  const { fetchPublicSystemSetting } = useSystemSettingApi()
 
+  try{
+    // Load system settings (public endpoint, no auth required)
+    fetchPublicSystemSetting().catch(() => {})
+  }catch(err) {
+    // Gagal load system setting, bisa jadi karena masalah jaringan atau server
+    // Log error tapi jangan ganggu flow auth init
+    console.error('Failed to load system settings during auth init', err)
+  }
 
   // Kalau accessToken sudah ada (rare case: hot-reload atau navigasi internal), skip
   if (authStore.accessToken) {
     authStore.setInitialized()
     return
   }
-
 
   try {
     // 1. Panggil /refresh — browser auto-attach cookie refreshToken (HttpOnly)

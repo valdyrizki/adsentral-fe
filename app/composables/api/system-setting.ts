@@ -11,7 +11,7 @@ export const useSystemSettingApi = () => {
   const fetchPublicSystemSetting = async () => {
     try {
       systemSettingStore.setLoading(true)
-      const res = await api<WebResponse<SystemSettingResponse[]>>('/system/settings')
+      const res = await api<WebResponse<SystemSettingResponse[]>>('/system/settings/public')
       if (res.status !== 'success') throw new Error(res.message)
       systemSettingStore.setSystemSettings(res.data || [])
       return res.data

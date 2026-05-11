@@ -217,6 +217,47 @@
       </div>
     </div>
 
+    <!-- CANCEL_REQUEST: Pembeli Mengajukan Pembatalan + countdown 24 jam -->
+    <div v-if="transaction?.status === 'CANCEL_REQUEST'" class="mt-4 flex flex-col gap-3">
+      <div class="w-full bg-yellow-100 p-2 rounded-lg overflow-hidden">
+        <div class="flex flex-col gap-2 text-center">
+          <div>
+            <h1 class="text-lg">Pembeli Mengajukan Pembatalan!</h1>
+          </div>
+          <div>
+            <p class="text-sm">{{ transaction?.tx_description ?? "Tidak ada alasan pembatalan" }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="w-full p-3 rounded-lg overflow-hidden border"
+        :class="isCancelRequestExpired ? 'bg-red-50 border-red-300' : 'bg-orange-50 border-orange-200'"
+      >
+        <div class="flex flex-col items-center gap-2 text-center py-1">
+          <div class="flex items-center gap-2">
+            <UIcon
+              name="mdi:clock-alert-outline"
+              class="size-5"
+              :class="isCancelRequestExpired ? 'text-red-500' : 'text-orange-500'"
+            />
+            <span class="font-semibold" :class="isCancelRequestExpired ? 'text-red-600' : 'text-orange-600'">
+              {{ isCancelRequestExpired ? 'Batas Waktu Habis!' : 'Batas Waktu Pembatalan Otomatis' }}
+            </span>
+          </div>
+          <div v-if="!isCancelRequestExpired" class="text-4xl font-mono font-bold tracking-widest text-orange-600">
+            {{ cancelRequestCountdownDisplay }}
+          </div>
+          <p class="text-sm" :class="isCancelRequestExpired ? 'text-red-500' : 'text-orange-500'">
+            {{ isCancelRequestExpired
+              ? 'Transaksi akan dibatalkan otomatis oleh sistem.'
+              : 'Jika penjual tidak merespons, sistem akan memproses pembatalan otomatis.'
+            }}
+          </p>
+        </div>
+      </div>
+    </div>
+
     <!-- REJECT: Pembeli menolak + countdown 24 jam -->
     <div v-if="transaction?.status === 'REJECT'" class="mt-4 flex flex-col gap-3">
       <div class="w-full bg-red-100 p-2 rounded-lg overflow-hidden">
@@ -903,6 +944,7 @@ const isImage = (format?: string) => {
     if (deliveredTimer) clearInterval(deliveredTimer)
     if (rejectTimer) clearInterval(rejectTimer)
     if (kliringTimer) clearInterval(kliringTimer)
+    if (cancelRequestTimer) clearInterval(cancelRequestTimer)
   })
 
   // ===== COUNTDOWN KONFIRMASI SELLER (paid_at + 24 jam) =====
@@ -1063,6 +1105,43 @@ const isImage = (format?: string) => {
         if (kliringTimer) {
           clearInterval(kliringTimer)
           kliringTimer = null
+        }
+      }
+    },
+    { immediate: true }
+  )
+
+  // ===== COUNTDOWN CANCEL REQUEST (updated_at + 24 jam) =====
+  const cancelRequestSeconds = ref(0)
+  let cancelRequestTimer: ReturnType<typeof setInterval> | null = null
+
+  const updateCancelRequestCountdown = () => {
+    if (!transaction.value?.updated_at) return
+    cancelRequestSeconds.value = Math.max(0, dayjs(transaction.value.updated_at).add(24, 'hour').diff(dayjs(), 'second'))
+  }
+
+  const cancelRequestCountdownDisplay = computed(() => {
+    const s = cancelRequestSeconds.value
+    const h = Math.floor(s / 3600)
+    const m = Math.floor((s % 3600) / 60)
+    const sec = s % 60
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+  })
+
+  const isCancelRequestExpired = computed(() => cancelRequestSeconds.value <= 0)
+
+  watch(
+    () => transaction.value?.status,
+    (status) => {
+      if (status === 'CANCEL_REQUEST') {
+        updateCancelRequestCountdown()
+        if (!cancelRequestTimer) {
+          cancelRequestTimer = setInterval(updateCancelRequestCountdown, 1000)
+        }
+      } else {
+        if (cancelRequestTimer) {
+          clearInterval(cancelRequestTimer)
+          cancelRequestTimer = null
         }
       }
     },

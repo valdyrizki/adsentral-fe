@@ -48,6 +48,77 @@
       </UCard>
     </div>
 
+    <!-- Penalty Status Card -->
+    <UCard v-if="penaltyStat && (penaltyStat.suspend_status !== 'NONE' || penaltyStat.active_points > 0)"
+      class="shadow-sm border"
+      :class="{
+        'border-red-200 bg-red-50': penaltyStat.suspend_status === 'PERMANENT' || penaltyStat.suspend_status === 'TEMPORARY',
+        'border-orange-200 bg-orange-50': penaltyStat.suspend_status === 'WARNING' || (penaltyStat.suspend_status === 'NONE' && penaltyStat.active_points > 0),
+      }"
+    >
+      <template #header>
+        <div class="flex items-center gap-2">
+          <UIcon name="i-heroicons-shield-exclamation" class="text-lg text-gray-500" />
+          <p class="font-semibold text-gray-800">Status Penalty Akun</p>
+        </div>
+      </template>
+      <div class="flex items-center gap-4">
+        <div
+          class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+          :class="{
+            'bg-red-100': penaltyStat.suspend_status === 'PERMANENT' || penaltyStat.suspend_status === 'TEMPORARY',
+            'bg-orange-100': penaltyStat.suspend_status === 'WARNING',
+            'bg-green-100': penaltyStat.suspend_status === 'NONE',
+          }"
+        >
+          <UIcon
+            :name="penaltyStat.suspend_status === 'PERMANENT' ? 'i-heroicons-x-circle'
+              : penaltyStat.suspend_status === 'TEMPORARY' ? 'i-heroicons-no-symbol'
+              : penaltyStat.suspend_status === 'WARNING' ? 'i-heroicons-exclamation-triangle'
+              : 'i-heroicons-shield-check'"
+            class="text-2xl"
+            :class="{
+              'text-red-500': penaltyStat.suspend_status === 'PERMANENT' || penaltyStat.suspend_status === 'TEMPORARY',
+              'text-orange-500': penaltyStat.suspend_status === 'WARNING',
+              'text-green-500': penaltyStat.suspend_status === 'NONE',
+            }"
+          />
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <p class="text-sm font-semibold text-gray-800">
+              {{
+                penaltyStat.suspend_status === 'PERMANENT' ? 'Suspend Permanen' :
+                penaltyStat.suspend_status === 'TEMPORARY' ? 'Suspend Sementara' :
+                penaltyStat.suspend_status === 'WARNING' ? 'Peringatan' :
+                'Normal'
+              }}
+            </p>
+            <UBadge
+              :color="penaltyStat.suspend_status === 'PERMANENT' || penaltyStat.suspend_status === 'TEMPORARY' ? 'error'
+                : penaltyStat.suspend_status === 'WARNING' ? 'warning'
+                : 'success'"
+              variant="subtle"
+              size="xs"
+            >
+              {{ penaltyStat.active_points }} poin aktif
+            </UBadge>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">
+            {{
+              penaltyStat.suspend_status === 'PERMANENT'
+                ? 'Akun Anda disuspend permanen. Hubungi admin untuk informasi lebih lanjut.'
+                : penaltyStat.suspend_status === 'TEMPORARY' && penaltyStat.suspend_until
+                ? `Disuspend hingga ${dayjs(penaltyStat.suspend_until).format('DD MMM YYYY')}. Aktivitas toko dibatasi.`
+                : penaltyStat.suspend_status === 'WARNING'
+                ? 'Anda memiliki poin penalty aktif. Pelanggaran lebih lanjut dapat menyebabkan suspensi.'
+                : 'Akun Anda dalam kondisi baik. Tidak ada penalty aktif.'
+            }}
+          </p>
+        </div>
+      </div>
+    </UCard>
+
     <!-- Balance Card -->
     <UCard class="shadow-sm overflow-hidden">
       <template #header>
@@ -280,6 +351,8 @@
 import dayjs from 'dayjs'
 import TransactionStatusBadge from '~/components/app/TransactionStatusBadge.vue'
 import { useTransactionApi } from '~/composables/api/transaction'
+import { usePenaltyApi } from '~/composables/api/penalty'
+import type { MyPenaltyStat } from '~/composables/api/penalty'
 import type { PageResponse } from '~/types/PageResponse'
 import type { TransactionResponse } from '~/types/TransactionResponse'
 
@@ -291,6 +364,10 @@ const authStore = useAuthStore()
 const balanceStore = useBalanceStore()
 const user = computed(() => authStore.user?.username ?? '-')
 const { fetchTxSeller } = useTransactionApi()
+const { fetchMyPenaltyStat } = usePenaltyApi()
+
+const penaltyStat = ref<MyPenaltyStat | null>(null)
+onMounted(async () => { penaltyStat.value = await fetchMyPenaltyStat() })
 
 // Load merchant info & balance
 await Promise.allSettled([

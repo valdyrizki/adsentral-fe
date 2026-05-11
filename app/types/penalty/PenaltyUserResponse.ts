@@ -1,0 +1,13 @@
+import type { UserResponse } from '~/types/UserResponse'
+
+export type UserSuspendStatus = 'NONE' | 'TEMPORARY' | 'PERMANENT'
+
+export interface PenaltyUserResponse {
+  id: string
+  active_points: number
+  suspend_status: UserSuspendStatus
+  suspend_until: string | null
+  created_at: string
+  updated_at: string
+  user: UserResponse
+}
