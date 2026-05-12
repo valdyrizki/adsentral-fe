@@ -260,7 +260,7 @@ const statusLabel = (status: string) => {
 
 function buildWaLink(product: ProductResponse) {
   const number = systemSettingStore.systemSettings.find(s => s.key === 'WA_NUMBER')?.value
-  if (!number) return null
+  if (!number) return undefined 
   const msg = `Halo admin, saya ingin mengajukan banding untuk produk *${product.name}* (ID: #${product.id}) yang statusnya NONACTIVE. Mohon ditinjau kembali.`
   return `https://wa.me/${number.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`
 }
