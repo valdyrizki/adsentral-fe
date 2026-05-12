@@ -16,7 +16,10 @@ const items: NavigationMenuItem[][] = [[
   {
     label: 'Products',
     icon: 'i-lucide-package',
-    to: '/admin/product'
+    children: [
+      { label: 'Semua Produk', to: '/admin/product' },
+      { label: 'Review Produk', to: '/admin/product/review' },
+    ]
   },
   {
     label: 'Orders',

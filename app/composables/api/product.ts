@@ -7,11 +7,11 @@ import { useApi } from './useApi'
 export const useProductsApi = () => {
   const api = useApi()
 
-  const getProducts = async (page = 0, size = 10, keyword = '', sort = 'terbaru') => {
+  const getProducts = async (page = 0, size = 10, keyword = '', sort = 'terbaru', status = '') => {
     try {
-      const res = await api<WebResponse<PageResponse<ProductResponse>>>('/products', {
-        query: { page, size, keyword, sort }
-      })
+      const query: Record<string, any> = { page, size, keyword, sort }
+      if (status) query.status = status
+      const res = await api<WebResponse<PageResponse<ProductResponse>>>('/products', { query })
       if (res.status !== 'success' || !res.data) {
         throw createError({ statusCode: 400, statusMessage: res.message || 'Failed to fetch products' })
       }
@@ -145,7 +145,6 @@ export const useProductsApi = () => {
       if (request.stock) formData.append("stock", request.stock.toString())
       if (request.category_id) formData.append("categoryId", request.category_id.toString())
       if (request.distributor) formData.append("distributor", request.distributor)
-      if (request.status) formData.append("status", request.status)
       if (request.delivery_days) formData.append("deliveryDays", request.delivery_days.toString())
       console.log(formData.values)
 
@@ -181,7 +180,6 @@ export const useProductsApi = () => {
       if (request.stock) formData.append("stock", request.stock.toString())
       if (request.category_id) formData.append("categoryId", request.category_id.toString())
       if (request.distributor) formData.append("distributor", request.distributor)
-      if (request.status) formData.append("status", request.status)
       if (request.delivery_days) formData.append("deliveryDays", request.delivery_days.toString())
 
       const res = await api<WebResponse<ProductResponse>>(`/product/update/${request.id}`, {
@@ -233,6 +231,66 @@ export const useProductsApi = () => {
     }
   }
 
+  const getAllProductsAdmin = async (page = 0, size = 20, keyword = '', sort = 'terbaru', status = '') => {
+    try {
+      const query: Record<string, any> = { page, size, sort }
+      if (keyword) query.keyword = keyword
+      if (status) query.status = status
+      const res = await api<WebResponse<PageResponse<ProductResponse>>>('/products/all', { query })
+      if (res.status !== 'success' || !res.data) {
+        throw createError({ statusCode: 400, statusMessage: res.message || 'Failed to fetch products' })
+      }
+      return res.data
+    } catch (err: any) {
+      throw createError({ statusCode: err.statusCode || 500, statusMessage: err.message || 'Failed to fetch products' })
+    }
+  }
+
+  const adminActivateProduct = async (id: number) => {
+    try {
+      const res = await api<WebResponse<ProductResponse>>(`/product/admin/activate/${id}`, { method: 'PATCH' })
+      if (!res || res.status !== 'success') {
+        throw createError({ statusCode: 400, statusMessage: res?.message || 'Activate Failed' })
+      }
+      return res.data
+    } catch (err: any) {
+      throw createError({
+        statusCode: err.statusCode || 500,
+        statusMessage: err.statusMessage || 'Activate failed, server error',
+      })
+    }
+  }
+
+  const rejectProduct = async (id: number) => {
+    try {
+      const res = await api<WebResponse<ProductResponse>>(`/product/reject/${id}`, { method: 'PATCH' })
+      if (!res || res.status !== 'success') {
+        throw createError({ statusCode: 400, statusMessage: res?.message || 'Reject Failed' })
+      }
+      return res.data
+    } catch (err: any) {
+      throw createError({
+        statusCode: err.statusCode || 500,
+        statusMessage: err.statusMessage || 'Reject failed, server error',
+      })
+    }
+  }
+
+  const suspendProduct = async (id: number) => {
+    try {
+      const res = await api<WebResponse<ProductResponse>>(`/product/suspend/${id}`, { method: 'PATCH' })
+      if (!res || res.status !== 'success') {
+        throw createError({ statusCode: 400, statusMessage: res?.message || 'Suspend Failed' })
+      }
+      return res.data
+    } catch (err: any) {
+      throw createError({
+        statusCode: err.statusCode || 500,
+        statusMessage: err.statusMessage || 'Suspend failed, server error',
+      })
+    }
+  }
+
   return {
     getProducts,
     fetchProductsByCategoryId,
@@ -246,5 +304,9 @@ export const useProductsApi = () => {
     updateProduct,
     deactivateProduct,
     activateProduct,
+    rejectProduct,
+    suspendProduct,
+    getAllProductsAdmin,
+    adminActivateProduct,
   }
 }

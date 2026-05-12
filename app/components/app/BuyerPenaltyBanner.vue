@@ -72,7 +72,6 @@ onMounted(async () => {
 
 const isPermanent = computed(() => stat.value?.suspend_status === 'PERMANENT')
 const isTemporary = computed(() => stat.value?.suspend_status === 'TEMPORARY')
-const isWarning  = computed(() => stat.value?.suspend_status === 'WARNING')
 
 const outerClass = computed(() => {
   if (isPermanent.value) return 'bg-red-50 border-red-200'
@@ -125,8 +124,8 @@ const bannerTitle = computed(() => {
 const bannerDesc = computed(() => {
   if (isPermanent.value)
     return 'Hubungi kami untuk informasi lebih lanjut.'
-  if (isTemporary.value && stat.value?.suspended_until)
-    return `Berlaku hingga ${dayjs(stat.value.suspended_until).format('DD MMM YYYY')}.`
+  if (isTemporary.value && stat.value?.suspend_until)
+    return `Berlaku hingga ${dayjs(stat.value.suspend_until).format('DD MMM YYYY')}.`
   return `${stat.value?.active_points ?? 0} poin aktif — jaga kepatuhan untuk menghindari suspensi.`
 })
 </script>

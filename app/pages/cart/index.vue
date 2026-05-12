@@ -6,10 +6,35 @@
         <section aria-labelledby="cart-heading" class="lg:col-span-7">
           <h2 id="cart-heading" class="sr-only">Items in your shopping cart</h2>
 
+          <!-- Peringatan jika ada item tidak tersedia -->
+          <UAlert
+            v-if="hasUnavailableItems"
+            icon="i-heroicons-exclamation-triangle"
+            color="warning"
+            variant="subtle"
+            title="Beberapa produk tidak tersedia"
+            description="Hapus produk yang tidak tersedia untuk melanjutkan checkout."
+            class="mb-4"
+          />
+
           <ul role="list" class="divide-y divide-gray-200 border-t border-b border-gray-200">
-            <li v-for="cartItem in cartStore.items" :key="cartItem.product_id" class="flex py-6 sm:py-10">
-              <div class="shrink-0">
+            <li
+              v-for="cartItem in cartStore.items"
+              :key="cartItem.product_id"
+              class="flex py-6 sm:py-10"
+              :class="{ 'opacity-60': cartItem.product?.status !== 'ACTIVE' }"
+            >
+              <div class="shrink-0 relative">
                 <img :src="config.public.backendUrl +'/'+ cartItem.product?.banner_url" :alt="cartItem.product?.name" class="size-24 rounded-md object-cover sm:size-48" />
+                <UBadge
+                  v-if="cartItem.product?.status !== 'ACTIVE'"
+                  color="error"
+                  variant="solid"
+                  size="xs"
+                  class="absolute top-1 left-1"
+                >
+                  {{ statusLabel(cartItem.product?.status) }}
+                </UBadge>
               </div>
 
               <div class="ml-4 flex flex-1 flex-col justify-between sm:ml-6">
@@ -22,19 +47,29 @@
                     </div>
                     <div class="mt-1 text-sm">
                       <div class="text-gray-500 flex gap-2">
-                        <UAvatar :src="config.public.backendUrl +'/'+ cartItem.product?.merchant_logo" size="xs" /> 
+                        <UAvatar :src="config.public.backendUrl +'/'+ cartItem.product?.merchant_logo" size="xs" />
                         {{ cartItem.product?.merchant_name }}
                       </div>
                     </div>
                     <p class="mt-1 text-sm text-red-500">Rp {{ cartItem.product?.sell_price.toLocaleString('id-ID') }}</p>
-                    
-                    <p class="mt-1 text-sm font-medium text-red-500"> Total :  Rp {{ ((cartItem.product?.sell_price ?? 0) * cartItem.quantity).toLocaleString('id-ID') }}</p>
+                    <p class="mt-1 text-sm font-medium text-red-500">Total : Rp {{ ((cartItem.product?.sell_price ?? 0) * cartItem.quantity).toLocaleString('id-ID') }}</p>
+
+                    <!-- Keterangan jika tidak ACTIVE -->
+                    <p v-if="cartItem.product?.status !== 'ACTIVE'" class="mt-2 text-xs text-red-500">
+                      Produk ini tidak tersedia dan tidak dapat di-checkout.
+                    </p>
                   </div>
-                  
+
                   <div class="mt-4 sm:mt-0 sm:pr-9">
                     <div class="grid w-full grid-cols-1">
-                      <div class="">       
-                        <UInputNumber :key="cartItem.product_id" v-model="cartItem.quantity"  size="md" @update:model-value="checkStock(cartItem)"/> 
+                      <div class="">
+                        <UInputNumber
+                          :key="cartItem.product_id"
+                          v-model="cartItem.quantity"
+                          size="md"
+                          :disabled="cartItem.product?.status !== 'ACTIVE'"
+                          @update:model-value="checkStock(cartItem)"
+                        />
                       </div>
                     </div>
 
@@ -47,7 +82,11 @@
                   </div>
                 </div>
 
-                <UTextarea v-model="cartItem.note" class="pt-2 w-auto"/>
+                <UTextarea
+                  v-if="cartItem.product?.status === 'ACTIVE'"
+                  v-model="cartItem.note"
+                  class="pt-2 w-auto"
+                />
               </div>
             </li>
           </ul>
@@ -99,19 +138,20 @@
                 type="payment"
               />
             </div>           
-            <UButton 
-            size="xl" 
-            class="w-full justify-center mt-4" 
-            :label="
-              loading ? 'Please Wait'
-              : isSaldoInsufficient ? 'Saldo Tidak Cukup'
-              : 'Checkout'
-            "
-            trailing-icon="i-lucide-arrow-right" 
-            variant="solid" 
-            @click="checkout" 
-            :loading="loading" 
-            :disabled="isSaldoInsufficient || loading"
+            <UButton
+              size="xl"
+              class="w-full justify-center mt-4"
+              :label="
+                loading ? 'Please Wait'
+                : hasUnavailableItems ? 'Ada Produk Tidak Tersedia'
+                : isSaldoInsufficient ? 'Saldo Tidak Cukup'
+                : 'Checkout'
+              "
+              trailing-icon="i-lucide-arrow-right"
+              variant="solid"
+              @click="checkout"
+              :loading="loading"
+              :disabled="isSaldoInsufficient || loading || hasUnavailableItems"
             />
           </div>
         </section>
@@ -229,8 +269,21 @@ const checkout = async () =>{
 
   const isSaldoInsufficient = computed(() => {
   if (cartStore.payment_method !== 'SALDO') return false
-  
   return balance < cartStore.subTotal
 })
+
+const hasUnavailableItems = computed(() =>
+  cartStore.items.some(item => item.product?.status !== 'ACTIVE')
+)
+
+const statusLabel = (status: string | undefined) => {
+  const map: Record<string, string> = {
+    REVIEW: 'Review',
+    INACTIVE: 'Ditangguhkan',
+    NONACTIVE: 'Nonaktif',
+    SUSPEND: 'Suspend',
+  }
+  return map[status ?? ''] ?? 'Tidak Tersedia'
+}
 
 </script>

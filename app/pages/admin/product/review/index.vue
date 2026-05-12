@@ -31,7 +31,7 @@
     <UCard class="shadow-sm">
       <template #header>
         <p class="font-semibold text-gray-800">
-          Semua Produk
+          Review Produk Seller
           <span v-if="productPagination?.total_elements" class="text-xs text-gray-400 font-normal ml-2">
             ({{ productPagination.total_elements }} total)
           </span>
@@ -90,8 +90,8 @@
                 Stok: {{ product.stock }}
               </span>
               <span class="flex items-center gap-1">
-                <UIcon name="mdi:cart" />
-                {{ product.sold }} Terjual
+                <UIcon name="mdi:tag-outline" />
+                {{ product.category_name }}
               </span>
               <span class="flex items-center gap-1">
                 <UIcon name="mdi:calendar" />
@@ -177,7 +177,7 @@ import { useProductsApi } from '~/composables/api/product'
 import type { PageResponse } from '~/types/PageResponse'
 import type { ProductResponse } from '~/types/product/ProductResponse'
 
-definePageMeta({ layout: 'admin', label: 'Products' })
+definePageMeta({ layout: 'admin', label: 'Review Produk' })
 
 const config = useRuntimeConfig()
 const toast = useToast()
@@ -190,15 +190,15 @@ const perPageValue = ref(10)
 const perPageItems = [5, 10, 25, 50]
 const search = ref('')
 const keyword = ref('')
-const filterStatus = ref('')
+const filterStatus = ref('REVIEW')
 
 const statusOptions = [
-  { label: 'Semua Status', value: 'ALL' },
   { label: 'Menunggu Review', value: 'REVIEW' },
   { label: 'Aktif', value: 'ACTIVE' },
   { label: 'Ditangguhkan Seller', value: 'INACTIVE' },
   { label: 'Ditolak / Nonaktif', value: 'NONACTIVE' },
   { label: 'Suspend', value: 'SUSPEND' },
+  { label: 'Semua Status', value: '' },
 ]
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
@@ -209,8 +209,8 @@ const {
   pending,
   error,
   refresh,
-} = await useAsyncData<PageResponse<ProductResponse>>(
-  () => `admin-all-products-${page.value}-${perPageValue.value}-${keyword.value}-${filterStatus.value}`,
+} = useAsyncData<PageResponse<ProductResponse>>(
+  () => `admin-review-products-${page.value}-${perPageValue.value}-${keyword.value}-${filterStatus.value}`,
   () => getAllProductsAdmin(page.value, perPageValue.value, keyword.value, 'terbaru', filterStatus.value),
   { watch: [page, perPageValue], server: false }
 )

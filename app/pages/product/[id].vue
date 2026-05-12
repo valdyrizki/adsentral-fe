@@ -78,16 +78,31 @@
                 </div>
 
                 <USeparator class="py-4" />
-                <div class="flex flex-row gap-2 justify-center md:justify-normal">
-                  <div class="">
+                <!-- Keterangan status jika bukan ACTIVE -->
+                <UAlert
+                  v-if="product.status !== 'ACTIVE'"
+                  :icon="productStatusInfo.icon"
+                  :color="productStatusInfo.color as any"
+                  :title="productStatusInfo.title"
+                  :description="productStatusInfo.description"
+                  variant="subtle"
+                  class="mt-2"
+                />
+
+                <template v-if="product.status === 'ACTIVE'">
+                  <div class="flex flex-row gap-2 justify-center md:justify-normal mt-4">
                     <UInputNumber v-model="qty" :max="product?.stock ?? undefined" size="xl"/>
                   </div>
-                </div>
 
-                <div class="flex flex-row gap-2 pt-2">
+                  <div class="flex flex-row gap-2 pt-2">
+                    <UButton icon="uiw:message" size="md" color="primary" variant="outline" @click="isChatOpen = true">Chat Penjual</UButton>
+                    <UButton icon="mdi:cart-outline" color="primary" variant="soft" size="xl" class="basis-auto" @click="addToCart">Masukan Keranjang</UButton>
+                    <UButton trailing-icon="i-lucide-arrow-right" color="primary" variant="solid" size="xl" class="basis-auto" @click="buyNow">Beli Sekarang</UButton>
+                  </div>
+                </template>
+
+                <div v-else class="flex flex-row gap-2 pt-2">
                   <UButton icon="uiw:message" size="md" color="primary" variant="outline" @click="isChatOpen = true">Chat Penjual</UButton>
-                  <UButton icon="mdi:cart-outline" color="primary" variant="soft" size="xl" class="basis-auto" @click="addToCart">Masukan Keranjang</UButton>
-                  <UButton trailing-icon="i-lucide-arrow-right" color="primary" variant="solid" size="xl" class="basis-auto" @click="buyNow">Beli Sekarang</UButton>
                 </div>
               </div>
             </div>
@@ -411,6 +426,41 @@ const {
     watch: [reviewPage, reviewRating, reviewKeywordDebounced],
   }
 )
+
+const productStatusInfo = computed(() => {
+  const map: Record<string, { title: string; description: string; icon: string; color: string }> = {
+    REVIEW: {
+      title: 'Produk Sedang Direview',
+      description: 'Produk ini sedang menunggu persetujuan admin dan belum dapat dibeli.',
+      icon: 'i-heroicons-clock',
+      color: 'info',
+    },
+    INACTIVE: {
+      title: 'Produk Tidak Tersedia',
+      description: 'Produk ini sedang ditangguhkan oleh seller dan tidak dapat dibeli saat ini.',
+      icon: 'i-heroicons-pause-circle',
+      color: 'warning',
+    },
+    NONACTIVE: {
+      title: 'Produk Tidak Aktif',
+      description: 'Produk ini dinonaktifkan dan tidak dapat dibeli saat ini.',
+      icon: 'i-heroicons-x-circle',
+      color: 'error',
+    },
+    SUSPEND: {
+      title: 'Produk Disuspend',
+      description: 'Produk ini disuspend karena melanggar ketentuan dan tidak dapat dibeli.',
+      icon: 'i-heroicons-shield-exclamation',
+      color: 'error',
+    },
+  }
+  return map[product.value?.status ?? ''] ?? {
+    title: 'Produk Tidak Tersedia',
+    description: 'Produk ini tidak dapat dibeli saat ini.',
+    icon: 'i-heroicons-exclamation-circle',
+    color: 'neutral',
+  }
+})
 
 const avgRating = computed(() => {
   const content = reviews.value?.content

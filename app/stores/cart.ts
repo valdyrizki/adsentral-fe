@@ -129,41 +129,33 @@ export const useCartStore = defineStore('cart', {
         if (data) {
           // Buat map biar gampang update per item
           const productsMap = new Map(data.map((p: ProductResponse) => [p.id, p]))
+          const removedNames: string[] = []
 
           // Update setiap cartItem dengan data terbaru
           this.items.forEach((item) => {
             const updatedProduct = productsMap.get(item.product_id)
 
             if (updatedProduct) {
+              // Update data produk terbaru (harga, stok, status)
+              item.product = updatedProduct
 
-              // Cek apakah qty masih valid
-              // if (item.quantity > updatedProduct.stock) {
-                // item.quantity = updatedProduct.stock
-
-                // if(productsMap.get(item.product_id)?.stock !== item.product?.stock){
-                  // isChange = true;
-                  // messages.push("Produk "+updatedProduct.name+" tersisa "+updatedProduct.stock)
-                // }
-
-                
-
-              // }
-
-              //cek apakah harga berubah
-              // if(item.product?.sell_price != updatedProduct.sell_price){
-                
-              //   isChange = true;
-              //   messages.push("Produk "+updatedProduct.name+" berubah harga menjadi "+updatedProduct.sell_price)
-              // }
-
-              // item.product = updatedProduct
+              // Hapus dari cart jika produk tidak lagi ACTIVE
+              if (updatedProduct.status !== 'ACTIVE') {
+                removedNames.push(updatedProduct.name)
+                this.removeFromCart(item.product_id)
+              }
             } else {
-              // Kalau product sudah tidak ada di backend, hapus dari cart
-              // isChange = true;
-              // messages.push("Produk "+item.product?.name+" sudah tidak tersedia")
+              // Produk sudah tidak ada di backend
+              removedNames.push(item.product?.name ?? `Produk #${item.product_id}`)
               this.removeFromCart(item.product_id)
             }
           })
+
+          if (removedNames.length > 0) {
+            throw new Error(
+              `Beberapa produk tidak tersedia dan telah dihapus dari keranjang: ${removedNames.join(', ')}`
+            )
+          }
         }else{
           throw new Error("Data tidak ditemukan")
         }

@@ -16,5 +16,4 @@ export class ProductRequest {
   product_image1: File | null = null
   product_image2: File | null = null
   product_image3: File | null = null
-  status?: Status = Status.ACTIVE // status (default ACTIVE)
 }
