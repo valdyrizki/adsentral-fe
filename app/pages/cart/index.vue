@@ -1,10 +1,22 @@
 <template>
   <div class="bg-white">
     <div class="mx-auto max-w-2xl px-2 pt-4 pb-4  lg:max-w-7xl lg:px-4">
-      <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Shopping Cart</h1>
+      <UBreadcrumb :items="breadcrumb" class="mb-3" />
+      <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Keranjang Belanja</h1>
       <form class="mt-6 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
         <section aria-labelledby="cart-heading" class="lg:col-span-7">
           <h2 id="cart-heading" class="sr-only">Items in your shopping cart</h2>
+
+          <!-- Sinkronisasi data keranjang -->
+          <UAlert
+            v-if="syncing"
+            icon="i-heroicons-arrow-path"
+            color="info"
+            variant="subtle"
+            title="Menyinkronkan keranjang..."
+            description="Memperbarui data produk terbaru dari server."
+            class="mb-4"
+          />
 
           <!-- Peringatan jika ada item tidak tersedia -->
           <UAlert
@@ -137,7 +149,44 @@
                 :methods="paymentMethodData ?? []"
                 type="payment"
               />
-            </div>           
+            </div>
+
+            <!-- Info Rekening MANUAL_BANK -->
+            <div v-if="cartStore.payment_method === 'MANUAL_BANK'" class="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <UIcon name="mdi:bank-outline" class="size-5 text-yellow-600" />
+                <h3 class="font-semibold text-yellow-800">Informasi Rekening Pembayaran</h3>
+              </div>
+              <p class="text-xs text-yellow-700 mb-3">
+                Transfer sejumlah total pesanan ke rekening berikut, lalu tunggu admin memverifikasi pembayaran Anda.
+              </p>
+              <div v-if="rekeningLoading" class="py-2">
+                <AppLoadingSkeleton />
+              </div>
+              <div v-else-if="rekeningSettings && rekeningSettings.length > 0" class="flex flex-col gap-1.5">
+                <div
+                  v-for="setting in rekeningSettings"
+                  :key="setting.id"
+                  class="flex justify-between items-center text-sm bg-white rounded px-3 py-2 border border-yellow-100"
+                >
+                  <span class="text-gray-500">{{ setting.description || setting.key }}</span>
+                  <div class="flex items-center gap-2">
+                    <span class="font-semibold text-gray-900">{{ setting.value }}</span>
+                    <UButton
+                      :icon="copiedKey === setting.key ? 'i-heroicons-check' : 'i-heroicons-clipboard'"
+                      size="xs"
+                      :color="copiedKey === setting.key ? 'success' : 'neutral'"
+                      variant="ghost"
+                      @click="copyToClipboard(setting.key, setting.value)"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-sm text-yellow-700 italic">
+                Informasi rekening belum tersedia. Silakan hubungi admin.
+              </div>
+            </div>
+
             <UButton
               size="xl"
               class="w-full justify-center mt-4"
@@ -151,7 +200,7 @@
               variant="solid"
               @click="checkout"
               :loading="loading"
-              :disabled="isSaldoInsufficient || loading || hasUnavailableItems"
+              :disabled="isSaldoInsufficient || loading || hasUnavailableItems || syncing"
             />
           </div>
         </section>
@@ -164,14 +213,32 @@
 import PaymentMethodSelector from '~/components/u/PaymentMethodSelector.vue';
 import { useBalanceStore } from '~/stores/balance';
 import { usePaymentMethodApi } from '~/composables/api/payment-method';
+import { useSystemSettingApi } from '~/composables/api/system-setting';
 import type { CartItem } from '~/types/CartItem';
 import type { PaymentMethodResponse } from '~/types/payment-method/PaymentMethodResponse';
+import type { SystemSettingResponse } from '~/types/system-setting/SystemSettingResponse';
+
+const breadcrumb = [
+  { label: 'Home', icon: 'i-lucide-home', to: '/' },
+  { label: 'Keranjang Belanja', icon: 'i-heroicons-shopping-cart' },
+]
 
 // reactive state
 const loading = ref<boolean>(false)
+const copiedKey = ref<string | null>(null)
+
+function copyToClipboard(key: string, value: string) {
+  navigator.clipboard.writeText(value).then(() => {
+    copiedKey.value = key
+    toast.add({ title: 'Disalin!', description: value, color: 'success', icon: 'i-heroicons-check-circle' })
+    setTimeout(() => { copiedKey.value = null }, 2000)
+  })
+}
+const syncing = ref<boolean>(false)
 
 // composables api
 const { fetchPaymentMethod,paymentMethodLoading } = usePaymentMethodApi()
+const { fetchPublicSystemSettingByGroup } = useSystemSettingApi()
 const { balance } = useBalanceStore()
 
 //store
@@ -257,13 +324,22 @@ const checkout = async () =>{
   }
 }
 
-    const { 
-    data: paymentMethodData, 
-    pending:paymenMethodLoading, 
-    error:errorPaymentMethod, 
-    refresh:refreshPaymentMethod } 
+  const {
+    data: paymentMethodData,
+    pending:paymenMethodLoading,
+    error:errorPaymentMethod,
+    refresh:refreshPaymentMethod }
   = await useAsyncData<PaymentMethodResponse[]>(
     `payment-method-cart-page`, async () =>  await fetchPaymentMethod(),
+    { server: false }
+  )
+
+  const {
+    data: rekeningSettings,
+    pending: rekeningLoading,
+  } = await useAsyncData<SystemSettingResponse[]>(
+    'rekening-settings-cart',
+    () => fetchPublicSystemSettingByGroup('REKENING'),
     { server: false }
   )
 
@@ -285,5 +361,35 @@ const statusLabel = (status: string | undefined) => {
   }
   return map[status ?? ''] ?? 'Tidak Tersedia'
 }
+
+onMounted(async () => {
+  if (cartStore.items.length === 0) return
+  syncing.value = true
+  try {
+    const { removed, priceChanged } = await cartStore.syncCart()
+
+    if (removed.length > 0) {
+      toast.add({
+        title: 'Produk dihapus dari keranjang',
+        description: `${removed.join(', ')} tidak lagi tersedia.`,
+        color: 'warning',
+        icon: 'i-heroicons-exclamation-triangle',
+        duration: 6000,
+      })
+    }
+
+    if (priceChanged.length > 0) {
+      toast.add({
+        title: 'Harga produk berubah',
+        description: priceChanged.join(' | '),
+        color: 'info',
+        icon: 'i-heroicons-information-circle',
+        duration: 6000,
+      })
+    }
+  } finally {
+    syncing.value = false
+  }
+})
 
 </script>

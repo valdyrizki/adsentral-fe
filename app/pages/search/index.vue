@@ -2,6 +2,10 @@
   <div class="w-full p-1 mt-4 bg-white">
     <div class="mx-auto w-full md:w-3/4 border rounded-2xl border-blue-200 bg-gray-100">
 
+      <div class="px-4 pt-4">
+        <UBreadcrumb :items="breadcrumb" />
+      </div>
+
       <AppHeaderSection
         :title="`Hasil pencarian: &quot;${keyword}&quot;`"
         description="Produk yang sesuai dengan pencarianmu"
@@ -80,6 +84,11 @@ const router = useRouter()
 const { getProducts } = useProductsApi()
 
 const keyword = computed(() => (route.query.q as string) || '')
+
+const breadcrumb = computed(() => [
+  { label: 'Home', icon: 'i-lucide-home', to: '/' },
+  { label: `Pencarian: "${keyword.value}"`, icon: 'i-heroicons-magnifying-glass' },
+])
 const currentPage = ref(1)
 const pageSize = 20
 const sortBy = ref<string>('terbaru')

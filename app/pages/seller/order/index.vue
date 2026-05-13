@@ -99,7 +99,7 @@
                   <UButton v-if="tx.status === 'PAID'" icon="mdi:check-circle" size="xs" color="info" variant="solid" @click="handleConfirmOrder(tx.id)" :loading="acceptingId === tx.id" >Terima Pesanan</UButton>
 
                   <UButton
-                    v-if="tx.status === 'UNPAID' || tx.status === 'PAID'"
+                    v-if="tx.status === 'PAID'"
                     icon="mdi:close-circle"
                     size="xs"
                     color="error"

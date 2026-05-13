@@ -17,16 +17,13 @@ export const useSystemSettingApi = () => {
       return res.data
     } catch (err: any) {
       console.error('Failed fetch System Setting', err)
-      throw createError({
-        statusCode: err.statusCode || 500,
-        statusMessage: err.message || 'Failed to fetch System Setting',
-      })
+      throw new Error(err.message || 'Failed to fetch System Setting')
     } finally {
       systemSettingStore.setLoading(false)
     }
   }
 
-  const fetchAllSystemSetting = async (): Promise<SystemSettingResponse[] > => {
+  const fetchAllSystemSetting = async (): Promise<SystemSettingResponse[]> => {
     try {
       systemSettingStore.setLoading(true)
       const res = await api<WebResponse<SystemSettingResponse[]>>('/system/settings/all')
@@ -35,10 +32,7 @@ export const useSystemSettingApi = () => {
       return res.data || []
     } catch (err: any) {
       console.error('Failed fetch System Setting', err)
-      throw createError({
-        statusCode: err.statusCode || 500,
-        statusMessage: err.message || 'Failed to fetch System Setting',
-      })
+      throw new Error(err.message || 'Failed to fetch System Setting')
     } finally {
       systemSettingStore.setLoading(false)
     }
@@ -69,11 +63,25 @@ export const useSystemSettingApi = () => {
     if (res.status !== 'success') throw new Error(res.message)
   }
 
+  const fetchPublicSystemSettingByGroup = async (group: string): Promise<SystemSettingResponse[]> => {
+    try {
+      const res = await api<WebResponse<SystemSettingResponse[]>>('/system/settings/public/group', {
+        query: { group },
+      })
+      if (res.status !== 'success') throw new Error(res.message)
+      return res.data || []
+    } catch (err: any) {
+      console.error('Failed fetch System Setting by group', err)
+      throw new Error(err.message || 'Failed to fetch System Setting')
+    }
+  }
+
   return {
     systemSettings: computed(() => systemSettingStore.systemSettings),
     systemSettingLoading: computed(() => systemSettingStore.loading),
     fetchPublicSystemSetting,
     fetchAllSystemSetting,
+    fetchPublicSystemSettingByGroup,
     createSystemSetting,
     updateSystemSetting,
     deleteSystemSetting,

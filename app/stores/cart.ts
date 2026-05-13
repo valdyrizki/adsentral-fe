@@ -109,6 +109,53 @@ export const useCartStore = defineStore('cart', {
       this.items = []
     },
 
+    async syncCart(): Promise<{ removed: string[], priceChanged: string[] }> {
+      if (this.items.length === 0) return { removed: [], priceChanged: [] }
+
+      const removed: string[] = []
+      const priceChanged: string[] = []
+
+      try {
+        const { getProductsByIds } = useProductsApi()
+        const ids = this.items.map(i => i.product_id)
+        const data = await getProductsByIds(ids)
+
+        if (data) {
+          const productsMap = new Map(data.map((p: ProductResponse) => [p.id, p]))
+
+          this.items.forEach((item) => {
+            const updated = productsMap.get(item.product_id)
+
+            if (!updated) {
+              removed.push(item.product?.name ?? `Produk #${item.product_id}`)
+              this.removeFromCart(item.product_id)
+              return
+            }
+
+            // Deteksi perubahan harga
+            if (item.product && item.product.sell_price !== updated.sell_price) {
+              priceChanged.push(
+                `${updated.name} (Rp ${item.product.sell_price.toLocaleString('id-ID')} → Rp ${updated.sell_price.toLocaleString('id-ID')})`
+              )
+            }
+
+            // Selalu update data produk terbaru
+            item.product = updated
+
+            // Hapus dari cart jika tidak ACTIVE
+            if (updated.status !== 'ACTIVE') {
+              removed.push(updated.name)
+              this.removeFromCart(item.product_id)
+            }
+          })
+        }
+      } catch (err: any) {
+        console.error('Sync cart failed:', err)
+      }
+
+      return { removed, priceChanged }
+    },
+
     async updateDataFromBackend() {
       if (this.items.length === 0) return
 

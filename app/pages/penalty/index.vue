@@ -1,6 +1,8 @@
 <template>
   <div class="max-w-3xl mx-auto px-4 py-8 space-y-6">
 
+    <UBreadcrumb :items="breadcrumb" />
+
     <!-- Header -->
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Riwayat Penalty</h1>
@@ -140,6 +142,11 @@ import type { PageResponse } from '~/types/PageResponse'
 import type { PenaltyResponse } from '~/types/penalty/PenaltyResponse'
 
 definePageMeta({ layout: 'default', label: 'Riwayat Penalty' })
+
+const breadcrumb = [
+  { label: 'Home', icon: 'i-lucide-home', to: '/' },
+  { label: 'Riwayat Penalty', icon: 'i-heroicons-shield-exclamation' },
+]
 
 const systemSettingStore = useSystemSettingStore()
 const { fetchMyPenalties } = usePenaltyApi()

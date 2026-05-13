@@ -1,6 +1,7 @@
 <template>
   <div class="bg-white">
     <div class="mx-auto max-w-2xl px-2 pt-4 pb-4 lg:max-w-7xl lg:px-4">
+      <UBreadcrumb :items="breadcrumb" class="mb-3" />
       <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Chat</h1>
       <div class="mt-6 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
         
@@ -284,6 +285,11 @@
 import dayjs from 'dayjs'
 import LoadingSkeleton from '~/components/app/LoadingSkeleton.vue'
 import ChatProductModal from '~/components/form/ChatProductModal.vue'
+
+const breadcrumb = [
+  { label: 'Home', icon: 'i-lucide-home', to: '/' },
+  { label: 'Chat', icon: 'i-heroicons-chat-bubble-left-right' },
+]
 import { useChatApi } from '~/composables/api/chat'
 import { useProductsApi } from '~/composables/api/product'
 import type { ChatRequest } from '~/types/chat/ChatRequest'

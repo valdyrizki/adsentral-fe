@@ -83,7 +83,7 @@
           <UBadge icon="mdi:receipt-text" size="lg" class="font-medium text-white">#{{ transaction?.id }}</UBadge>
           <UButton icon="uiw:message" size="lg" color="primary" variant="outline" @click="isChatOpen = true">Chat Pembeli</UButton>
           <UButton v-if="transaction?.status === 'REJECT'" icon="material-symbols:help-outline-rounded" color="error" variant="solid" size="xs" @click="isArbitrageRequestModal = true">Tangguhkan</UButton>
-          <UButton v-if="transaction?.status === 'UNPAID'" icon="material-symbols:cancel" color="error" variant="soft" size="xs" @click="addToCart">Batalkan</UButton>
+          <UButton v-if="transaction?.status === 'PAID'" icon="material-symbols:cancel" color="error" variant="soft" size="xs" @click="addToCart">Batalkan</UButton>
           <UButton icon="material-symbols:refresh" variant="outline" size="xs" @click="refreshHandler">Refresh</UButton>
         </div> 
       </div>
@@ -658,7 +658,7 @@
         </div>
         <div class="flex flex-row gap-2 justify-center items-center">
           <UButton icon="mdi:send" color="primary" variant="solid" size="md" @click="submitDiscussion(false)" :loading="isSubmitting">Kirim Pesan</UButton>
-          <UButton icon="mdi:send" color="success" variant="solid" size="md" @click="submitDiscussion(true)" :loading="isSubmitting">Kirim Orderan</UButton>
+          <UButton v-if="showSendOrderButton" icon="mdi:send" color="success" variant="solid" size="md" @click="submitDiscussion(true)" :loading="isSubmitting">Kirim Orderan</UButton>
         </div>
       </div>
     </div>
@@ -1365,6 +1365,12 @@ const isImage = (format?: string) => {
     refreshReviews()
     refreshFileOrders()
   }
+
+  const showSendOrderButton = computed(() => {
+    if (!transaction.value) return false
+    const status = transaction.value.status
+    return status === 'IN_PROGRESS' || status === 'DELIVERED' || status === 'REJECT' || status === 'ARBITRAGE' || status === 'DONE'  // hanya tampilkan tombol "Kirim Orderan" jika belum pernah kirim file order sebelumnya
+  })
 
 
 </script>

@@ -2,8 +2,9 @@
   <div>
     <div class="mx-auto max-w-7xl py-4 px-4 xl:px-0">
       <div class="px-4 sm:px-0">
-        <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Order history</h1>
-        <p class="mt-2 text-sm text-gray-500">Check the status of recent orders, manage returns, and download invoices.</p>
+        <UBreadcrumb :items="breadcrumb" class="mb-3" />
+        <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Riwayat Transaksi</h1>
+        <p class="mt-2 text-sm text-gray-500">Pantau status pesanan, ajukan pembatalan, dan lihat detail transaksi Anda.</p>
       </div>
 
       <div class="mt-16">
@@ -149,6 +150,11 @@
 
 // Ambil API function
   const { fetchBuyerTransactions } = useTransactionApi()
+
+const breadcrumb = [
+  { label: 'Home', icon: 'i-lucide-home', to: '/' },
+  { label: 'Riwayat Transaksi', icon: 'i-heroicons-shopping-bag' },
+]
 
 // Reactive state
   const error = ref<string | null | any >(null)

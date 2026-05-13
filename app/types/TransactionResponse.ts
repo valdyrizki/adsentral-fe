@@ -24,5 +24,6 @@ export interface TransactionResponse {
   buyer_fullname: string;
   buyer_avatar_url: string;
   seller_email: string;
+  payment_method: string | null;
   product: ProductResponse
 }

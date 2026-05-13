@@ -1,7 +1,8 @@
 <template>
   <div class="bg-white">
     <div class="mx-auto max-w-2xl px-2 pt-4 pb-4 lg:max-w-7xl lg:px-4">
-      <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Saldo User</h1>
+      <UBreadcrumb :items="breadcrumb" class="mb-3" />
+      <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Saldo Saya</h1>
       <div class="mt-6 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
         <section aria-labelledby="cart-heading" class="lg:col-span-4">
 
@@ -224,6 +225,11 @@
   import dayjs from 'dayjs'
   import PaymentStatusBadge from '~/components/app/PaymentStatusBadge.vue'
   import { useBalanceApi } from '~/composables/api/balance'
+
+const breadcrumb = [
+  { label: 'Home', icon: 'i-lucide-home', to: '/' },
+  { label: 'Saldo Saya', icon: 'i-heroicons-wallet' },
+]
   import type { StringIdRequest } from '~/types/StringIdRequest'
   import { useToast } from "#imports" // Nuxt UI toast
   import type { DepositRequest } from '~/types/balance/DepositRequest'

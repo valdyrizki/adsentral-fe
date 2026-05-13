@@ -170,11 +170,7 @@ const {
 } = useSystemSettingApi()
 
 
-await useAsyncData('system-settings-data', async () => {
-  await Promise.all([
-    fetchAllSystemSetting(),
-  ])
-})
+useAsyncData('system-settings-data', () => fetchAllSystemSetting(), { server: false })
 
 const isFormModalOpen = ref(false)
 const editingId = ref<string | null>(null)

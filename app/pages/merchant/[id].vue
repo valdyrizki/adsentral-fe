@@ -2,8 +2,9 @@
   <!-- Container -->
   <div class="w-full">
     <div class="mx-auto  px-4 py-4 sm:px-6 sm:py-6 max-w-7xl lg:px-8">
+      <UBreadcrumb :items="breadcrumb" class="mb-4" />
       <div class="mx-auto mt-4 flow-root pb-10  ">
-        
+
         <div v-if="loadingMechant">
           <AppLoadingSkeleton/>
         </div>
@@ -220,8 +221,13 @@
   const config = useRuntimeConfig()
 
   //ambil route param
-  const route = useRoute() 
+  const route = useRoute()
   const router = useRouter()
+
+  const breadcrumb = computed(() => [
+    { label: 'Home', icon: 'i-lucide-home', to: '/' },
+    { label: merchant.value?.name ?? 'Toko', icon: 'i-heroicons-store' },
+  ])
 
   //paging ref
   const page = ref(0)

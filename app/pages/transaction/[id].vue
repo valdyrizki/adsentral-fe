@@ -1,14 +1,7 @@
 <template>
   <main class="px-4 sm:px-6 lg:px-8 py-8">
     <div class="mx-auto">
-      <div class="max-w-xl flex gap-2 ">
-        <NuxtLink class="text-base font-medium flex items-center gap-1" to="/transaction">
-          <UIcon name="mdi:arrow-left" class="size-5 text-gray-400" />
-          Kembali
-        </NuxtLink>
-        <h1 class="text-base font-medium ">|</h1>
-        <h1 class="text-base font-medium ">Order Detail</h1>
-      </div>
+      <UBreadcrumb :items="breadcrumb" class="mb-4" />
 
        <!-- Loading -->
       <div v-if="pending">
@@ -729,6 +722,12 @@ const { fetchCreateReview,fetchReviewByTransaction,fetchUpdateReview } = useRevi
 // Ambil parameter route
 const route = useRoute()
 
+const breadcrumb = computed(() => [
+  { label: 'Home', icon: 'i-lucide-home', to: '/' },
+  { label: 'Riwayat Transaksi', icon: 'i-heroicons-shopping-bag', to: '/transaction' },
+  { label: `#${route.params.id}`, icon: 'i-heroicons-eye' },
+])
+
 //Ambil config
 const config = useRuntimeConfig()
 const toast = useToast()
@@ -781,11 +780,11 @@ const selectRating = ref<SelectItem[]>(
 
 
   // ✅ SSR SAFE FETCH NEW
-  const { 
-    data: transaction, 
-    pending, 
-    error:errorTransaction, 
-    refresh:refreshTransaction } 
+  const {
+    data: transaction,
+    pending,
+    error:errorTransaction,
+    refresh:refreshTransaction }
     = await useAsyncData<TransactionResponse>(
     `transaction-${route.params.id}`,
     () => fetchTransactionById(route.params.id as string),

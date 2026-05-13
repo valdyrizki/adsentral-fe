@@ -534,17 +534,10 @@ const items = ref([
 ])
 
 
-const breadcrumb = ref([
-  {
-    label: 'Home',
-    icon: 'i-lucide-book-open',
-    to: '/'
-  },
-  {
-    label: 'Product',
-    icon: 'i-lucide-box',
-    to: '/product/'+route.params.id
-  }
+const breadcrumb = computed(() => [
+  { label: 'Home', icon: 'i-lucide-home', to: '/' },
+  { label: 'Produk', icon: 'i-lucide-box', to: '/category' },
+  { label: product.value?.name ?? 'Detail Produk', icon: 'i-lucide-package' },
 ])
 
 // ✅ Sanitize description sebelum render

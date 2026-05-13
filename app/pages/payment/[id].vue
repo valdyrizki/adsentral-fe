@@ -96,53 +96,76 @@
               </a>
             </div>
 
+            <!-- ===== INFO REKENING MANUAL_BANK ===== -->
+            <div
+              v-if="payment.status === 'UNPAID' && payment.payment_method?.id === 'MANUAL_BANK'"
+              class="px-5 pb-4 border-t border-gray-100 mt-2"
+            >
+              <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-4 mt-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <UIcon name="mdi:bank-outline" class="size-5 text-yellow-600" />
+                  <h3 class="font-semibold text-yellow-800">Informasi Rekening Pembayaran</h3>
+                </div>
+                <p class="text-xs text-yellow-700 mb-3">
+                  Transfer sejumlah
+                  <span class="font-semibold">Rp {{ payment.amount.toLocaleString('id-ID') }}</span>
+                  ke rekening berikut, lalu kirimkan bukti transfer ke admin melalui WhatsApp.
+                </p>
+                <div v-if="rekeningLoading" class="py-2">
+                  <AppLoadingSkeleton />
+                </div>
+                <div v-else-if="rekeningSettings && rekeningSettings.length > 0" class="flex flex-col gap-1.5">
+                  <div
+                    v-for="setting in rekeningSettings"
+                    :key="setting.id"
+                    class="flex justify-between items-center text-sm bg-white rounded px-3 py-2 border border-yellow-100"
+                  >
+                    <span class="text-gray-500">{{ setting.description || setting.key }}</span>
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-gray-900">{{ setting.value }}</span>
+                      <UButton
+                        :icon="copiedKey === setting.key ? 'i-heroicons-check' : 'i-heroicons-clipboard'"
+                        size="xs"
+                        :color="copiedKey === setting.key ? 'success' : 'neutral'"
+                        variant="ghost"
+                        @click="copyToClipboard(setting.key, setting.value)"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="text-sm text-yellow-700 italic">
+                  Informasi rekening belum tersedia. Silakan hubungi admin.
+                </div>
+                <UButton
+                  v-if="waLink"
+                  :to="waLink"
+                  target="_blank"
+                  icon="i-heroicons-chat-bubble-left-ellipsis"
+                  color="success"
+                  variant="solid"
+                  size="sm"
+                  class="mt-3 w-full justify-center"
+                >
+                  Kirim Bukti Transfer via WhatsApp
+                </UButton>
+              </div>
+            </div>
+
             <!-- ===== DEPOSIT ACTIONS (only for DEPOSIT type) ===== -->
             <template v-if="payment.payment_type === 'DEPOSIT'">
 
-              <!-- UNPAID: upload proof + cancel -->
+              <!-- UNPAID: cancel only (bukti via WA di panel rekening atas) -->
               <div v-if="payment.status === 'UNPAID'" class="px-5 pb-5 pt-0 border-t border-gray-100 mt-2">
                 <p class="text-sm font-semibold text-gray-700 mb-3 pt-4">Langkah selanjutnya</p>
                 <UAlert
                   title="Selesaikan pembayaran"
-                  description="Lakukan transfer sesuai metode yang dipilih, lalu upload bukti pembayaran di bawah."
+                  :description="payment.payment_method?.id === 'MANUAL_BANK'
+                    ? 'Lakukan transfer sesuai rekening di atas, lalu kirimkan bukti transfer ke admin melalui WhatsApp.'
+                    : 'Lakukan pembayaran sesuai metode yang dipilih.'"
                   icon="i-heroicons-information-circle"
                   color="info"
                   class="mb-4"
                 />
-
-                <!-- Upload Proof -->
-                <div class="space-y-2 mb-4">
-                  <p class="text-xs text-gray-500">Upload Bukti Pembayaran</p>
-                  <div class="flex items-center gap-3">
-                    <input
-                      ref="fileInput"
-                      type="file"
-                      accept="image/jpeg,image/png"
-                      class="hidden"
-                      @change="onFileChange"
-                    />
-                    <UButton
-                      icon="i-heroicons-photo"
-                      color="info"
-                      variant="soft"
-                      size="sm"
-                      @click="fileInput?.click()"
-                    >
-                      {{ proofFile ? proofFile.name : 'Pilih Gambar' }}
-                    </UButton>
-                    <UButton
-                      v-if="proofFile"
-                      icon="i-heroicons-arrow-up-tray"
-                      color="success"
-                      size="sm"
-                      :loading="uploading"
-                      @click="handleUploadProof"
-                    >
-                      Upload Bukti
-                    </UButton>
-                  </div>
-                  <p v-if="proofFile" class="text-xs text-gray-400">{{ proofFile.name }} ({{ (proofFile.size / 1024).toFixed(0) }} KB)</p>
-                </div>
 
                 <!-- Cancel -->
                 <UButton
@@ -203,31 +226,100 @@
 
             </template>
 
-            <!-- ===== TRANSACTION: read-only info ===== -->
+            <!-- ===== TRANSACTION: placeholder (list di bawah) ===== -->
             <template v-else>
               <div class="px-5 pb-5 pt-0 border-t border-gray-100 mt-2">
                 <UAlert
                   title="Pembayaran Transaksi"
-                  description="Pembayaran ini terkait dengan transaksi pembelian. Gunakan menu Riwayat Transaksi untuk melihat detail pesanan."
+                  description="Detail transaksi terkait ditampilkan di bawah."
                   icon="i-heroicons-shopping-bag"
                   color="info"
+                  variant="subtle"
                   class="mt-4"
                 />
-                <UButton
-                  to="/transaction"
-                  icon="i-heroicons-arrow-right"
-                  trailing
-                  variant="outline"
-                  color="primary"
-                  size="sm"
-                  class="mt-3"
-                >
-                  Lihat Riwayat Transaksi
-                </UButton>
               </div>
             </template>
 
           </div>
+
+          <!-- ===== LIST TRANSAKSI (TRANSACTION type) ===== -->
+          <template v-if="payment.payment_type === 'TRANSACTION'">
+            <div class="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden mt-4">
+
+              <div class="p-5 border-b border-gray-100 flex items-center justify-between gap-3 flex-wrap">
+                <p class="font-semibold text-gray-800">
+                  Detail Transaksi
+                  <span v-if="txData?.total_elements" class="text-xs text-gray-400 font-normal ml-2">
+                    ({{ txData.total_elements }} item)
+                  </span>
+                </p>
+                <UButton icon="mdi:refresh" size="xs" color="neutral" variant="outline" :loading="pendingTx" @click="refreshTx()" />
+              </div>
+
+              <div class="p-5">
+                <AppLoadingSkeleton v-if="pendingTx" />
+
+                <UAlert
+                  v-else-if="txError"
+                  title="Gagal memuat transaksi"
+                  :description="txError.message"
+                  icon="icon-park-solid:error"
+                  color="error"
+                />
+
+                <div v-else-if="!txData?.content?.length" class="py-8 text-center text-gray-400 text-sm">
+                  <UIcon name="i-heroicons-inbox" class="text-4xl text-gray-300 mb-2" />
+                  <p>Tidak ada transaksi terkait.</p>
+                </div>
+
+                <div v-else class="divide-y divide-gray-100">
+                  <div
+                    v-for="tx in txData.content"
+                    :key="tx.id"
+                    class="flex flex-col sm:flex-row sm:items-center gap-4 py-4 hover:bg-gray-50 rounded-xl transition-colors"
+                  >
+                    <NuxtLink :to="`/transaction/${tx.id}`" class="flex items-center gap-4 flex-1 min-w-0">
+                      <img
+                        :src="config.public.backendUrl + '/' + tx.product?.banner_url"
+                        :alt="tx.product?.name"
+                        class="w-14 h-14 rounded-xl object-cover border border-gray-100 flex-shrink-0 bg-gray-50"
+                      />
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-800 truncate">{{ tx.product?.name ?? '-' }}</p>
+                        <p class="text-xs text-gray-400 mt-0.5">{{ tx.qty }} item</p>
+                        <p v-if="tx.tx_description" class="text-xs text-gray-500 mt-1 truncate">{{ tx.tx_description }}</p>
+                      </div>
+                      <div class="text-right flex-shrink-0">
+                        <p class="text-xs text-gray-400">{{ tx.qty }} × Rp {{ tx.price.toLocaleString('id-ID') }}</p>
+                        <p class="text-sm font-bold text-gray-800">Rp {{ tx.total_price.toLocaleString('id-ID') }}</p>
+                      </div>
+                    </NuxtLink>
+
+                    <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                      <TransactionStatusBadge :status="tx.status" />
+                      <p class="text-xs text-gray-400">{{ dayjs(tx.created_at).format('DD MMM YYYY') }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Pagination -->
+                <div
+                  v-if="txData && txData.total_pages > 1 && !pendingTx"
+                  class="flex justify-center pt-4"
+                >
+                  <UPagination
+                    :page="txPage + 1"
+                    :total="txData.total_elements"
+                    :items-per-page="txSize"
+                    :sibling-count="1"
+                    show-edges
+                    @update:page="(p) => { txPage = p - 1 }"
+                  />
+                </div>
+              </div>
+
+            </div>
+          </template>
 
         </template>
 
@@ -257,15 +349,35 @@
 <script lang="ts" setup>
 import dayjs from 'dayjs'
 import PaymentStatusBadge from '~/components/app/PaymentStatusBadge.vue'
+import TransactionStatusBadge from '~/components/app/TransactionStatusBadge.vue'
+import { useSystemSettingApi } from '~/composables/api/system-setting'
+import { useSystemSettingStore } from '~/stores/system-setting'
 import { usePaymentApi } from '~/composables/api/payment'
 import type { PaymentResponse } from '~/types/payment/PaymentResponse'
+import type { SystemSettingResponse } from '~/types/system-setting/SystemSettingResponse'
+import type { TransactionResponse } from '~/types/TransactionResponse'
+import type { PageResponse } from '~/types/PageResponse'
 
 definePageMeta({ layout: 'default' })
 
 const route = useRoute()
 const config = useRuntimeConfig()
 const toast = useToast()
-const { fetchPaymentById, cancelPayment, uploadPaymentProof } = usePaymentApi()
+const { fetchPaymentById, cancelPayment, fetchTxByPaymentId } = usePaymentApi()
+const { fetchPublicSystemSettingByGroup } = useSystemSettingApi()
+const systemSettingStore = useSystemSettingStore()
+
+const waLink = computed(() => {
+  const number = systemSettingStore.systemSettings.find(s => s.key === 'WA_NUMBER')?.value
+  if (!number || !payment.value) return null
+  const msg = encodeURIComponent(
+    `Halo Admin, saya ingin mengirimkan bukti transfer untuk:\n` +
+    `ID Pembayaran: #${payment.value.id}\n` +
+    `Nominal: Rp ${payment.value.amount.toLocaleString('id-ID')}\n\n` +
+    `[Lampirkan foto bukti transfer di sini]`
+  )
+  return `https://wa.me/${number.replace(/\D/g, '')}?text=${msg}`
+})
 
 const paymentId = computed(() => route.params.id as string)
 
@@ -289,30 +401,44 @@ const {
   { server: false }
 )
 
-// ===== UPLOAD PROOF =====
-const fileInput = ref<HTMLInputElement | null>(null)
-const proofFile = ref<File | null>(null)
-const uploading = ref(false)
+// ===== FETCH TRANSACTIONS =====
+const txPage = ref(0)
+const txSize = ref(20)
 
-function onFileChange(e: Event) {
-  const target = e.target as HTMLInputElement
-  proofFile.value = target.files?.[0] ?? null
-}
+const {
+  data: txData,
+  pending: pendingTx,
+  error: txError,
+  refresh: refreshTx,
+} = useAsyncData<PageResponse<TransactionResponse>>(
+  () => `my-payment-tx-${paymentId.value}-${txPage.value}`,
+  () => fetchTxByPaymentId(paymentId.value, txPage.value, txSize.value),
+  { watch: [txPage], server: false, immediate: false }
+)
 
-async function handleUploadProof() {
-  if (!proofFile.value) return
-  uploading.value = true
-  try {
-    await uploadPaymentProof(paymentId.value, proofFile.value)
-    toast.add({ title: 'Bukti pembayaran berhasil diupload', color: 'success', icon: 'i-heroicons-check-circle' })
-    proofFile.value = null
-    if (fileInput.value) fileInput.value.value = ''
-    await refresh()
-  } catch (err: any) {
-    toast.add({ title: 'Gagal upload bukti', description: err.statusMessage || err.message, color: 'error' })
-  } finally {
-    uploading.value = false
-  }
+watch(payment, (val) => {
+  if (val?.payment_type === 'TRANSACTION') refreshTx()
+}, { immediate: true })
+
+// ===== FETCH REKENING (MANUAL_BANK) =====
+const {
+  data: rekeningSettings,
+  pending: rekeningLoading,
+} = await useAsyncData<SystemSettingResponse[]>(
+  `rekening-settings-payment`,
+  () => fetchPublicSystemSettingByGroup('REKENING'),
+  { server: false }
+)
+
+// ===== COPY TO CLIPBOARD =====
+const copiedKey = ref<string | null>(null)
+
+function copyToClipboard(key: string, value: string) {
+  navigator.clipboard.writeText(value).then(() => {
+    copiedKey.value = key
+    toast.add({ title: 'Disalin!', description: value, color: 'success', icon: 'i-heroicons-check-circle' })
+    setTimeout(() => { copiedKey.value = null }, 2000)
+  })
 }
 
 // ===== CANCEL =====

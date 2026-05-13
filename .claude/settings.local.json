@@ -2,7 +2,17 @@
   "permissions": {
     "allow": [
       "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\admin\\\\withdrawal\")",
-      "Bash(Out-Null)"
+      "Bash(Out-Null)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Project Aplikasi\\\\adsentral-fe\" -Depth 2)",
+      "Bash(Select-Object Name, FullName)",
+      "Bash(xargs grep -l \"Withdrawal\")",
+      "Bash(xargs basename -a)",
+      "Bash(npm run *)",
+      "Bash(Select-String -Pattern \"error|ERROR|failed|✔|built in\")",
+      "Bash(Select-Object -First 15)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\" -Directory)",
+      "Bash(Select-Object Name)",
+      "PowerShell(npm run *)"
     ]
   }
 }

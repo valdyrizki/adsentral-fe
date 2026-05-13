@@ -1,9 +1,10 @@
 <template>
   <div class="w-full">
     <div class="mx-auto  px-4 py-4 sm:px-6 sm:py-6 max-w-7xl lg:px-8">
+      <UBreadcrumb :items="breadcrumb" class="mb-4" />
       <div class="mx-auto w-full border rounded-2xl border-blue-200 bg-gray-100">
         <AppHeaderSection
-          title="Merchant"
+          title="Buat Toko"
           description="Create your store"
           icon="material-symbols:store"
         />
@@ -68,6 +69,11 @@ import { useAuthStore } from '~/stores/auth';
 import { ref } from 'vue';
 import type { UserRequest } from '~/types/UserRequest';
 import { useUserApi } from '~/composables/api/user';
+
+const breadcrumb = [
+  { label: 'Home', icon: 'i-lucide-home', to: '/' },
+  { label: 'Buat Toko', icon: 'i-heroicons-store' },
+]
 import type { MerchantRequest } from '~/types/MerchantRequest';
 import { useMerchantApi } from '~/composables/api/merchant';
 import { useMerchantStore } from '#imports';
