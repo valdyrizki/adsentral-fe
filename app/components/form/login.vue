@@ -2,11 +2,11 @@
     <div class="w-full brounded-lg md:mt-0 sm:max-w-md xl:p-0">
         <form class="space-y-4 md:space-y-6" action="#">
             <div>
-                <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
-                <input v-model="email" type="email" name="email" id="email" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@company.com">
+                <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
+                <input v-model="email" type="email" name="email" id="email" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="nama@contoh.com">
             </div>
             <div>
-                <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
+                <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Kata Sandi</label>
                 <input type="password"  v-model="password" name="password" id="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
             </div>
             <div class="flex items-center justify-between">
@@ -15,17 +15,24 @@
                         <input id="remember" aria-describedby="remember" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800">
                     </div>
                     <div class="ml-3 text-sm">
-                        <label for="remember" class="text-gray-500 dark:text-gray-300">Remember me</label>
+                        <label for="remember" class="text-gray-500 dark:text-gray-300">Ingat saya</label>
                     </div>
                 </div>
-                <a href="#" class="text-sm font-medium hover:underline dark:text-primary-500">Forgot password?</a>
+                <a
+                  v-if="forgotPasswordUrl"
+                  :href="forgotPasswordUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-sm font-medium text-green-600 hover:underline"
+                >Lupa kata sandi?</a>
+                <span v-else class="text-sm font-medium text-gray-400">Lupa kata sandi?</span>
             </div>
             <UButton type="submit" size="lg" class="w-full flex justify-center items-center" :loading="loading" @click.prevent="loginHandler">
-                Sign in
+                Masuk
             </UButton>
-            
+
             <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-                Don't have an account? <NuxtLink to="/register" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</NuxtLink>
+                Belum punya akun? <NuxtLink to="/register" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Daftar</NuxtLink>
             </p>
         </form>
 
@@ -38,11 +45,21 @@ definePageMeta({
   layout: "default"  // ✅ explicit!
 })
 
-import { useToast } from "#imports" // Nuxt UI toast
+import { useToast } from "#imports"
 import { useAuthApi } from "~/composables/api/auth";
 
   const email = ref<string>('');
   const password = ref<string>('');
+
+  const systemSettingStore = useSystemSettingStore()
+  const forgotPasswordUrl = computed(() => {
+    const number = systemSettingStore.systemSettings.find(s => s.key === 'WA_NUMBER')?.value
+    if (!number) return null
+    const msg = email.value.trim()
+      ? `Halo Adsentral, saya lupa password untuk akun dengan email: ${email.value.trim()}`
+      : `Halo Adsentral, saya lupa password dan membutuhkan bantuan untuk reset akun saya.`
+    return `https://wa.me/${number.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`
+  })
   const loading = ref<boolean>(false)
 
   const { fetchLogin } = useAuthApi()

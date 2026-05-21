@@ -52,20 +52,28 @@
 
           <!-- Info Kontak -->
           <div class="space-y-4">
-            <div
+            <component
+              :is="info.href ? 'a' : 'div'"
               v-for="info in contactInfos"
               :key="info.label"
-              class="bg-white rounded-2xl p-5 border border-blue-100 shadow-sm flex items-start gap-4"
+              :href="info.href ?? undefined"
+              :target="info.href ? '_blank' : undefined"
+              :rel="info.href ? 'noopener noreferrer' : undefined"
+              class="bg-white rounded-2xl p-5 border shadow-sm flex items-start gap-4 transition-colors"
+              :class="info.href ? 'border-green-200 hover:bg-green-50 cursor-pointer' : 'border-blue-100'"
             >
-              <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <UIcon :name="info.icon" class="text-primary text-xl" />
+              <div
+                class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                :class="info.href ? 'bg-green-100' : 'bg-primary/10'"
+              >
+                <UIcon :name="info.icon" class="text-xl" :class="info.href ? 'text-green-600' : 'text-primary'" />
               </div>
               <div>
                 <p class="text-xs text-gray-400 mb-0.5">{{ info.label }}</p>
-                <p class="font-semibold text-gray-800 text-sm">{{ info.value }}</p>
+                <p class="font-semibold text-sm" :class="info.href ? 'text-green-700' : 'text-gray-800'">{{ info.value }}</p>
                 <p v-if="info.note" class="text-xs text-gray-400 mt-0.5">{{ info.note }}</p>
               </div>
-            </div>
+            </component>
 
             <!-- Jam Operasional -->
             <div class="bg-white rounded-2xl p-5 border border-blue-100 shadow-sm">
@@ -78,11 +86,11 @@
               <div class="space-y-1 text-sm text-gray-600 pl-14">
                 <div class="flex justify-between">
                   <span>Senin – Jumat</span>
-                  <span class="font-medium text-gray-800">08.00 – 20.00 WIB</span>
+                  <span class="font-medium text-gray-800">{{ operationalWeekday || '-' }}</span>
                 </div>
                 <div class="flex justify-between">
                   <span>Sabtu – Minggu</span>
-                  <span class="font-medium text-gray-800">09.00 – 17.00 WIB</span>
+                  <span class="font-medium text-gray-800">{{ operationalWeekend || '-' }}</span>
                 </div>
               </div>
             </div>
@@ -92,13 +100,16 @@
               <h3 class="font-semibold text-gray-800 mb-3">Ikuti Kami</h3>
               <div class="flex gap-3">
                 <UButton
-                  v-for="social in socials"
+                  v-for="social in socials.filter(s => s.href)"
                   :key="social.label"
                   :icon="social.icon"
                   :aria-label="social.label"
                   color="neutral"
                   variant="outline"
                   size="sm"
+                  :to="social.href ?? undefined"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 />
               </div>
             </div>
@@ -111,6 +122,8 @@
 </template>
 
 <script lang="ts" setup>
+import { useSystemSettingApi } from '~/composables/api/system-setting'
+
 definePageMeta({ layout: 'default' })
 
 useHead({
@@ -142,46 +155,92 @@ const subjectOptions = [
 const sending = ref(false)
 const toast = useToast()
 
-async function handleSend() {
+function handleSend() {
   if (!form.name || !form.email || !form.message) {
     toast.add({ title: 'Isi semua field wajib', color: 'error' })
     return
   }
-  sending.value = true
-  await new Promise(r => setTimeout(r, 1000))
-  sending.value = false
-  toast.add({ title: 'Pesan terkirim!', description: 'Kami akan membalas dalam 1×24 jam.', color: 'success' })
+  if (!waNumber.value) {
+    toast.add({ title: 'Nomor WhatsApp belum tersedia', color: 'error' })
+    return
+  }
+  const lines = [
+    `Halo Adsentral, saya ingin menghubungi tim Anda.`,
+    ``,
+    `*Nama:* ${form.name}`,
+    `*Email:* ${form.email}`,
+    form.subject ? `*Subjek:* ${form.subject}` : null,
+    ``,
+    `*Pesan:*`,
+    form.message,
+  ].filter(l => l !== null).join('\n')
+
+  const url = `https://wa.me/${waNumber.value.replace(/\D/g, '')}?text=${encodeURIComponent(lines)}`
+  window.open(url, '_blank', 'noopener,noreferrer')
+
   form.name = ''
   form.email = ''
   form.subject = ''
   form.message = ''
 }
 
-const contactInfos = [
+const { fetchPublicSystemSettingByGroup } = useSystemSettingApi()
+
+const contactSettings = ref<{ key: string; value: string }[]>([])
+
+const getSetting = (key: string) => contactSettings.value.find(s => s.key === key)?.value ?? ''
+
+const waNumber = computed(() => getSetting('WA_NUMBER'))
+const email = computed(() => getSetting('EMAIL'))
+const address = computed(() => getSetting('ADDRESS'))
+const operationalWeekday = computed(() => getSetting('OPERATIONAL_HOURS_WEEKDAY'))
+const operationalWeekend = computed(() => getSetting('OPERATIONAL_HOURS_WEEKEND'))
+
+const waLink = computed(() => {
+  if (!waNumber.value) return null
+  const msg = encodeURIComponent('Halo Adsentral, saya ingin bertanya...')
+  return `https://wa.me/${waNumber.value.replace(/\D/g, '')}?text=${msg}`
+})
+
+const contactInfos = computed(() => [
   {
-    icon: 'i-heroicons-phone',
+    icon: 'i-simple-icons-whatsapp',
     label: 'Telepon / WhatsApp',
-    value: '085855558813',
-    note: 'Tersedia di jam operasional',
+    value: waNumber.value || '-',
+    note: waLink.value ? 'Klik untuk langsung chat via WhatsApp' : 'Tersedia di jam operasional',
+    href: waLink.value,
   },
   {
     icon: 'i-heroicons-envelope',
     label: 'Email',
-    value: 'support@adsentral.id',
+    value: email.value || '-',
     note: 'Balas dalam 1×24 jam',
+    href: null,
   },
   {
     icon: 'i-heroicons-map-pin',
     label: 'Alamat',
-    value: 'Jakarta, Indonesia',
+    value: address.value || '-',
     note: null,
+    href: null,
   },
-]
+])
 
-const socials = [
-  { icon: 'i-simple-icons-instagram', label: 'Instagram' },
-  { icon: 'i-simple-icons-tiktok', label: 'TikTok' },
-  { icon: 'i-simple-icons-facebook', label: 'Facebook' },
-  { icon: 'i-simple-icons-x', label: 'X / Twitter' },
-]
+const socialSettings = ref<{ key: string; value: string }[]>([])
+
+const getSocialSetting = (key: string) => socialSettings.value.find(s => s.key === key)?.value ?? ''
+
+const socials = computed(() => [
+  { icon: 'i-simple-icons-instagram', label: 'Instagram', href: getSocialSetting('INSTAGRAM') ? `https://instagram.com/${getSocialSetting('INSTAGRAM')}` : null },
+  { icon: 'i-simple-icons-tiktok', label: 'TikTok', href: getSocialSetting('TIKTOK') ? `https://tiktok.com/@${getSocialSetting('TIKTOK')}` : null },
+  { icon: 'i-simple-icons-facebook', label: 'Facebook', href: getSocialSetting('FACEBOOK') ? `https://facebook.com/${getSocialSetting('FACEBOOK')}` : null },
+  { icon: 'i-simple-icons-x', label: 'X / Twitter', href: getSocialSetting('TWITTERX') ? `https://x.com/${getSocialSetting('TWITTERX')}` : null },
+])
+
+onMounted(async () => {
+  [contactSettings.value, socialSettings.value] = await Promise.all([
+    fetchPublicSystemSettingByGroup('CONTACT'),
+    fetchPublicSystemSettingByGroup('SOCIAL_MEDIA'),
+  ])
+})
 </script>

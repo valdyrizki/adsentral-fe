@@ -2,33 +2,33 @@
   <div class="w-full brounded-lg md:mt-0 sm:max-w-md xl:p-0">
     <div class="space-y-4 md:space-y-6">
       <div>
-        <label for="fullname" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Full Name</label>
-        <UInput v-model="registerRequest.full_name" id="fullname" placeholder="Your Fullname" class="block" size="lg"/>
+        <label for="fullname" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Lengkap</label>
+        <UInput v-model="registerRequest.full_name" id="fullname" placeholder="Nama lengkap Anda" class="block" size="lg"/>
       </div>
 
       <div>
         <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
-        <UInput v-model="registerRequest.email" id="email" placeholder="Your Email" class="block" size="lg"/>
+        <UInput v-model="registerRequest.email" id="email" placeholder="Email Anda" class="block" size="lg"/>
       </div>
 
       <div>
         <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Username</label>
-        <UInput v-model="registerRequest.username" id="username" placeholder="Your Username" class="block" size="lg"/>
+        <UInput v-model="registerRequest.username" id="username" placeholder="Username Anda" class="block" size="lg"/>
       </div>
 
       <div>
-        <label for="phone_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone Number</label>
-        <UInput v-model="registerRequest.phone_number" id="phone_number" placeholder="Your Phone Number" class="block" size="lg"/>
+        <label for="phone_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nomor Telepon</label>
+        <UInput v-model="registerRequest.phone_number" id="phone_number" placeholder="Nomor telepon Anda" class="block" size="lg"/>
       </div>
 
       <div>
-        <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
-        <UInput type="password" v-model="registerRequest.password" id="password" placeholder="Your Password" class="block" size="lg"/>
+        <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Kata Sandi</label>
+        <UInput type="password" v-model="registerRequest.password" id="password" placeholder="Kata sandi Anda" class="block" size="lg"/>
       </div>
 
       <div>
-        <label for="confirmPassword" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm Password</label>
-        <UInput type="password" v-model="confirmPassword" id="confirmPassword" placeholder="Your Password" class="block" size="lg"/>
+        <label for="confirmPassword" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Konfirmasi Kata Sandi</label>
+        <UInput type="password" v-model="confirmPassword" id="confirmPassword" placeholder="Ulangi kata sandi Anda" class="block" size="lg"/>
       </div>
 
       <UButton :loading="loading" type="submit" size="lg" class="w-full flex justify-center items-center" @click="handleRegister">
@@ -36,8 +36,8 @@
       </UButton>
 
       <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-        Already have an account? 
-        <NuxtLink to="/login" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign in</NuxtLink>
+        Sudah punya akun?
+        <NuxtLink to="/login" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Masuk</NuxtLink>
       </p>
     </div>
   </div>
