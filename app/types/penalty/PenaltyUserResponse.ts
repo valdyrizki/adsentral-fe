@@ -1,6 +1,6 @@
 import type { UserResponse } from '~/types/UserResponse'
 
-export type UserSuspendStatus = 'NONE' | 'TEMPORARY' | 'PERMANENT'
+export type UserSuspendStatus = 'NONE' | 'WARNING' | 'TEMPORARY' | 'PERMANENT'
 
 export interface PenaltyUserResponse {
   id: string

@@ -5,6 +5,7 @@ import { useSystemSettingApi } from "~/composables/api/system-setting"
 export default defineNuxtPlugin(async () => {
   const authStore = useAuthStore()
   const balanceStore = useBalanceStore()
+  const notificationStore = useNotificationStore()
   const config = useRuntimeConfig()
   const { fetchPublicSystemSetting } = useSystemSettingApi()
 
@@ -39,6 +40,8 @@ export default defineNuxtPlugin(async () => {
 
     await authStore.loadUserProfile()
     await balanceStore.loadBalance()
+
+    notificationStore.loadUnreadCount().catch(() => {})
   } catch (err: any) {
     // Refresh gagal = user belum login atau refresh token expired
     // Diam saja — user akan lihat halaman dengan UI "Daftar/Masuk"

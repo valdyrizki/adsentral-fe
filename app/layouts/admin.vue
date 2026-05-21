@@ -1,8 +1,15 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 
-const items: NavigationMenuItem[][] = [[
+const route = useRoute()
+watch(() => route.path, (path) => {
+  if (path === '/admin/notification') notificationStore.resetUnreadCount()
+})
+
+
+const items = computed<NavigationMenuItem[][]>(() => [[
   {
     label: 'Dashboard',
     icon: 'i-lucide-layout-dashboard',
@@ -44,6 +51,12 @@ const items: NavigationMenuItem[][] = [[
       { label: 'Manage Penalty', to: '/admin/penalty' },
     ]
   },
+  {
+    label: 'Notifikasi',
+    icon: 'i-heroicons-bell',
+    to: '/admin/notification',
+    ...(notificationStore.unreadCount > 0 && { badge: String(notificationStore.unreadCount) }),
+  },
   // {
   //   label: 'Customers',
   //   icon: 'i-lucide-users',
@@ -65,9 +78,7 @@ const items: NavigationMenuItem[][] = [[
     to: 'https://ui.nuxt.com/docs',
     target: '_blank'
   }
-]]
-
-  
+]])
 
 </script>
 
@@ -142,7 +153,7 @@ const items: NavigationMenuItem[][] = [[
           <h1 class="text-xl font-bold">{{ $route.meta.label }}</h1>
         </template>
         <template #actions>
-          <UButton icon="i-lucide-bell" variant="ghost" color="neutral" />
+          <UButton icon="i-lucide-bell" variant="ghost" color="neutral" to="/admin/notification" />
           <UButton icon="i-lucide-log-out" variant="ghost" color="error" />
         </template>
       </UDashboardNavbar>
