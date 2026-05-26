@@ -392,7 +392,7 @@
               variant="solid"
               size="sm"
               class="flex-none"
-              @click="downloadFile(fileOrder.file.url)"
+              @click="downloadFile(config.public.backendUrl + '/' + fileOrder.file.url)"
             >
               {{ fileOrder.file.ori_name }}
             </UButton>
@@ -552,7 +552,7 @@
                       <NuxtImg :src="config.public.backendUrl +'/'+ orderDiscussion.file.url" width="100" height="100" />
                     </NuxtLink>
                     <div v-else>
-                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(orderDiscussion.file?.url)">{{ orderDiscussion.file?.ori_name }}</UButton>
+                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(config.public.backendUrl + '/' + orderDiscussion.file?.url)">{{ orderDiscussion.file?.ori_name }}</UButton>
                     </div>
                   </div>
                 </div>
@@ -585,7 +585,7 @@
                       <NuxtImg :src="config.public.backendUrl +'/'+ orderDiscussion.file.url" width="100" height="100" />
                     </div>
                     <div v-else>
-                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(orderDiscussion.file?.url)">{{ orderDiscussion.file?.ori_name }}</UButton>
+                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(config.public.backendUrl + '/' + orderDiscussion.file?.url)">{{ orderDiscussion.file?.ori_name }}</UButton>
                     </div>
                   </div>
                 </div>
@@ -619,7 +619,7 @@
                       <NuxtImg :src="config.public.backendUrl +'/'+ orderDiscussion.file.url" width="100" height="100" />
                     </div>
                     <div v-else>
-                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(orderDiscussion.file?.url)">{{ orderDiscussion.file?.ori_name }}</UButton>
+                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(config.public.backendUrl + '/' + orderDiscussion.file?.url)">{{ orderDiscussion.file?.ori_name }}</UButton>
                     </div>
                   </div>
                 </div>

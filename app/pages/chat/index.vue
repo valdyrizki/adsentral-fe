@@ -3,6 +3,30 @@
     <div class="mx-auto max-w-2xl px-2 pt-4 pb-4 lg:max-w-7xl lg:px-4">
       <UBreadcrumb :items="breadcrumb" class="mb-3" />
       <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Chat</h1>
+
+      <!-- Notifikasi untuk Seller -->
+      <div v-if="authStore.isSeller" class="mt-6">
+        <UAlert
+          icon="mdi:information-outline"
+          color="warning"
+          variant="soft"
+          title="Halaman ini hanya untuk Buyer"
+          description="Sebagai seller, Anda tidak dapat menggunakan fitur chat di halaman ini. Chat seller tersedia di halaman khusus seller."
+        >
+          <template #footer>
+            <UButton
+              to="/seller/chat"
+              color="warning"
+              variant="solid"
+              icon="mdi:chat-outline"
+              size="sm"
+            >
+              Buka Chat Seller
+            </UButton>
+          </template>
+        </UAlert>
+      </div>
+
       <div class="mt-6 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
         
         <!-- Sidebar percakapan -->
@@ -155,7 +179,7 @@
                               <NuxtImg :src="config.public.backendUrl +'/'+ chat.file.url" width="100" height="100" />
                             </NuxtLink>
                             <div v-else>
-                              <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(chat.file?.url)">{{ chat.file?.ori_name }}</UButton>
+                              <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(config.public.backendUrl + '/' + chat.file?.url)">{{ chat.file?.ori_name }}</UButton>
                             </div>
                           </div>
                           <p
@@ -337,7 +361,9 @@ import { useDebounceFn } from '@vueuse/core'
     message: '',
     file: null,
     productId: null,
-    conversationId: null
+    transactionId: null,
+    conversationId: null,
+    senderType: 'BUYER'
    })
   
   //Ambil config
@@ -403,7 +429,8 @@ const { data: conversations, pending: pendingConversation, refresh: refreshConve
       data.content.reverse() // supaya newest di bawah
       chatPages.value = data
       hasMore.value = !chatPages.value.last
-      
+      loadingChat.value = false
+
       await refreshConversations() // Refresh conversations untuk update last_message dan last_message_at
       await nextTick()
       scrollToBottom()
@@ -433,8 +460,10 @@ const { data: conversations, pending: pendingConversation, refresh: refreshConve
 
       //form data
       const formData = new FormData()
-      formData.append("receiverId", chatRequest.value.receiverId.toString() || '')
-      if(chatRequest.value.productId) formData.append("productId", chatRequest.value.productId.toString() || '')
+      formData.append("merchantId", chatRequest.value.receiverId.toString() || '')
+      formData.append("senderType", chatRequest.value.senderType)
+      if(chatRequest.value.productId) formData.append("productId", chatRequest.value.productId.toString())
+      if(chatRequest.value.transactionId) formData.append("transactionId", chatRequest.value.transactionId)
       formData.append("conversationId", selectedConversation.value?.id.toString() || '')
       formData.append("message", chatRequest.value.message)
       if(chatRequest.value.file) formData.append("file", chatRequest.value.file)

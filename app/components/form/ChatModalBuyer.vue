@@ -176,8 +176,9 @@ import type { TransactionResponse } from '~/types/TransactionResponse';
       isSubmitting.value = true
       const formData = new FormData()
       if(props.product?.id) formData.append("productId", props.product?.id.toString() || '')
+      formData.append("senderType", "BUYER")
       formData.append("message", message.value)
-      if(props.merchantId) formData.append("receiverId", props.merchantId.toString() || '')
+      if(props.merchantId) formData.append("merchantId", props.merchantId.toString())
       if(props.transaction?.id) formData.append("transactionId", props.transaction?.id.toString() || '')
 
       await fetchSendChat(formData)

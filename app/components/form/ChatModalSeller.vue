@@ -175,11 +175,10 @@ import type { TransactionResponse } from '~/types/TransactionResponse';
     try {
       isSubmitting.value = true
       const formData = new FormData()
-      formData.append("receiverId", props.buyerId ? props.buyerId.toString() : props.merchantId ? props.merchantId.toString() : '')
+      if(props.buyerId) formData.append("receiverId", props.buyerId.toString())
+      formData.append("senderType", "SELLER")
       if(props.product?.id) formData.append("productId", props.product?.id.toString() || '')
-      // formData.append("conversationId", selectedConversation.value?.id.toString() || '')
       formData.append("message", message.value)
-      // if(chatRequest.value.file) formData.append("file", chatRequest.value.file)
       if(props.transaction?.id) formData.append("transactionId", props.transaction?.id.toString() || '')
       if(props.merchantId) formData.append("merchantId", props.merchantId.toString() || '')
 

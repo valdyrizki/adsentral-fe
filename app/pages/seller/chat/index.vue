@@ -155,7 +155,7 @@
                               <NuxtImg :src="config.public.backendUrl +'/'+ chat.file.url" width="100" height="100" />
                             </NuxtLink>
                             <div v-else>
-                              <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(chat.file?.url)">{{ chat.file?.ori_name }}</UButton>
+                              <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(config.public.backendUrl + '/' + chat.file?.url)">{{ chat.file?.ori_name }}</UButton>
                             </div>
                           </div>
                           <p
@@ -334,7 +334,9 @@ definePageMeta({
     message: '',
     file: null,
     productId: null,
-    conversationId: null
+    transactionId: null,
+    conversationId: null,
+    senderType: 'SELLER'
    })
   
   //Ambil config
@@ -395,7 +397,8 @@ definePageMeta({
       data.content.reverse() // supaya newest di bawah
       chatPages.value = data
       hasMore.value = !chatPages.value.last
-      
+      loadingChat.value = false
+
       await refreshConversations() // Refresh conversations untuk update last_message dan last_message_at
       await nextTick()
       scrollToBottom()
@@ -426,7 +429,9 @@ definePageMeta({
       //form data
       const formData = new FormData()
       formData.append("receiverId", chatRequest.value.receiverId.toString() || '')
-      if(chatRequest.value.productId) formData.append("productId", chatRequest.value.productId.toString() || '')
+      formData.append("senderType", chatRequest.value.senderType)
+      if(chatRequest.value.productId) formData.append("productId", chatRequest.value.productId.toString())
+      if(chatRequest.value.transactionId) formData.append("transactionId", chatRequest.value.transactionId)
       formData.append("conversationId", selectedConversation.value?.id.toString() || '')
       formData.append("message", chatRequest.value.message)
       if(chatRequest.value.file) formData.append("file", chatRequest.value.file)
