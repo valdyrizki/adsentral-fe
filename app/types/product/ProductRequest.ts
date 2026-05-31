@@ -10,6 +10,7 @@ export class ProductRequest {
   sell_price: number = 0            // harga jual
   stock: number | null = null                // stok produk
   delivery_days: number | null = null        // estimasi hari pengiriman
+  guarantee_days: number | null = null       // masa garansi (hari), opsional
   distributor?: string = ''         // opsional
   category_id: number | undefined = undefined           // id kategori
   banner: File | null = null                    // url banner utama

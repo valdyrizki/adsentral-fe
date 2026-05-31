@@ -48,6 +48,11 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     to: '/seller/bank-account'
   },
   {
+    label: 'Garansi',
+    icon: 'material-symbols:shield',
+    to: '/seller/guarantee'
+  },
+  {
     label: 'Penalty',
     icon: 'i-heroicons-shield-exclamation',
     to: '/seller/penalty'

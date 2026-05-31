@@ -1,6 +1,8 @@
+import type { DiscussionType } from "./DiscussionType";
+
 export interface OrderDiscussionRequest {
   transaction_id: string
   message: string
-  is_file_order: boolean
+  discussion_type: DiscussionType
   file: File | null
 }

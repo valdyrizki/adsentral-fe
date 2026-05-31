@@ -194,6 +194,22 @@
               </div>
             </div>
 
+            <div>
+              <label for="guarantee_days" class="block text-sm font-medium text-gray-900">Masa Garansi (Hari)</label>
+              <div class="mt-1">
+                <UInputNumber
+                  v-model="productRequest.guarantee_days"
+                  orientation="vertical"
+                  name="guarantee_days"
+                  id="guarantee_days"
+                  class="block w-full text-base text-gray-900"
+                  placeholder="Hari"
+                  :min="0"
+                />
+                <p class="mt-2 text-sm text-gray-500">Isi jika produk memiliki garansi. Kosongkan atau isi 0 jika tidak ada garansi.</p>
+              </div>
+            </div>
+
               <!-- Distributor -->
             <div>
               <label for="distributor" class="block text-sm font-medium text-gray-900">

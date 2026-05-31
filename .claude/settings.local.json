@@ -12,7 +12,8 @@
       "Bash(Select-Object -First 15)",
       "Bash(Get-ChildItem -Path \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\" -Directory)",
       "Bash(Select-Object Name)",
-      "PowerShell(npm run *)"
+      "PowerShell(npm run *)",
+      "Bash(Get-ChildItem *)"
     ]
   }
 }

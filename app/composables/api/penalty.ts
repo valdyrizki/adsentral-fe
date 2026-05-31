@@ -8,6 +8,7 @@ import type { PenaltyResponse } from '~/types/penalty/PenaltyResponse'
 
 export interface MyPenaltyStat {
   active_points: number
+  active_point_merchant: number
   suspend_status: UserSuspendStatus
   suspend_until: string | null
 }

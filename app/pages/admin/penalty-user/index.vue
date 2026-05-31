@@ -34,9 +34,15 @@
                 </span>
               </div>
             </div>
-            <div class="text-right flex-shrink-0">
-              <p class="text-xl font-bold text-red-500">{{ selectedUser.active_points }}</p>
-              <p class="text-xs text-gray-400">poin aktif</p>
+            <div class="text-right flex-shrink-0 space-y-1">
+              <div>
+                <p class="text-xs text-gray-400">Poin Buyer</p>
+                <p class="text-lg font-bold text-red-500">{{ selectedUser.active_points }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400">Poin Seller</p>
+                <p class="text-lg font-bold text-orange-500">{{ selectedUser.active_point_merchant }}</p>
+              </div>
             </div>
           </div>
 
@@ -194,9 +200,17 @@
 
           <!-- Points + chevron -->
           <div class="flex items-center gap-4 sm:ml-auto flex-shrink-0">
-            <div class="text-right">
-              <p class="text-lg font-bold text-red-500">{{ user.active_points }}</p>
-              <p class="text-xs text-gray-400">poin aktif</p>
+            <div class="text-right space-y-0.5">
+              <div class="flex items-center justify-end gap-1">
+                <UIcon name="i-heroicons-user" class="text-gray-400 text-xs" />
+                <p class="text-sm font-bold text-red-500">{{ user.active_points }}</p>
+                <p class="text-xs text-gray-400">poin</p>
+              </div>
+              <div class="flex items-center justify-end gap-1">
+                <UIcon name="material-symbols:store" class="text-gray-400 text-xs" />
+                <p class="text-sm font-bold text-orange-500">{{ user.active_point_merchant }}</p>
+                <p class="text-xs text-gray-400">poin</p>
+              </div>
             </div>
             <UIcon name="i-heroicons-chevron-right" class="text-gray-300 text-lg flex-shrink-0" />
           </div>

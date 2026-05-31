@@ -22,4 +22,5 @@ export interface ProductResponse {
   created_at: string;   // LocalDateTime → string (ISO date format)
   updated_at: string | null; // bisa null kalau belum di-update
   product_image_url: string[]
+  guarantee_days: number | null
 }

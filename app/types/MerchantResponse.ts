@@ -8,8 +8,8 @@ export interface MerchantResponse {
   status: string
   created_at: string
   updated_at: string
-  is_holiday : boolean  
+  is_holiday : boolean
   average_rating: number;  // ✅ TAMBAHAN
   review_count: number;    // ✅ TAMBAHAN
-
+  penalty_points: number
 }

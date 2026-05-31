@@ -253,6 +253,33 @@
           </div>
         </div>
 
+        <!-- Pengiriman Garansi -->
+        <div class="mt-4 w-full bg-yellow-50 border border-yellow-300 p-2 rounded-lg overflow-hidden" v-if="guarantee?.order_discussion">
+          <div class="flex flex-col gap-3">
+            <div class="text-center font-medium flex items-center justify-center gap-2">
+              <UIcon name="material-symbols:shield" class="size-5 text-yellow-600" />
+              <span>Akun garansi sudah dikirim penjual!</span>
+            </div>
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-2 bg-white rounded-lg p-3">
+              <div class="flex flex-col gap-1 text-sm text-gray-600 text-center sm:text-left">
+                <span>{{ guarantee.order_discussion.message || "Download file akun garansi dibawah ini" }}</span>
+                <span class="text-xs text-gray-400">{{ dayjs(guarantee.order_discussion.created_at).format('D MMM YYYY HH:mm') }}</span>
+              </div>
+              <UButton
+                v-if="guarantee.order_discussion.file"
+                icon="mdi:download"
+                color="warning"
+                variant="solid"
+                size="sm"
+                class="flex-none"
+                @click="downloadFile(config.public.backendUrl + '/' + guarantee.order_discussion.file.url)"
+              >
+                {{ guarantee.order_discussion.file.ori_name }}
+              </UButton>
+            </div>
+          </div>
+        </div>
+
         <div class="mt-4 w-full bg-red-100 p-2 rounded-lg overflow-hidden" v-if="transaction?.status === 'REJECTED'">
           <div class="flex flex-col gap-4 text-center">
             <div>
@@ -435,6 +462,136 @@
           </div>
         </div>
 
+        <!-- STATUS KLAIM GARANSI -->
+        <div v-if="guarantee" class="mt-4 w-full rounded-lg overflow-hidden border border-yellow-300">
+          <!-- Header -->
+          <div class="flex items-center gap-2 flex-wrap p-3 bg-yellow-50">
+            <UIcon name="material-symbols:shield" class="size-5 text-yellow-600" />
+            <span class="font-semibold text-yellow-800">Klaim Garansi</span>
+            <UBadge :color="guaranteeStatusColor(guarantee.status)" size="sm">{{ guaranteeStatusLabel(guarantee.status) }}</UBadge>
+            <span class="text-xs text-gray-400 ml-auto">Diajukan: {{ dayjs(guarantee.created_at).format('D MMM YYYY HH:mm') }}</span>
+          </div>
+
+          <!-- Countdown: IN_REVIEW -->
+          <div
+            v-if="guarantee.status === 'IN_REVIEW'"
+            class="p-3 border-t"
+            :class="isGuaranteeDeadlineExpired ? 'bg-red-50 border-red-200' : 'bg-orange-50 border-orange-200'"
+          >
+            <div class="flex flex-col items-center gap-1 text-center py-1">
+              <div class="flex items-center gap-2">
+                <UIcon name="mdi:clock-alert-outline" class="size-4" :class="isGuaranteeDeadlineExpired ? 'text-red-500' : 'text-orange-500'" />
+                <span class="text-sm font-semibold" :class="isGuaranteeDeadlineExpired ? 'text-red-600' : 'text-orange-700'">
+                  {{ isGuaranteeDeadlineExpired ? 'Batas Waktu Habis!' : 'Menunggu Respon Penjual' }}
+                </span>
+              </div>
+              <div v-if="!isGuaranteeDeadlineExpired" class="text-3xl font-mono font-bold tracking-widest text-orange-600">
+                {{ guaranteeCountdownDisplay }}
+              </div>
+              <p class="text-xs" :class="isGuaranteeDeadlineExpired ? 'text-red-500' : 'text-orange-500'">
+                {{ isGuaranteeDeadlineExpired
+                  ? 'Penjual tidak merespons — sistem akan memberikan penalty secara otomatis.'
+                  : `Penjual memiliki waktu hingga ${dayjs(guarantee.review_deadline).format('D MMM YYYY HH:mm')} untuk merespons klaim ini.` }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Countdown: IN_PROGRESS -->
+          <div
+            v-if="guarantee.status === 'IN_PROGRESS'"
+            class="p-3 border-t"
+            :class="isGuaranteeDeadlineExpired ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'"
+          >
+            <div class="flex flex-col items-center gap-1 text-center py-1">
+              <div class="flex items-center gap-2">
+                <UIcon name="mdi:clock-outline" class="size-4" :class="isGuaranteeDeadlineExpired ? 'text-red-500' : 'text-blue-500'" />
+                <span class="text-sm font-semibold" :class="isGuaranteeDeadlineExpired ? 'text-red-600' : 'text-blue-700'">
+                  {{ isGuaranteeDeadlineExpired ? 'Batas Waktu Habis!' : 'Penjual Sedang Menyiapkan Akun Garansi' }}
+                </span>
+              </div>
+              <div v-if="!isGuaranteeDeadlineExpired" class="text-3xl font-mono font-bold tracking-widest text-blue-600">
+                {{ guaranteeCountdownDisplay }}
+              </div>
+              <p class="text-xs" :class="isGuaranteeDeadlineExpired ? 'text-red-500' : 'text-blue-500'">
+                {{ isGuaranteeDeadlineExpired
+                  ? 'Penjual tidak mengirimkan akun garansi — sistem akan memberikan penalty secara otomatis.'
+                  : `Penjual memiliki waktu hingga ${dayjs(guarantee.progress_deadline).format('D MMM YYYY HH:mm')} untuk mengirimkan akun garansi.` }}
+              </p>
+            </div>
+          </div>
+
+          <!-- REJECTED -->
+          <div v-if="guarantee.status === 'REJECTED'" class="p-3 border-t bg-red-50">
+            <div class="flex items-center gap-2">
+              <UIcon name="mdi:close-circle" class="size-4 text-red-500" />
+              <span class="text-sm font-medium text-red-700">Klaim ditolak oleh penjual</span>
+            </div>
+            <p v-if="guarantee.seller_description" class="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{{ guarantee.seller_description }}</p>
+          </div>
+
+          <!-- DONE -->
+          <div v-if="guarantee.status === 'DONE'" class="p-3 border-t bg-green-50">
+            <div class="flex items-center gap-2">
+              <UIcon name="mdi:check-circle" class="size-4 text-green-600" />
+              <span class="text-sm font-medium text-green-700">Penjual telah mengirimkan akun garansi</span>
+            </div>
+            <p v-if="guarantee.seller_description" class="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{{ guarantee.seller_description }}</p>
+            <div v-if="guarantee.file_url" class="mt-2">
+              <UButton icon="mdi:download" color="primary" variant="soft" size="sm" @click="downloadFile(config.public.backendUrl + '/' + guarantee.file_url)">
+                {{ guarantee.file_ori_name }}
+              </UButton>
+            </div>
+          </div>
+
+          <!-- Keluhan -->
+          <div class="p-3 border-t bg-white">
+            <p class="text-sm font-medium text-gray-700">Keluhan:</p>
+            <p class="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{{ guarantee.complain_description }}</p>
+          </div>
+        </div>
+
+        <!-- GARANSI PRODUK: Countdown masa garansi + tombol klaim -->
+        <div
+          v-if="(transaction?.status === 'DONE' || transaction?.status === 'COMPLETE') && hasGuaranteePeriod"
+          class="mt-4 w-full rounded-lg overflow-hidden border"
+          :class="isGuaranteePeriodExpired ? 'border-gray-300' : 'border-yellow-300'"
+        >
+          <div class="flex items-center gap-2 p-3" :class="isGuaranteePeriodExpired ? 'bg-gray-50' : 'bg-yellow-50'">
+            <UIcon
+              name="material-symbols:shield"
+              class="size-5"
+              :class="isGuaranteePeriodExpired ? 'text-gray-400' : 'text-yellow-600'"
+            />
+            <span class="font-semibold" :class="isGuaranteePeriodExpired ? 'text-gray-500' : 'text-yellow-800'">
+              Garansi Produk
+            </span>
+            <span class="text-xs text-gray-400 ml-1">({{ transaction?.product?.guarantee_days }} hari)</span>
+          </div>
+
+          <!-- Aktif: Countdown -->
+          <div v-if="!isGuaranteePeriodExpired" class="p-3 border-t bg-white flex flex-col items-center gap-2 text-center">
+            <p class="text-xs text-gray-500">Sisa masa garansi</p>
+            <div class="text-3xl font-mono font-bold tracking-widest text-yellow-600">
+              {{ guaranteePeriodDisplay }}
+            </div>
+            <p class="text-xs text-gray-400">
+              Berlaku hingga {{ dayjs(transaction?.done_at).add(transaction?.product?.guarantee_days ?? 0, 'day').format('D MMM YYYY HH:mm') }}
+            </p>
+            <div v-if="!guarantee" class="pt-1">
+              <p class="text-sm text-gray-500 mb-2">Produk tidak sesuai? Ajukan klaim garansi untuk mendapatkan akun pengganti.</p>
+              <UButton icon="material-symbols:shield" color="warning" variant="solid" size="sm" @click="isGuaranteeClaimModal = true">
+                Klaim Garansi
+              </UButton>
+            </div>
+          </div>
+
+          <!-- Kadaluarsa -->
+          <div v-else class="p-3 border-t bg-gray-50 flex items-center justify-center gap-2 text-gray-400 text-sm">
+            <UIcon name="material-symbols:shield-outline" class="size-4" />
+            <span>Masa garansi telah berakhir</span>
+          </div>
+        </div>
+
         <!-- REVIEW + RATING -->
         <div class="mt-4  w-full bg-gray-100 p-2 rounded-lg overflow-hidden" v-if="transaction?.status === 'DONE' || transaction?.status === 'COMPLETE'">
           <div class="flex flex-col gap-4 text-center">
@@ -560,7 +717,12 @@
                     </div>
                     <div class="flex flex-col gap-1 flex-grow">
                       <div class="font-medium">{{ transaction?.product.merchant_name }} <UBadge>PENJUAL</UBadge></div>
-                      <div v-if="orderDiscussion.is_file_order"><UBadge>Penjual Mengirim Pesanan</UBadge></div>
+                      <template v-if="orderDiscussion.discussion_type !== DiscussionType.MESSAGE">
+                        <UBadge v-if="orderDiscussion.discussion_type === DiscussionType.ORDER_DELIVERY" class="max-w-44">Penjual Mengirim Pesanan</UBadge>
+                        <UBadge v-else-if="orderDiscussion.discussion_type === DiscussionType.GUARANTEE" color="warning" class="max-w-44">Penjual Mengirim Garansi</UBadge>
+                        <UBadge v-else-if="orderDiscussion.discussion_type === DiscussionType.AUTO_DELIVERY" class="max-w-44">Otomatis Kirim Akun</UBadge>
+                        <UBadge v-else-if="orderDiscussion.discussion_type === DiscussionType.STOCK_DELIVERY" class="max-w-44">Otomatis Kirim Akun (Stocking)</UBadge>
+                      </template>
                       <div class="text-gray-600">{{ orderDiscussion.message }}</div>
                       <div v-if="orderDiscussion.file" class="flex flex-row items-center gap-1"> <!-- File yang sudah diupload, klik untuk download -->
                         <NuxtLink v-if="isImage(orderDiscussion.file.format)" :to="config.public.backendUrl +'/'+ orderDiscussion.file.url">
@@ -572,7 +734,7 @@
                       </div>
                     </div>
                     <div>
-                      <div class="ml-auto flex-none">   
+                      <div class="ml-auto flex-none">
                         <div class="font-medium text-sm text-gray-500 px-2">{{ orderDiscussion.created_at }}</div>
                       </div>
                     </div>
@@ -594,7 +756,12 @@
                     </div>
                     <div class="flex flex-col gap-1 flex-grow">
                       <div class="font-medium">{{ orderDiscussion.username }} <UBadge>ADMIN</UBadge></div>
-                      <div v-if="orderDiscussion.is_file_order"><UBadge>Penjual Mengirim Pesanan</UBadge></div>
+                      <template v-if="orderDiscussion.discussion_type !== DiscussionType.MESSAGE">
+                        <UBadge v-if="orderDiscussion.discussion_type === DiscussionType.ORDER_DELIVERY" class="max-w-44">Penjual Mengirim Pesanan</UBadge>
+                        <UBadge v-else-if="orderDiscussion.discussion_type === DiscussionType.GUARANTEE" color="warning" class="max-w-44">Penjual Mengirim Garansi</UBadge>
+                        <UBadge v-else-if="orderDiscussion.discussion_type === DiscussionType.AUTO_DELIVERY">Otomatis Kirim Akun</UBadge>
+                        <UBadge v-else-if="orderDiscussion.discussion_type === DiscussionType.STOCK_DELIVERY">Otomatis Kirim Akun (Stocking)</UBadge>
+                      </template>
                       <div class="text-gray-600">{{ orderDiscussion.message }}</div>
                       <div v-if="orderDiscussion.file" class="flex flex-row items-center gap-1"> <!-- File yang sudah diupload, klik untuk download -->
                         <div v-if="isImage(orderDiscussion.file.format)">
@@ -689,8 +856,12 @@
     :merchant-id="transaction?.product.merchant_id"
   />
 
-
-
+  <GuaranteeClaimModal
+    v-model="isGuaranteeClaimModal"
+    :error="guaranteeClaimError"
+    :loading="isSubmitting"
+    @submit="handleGuaranteeClaim"
+  />
 
 </template>
 
@@ -701,12 +872,16 @@ import dayjs from 'dayjs'
 import TransactionStatusBadge from '~/components/app/TransactionStatusBadge.vue'
 import ChatModalBuyer from '~/components/form/ChatModalBuyer.vue'
 import ConfirmDialog from '~/components/form/ConfirmDialog.vue'
+import GuaranteeClaimModal from '~/components/form/GuaranteeClaimModal.vue'
 import RejectOrderModal from '~/components/form/RejectOrderModal.vue'
 import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
 import RequestCancelModal from '~/components/form/RequestCancelModal.vue'
+import { useGuaranteeApi } from '~/composables/api/guarantee'
 import { useOrderDiscussionApi } from '~/composables/api/order-discussion'
 import { useReviewApi } from '~/composables/api/review'
 import { useTransactionApi } from '~/composables/api/transaction'
+import type { GuaranteeResponse, GuaranteeStatus } from '~/types/guarantee/GuaranteeResponse'
+import { DiscussionType } from '~/types/order-discussion/DiscussionType'
 import type { OrderDiscussionResponse } from '~/types/order-discussion/OrderDiscussionResponse'
 import type { PageResponse } from '~/types/PageResponse'
 import type { ReviewRequest } from '~/types/review/ReviewRequest'
@@ -717,6 +892,7 @@ import type { TransactionResponse } from '~/types/TransactionResponse'
 const { fetchTransactionById, fetchAcceptOrder, fetchRejectOrder, fetchCancelTxRequest, fetchRejectCancelRequest, fetchArbitrageRequest } = useTransactionApi()
 const { fetchCreateOrderDiscussion, fetchOrderDiscussionByTxId, fetchFileOrderByTxId } = useOrderDiscussionApi()
 const { fetchCreateReview,fetchReviewByTransaction,fetchUpdateReview } = useReviewApi()
+const { fetchCreateGuarantee, fetchGuaranteeByTransaction } = useGuaranteeApi()
 
 
 // Ambil parameter route
@@ -758,7 +934,6 @@ const selectRating = ref<SelectItem[]>(
 
   // Reactive state
   const discussionMessage = ref<string>('')
-  const isFileOrder = ref<boolean>(false)
   const fileDiscussion = ref<File | null>(null)
 
   // Modal state
@@ -769,6 +944,8 @@ const selectRating = ref<SelectItem[]>(
   const arbitrageRequestError = ref<string | null>(null)
   const isRejectingOrderModal = ref<boolean>(false)
   const rejectOrderError = ref<string | null>(null)
+  const isGuaranteeClaimModal = ref<boolean>(false)
+  const guaranteeClaimError = ref<string | null>(null)
   const isSubmitting = ref<boolean>(false)
   const isChatOpen = ref(false)
     
@@ -834,6 +1011,92 @@ const selectRating = ref<SelectItem[]>(
     () => fetchFileOrderByTxId(route.params.id as string, fileOrderPage.value, fileOrderSize.value),
     { watch: [fileOrderPage], server: false }
   )
+
+  // ===== GARANSI =====
+  const {
+    data: guarantee,
+    refresh: refreshGuarantee,
+  } = useAsyncData<GuaranteeResponse | null>(
+    `guarantee-${route.params.id}`,
+    () => fetchGuaranteeByTransaction(route.params.id as string),
+    { default: () => null, server: false }
+  )
+
+
+
+  const guaranteeStatusLabel = (status: GuaranteeStatus): string => {
+    const map: Record<GuaranteeStatus, string> = {
+      IN_REVIEW: 'Sedang Ditinjau', REJECTED: 'Ditolak', IN_PROGRESS: 'Diproses', DONE: 'Selesai',
+    }
+    return map[status] ?? status
+  }
+
+  const guaranteeStatusColor = (status: GuaranteeStatus) => {
+    const map: Record<GuaranteeStatus, 'warning' | 'error' | 'info' | 'success'> = {
+      IN_REVIEW: 'warning', REJECTED: 'error', IN_PROGRESS: 'info', DONE: 'success',
+    }
+    return map[status] ?? 'warning'
+  }
+
+  // ===== COUNTDOWN GARANSI =====
+  const guaranteeNow = ref(dayjs())
+  let guaranteeTimer: ReturnType<typeof setInterval> | null = null
+
+  watch(guarantee, (g) => {
+    if (g?.status === 'IN_REVIEW' || g?.status === 'IN_PROGRESS') {
+      guaranteeNow.value = dayjs()
+      if (!guaranteeTimer) guaranteeTimer = setInterval(() => { guaranteeNow.value = dayjs() }, 1000)
+    } else {
+      if (guaranteeTimer) { clearInterval(guaranteeTimer); guaranteeTimer = null }
+    }
+  }, { immediate: true })
+
+  const guaranteeCountdownSeconds = computed(() => {
+    const g = guarantee.value
+    if (!g) return 0
+    const deadline = g.status === 'IN_REVIEW' ? g.review_deadline : g.status === 'IN_PROGRESS' ? g.progress_deadline : null
+    if (!deadline) return 0
+    return Math.max(0, dayjs(deadline).diff(guaranteeNow.value, 'second'))
+  })
+
+  const guaranteeCountdownDisplay = computed(() => {
+    const s = guaranteeCountdownSeconds.value
+    const d = Math.floor(s / 86400)
+    const h = Math.floor((s % 86400) / 3600)
+    const m = Math.floor((s % 3600) / 60)
+    const sec = s % 60
+    if (d > 0) return `${d}h ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+  })
+
+  const isGuaranteeDeadlineExpired = computed(() => guaranteeCountdownSeconds.value <= 0)
+
+  const handleGuaranteeClaim = async (description: string) => {
+    try {
+      isSubmitting.value = true
+      guaranteeClaimError.value = null
+      await fetchCreateGuarantee({
+        transaction_id: route.params.id as string,
+        complain_description: description,
+      })
+      toast.add({
+        title: 'Berhasil',
+        description: 'Klaim garansi berhasil diajukan, silahkan tunggu respon penjual',
+        color: 'success',
+      })
+      isGuaranteeClaimModal.value = false
+      await refreshGuarantee()
+    } catch (err: any) {
+      guaranteeClaimError.value = err.message || 'Gagal mengajukan klaim garansi'
+      toast.add({
+        title: 'Gagal',
+        description: err.message || 'Gagal mengajukan klaim garansi',
+        color: 'error',
+      })
+    } finally {
+      isSubmitting.value = false
+    }
+  }
 
   const handleRejectOrderSubmit = async (reason: string) => {
     try {
@@ -957,7 +1220,7 @@ const selectRating = ref<SelectItem[]>(
       const formData = new FormData()
       formData.append("transactionId", route.params.id as string)
       formData.append("message", discussionMessage.value)
-      formData.append("isFileOrder", false.toString()) // default false untuk kirim pesan biasa
+      formData.append("discussionType", DiscussionType.MESSAGE)
       if(fileDiscussion.value) formData.append("file", fileDiscussion.value)
       await fetchCreateOrderDiscussion(formData)
       toast.add({
@@ -1099,6 +1362,50 @@ const isImage = (format?: string) => {
     { immediate: true }
   )
 
+  // ===== COUNTDOWN MASA GARANSI (done_at + guarantee_days) =====
+  const guaranteePeriodSeconds = ref(0)
+  let guaranteePeriodTimer: ReturnType<typeof setInterval> | null = null
+
+  const updateGuaranteePeriodCountdown = () => {
+    const doneAt = transaction.value?.done_at
+    const guaranteeDays = transaction.value?.product?.guarantee_days
+    if (!doneAt || !guaranteeDays) return
+    guaranteePeriodSeconds.value = Math.max(0, dayjs(doneAt).add(guaranteeDays, 'day').diff(dayjs(), 'second'))
+  }
+
+  const hasGuaranteePeriod = computed(() =>
+    !!transaction.value?.done_at
+    && !!transaction.value?.product?.guarantee_days
+    && transaction.value.product.guarantee_days > 0
+  )
+
+  const guaranteePeriodDisplay = computed(() => {
+    const s = guaranteePeriodSeconds.value
+    const d = Math.floor(s / 86400)
+    const h = Math.floor((s % 86400) / 3600)
+    const m = Math.floor((s % 3600) / 60)
+    const sec = s % 60
+    if (d > 0) return `${d}h ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+  })
+
+  const isGuaranteePeriodExpired = computed(() => guaranteePeriodSeconds.value <= 0 && hasGuaranteePeriod.value)
+
+  watch(
+    () => transaction.value?.status,
+    (status) => {
+      if (status === 'DONE' || status === 'COMPLETE') {
+        updateGuaranteePeriodCountdown()
+        if (!guaranteePeriodTimer) {
+          guaranteePeriodTimer = setInterval(updateGuaranteePeriodCountdown, 1000)
+        }
+      } else {
+        if (guaranteePeriodTimer) { clearInterval(guaranteePeriodTimer); guaranteePeriodTimer = null }
+      }
+    },
+    { immediate: true }
+  )
+
   onUnmounted(() => {
     if (countdownTimer) clearInterval(countdownTimer)
     if (confirmTimer) clearInterval(confirmTimer)
@@ -1106,6 +1413,8 @@ const isImage = (format?: string) => {
     if (rejectTimer) clearInterval(rejectTimer)
     if (kliringTimer) clearInterval(kliringTimer)
     if (cancelRequestTimer) clearInterval(cancelRequestTimer)
+    if (guaranteeTimer) clearInterval(guaranteeTimer)
+    if (guaranteePeriodTimer) clearInterval(guaranteePeriodTimer)
   })
 
   // ===== COUNTDOWN KONFIRMASI SELLER (paid_at + 24 jam) =====
@@ -1314,6 +1623,7 @@ const isImage = (format?: string) => {
     refreshOrderDiscussion()
     refreshReviews()
     refreshFileOrders()
+    refreshGuarantee()
   }
 
 

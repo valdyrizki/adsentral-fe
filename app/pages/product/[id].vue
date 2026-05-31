@@ -75,6 +75,11 @@
                     <span v-if="product?.delivery_days" class="font-medium text-blue-600">{{ product.delivery_days }} hari</span>
                     <span v-else class="font-medium text-gray-400">-</span>
                   </div>
+                  <div v-if="product?.guarantee_days && product.guarantee_days > 0" class="flex items-center gap-1.5">
+                    <UIcon name="material-symbols:shield" class="size-4 text-green-500" />
+                    <span class="text-gray-500">Garansi:</span>
+                    <span class="font-medium text-green-600">{{ product.guarantee_days }} hari</span>
+                  </div>
                 </div>
 
                 <USeparator class="py-4" />

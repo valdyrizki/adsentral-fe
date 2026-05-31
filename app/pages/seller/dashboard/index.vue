@@ -49,7 +49,7 @@
     </div>
 
     <!-- Penalty Status Card -->
-    <UCard v-if="penaltyStat && (penaltyStat.suspend_status !== 'NONE' || penaltyStat.active_points > 0)"
+    <UCard v-if="penaltyStat && (penaltyStat.suspend_status !== 'NONE' || (merchantStore.merchant?.penalty_points ?? 0) > 0)"
       class="shadow-sm border"
       :class="{
         'border-red-200 bg-red-50': penaltyStat.suspend_status === 'PERMANENT' || penaltyStat.suspend_status === 'TEMPORARY',
@@ -101,7 +101,7 @@
               variant="subtle"
               size="xs"
             >
-              {{ penaltyStat.active_points }} poin aktif
+              {{ merchantStore.merchant?.penalty_points ?? 0 }} poin aktif
             </UBadge>
           </div>
           <p class="text-xs text-gray-400 mt-1">
