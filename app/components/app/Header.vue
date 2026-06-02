@@ -38,8 +38,8 @@
             <div class="flex">
               <!-- Drawer -->
               <div class="visible md:hidden basis1/4 pl-4">
-                <UDrawer direction="left">
-                  <UButton color="info" trailing-icon="game-icons:hamburger-menu" />
+                <UDrawer v-model:open="drawerOpen" direction="left">
+                  <UButton color="info" trailing-icon="game-icons:hamburger-menu" @click="drawerOpen = true" />
 
                   <template #content>
                     <LazyAppSidebar class="min-w-96 min-h-96 size-full m-4" />
@@ -95,6 +95,9 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 const router = useRouter()
 const route = useRoute()
 const searchQuery = ref((route.query.q as string) || '')
+
+const drawerOpen = ref(false)
+watch(() => route.path, () => { drawerOpen.value = false })
 
 const doSearch = () => {
   const q = searchQuery.value.trim()

@@ -111,6 +111,7 @@ const nav = {
     { name: 'Kategori', to: '/category' },
     { name: 'Keranjang', to: '/cart' },
     { name: 'Riwayat Pesanan', to: '/transaction' },
+    { name: 'Klaim Garansi', to: '/guarantee' },
   ],
   jual: [
     { name: 'Daftar Jadi Penjual', to: '/merchant/create' },
