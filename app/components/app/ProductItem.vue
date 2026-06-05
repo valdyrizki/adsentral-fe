@@ -7,6 +7,17 @@
           :alt="product.name"
           class="size-full object-cover hover:scale-115 block transition"
         />
+        <div
+          v-if="product.delivery_type === 'AUTO' || product.delivery_type === 'STOCKING'"
+          class="absolute top-2 left-2"
+        >
+          <UTooltip text="Produk ini dikirim secara otomatis begitu pembayaran dikonfirmasi, tanpa perlu menunggu proses manual dari seller.">
+            <span class="inline-flex items-center gap-1 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow cursor-default">
+              <UIcon name="i-lucide-zap" class="size-3" />
+              Instant
+            </span>
+          </UTooltip>
+        </div>
       </div>
     </NuxtLink>
 

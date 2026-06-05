@@ -70,10 +70,22 @@
                     <span class="font-medium text-gray-800">{{ product?.sold?.toLocaleString('id-ID') ?? 0 }}</span>
                   </div>
                   <div class="flex items-center gap-1.5">
-                    <UIcon name="mdi:truck-delivery-outline" class="size-4 text-gray-400" />
-                    <span class="text-gray-500">Estimasi Pengiriman:</span>
-                    <span v-if="product?.delivery_days" class="font-medium text-blue-600">{{ product.delivery_days }} hari</span>
-                    <span v-else class="font-medium text-gray-400">-</span>
+                    <template v-if="product?.delivery_type === 'AUTO' || product?.delivery_type === 'STOCKING'">
+                      <UIcon name="i-lucide-zap" class="size-4 text-green-500" />
+                      <span class="text-gray-500">Pengiriman:</span>
+                      <UTooltip text="Produk ini dikirim secara otomatis begitu pembayaran dikonfirmasi, tanpa perlu menunggu proses manual dari seller.">
+                        <span class="inline-flex items-center gap-1 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full cursor-default">
+                          <UIcon name="i-lucide-zap" class="size-3" />
+                          Instant
+                        </span>
+                      </UTooltip>
+                    </template>
+                    <template v-else>
+                      <UIcon name="mdi:truck-delivery-outline" class="size-4 text-gray-400" />
+                      <span class="text-gray-500">Estimasi Pengiriman:</span>
+                      <span v-if="product?.delivery_days" class="font-medium text-blue-600">{{ product.delivery_days }} hari</span>
+                      <span v-else class="font-medium text-gray-400">-</span>
+                    </template>
                   </div>
                   <div v-if="product?.guarantee_days && product.guarantee_days > 0" class="flex items-center gap-1.5">
                     <UIcon name="material-symbols:shield" class="size-4 text-green-500" />
@@ -465,6 +477,30 @@ const productStatusInfo = computed(() => {
     icon: 'i-heroicons-exclamation-circle',
     color: 'neutral',
   }
+})
+
+const deliveryTypeInfo = computed(() => {
+  const map: Record<string, { label: string; icon: string; iconClass: string; color: string }> = {
+    MANUAL: {
+      label: 'Manual',
+      icon: 'i-lucide-package',
+      iconClass: 'text-gray-500',
+      color: 'neutral',
+    },
+    AUTO: {
+      label: 'Otomatis',
+      icon: 'i-lucide-zap',
+      iconClass: 'text-blue-500',
+      color: 'info',
+    },
+    STOCKING: {
+      label: 'File Digital',
+      icon: 'i-lucide-file-check',
+      iconClass: 'text-green-500',
+      color: 'success',
+    },
+  }
+  return map[product.value?.delivery_type ?? 'MANUAL'] ?? map['MANUAL']
 })
 
 const avgRating = computed(() => {

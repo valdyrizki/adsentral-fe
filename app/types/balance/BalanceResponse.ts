@@ -1,4 +1,5 @@
 
 export interface BalanceResponse {
-  balance: number;   // BigDecimal → number
+  balance: number;
+  balance_held: number;
 }

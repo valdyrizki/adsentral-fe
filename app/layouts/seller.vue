@@ -28,6 +28,11 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     to: '/seller/product'
   },
   {
+    label: 'Stok Produk',
+    icon: 'i-lucide-file-check',
+    to: '/seller/stock'
+  },
+  {
     label: 'Orders',
     icon: 'i-lucide-shopping-cart',
     to: '/seller/order'

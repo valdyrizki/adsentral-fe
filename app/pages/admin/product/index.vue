@@ -72,6 +72,7 @@
           <div class="flex-grow flex flex-col min-w-0">
             <div class="flex flex-wrap gap-1.5 items-center mb-1">
               <UBadge :color="statusColor(product.status)" :label="statusLabel(product.status)" size="sm" variant="solid" />
+              <UBadge :color="deliveryTypeColor(product.delivery_type)" :label="deliveryTypeLabel(product.delivery_type)" size="sm" variant="subtle" />
               <span class="text-xs font-mono text-gray-400">#{{ product.id }}</span>
             </div>
             <p class="text-sm font-semibold text-gray-800 truncate">{{ product.name }}</p>
@@ -102,6 +103,12 @@
 
           <!-- Actions -->
           <div class="ml-auto flex-none flex flex-col gap-2 items-end justify-start">
+            <NuxtLink :to="`/admin/product/view/${product.id}`">
+              <UButton icon="mdi:eye" size="xs" color="primary" variant="outline">
+                Lihat
+              </UButton>
+            </NuxtLink>
+
             <template v-if="product.status === 'REVIEW'">
               <UButton
                 icon="mdi:check-circle"
@@ -252,6 +259,24 @@ const statusColor = (status: string): BadgeColor => {
     SUSPEND: 'neutral',
   }
   return map[status] ?? 'neutral'
+}
+
+const deliveryTypeColor = (type: string): BadgeColor => {
+  const map: Record<string, BadgeColor> = {
+    MANUAL: 'neutral',
+    AUTO: 'success',
+    STOCKING: 'info',
+  }
+  return map[type] ?? 'neutral'
+}
+
+const deliveryTypeLabel = (type: string) => {
+  const map: Record<string, string> = {
+    MANUAL: 'Manual',
+    AUTO: 'Otomatis',
+    STOCKING: 'Stok File',
+  }
+  return map[type] ?? type
 }
 
 const statusLabel = (status: string) => {

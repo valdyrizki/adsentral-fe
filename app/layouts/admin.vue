@@ -29,6 +29,11 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     ]
   },
   {
+    label: 'Stok File',
+    icon: 'i-lucide-file-check',
+    to: '/admin/stock',
+  },
+  {
     label: 'Orders',
     icon: 'i-lucide-shopping-cart',
     to: '/admin/order'

@@ -43,7 +43,7 @@
               <li class="mb-2">Foto utama produk (1 foto)</li>
               <li class="mb-2">Foto pendukung produk (maksimal 3 foto)</li>
               <li class="mb-2">Format: JPG, JPEG, PNG</li>
-              <li class="mb-2">Ukuran maksimal: 5MB per foto dan Resolusi max 5000 piksel</li>
+              <li class="mb-2">Ukuran maksimal: 5MB per foto dan Resolusi max 1024x1024 piksel</li>
             </ul>
           </div>
 
@@ -197,16 +197,126 @@
               </div>
             </div>
 
+            <!-- Tipe Pengiriman -->
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-900 mb-3">
+                Tipe Pengiriman Produk <span class="text-red-500">*</span>
+              </label>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div
+                  v-for="opt in deliveryTypeOptions"
+                  :key="opt.value"
+                  @click="productRequest.delivery_type = opt.value"
+                  class="relative flex flex-col gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all"
+                  :class="productRequest.delivery_type === opt.value
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 bg-white hover:border-blue-300'"
+                >
+                  <div class="flex items-center gap-2">
+                    <UIcon :name="opt.icon" class="size-5" :class="productRequest.delivery_type === opt.value ? 'text-blue-500' : 'text-gray-400'" />
+                    <span class="font-semibold text-sm" :class="productRequest.delivery_type === opt.value ? 'text-blue-700' : 'text-gray-700'">
+                      {{ opt.label }}
+                    </span>
+                    <UBadge v-if="productRequest.delivery_type === opt.value" color="primary" size="xs" class="ml-auto">Dipilih</UBadge>
+                  </div>
+                  <p class="text-xs text-gray-500 leading-relaxed">{{ opt.description }}</p>
+                </div>
+              </div>
+              <p v-if="errors.delivery_type" class="mt-1 text-sm text-red-500">{{ errors.delivery_type }}</p>
+              <UAlert
+                v-if="productRequest.delivery_type === 'STOCKING'"
+                icon="i-lucide-info"
+                color="info"
+                variant="subtle"
+                class="mt-3"
+                title="Produk File Digital"
+                description="Anda dapat mengelola file stok di halaman manajemen stok produk. Setiap file yang diupload akan menambah 1 stok produk dan akan dikirim otomatis ke pembeli saat pesanan masuk."
+              />
+              <UAlert
+                v-if="productRequest.delivery_type === 'AUTO'"
+                icon="i-lucide-info"
+                color="success"
+                variant="subtle"
+                class="mt-3"
+                title="Pengiriman Otomatis"
+                description="Sistem akan otomatis mengirimkan informasi pesanan ke diskusi orderan begitu pembayaran dikonfirmasi."
+              />
+            </div>
+
+            <!-- Konfigurasi AUTO -->
+            <template v-if="productRequest.delivery_type === 'AUTO'">
+              <div>
+                <label for="auto_config_title" class="block text-sm font-medium text-gray-900">
+                  Judul Pesan Otomatis <span class="text-red-500">*</span>
+                </label>
+                <div class="mt-1">
+                  <UInput
+                    id="auto_config_title"
+                    name="auto_config_title"
+                    class="block w-full text-base text-gray-900"
+                    placeholder="Contoh: Terima kasih telah berbelanja!"
+                    v-model="productRequest.auto_config_title"
+                  />
+                  <p class="mt-2 text-sm text-gray-500">Judul yang akan ditampilkan di diskusi orderan.</p>
+                  <p v-if="errors.auto_config_title" class="mt-1 text-sm text-red-500">{{ errors.auto_config_title }}</p>
+                </div>
+              </div>
+
+              <div>
+                <label for="auto_config_file" class="block text-sm font-medium text-gray-900">
+                  File Lampiran Otomatis
+                </label>
+                <div class="mt-1">
+                  <div v-if="product?.auto_config?.file_url" class="mb-2 flex items-center gap-2 text-sm text-gray-600">
+                    <UIcon name="i-lucide-file" class="size-4 text-blue-500" />
+                    <span>File saat ini tersimpan</span>
+                    <a :href="config.public.backendUrl + '/' + product.auto_config_file_url" target="_blank" class="text-blue-500 hover:underline">Lihat</a>
+                  </div>
+                  <UFileUpload
+                    id="auto_config_file"
+                    label="Ganti File"
+                    description="Kosongkan jika tidak ingin mengubah file"
+                    class="w-full"
+                    v-model="productRequest.auto_config_file"
+                  />
+                  <p class="mt-2 text-sm text-gray-500">File ini akan dikirim otomatis ke pembeli di diskusi orderan.</p>
+                  <p v-if="errors.auto_config_file" class="mt-1 text-sm text-red-500">{{ errors.auto_config_file }}</p>
+                </div>
+              </div>
+
+              <div class="col-span-2">
+                <label for="auto_config_description" class="block text-sm font-medium text-gray-900">
+                  Deskripsi Pesan Otomatis <span class="text-red-500">*</span>
+                </label>
+                <div class="mt-1">
+                  <UTextarea
+                    id="auto_config_description"
+                    name="auto_config_description"
+                    class="block w-full text-base text-gray-900"
+                    placeholder="Tulis pesan yang akan dikirim otomatis ke pembeli..."
+                    :rows="4"
+                    v-model="productRequest.auto_config_description"
+                  />
+                  <p class="mt-2 text-sm text-gray-500">Pesan ini akan dikirim bersama file ke diskusi orderan pembeli.</p>
+                  <p v-if="errors.auto_config_description" class="mt-1 text-sm text-red-500">{{ errors.auto_config_description }}</p>
+                </div>
+              </div>
+            </template>
+
             <div>
               <label for="stock" class="block text-sm font-medium text-gray-900">Stock <span class="text-red-500">*</span></label>
               <div class="mt-1">
-                <UInputNumber 
-                v-model="productRequest.stock" 
-                orientation="vertical" 
-                name="stock" id="stock" 
-                class="block w-full text-base text-gray-900" 
-                placeholder="Stock"/>
-                <p class="mt-2 text-sm text-gray-500">Kosong = unlimited, 0 = habis, > 0 = jumlah.</p>
+                <UInputNumber
+                  v-model="productRequest.stock"
+                  orientation="vertical"
+                  name="stock" id="stock"
+                  class="block w-full text-base text-gray-900"
+                  placeholder="Stock"
+                  :disabled="stockDisabled"
+                />
+                <p v-if="productRequest.delivery_type === 'AUTO'" class="mt-2 text-sm text-orange-500">Stok dikosongkan otomatis untuk tipe Otomatis.</p>
+                <p v-else-if="productRequest.delivery_type === 'STOCKING'" class="mt-2 text-sm text-blue-500">Stok diatur otomatis dari jumlah file yang diupload (stok = 0).</p>
+                <p v-else class="mt-2 text-sm text-gray-500">Kosong = unlimited, 0 = habis, > 0 = jumlah.</p>
                 <p v-if="errors.stock" class="mt-1 text-sm text-red-500">{{ errors.stock }}</p>
               </div>
             </div>
@@ -230,7 +340,7 @@
               </div>
             </div>
 
-            <div>
+            <div v-if="productRequest.delivery_type === 'MANUAL'">
               <label for="delivery_days" class="block text-sm font-medium text-gray-900">Estimasi Pengiriman (Hari) <span class="text-red-500">*</span></label>
               <div class="mt-1">
                 <UInputNumber
@@ -356,6 +466,47 @@ definePageMeta({
 const productRequest = reactive<ProductRequest>(new ProductRequest())
 const selectedCategory = ref(0)
 
+const deliveryTypeOptions = [
+  {
+    value: 'MANUAL',
+    label: 'Manual',
+    icon: 'i-lucide-package',
+    description: 'Proses pengiriman dilakukan secara manual oleh seller. Cocok untuk produk fisik.',
+  },
+  {
+    value: 'AUTO',
+    label: 'Otomatis',
+    icon: 'i-lucide-zap',
+    description: 'Sistem otomatis mengirim info pesanan ke diskusi orderan saat pembayaran dikonfirmasi.',
+  },
+  {
+    value: 'STOCKING',
+    label: 'Stok File',
+    icon: 'i-lucide-file-check',
+    description: 'File dikirim otomatis ke pembeli. Seller perlu upload stok file terlebih dahulu. Setiap file = 1 stok.',
+  },
+]
+
+const stockDisabled = computed(() =>
+  productRequest.delivery_type === 'AUTO' || productRequest.delivery_type === 'STOCKING'
+)
+
+const originalStock = ref<number | null>(null)
+const originalDeliveryType = ref<string | null>(null)
+
+watch(
+  () => productRequest.delivery_type,
+  (type) => {
+    if (type === 'AUTO') {
+      productRequest.stock = null
+    } else if (type === 'STOCKING') {
+      productRequest.stock = originalDeliveryType.value === 'STOCKING'
+        ? originalStock.value
+        : 0
+    }
+  }
+)
+
 // Ambil API function
 const { updateProduct,fetchMyProductById } = useProductsApi()
 
@@ -425,17 +576,39 @@ const validateProduct = (): boolean => {
     errors.stock = 'Stok tidak boleh negatif'
   }
 
-  // delivery_days
-  if (productRequest.delivery_days === null || productRequest.delivery_days === undefined) {
-    errors.delivery_days = 'Estimasi pengiriman wajib diisi'
-  } else if (productRequest.delivery_days < 1) {
-    errors.delivery_days = 'Estimasi pengiriman minimal 1 hari'
+  // delivery_days (hanya wajib untuk MANUAL)
+  if (productRequest.delivery_type === 'MANUAL') {
+    if (productRequest.delivery_days === null || productRequest.delivery_days === undefined) {
+      errors.delivery_days = 'Estimasi pengiriman wajib diisi'
+    } else if (productRequest.delivery_days < 1) {
+      errors.delivery_days = 'Estimasi pengiriman minimal 1 hari'
+    }
   }
 
   // banner
   // if (!productRequest.banner) {
   //   errors.banner = 'Banner produk wajib diisi'
   // }
+
+  // delivery_type
+  const validDeliveryTypes = ['MANUAL', 'AUTO', 'STOCKING']
+  if (!validDeliveryTypes.includes(productRequest.delivery_type)) {
+    errors.delivery_type = 'Tipe pengiriman wajib dipilih'
+  }
+
+  // auto config (wajib hanya jika AUTO)
+  if (productRequest.delivery_type === 'AUTO') {
+    if (!productRequest.auto_config_title.trim()) {
+      errors.auto_config_title = 'Judul pesan otomatis wajib diisi'
+    }
+    if (!productRequest.auto_config_description.trim()) {
+      errors.auto_config_description = 'Deskripsi pesan otomatis wajib diisi'
+    }
+    // file hanya wajib jika belum ada file sebelumnya
+    if (!productRequest.auto_config_file && !product.value?.auto_config_file_url) {
+      errors.auto_config_file = 'File lampiran otomatis wajib diupload'
+    }
+  }
 
   return Object.keys(errors).length === 0
 }
@@ -464,11 +637,18 @@ const validateProduct = (): boolean => {
       productRequest.description = res.description
       productRequest.base_price = res.base_price
       productRequest.sell_price = res.sell_price
-      productRequest.stock = res.stock
       productRequest.delivery_days = res.delivery_days
       productRequest.guarantee_days = res.guarantee_days ?? null
       productRequest.distributor = res.distributor
       productRequest.category_id = res.category_id
+      productRequest.delivery_type = res.delivery_type ?? 'MANUAL'
+      productRequest.auto_config_title = res.auto_config?.title ?? ''
+      productRequest.auto_config_description = res.auto_config?.description ?? ''
+      // Set stock setelah nextTick agar tidak tertimpa watcher delivery_type
+      await nextTick()
+      productRequest.stock = res.stock
+      originalStock.value = res.stock
+      originalDeliveryType.value = res.delivery_type ?? 'MANUAL'
 
       return res
     } catch {

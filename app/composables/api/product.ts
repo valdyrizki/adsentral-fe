@@ -1,6 +1,7 @@
 import type { PageResponse } from "~/types/PageResponse"
 import type { ProductRequest } from "~/types/product/ProductRequest"
 import type { ProductResponse } from "~/types/product/ProductResponse"
+import type { ProductStockItemResponse } from "~/types/product/ProductStockItemResponse"
 import type { WebResponse } from "~/types/WebResponse"
 import { useApi } from './useApi'
 
@@ -116,6 +117,16 @@ export const useProductsApi = () => {
     }
   }
 
+  const fetchProductByIdAdmin = async (id: string): Promise<ProductResponse> => {
+    try {
+      const res = await api<WebResponse<ProductResponse>>(`/product/admin/${id}`)
+      if (res.status !== 'success' || !res.data) throw new Error(res.message)
+      return res.data
+    } catch (err: any) {
+      throw createError({ statusCode: err.statusCode || 500, statusMessage: err.message || 'Failed to fetch product' })
+    }
+  }
+
   const fetchMyProductById = async (id: string): Promise<ProductResponse> => {
       const res = await api<WebResponse<ProductResponse>>(`/product/my/${id}`)
   
@@ -147,6 +158,12 @@ export const useProductsApi = () => {
       if (request.distributor) formData.append("distributor", request.distributor)
       if (request.delivery_days) formData.append("deliveryDays", request.delivery_days.toString())
       if (request.guarantee_days != null) formData.append("guaranteeDays", request.guarantee_days.toString())
+      if (request.delivery_type) formData.append("deliveryType", request.delivery_type)
+      if (request.delivery_type === 'AUTO') {
+        if (request.auto_config_title) formData.append("autoConfigTitle", request.auto_config_title)
+        if (request.auto_config_description) formData.append("autoConfigDescription", request.auto_config_description)
+        if (request.auto_config_file) formData.append("autoConfigFile", request.auto_config_file as File)
+      }
       console.log(formData.values)
 
       const res = await api<WebResponse<ProductResponse>>('/product/create', {
@@ -183,6 +200,12 @@ export const useProductsApi = () => {
       if (request.distributor) formData.append("distributor", request.distributor)
       if (request.delivery_days) formData.append("deliveryDays", request.delivery_days.toString())
       if (request.guarantee_days != null) formData.append("guaranteeDays", request.guarantee_days.toString())
+      if (request.delivery_type) formData.append("deliveryType", request.delivery_type)
+      if (request.delivery_type === 'AUTO') {
+        if (request.auto_config_title) formData.append("autoConfigTitle", request.auto_config_title)
+        if (request.auto_config_description) formData.append("autoConfigDescription", request.auto_config_description)
+        if (request.auto_config_file) formData.append("autoConfigFile", request.auto_config_file as File)
+      }
 
       const res = await api<WebResponse<ProductResponse>>(`/product/update/${request.id}`, {
         method: 'PATCH',
@@ -278,6 +301,95 @@ export const useProductsApi = () => {
     }
   }
 
+  const getAdminAllStockItems = async (
+    page = 0,
+    size = 20,
+    filters: { status?: string; transactionId?: string; fileName?: string; description?: string; productName?: string } = {}
+  ): Promise<PageResponse<ProductStockItemResponse>> => {
+    try {
+      const query: Record<string, any> = { page, size }
+      if (filters.status && filters.status !== 'ALL') query.status = filters.status
+      if (filters.transactionId) query.transactionId = filters.transactionId
+      if (filters.fileName) query.fileName = filters.fileName
+      if (filters.description) query.description = filters.description
+      if (filters.productName) query.productName = filters.productName
+      const res = await api<WebResponse<PageResponse<ProductStockItemResponse>>>('/admin/stock', { query })
+      if (res.status !== 'success' || !res.data) throw new Error(res.message)
+      return res.data
+    } catch (err: any) {
+      throw createError({ statusCode: err.statusCode || 500, statusMessage: err.message || 'Gagal memuat stok' })
+    }
+  }
+
+  const getMyAllStockItems = async (
+    page = 0,
+    size = 20,
+    filters: { status?: string; transactionId?: string; fileName?: string; description?: string; productName?: string } = {}
+  ): Promise<PageResponse<ProductStockItemResponse>> => {
+    try {
+      const query: Record<string, any> = { page, size }
+      if (filters.status && filters.status !== 'ALL') query.status = filters.status
+      if (filters.transactionId) query.transactionId = filters.transactionId
+      if (filters.fileName) query.fileName = filters.fileName
+      if (filters.description) query.description = filters.description
+      if (filters.productName) query.productName = filters.productName
+      const res = await api<WebResponse<PageResponse<ProductStockItemResponse>>>('/stock/my', { query })
+      if (res.status !== 'success' || !res.data) throw new Error(res.message)
+      return res.data
+    } catch (err: any) {
+      throw createError({ statusCode: err.statusCode || 500, statusMessage: err.message || 'Gagal memuat stok' })
+    }
+  }
+
+  const getProductStockItems = async (productId: number, page = 0, size = 20, status = ''): Promise<PageResponse<ProductStockItemResponse>> => {
+    try {
+      const query: Record<string, any> = { page, size }
+      if (status && status !== 'ALL') query.status = status
+      const res = await api<WebResponse<PageResponse<ProductStockItemResponse>>>(`/product/${productId}/stock/my`, {
+        query,
+      })
+      if (res.status !== 'success' || !res.data) throw new Error(res.message)
+      return res.data
+    } catch (err: any) {
+      throw createError({ statusCode: err.statusCode || 500, statusMessage: err.message || 'Gagal memuat stok produk' })
+    }
+  }
+
+  const addProductStockItem = async (productId: number, description: string, file: File) => {
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      if (description) formData.append('description', description)
+      const res = await api<WebResponse<ProductStockItemResponse>>(`/product/${productId}/stock`, {
+        method: 'POST',
+        body: formData,
+      })
+      if (!res || res.status !== 'success') {
+        throw createError({ statusCode: 400, statusMessage: res?.message || 'Gagal menambah stok' })
+      }
+      return res.data
+    } catch (err: any) {
+      throw createError({
+        statusCode: err.statusCode || 500,
+        statusMessage: err.data?.message || err.statusMessage || 'Gagal menambah stok',
+      })
+    }
+  }
+
+  const deleteProductStockItem = async (itemId: number) => {
+    try {
+      const res = await api<WebResponse>(`/stock/${itemId}`, { method: 'DELETE' })
+      if (!res || res.status !== 'success') {
+        throw createError({ statusCode: 400, statusMessage: res?.message || 'Gagal menghapus stok' })
+      }
+    } catch (err: any) {
+      throw createError({
+        statusCode: err.statusCode || 500,
+        statusMessage: err.data?.message || err.statusMessage || 'Gagal menghapus stok',
+      })
+    }
+  }
+
   const suspendProduct = async (id: number) => {
     try {
       const res = await api<WebResponse<ProductResponse>>(`/product/suspend/${id}`, { method: 'PATCH' })
@@ -297,6 +409,7 @@ export const useProductsApi = () => {
     getProducts,
     fetchProductsByCategoryId,
     fetchProductById,
+    fetchProductByIdAdmin,
     getProductsByIds,
     fetchProductsByMerchantId,
     getMyProducts,
@@ -310,5 +423,10 @@ export const useProductsApi = () => {
     suspendProduct,
     getAllProductsAdmin,
     adminActivateProduct,
+    getAdminAllStockItems,
+    getMyAllStockItems,
+    getProductStockItems,
+    addProductStockItem,
+    deleteProductStockItem,
   }
 }

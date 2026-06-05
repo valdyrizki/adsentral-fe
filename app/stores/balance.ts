@@ -63,6 +63,7 @@ export const useBalanceStore = defineStore('balance', {
       try {
         const data = await fetchBalance()
         this.setBalance(data.balance)
+        this.setBalanceHeld(data.balance_held)
       } finally {
         this.loading = false
       }

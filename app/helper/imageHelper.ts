@@ -1,6 +1,6 @@
 const MAX_SIZE = 5 * 1024 * 1024 // 5MB
 const MAX_WIDTH = 1024
-const MAX_HEIGHT = 768
+const MAX_HEIGHT = 1024
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg']
 
 export const validateImage = (file: File): Promise<void> => {

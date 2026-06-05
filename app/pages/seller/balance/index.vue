@@ -398,6 +398,7 @@ const { pending: balanceLoading, refresh: refreshBalance } = await useAsyncData(
   async () => {
     const res = await fetchBalance()
     balanceStore.setBalance(res.balance)
+    balanceStore.setBalanceHeld(res.balance_held)
   },
   { server: false }
 )

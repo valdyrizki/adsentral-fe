@@ -1,3 +1,5 @@
+import type { ProductAutoConfigResponse } from './ProductAutoConfigResponse'
+
 export interface ProductResponse {
   id: number;
   merchant_id: number;
@@ -23,4 +25,6 @@ export interface ProductResponse {
   updated_at: string | null; // bisa null kalau belum di-update
   product_image_url: string[]
   guarantee_days: number | null
+  delivery_type: string
+  auto_config: ProductAutoConfigResponse | null
 }
