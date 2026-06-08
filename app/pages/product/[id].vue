@@ -57,7 +57,7 @@
 
                 <!-- Informasi Stock -->
                 <div class="flex flex-wrap gap-4 text-sm">
-                  <div class="flex items-center gap-1.5">
+                  <div v-if="product?.delivery_type !== 'AUTO'" class="flex items-center gap-1.5">
                     <UIcon name="majesticons:box" class="size-4 text-gray-400" />
                     <span class="text-gray-500">Stok:</span>
                     <span v-if="product?.stock === null || product?.stock === undefined" class="font-medium text-green-600">Tidak terbatas</span>
@@ -189,35 +189,50 @@
                       <div v-else class="text-sm text-gray-400">
                         Toko baru
                       </div>
-                      <div class="basis-auto">
-                        <div class="">(1564 Terjual)</div>
-                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div class="pt-2">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 ">
-                      <div class="flex flex-row gap-1 items-center">
-                        <UIcon name="majesticons:box" class="size-5" />
-                        Produk : 10
-                      </div>
-                      
-                      <div class="flex flex-row gap-1 items-center">
-                        <UIcon name="gridicons:add-outline" class="size-5" />
-                        Bergabung : 28 Sep 2018 05:27
-                      </div>
-                      
-                      <div class="flex flex-row gap-1 items-center">
-                        <UIcon name="gis:search-country" class="size-5" />
-                        Negara : Indonesia
-                      </div>
-                      
-                      <div class="flex flex-row gap-1 items-center">
-                        <UIcon name="mingcute:time-line" class="size-5" />
-                        Jam Operasional : 13.00-22.00 WIB
-                      </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div class="flex flex-row gap-1 items-center">
+                      <UIcon name="majesticons:box" class="size-5 text-gray-500 shrink-0" />
+                      <span class="text-gray-600 text-sm">Produk :</span>
+                      <span class="text-sm font-medium">{{ merchant?.product_count?.toLocaleString('id-ID') ?? '-' }}</span>
                     </div>
+
+                    <div class="flex flex-row gap-1 items-center">
+                      <UIcon name="mdi:shopping-outline" class="size-5 text-gray-500 shrink-0" />
+                      <span class="text-gray-600 text-sm">Terjual :</span>
+                      <span class="text-sm font-medium">{{ merchant?.total_sold?.toLocaleString('id-ID') ?? '-' }}</span>
+                    </div>
+
+                    <div class="flex flex-row gap-1 items-center">
+                      <UIcon name="gridicons:add-outline" class="size-5 text-gray-500 shrink-0" />
+                      <span class="text-gray-600 text-sm">Bergabung :</span>
+                      <span class="text-sm font-medium">{{ merchant?.created_at ? formatDate(merchant.created_at) : '-' }}</span>
+                    </div>
+
+                    <div class="flex flex-row gap-1 items-center">
+                      <UIcon name="material-symbols:star-rounded" class="size-5 text-yellow-400 shrink-0" />
+                      <span class="text-gray-600 text-sm">Ulasan :</span>
+                      <span class="text-sm font-medium">{{ merchant?.review_count?.toLocaleString('id-ID') ?? '-' }}</span>
+                    </div>
+
+                    <div class="flex flex-row gap-1 items-center">
+                      <UIcon name="gis:search-country" class="size-5 text-gray-500 shrink-0" />
+                      <span class="text-gray-600 text-sm">Negara :</span>
+                      <span class="text-sm font-medium">{{ merchant?.country ?? '-' }}</span>
+                    </div>
+
+                    <div class="flex flex-row gap-1 items-center">
+                      <UIcon name="mingcute:time-line" class="size-5 text-gray-500 shrink-0" />
+                      <span class="text-gray-600 text-sm">Jam Operasional :</span>
+                      <span class="text-sm font-medium">
+                        {{ merchant?.open_time && merchant?.close_time ? `${merchant.open_time} - ${merchant.close_time}` : '24 Jam' }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -297,28 +312,52 @@
                       </div>
                     </div>
 
-                    <!-- Each Review -->
+                    <!-- Each Review Group -->
                     <div
-                      v-for="review in reviews.content"
-                      :key="review.id"
-                      class="flex gap-4 border-b pb-4 last:border-0 last:pb-0"
+                      v-for="group in reviewGroups"
+                      :key="group.buyer.id"
+                      class="border-b pb-5 last:border-0 last:pb-0 space-y-3"
                     >
-                      <UAvatar :alt="review.reviewer_username" size="md" />
-                      <div class="flex-1">
-                        <div class="flex items-center justify-between">
-                          <span class="font-medium text-sm">{{ review.reviewer_username }}</span>
-                          <span class="text-xs text-gray-400">{{ formatDate(review.created_at) }}</span>
+                      <!-- Buyer Review -->
+                      <div class="flex gap-3">
+                        <UAvatar :alt="group.buyer.reviewer_username" size="md" />
+                        <div class="flex-1">
+                          <div class="flex items-center justify-between">
+                            <span class="font-medium text-sm">{{ group.buyer.reviewer_username }}</span>
+                            <span class="text-xs text-gray-400">{{ formatDate(group.buyer.created_at) }}</span>
+                          </div>
+                          <div class="flex gap-0.5 mt-1">
+                            <UIcon
+                              v-for="i in 5"
+                              :key="i"
+                              name="i-heroicons-star-20-solid"
+                              :class="i <= group.buyer.rating ? 'text-yellow-400' : 'text-gray-300'"
+                              class="size-4"
+                            />
+                          </div>
+                          <p class="mt-2 text-sm text-gray-700 whitespace-pre-line">{{ group.buyer.comment }}</p>
                         </div>
-                        <div class="flex gap-0.5 mt-1">
-                          <UIcon
-                            v-for="i in 5"
-                            :key="i"
-                            name="i-heroicons-star-20-solid"
-                            :class="i <= review.rating ? 'text-yellow-400' : 'text-gray-300'"
-                            class="size-4"
+                      </div>
+
+                      <!-- Seller Reply -->
+                      <div v-if="group.seller" class="ml-10 pl-4 border-l-2 border-blue-200 bg-blue-50 rounded-r-xl py-3 pr-3">
+                        <div class="flex gap-3">
+                          <UAvatar
+                            :src="config.public.backendUrl + '/' + product?.merchant_logo"
+                            :alt="product?.merchant_name"
+                            size="sm"
                           />
+                          <div class="flex-1">
+                            <div class="flex items-center justify-between gap-2">
+                              <div class="flex items-center gap-1.5">
+                                <span class="font-semibold text-sm text-blue-700">{{ product?.merchant_name }}</span>
+                                <UBadge size="xs" color="primary" variant="subtle">Penjual</UBadge>
+                              </div>
+                              <span class="text-xs text-gray-400 shrink-0">{{ formatDate(group.seller.created_at) }}</span>
+                            </div>
+                            <p class="mt-1.5 text-sm text-gray-700 whitespace-pre-line">{{ group.seller.comment }}</p>
+                          </div>
                         </div>
-                        <p class="mt-2 text-sm text-gray-700 whitespace-pre-line">{{ review.comment }}</p>
                       </div>
                     </div>
 
@@ -506,7 +545,21 @@ const deliveryTypeInfo = computed(() => {
 const avgRating = computed(() => {
   const content = reviews.value?.content
   if (!content?.length) return 0
-  return content.reduce((sum, r) => sum + r.rating, 0) / content.length
+  const buyerReviews = content.filter(r => r.user_type === 'BUYER')
+  if (!buyerReviews.length) return 0
+  return buyerReviews.reduce((sum, r) => sum + r.rating, 0) / buyerReviews.length
+})
+
+const reviewGroups = computed(() => {
+  const content = reviews.value?.content ?? []
+  const buyers = content.filter(r => r.user_type === 'BUYER')
+  const sellerMap = new Map(
+    content.filter(r => r.user_type === 'SELLER').map(r => [r.transaction_id, r])
+  )
+  return buyers.map(buyer => ({
+    buyer,
+    seller: sellerMap.get(buyer.transaction_id) ?? null,
+  }))
 })
 
 const formatDate = (iso: string) => dayjs(iso).format('D MMM YYYY')

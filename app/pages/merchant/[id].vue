@@ -57,52 +57,44 @@
 
                 <!-- Detail & Info Merchant -->
                 <div class="basis-2/3">
-                  <div class="flex gap-4">
-                    <div class="flex flex-col gap-2">
-                      <div class="flex flex-row gap-1 items-center">
-                        <UIcon name="majesticons:box" class="size-5" />
-                        Produk : 10
-                      </div>
-                      
-                      <div class="flex flex-row gap-1 items-center">
-                        <UIcon name="gridicons:add-outline" class="size-5" />
-                        Bergabung : 28 Sep 2018 05:27
-                      </div>
-                      
-                      <div class="flex flex-row gap-1 items-center">
-                        <UIcon name="gis:search-country" class="size-5" />
-                        Negara : Indonesia
-                      </div>
-                      
-                      <div class="flex flex-row gap-1 items-center">
-                        <UIcon name="mingcute:time-line" class="size-5" />
-                        Jam Operasional : 13.00-22.00 WIB
-                      </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
+                    <div class="flex flex-row gap-1 items-center">
+                      <UIcon name="majesticons:box" class="size-5 text-gray-500 shrink-0" />
+                      <span class="text-gray-600">Produk :</span>
+                      <span class="font-medium">{{ merchant?.product_count?.toLocaleString('id-ID') ?? '-' }}</span>
                     </div>
 
-                    <!-- baris kedua -->
-                    <div class="flex flex-col gap-2">
-                      <div class="flex flex-row gap-1 items-center">
-                        <UIcon name="majesticons:box" class="size-5" />
-                        Produk : 10
-                      </div>
-                      
-                      <div class="flex flex-row gap-1 items-center">
-                        <UIcon name="gridicons:add-outline" class="size-5" />
-                        Bergabung : 28 Sep 2018 05:27
-                      </div>
-                      
-                      <div class="flex flex-row gap-1 items-center">
-                        <UIcon name="gis:search-country" class="size-5" />
-                        Negara : Indonesia
-                      </div>
-                      
-                      <div class="flex flex-row gap-1 items-center">
-                        <UIcon name="mingcute:time-line" class="size-5" />
-                        Jam Operasional : 13.00-22.00 WIB
-                      </div>
+                    <div class="flex flex-row gap-1 items-center">
+                      <UIcon name="mdi:shopping-outline" class="size-5 text-gray-500 shrink-0" />
+                      <span class="text-gray-600">Terjual :</span>
+                      <span class="font-medium">{{ merchant?.total_sold?.toLocaleString('id-ID') ?? '-' }}</span>
                     </div>
 
+                    <div class="flex flex-row gap-1 items-center">
+                      <UIcon name="gridicons:add-outline" class="size-5 text-gray-500 shrink-0" />
+                      <span class="text-gray-600">Bergabung :</span>
+                      <span class="font-medium">{{ merchant?.created_at ? formatDate(merchant.created_at) : '-' }}</span>
+                    </div>
+
+                    <div class="flex flex-row gap-1 items-center">
+                      <UIcon name="material-symbols:star-rounded" class="size-5 text-yellow-400 shrink-0" />
+                      <span class="text-gray-600">Ulasan :</span>
+                      <span class="font-medium">{{ merchant?.review_count?.toLocaleString('id-ID') ?? '-' }}</span>
+                    </div>
+
+                    <div class="flex flex-row gap-1 items-center">
+                      <UIcon name="gis:search-country" class="size-5 text-gray-500 shrink-0" />
+                      <span class="text-gray-600">Negara :</span>
+                      <span class="font-medium">{{ merchant?.country ?? '-' }}</span>
+                    </div>
+
+                    <div class="flex flex-row gap-1 items-center">
+                      <UIcon name="mingcute:time-line" class="size-5 text-gray-500 shrink-0" />
+                      <span class="text-gray-600">Jam Operasional :</span>
+                      <span class="font-medium">
+                        {{ merchant?.open_time && merchant?.close_time ? `${merchant.open_time} - ${merchant.close_time}` : '24 Jam' }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -212,6 +204,11 @@
   import type { ProductResponse } from '~/types/product/ProductResponse';
   import type { MerchantResponse } from '~/types/MerchantResponse';
   import ChatModalBuyer from '~/components/form/ChatModalBuyer.vue';
+  import dayjs from 'dayjs'
+  import 'dayjs/locale/id'
+
+  dayjs.locale('id')
+  const formatDate = (iso: string) => dayjs(iso).format('D MMM YYYY')
 
   // Ambil API function
   const { fetchProductsByMerchantId } = useProductsApi()

@@ -15,26 +15,24 @@ export const useMerchantStore = defineStore('merchantStore', {
   actions: {
     async setMyMerchant() {
       if(this.merchant !== null) return
+      await this.refreshMerchant()
+    },
 
+    async refreshMerchant() {
       this.loading = true
-
       try {
-        // ✅ Ambil API helper (misalnya composable API product)
         const { fetchMyMerchant } = useMerchantApi()
-
-        // ✅ Fetch data produk terbaru dari backend (bulk by IDs)
         const data = await fetchMyMerchant()
-
         if (data) {
           this.merchant = data
           const merchantCookie = useCookie<MerchantResponse | null>('merchant', { secure: true })
           merchantCookie.value = data
-        }else{
+        } else {
           throw new Error("Data tidak ditemukan")
         }
-      } catch (err:any) {
+      } catch (err: any) {
         this.loading = false
-        console.error('❌ Gagal update cart dari backend:', err)
+        console.error('❌ Gagal fetch merchant:', err)
         throw new Error(err.message)
       } finally {
         this.loading = false

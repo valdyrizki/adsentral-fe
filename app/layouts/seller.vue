@@ -63,6 +63,11 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     to: '/seller/penalty'
   },
   {
+    label: 'Profil Toko',
+    icon: 'material-symbols:store-outline',
+    to: '/seller/profile'
+  },
+  {
     label: 'Notifikasi',
     icon: 'i-heroicons-bell',
     to: '/seller/notification',
