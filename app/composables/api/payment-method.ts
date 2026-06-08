@@ -11,14 +11,15 @@ export const usePaymentMethodApi = () => {
       const res = await $fetch<WebResponse<PaymentMethodResponse[]>>(
         `${config.public.apiBase}/payment/methods`
       )
-  
+
       if (res.status !== 'success' || !res.data) {
         throw createError({
           statusCode: 400,
           statusMessage: res.message || 'Gagal memuat riwayat',
         })
       }
-  
+
+      paymentMethodStore.setPaymentMethod(res.data)
       return res.data
     }
 

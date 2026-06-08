@@ -35,7 +35,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div class="flex flex-col gap-0.5">
               <p class="text-gray-400 text-xs">Produk</p>
-              <p class="font-medium">{{ guarantee.product_name }}</p>
+              <p class="font-medium">{{ guarantee.product.name }}</p>
             </div>
             <div class="flex flex-col gap-0.5">
               <p class="text-gray-400 text-xs">Toko</p>
@@ -43,8 +43,8 @@
             </div>
             <div class="flex flex-col gap-0.5">
               <p class="text-gray-400 text-xs">ID Transaksi</p>
-              <NuxtLink :to="`/transaction/${guarantee.transaction_id}`" class="text-primary-500 hover:underline text-sm flex items-center gap-1">
-                #{{ guarantee.transaction_id }}
+              <NuxtLink :to="`/transaction/${guarantee.transaction.id}`" class="text-primary-500 hover:underline text-sm flex items-center gap-1">
+                #{{ guarantee.transaction.id }}
                 <UIcon name="mdi:open-in-new" class="size-3" />
               </NuxtLink>
             </div>

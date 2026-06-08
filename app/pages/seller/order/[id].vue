@@ -565,7 +565,7 @@
     </div>
 
     <!-- Pengiriman Garansi -->
-    <div class="mt-4 w-full bg-yellow-50 border border-yellow-300 p-2 rounded-lg overflow-hidden" v-if="guarantee?.order_discussion">
+    <div class="mt-4 w-full bg-yellow-50 border border-yellow-300 p-2 rounded-lg overflow-hidden" v-if="guarantee?.discussions?.length">
       <div class="flex flex-col gap-3">
         <div class="text-center font-medium flex items-center justify-center gap-2">
           <UIcon name="material-symbols:shield" class="size-5 text-yellow-600" />
@@ -573,19 +573,19 @@
         </div>
         <div class="flex flex-col sm:flex-row items-center justify-between gap-2 bg-white rounded-lg p-3">
           <div class="flex flex-col gap-1 text-sm text-gray-600 text-center sm:text-left">
-            <span>{{ guarantee.order_discussion.message || "Download file akun garansi dibawah ini" }}</span>
-            <span class="text-xs text-gray-400">{{ dayjs(guarantee.order_discussion.created_at).format('D MMM YYYY HH:mm') }}</span>
+            <span>{{ guarantee.discussions[0].message || "Download file akun garansi dibawah ini" }}</span>
+            <span class="text-xs text-gray-400">{{ dayjs(guarantee.discussions[0].created_at).format('D MMM YYYY HH:mm') }}</span>
           </div>
           <UButton
-            v-if="guarantee.order_discussion.file"
+            v-if="guarantee.discussions[0].file"
             icon="mdi:download"
             color="warning"
             variant="solid"
             size="sm"
             class="flex-none"
-            @click="downloadFile(config.public.backendUrl + '/' + guarantee.order_discussion.file.url)"
+            @click="downloadFile(config.public.backendUrl + '/' + guarantee.discussions[0].file.url)"
           >
-            {{ guarantee.order_discussion.file.ori_name }}
+            {{ guarantee.discussions[0].file.ori_name }}
           </UButton>
         </div>
       </div>

@@ -82,6 +82,20 @@ export const useGuaranteeApi = () => {
     return res.data
   }
 
+  const sendGuaranteeViaStock = async (guaranteeId: string, qty: number, sellerDescription?: string): Promise<GuaranteeResponse> => {
+    const res = await api<WebResponse<GuaranteeResponse>>(`/seller/guarantee/${guaranteeId}/send-via-stock`, {
+      method: 'POST',
+      body: { qty, seller_description: sellerDescription },
+    })
+    if (res.status !== 'success' || !res.data) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: res.message || 'Gagal mengirim garansi via stok',
+      })
+    }
+    return res.data
+  }
+
   const fetchSendGuarantee = async (guaranteeId: string, formData: FormData): Promise<GuaranteeResponse> => {
     const res = await api<WebResponse<GuaranteeResponse>>(`/seller/guarantee/${guaranteeId}/send`, {
       method: 'POST',
@@ -101,5 +115,6 @@ export const useGuaranteeApi = () => {
     fetchGuaranteeById,
     fetchReviewGuarantee,
     fetchSendGuarantee,
+    sendGuaranteeViaStock,
   }
 }

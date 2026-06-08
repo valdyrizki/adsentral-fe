@@ -34,7 +34,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div class="flex flex-col gap-0.5">
               <p class="text-gray-400 text-xs">Produk</p>
-              <p class="font-medium">{{ guarantee.product_name }}</p>
+              <p class="font-medium">{{ guarantee.product.name }}</p>
             </div>
             <div class="flex flex-col gap-0.5">
               <p class="text-gray-400 text-xs">Pembeli</p>
@@ -42,8 +42,8 @@
             </div>
             <div class="flex flex-col gap-0.5">
               <p class="text-gray-400 text-xs">ID Transaksi</p>
-              <NuxtLink :to="`/seller/order/${guarantee.transaction_id}`" class="text-primary-500 hover:underline text-sm flex items-center gap-1">
-                #{{ guarantee.transaction_id }}
+              <NuxtLink :to="`/seller/order/${guarantee.transaction.id}`" class="text-primary-500 hover:underline text-sm flex items-center gap-1">
+                #{{ guarantee.transaction.id }}
                 <UIcon name="mdi:open-in-new" class="size-3" />
               </NuxtLink>
             </div>
@@ -175,32 +175,87 @@
       <UCard v-if="guarantee.status === 'IN_PROGRESS'">
         <div class="flex flex-col gap-4">
           <p class="font-medium text-gray-700">Kirim Garansi ke Pembeli</p>
-          <p class="text-sm text-gray-500">Kirim pengganti atau file garansi. Klaim otomatis selesai setelah dikirim.</p>
 
-          <div class="flex flex-col gap-1.5">
-            <label class="text-sm font-medium">Catatan / Deskripsi <span class="text-red-500">*</span></label>
-            <UTextarea v-model="doneDescription" placeholder="Contoh: Username: abc123, Password: xxxxxx. Segera ganti password setelah login." :rows="4" />
+          <!-- Pilih metode jika produk STOCKING -->
+          <div v-if="guarantee.product.delivery_type === 'STOCKING'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div
+              class="flex gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all"
+              :class="sendMethod === 'file' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'"
+              @click="sendMethod = 'file'"
+            >
+              <UIcon name="i-lucide-upload" class="size-5 mt-0.5 flex-none" :class="sendMethod === 'file' ? 'text-blue-500' : 'text-gray-400'" />
+              <div>
+                <p class="font-semibold text-sm" :class="sendMethod === 'file' ? 'text-blue-700' : 'text-gray-700'">Upload File</p>
+                <p class="text-xs text-gray-500 mt-0.5">Kirim file garansi secara manual.</p>
+              </div>
+            </div>
+            <div
+              class="flex gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all"
+              :class="sendMethod === 'stock' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'"
+              @click="sendMethod = 'stock'"
+            >
+              <UIcon name="i-lucide-file-check" class="size-5 mt-0.5 flex-none" :class="sendMethod === 'stock' ? 'text-blue-500' : 'text-gray-400'" />
+              <div>
+                <p class="font-semibold text-sm" :class="sendMethod === 'stock' ? 'text-blue-700' : 'text-gray-700'">Via Stok</p>
+                <p class="text-xs text-gray-500 mt-0.5">Kirim otomatis dari stok file yang tersedia.</p>
+              </div>
+            </div>
           </div>
 
-          <div class="flex flex-col gap-1.5">
-            <label class="text-sm font-medium">File Akun (opsional)</label>
-            <UFileUpload v-model="doneFile" label="Upload file akun garansi" class="w-48 min-h-16" />
-          </div>
+          <!-- Metode: Upload File -->
+          <template v-if="sendMethod === 'file'">
+            <p class="text-sm text-gray-500">Kirim pengganti atau file garansi. Klaim otomatis selesai setelah dikirim.</p>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-medium">Catatan / Deskripsi <span class="text-red-500">*</span></label>
+              <UTextarea v-model="doneDescription" placeholder="Contoh: Username: abc123, Password: xxxxxx. Segera ganti password setelah login." :rows="4" />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-medium">File Akun (opsional)</label>
+              <UFileUpload v-model="doneFile" label="Upload file akun garansi" class="w-48 min-h-16" />
+            </div>
+            <p v-if="doneError" class="text-sm text-red-500">{{ doneError }}</p>
+            <UButton icon="mdi:send" color="primary" variant="solid" size="md" :loading="isSubmitting" :disabled="!doneDescription.trim()" class="w-fit" @click="handleDone">
+              Kirim & Selesaikan Garansi
+            </UButton>
+          </template>
 
-          <p v-if="doneError" class="text-sm text-red-500">{{ doneError }}</p>
+          <!-- Metode: Via Stok -->
+          <template v-if="sendMethod === 'stock'">
+            <UAlert
+              icon="i-lucide-info"
+              color="info"
+              variant="subtle"
+              title="Kirim via Stok File"
+              :description="`Stok tersedia: ${guarantee.product.stock} file. Sistem akan mengambil file dari stok dan mengirimkannya otomatis ke pembeli.`"
+            />
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-medium">
+                Jumlah Stok yang Dikirim <span class="text-red-500">*</span>
+              </label>
+              <UInputNumber
+                v-model="stockQty"
+                orientation="vertical"
+                :min="1"
+                :max="maxStockQty"
+                class="w-40"
+                :disabled="isSubmitting"
+              />
+              <p class="text-xs text-gray-500">
+                Maks. <span class="font-semibold">{{ maxStockQty }}</span>
+                (qty pembelian: {{ guarantee.transaction.qty }}, stok tersedia: {{ guarantee.product.stock }})
+              </p>
+              <p v-if="stockQtyError" class="text-sm text-red-500">{{ stockQtyError }}</p>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-sm font-medium">Catatan / Deskripsi <span class="text-gray-400 text-xs font-normal">(opsional)</span></label>
+              <UTextarea v-model="stockDescription" placeholder="Contoh: Akun sudah dikirim dari stok tersedia. Segera ganti password setelah login." :rows="3" :disabled="isSubmitting" />
+            </div>
+            <p v-if="doneError" class="text-sm text-red-500">{{ doneError }}</p>
+            <UButton icon="i-lucide-zap" color="primary" variant="solid" size="md" :loading="isSubmitting" :disabled="stockQty < 1 || stockQty > maxStockQty" class="w-fit" @click="handleDoneViaStock">
+              Kirim via Stok & Selesaikan
+            </UButton>
+          </template>
 
-          <UButton
-            icon="mdi:send"
-            color="primary"
-            variant="solid"
-            size="md"
-            :loading="isSubmitting"
-            :disabled="!doneDescription.trim()"
-            class="w-fit"
-            @click="handleDone"
-          >
-            Kirim & Selesaikan Garansi
-          </UButton>
         </div>
       </UCard>
 
@@ -279,7 +334,7 @@ definePageMeta({ layout: 'seller', label: 'Detail Garansi' })
 const route = useRoute()
 const toast = useToast()
 const config = useRuntimeConfig()
-const { fetchGuaranteeById, fetchReviewGuarantee, fetchSendGuarantee } = useGuaranteeApi()
+const { fetchGuaranteeById, fetchReviewGuarantee, fetchSendGuarantee, sendGuaranteeViaStock } = useGuaranteeApi()
 
 // ===== Data =====
 const guarantee = ref<GuaranteeResponse | null>(null)
@@ -308,6 +363,16 @@ const rejectError = ref<string | null>(null)
 const doneDescription = ref('')
 const doneFile = ref<File | null>(null)
 const doneError = ref<string | null>(null)
+
+// Via stok
+const sendMethod = ref<'file' | 'stock'>('file')
+const stockQty = ref(1)
+const stockDescription = ref('')
+const stockQtyError = ref<string | null>(null)
+const maxStockQty = computed(() => {
+  if (!guarantee.value) return 1
+  return Math.min(guarantee.value.transaction.qty, guarantee.value.product.stock)
+})
 
 // ===== Countdown =====
 const now = ref(dayjs())
@@ -396,6 +461,39 @@ async function handleDone() {
   } catch (err: any) {
     doneError.value = err.message || 'Gagal mengirim akun garansi'
     toast.add({ title: 'Gagal', description: err.message || 'Gagal mengirim akun garansi', color: 'error' })
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+async function handleDoneViaStock() {
+  stockQtyError.value = null
+  doneError.value = null
+
+  if (stockQty.value < 1) {
+    stockQtyError.value = 'Jumlah minimal 1'
+    return
+  }
+  if (!guarantee.value) return
+  if (stockQty.value > guarantee.value.transaction.qty) {
+    stockQtyError.value = `Tidak boleh melebihi jumlah pembelian (${guarantee.value.transaction.qty})`
+    return
+  }
+  if (stockQty.value > guarantee.value.product.stock) {
+    stockQtyError.value = `Stok tidak cukup. Tersedia: ${guarantee.value.product.stock}`
+    return
+  }
+
+  try {
+    isSubmitting.value = true
+    await sendGuaranteeViaStock(route.params.id as string, stockQty.value, stockDescription.value.trim() || undefined)
+    toast.add({ title: 'Berhasil', description: 'Garansi berhasil dikirim via stok ke pembeli', color: 'success' })
+    stockQty.value = 1
+    stockDescription.value = ''
+    await refresh()
+  } catch (err: any) {
+    doneError.value = err.data?.message || err.statusMessage || err.message || 'Gagal mengirim garansi via stok'
+    toast.add({ title: 'Gagal', description: doneError.value ?? '', color: 'error' })
   } finally {
     isSubmitting.value = false
   }

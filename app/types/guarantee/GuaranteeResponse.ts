@@ -1,13 +1,14 @@
 import type { OrderDiscussionResponse } from '../order-discussion/OrderDiscussionResponse'
+import type { ProductResponse } from '../product/ProductResponse'
+import type { TransactionResponse } from '../TransactionResponse'
 
 export type GuaranteeStatus = 'IN_REVIEW' | 'REJECTED' | 'IN_PROGRESS' | 'DONE'
 
 export interface GuaranteeResponse {
   id: string
-  transaction_id: string
+  transaction: TransactionResponse
 
-  product_id: number
-  product_name: string
+  product: ProductResponse
 
   merchant_id: number
   merchant_name: string
@@ -24,7 +25,7 @@ export interface GuaranteeResponse {
   file_url: string | null
   file_ori_name: string | null
 
-  order_discussion: OrderDiscussionResponse | null
+  discussions: OrderDiscussionResponse[]
 
   created_at: string
   updated_at: string | null

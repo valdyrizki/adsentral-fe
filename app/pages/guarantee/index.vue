@@ -62,7 +62,7 @@
               <UBadge :color="statusColor(item.status)" variant="subtle" size="sm">{{ statusLabel(item.status) }}</UBadge>
               <span class="text-xs text-gray-400 font-mono">#{{ item.id }}</span>
             </div>
-            <p class="text-sm font-medium text-gray-800">{{ item.product_name }}</p>
+            <p class="text-sm font-medium text-gray-800">{{ item.product.name }}</p>
             <p class="text-sm text-gray-500 line-clamp-2">{{ item.complain_description }}</p>
             <div class="flex flex-wrap gap-3 text-xs text-gray-400 items-center">
               <span>Toko: {{ item.merchant_name }}</span>
