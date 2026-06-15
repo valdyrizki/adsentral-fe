@@ -6,7 +6,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Limit memory build supaya tidak OOM
-ENV NODE_OPTIONS="--max-old-space-size=1024"
+ENV NODE_OPTIONS="--max-old-space-size=3072"
 
 COPY package.json package-lock.json ./
 RUN npm install
