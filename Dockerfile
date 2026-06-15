@@ -5,13 +5,13 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+# Limit memory build supaya tidak OOM
+ENV NODE_OPTIONS="--max-old-space-size=1024"
 
-# Ganti npm ci ke npm install (lebih toleran)
+COPY package.json package-lock.json ./
 RUN npm install
 
 COPY . .
-
 RUN npm run build
 
 # ============================================
@@ -24,7 +24,6 @@ WORKDIR /app
 COPY --from=builder /app/.output ./.output
 
 EXPOSE 3000
-
 ENV NODE_ENV=production
 ENV NITRO_PORT=3000
 ENV NITRO_HOST=0.0.0.0
