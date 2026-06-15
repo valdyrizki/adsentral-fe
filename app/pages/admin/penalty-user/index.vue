@@ -14,7 +14,7 @@
             <div class="w-10 h-10 rounded-xl flex-shrink-0 overflow-hidden bg-gray-100">
               <NuxtImg
                 v-if="selectedUser.user.avatar_url"
-                :src="config.public.backendUrl + selectedUser.user.avatar_url"
+                :src="getImageUrl(selectedUser.user.avatar_url)"
                 class="w-full h-full object-cover"
                 alt="avatar"
               />
@@ -176,7 +176,7 @@
             <div class="w-10 h-10 rounded-xl flex-shrink-0 overflow-hidden bg-gray-100">
               <NuxtImg
                 v-if="user.user.avatar_url"
-                :src="config.public.backendUrl + user.user.avatar_url"
+                :src="getImageUrl(user.user.avatar_url)"
                 class="w-full h-full object-cover"
                 alt="avatar"
               />
@@ -245,7 +245,6 @@ import type { PenaltyUserResponse, UserSuspendStatus } from '~/types/penalty/Pen
 
 definePageMeta({ layout: 'admin', label: 'Penalty User' })
 
-const config = useRuntimeConfig()
 const { fetchPenaltyUsers, fetchUserPenaltyDetail } = usePenaltyApi()
 
 // ===== LIST STATE =====

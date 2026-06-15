@@ -1,4 +1,5 @@
 <template>
+  <ClientOnly>
   <div v-if="stat && stat.suspend_status !== 'NONE'" class="w-full border-b" :class="outerClass">
     <div class="max-w-5xl mx-auto px-4 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-2">
 
@@ -45,6 +46,7 @@
 
     </div>
   </div>
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">
@@ -62,13 +64,17 @@ const waLink = computed(() => {
   return `https://wa.me/${number.replace(/\D/g, '')}`
 })
 
-const stat = ref<MyPenaltyStat | null>(null)
-
-onMounted(async () => {
-  if (authStore.user) {
-    stat.value = await fetchMyPenaltyStat()
+const { data: stat } = await useAsyncData<MyPenaltyStat | null>(
+  'buyer-penalty-stat',
+  async () => {
+    if (!authStore.accessToken) return null
+    return await fetchMyPenaltyStat()
+  },
+  {
+    server: false,
+    watch: [() => authStore.accessToken],
   }
-})
+)
 
 const isPermanent = computed(() => stat.value?.suspend_status === 'PERMANENT')
 const isTemporary = computed(() => stat.value?.suspend_status === 'TEMPORARY')

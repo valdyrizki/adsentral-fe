@@ -3,6 +3,10 @@
     <div class="mx-auto">
       <UBreadcrumb :items="breadcrumb" class="mb-4" />
 
+      <ClientOnly>
+        <template #fallback>
+          <div class="mt-4"><AppLoadingSkeleton /></div>
+        </template>
        <!-- Loading -->
       <div v-if="pending">
         <AppLoadingSkeleton/>
@@ -12,7 +16,7 @@
         <div class="flex flex-col sm:flex-row gap-4 w-full bg-gray-100 p-2 rounded-lg overflow-hidden">
           <div class="flex-none mx-auto">
             <NuxtLink :to="`/product/${transaction?.product.id}`" class=" sm:order-first text-center">
-              <img :src="config.public.backendUrl +'/'+ transaction?.product?.banner_url" :alt="transaction?.product.name" class=" size-40 rounded-lg object-cover " />
+              <img :src="getImageUrl(transaction?.product?.banner_url)" :alt="transaction?.product.name" class=" size-40 rounded-lg object-cover " />
             </NuxtLink>
           </div>
           <div class="flex-grow flex flex-col ">
@@ -25,7 +29,7 @@
               <div class="flex flex-row gap-2">
                 <div class="basis-auto">
                   <UAvatar
-                  :src="config.public.backendUrl +'/'+ transaction?.product?.merchant_logo"
+                  :src="getImageUrl(transaction?.product?.merchant_logo)"
                   :chip="{
                     inset: true,
                     color: 'success'
@@ -234,7 +238,7 @@
                   variant="solid"
                   size="sm"
                   class="flex-none"
-                  @click="downloadFile(config.public.backendUrl + '/' + fileOrder.file.url)"
+                  @click="downloadFile(getImageUrl(fileOrder.file.url))"
                 >
                   {{ fileOrder.file.ori_name }}
                 </UButton>
@@ -272,7 +276,7 @@
                 variant="solid"
                 size="sm"
                 class="flex-none"
-                @click="downloadFile(config.public.backendUrl + '/' + guarantee.discussions[0].file.url)"
+                @click="downloadFile(getImageUrl(guarantee.discussions[0].file.url))"
               >
                 {{ guarantee.discussions[0].file.ori_name }}
               </UButton>
@@ -537,7 +541,7 @@
             </div>
             <p v-if="guarantee.seller_description" class="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{{ guarantee.seller_description }}</p>
             <div v-if="guarantee.file_url" class="mt-2">
-              <UButton icon="mdi:download" color="primary" variant="soft" size="sm" @click="downloadFile(config.public.backendUrl + '/' + guarantee.file_url)">
+              <UButton icon="mdi:download" color="primary" variant="soft" size="sm" @click="downloadFile(getImageUrl(guarantee.file_url))">
                 {{ guarantee.file_ori_name }}
               </UButton>
             </div>
@@ -686,16 +690,16 @@
                       <!-- <div><UBadge>Badge</UBadge></div> -->
                       <div class="text-gray-600">{{ orderDiscussion.message }}</div>
                       <div v-if="orderDiscussion.file" class="flex flex-row items-center gap-1"> <!-- File yang sudah diupload, klik untuk download -->
-                        <NuxtLink v-if="isImage(orderDiscussion.file.format)" :to="config.public.backendUrl +'/'+ orderDiscussion.file.url">
-                          <NuxtImg :src="config.public.backendUrl +'/'+ orderDiscussion.file.url" width="100" height="100" />
+                        <NuxtLink v-if="isImage(orderDiscussion.file.format)" :to="getImageUrl(orderDiscussion.file.url)">
+                          <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />
                         </NuxtLink>
                         <div v-else>
-                          <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(config.public.backendUrl + '/' + orderDiscussion.file?.url)">{{ orderDiscussion.file?.ori_name }}</UButton>
+                          <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.file?.ori_name }}</UButton>
                         </div>
                       </div>
                     </div>
                     <div>
-                      <div class="ml-auto flex-none">   
+                      <div class="ml-auto flex-none">
                         <div class="font-medium text-sm text-gray-500 px-2">{{ orderDiscussion.created_at }}</div>
                       </div>
                     </div>
@@ -725,11 +729,11 @@
                       </template>
                       <div class="text-gray-600">{{ orderDiscussion.message }}</div>
                       <div v-if="orderDiscussion.file" class="flex flex-row items-center gap-1"> <!-- File yang sudah diupload, klik untuk download -->
-                        <NuxtLink v-if="isImage(orderDiscussion.file.format)" :to="config.public.backendUrl +'/'+ orderDiscussion.file.url">
-                          <NuxtImg :src="config.public.backendUrl +'/'+ orderDiscussion.file.url" width="100" height="100" />
+                        <NuxtLink v-if="isImage(orderDiscussion.file.format)" :to="getImageUrl(orderDiscussion.file.url)">
+                          <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />
                         </NuxtLink>
                         <div v-else>
-                          <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(config.public.backendUrl + '/' + orderDiscussion.file?.url)">{{ orderDiscussion.file?.ori_name }}</UButton>
+                          <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.file?.ori_name }}</UButton>
                         </div>
                       </div>
                     </div>
@@ -765,10 +769,10 @@
                       <div class="text-gray-600">{{ orderDiscussion.message }}</div>
                       <div v-if="orderDiscussion.file" class="flex flex-row items-center gap-1"> <!-- File yang sudah diupload, klik untuk download -->
                         <div v-if="isImage(orderDiscussion.file.format)">
-                          <NuxtImg :src="config.public.backendUrl +'/'+ orderDiscussion.file.url" width="100" height="100" />
+                          <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />
                         </div>
                         <div v-else>
-                          <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(config.public.backendUrl + '/' + orderDiscussion.file?.url)">{{ orderDiscussion.file?.ori_name }}</UButton>
+                          <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.file?.ori_name }}</UButton>
                         </div>
                       </div>
                     </div>
@@ -815,6 +819,7 @@
         </div>
 
       </section>
+      </ClientOnly>
     </div>
   </main>
 
@@ -904,8 +909,6 @@ const breadcrumb = computed(() => [
   { label: `#${route.params.id}`, icon: 'i-heroicons-eye' },
 ])
 
-//Ambil config
-const config = useRuntimeConfig()
 const toast = useToast()
 
 const selectRating = ref<SelectItem[]>(

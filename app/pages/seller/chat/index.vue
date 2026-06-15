@@ -32,6 +32,10 @@
               @scroll="handleScrollConversation"
             >
 
+              <ClientOnly>
+                <template #fallback>
+                  <LoadingSkeleton class="w-full mt-4"/>
+                </template>
               <!-- Jika Loading -->
               <div v-if="pendingConversation" class="flex justify-center items-center h-full">
                   <LoadingSkeleton class="w-full mt-4"/>
@@ -67,7 +71,8 @@
                   </div>
                 </div>
               </div>
-              
+              </ClientOnly>
+
             </div>
           </UCard>
         </section>
@@ -122,7 +127,7 @@
                         <div>
                           <div v-if="chat.product">
                             <NuxtLink :to="'/product/'+chat.product.id" class="flex items-center gap-4 mb-2 p-2 border rounded-lg border-blue-500 bg-gray-100">
-                              <NuxtImg :src="config.public.backendUrl +'/'+ chat.product.banner_url" width="50" height="50" />
+                              <NuxtImg :src="getImageUrl(chat.product.banner_url)" width="50" height="50" />
                               <div>
                                 <p class="text-sm">{{ chat.product.name }}</p>
                                 <p class="text-sm text-error">Rp. {{ chat.product.sell_price.toLocaleString('id-ID') }}</p>
@@ -132,7 +137,7 @@
                           
                           <div v-if="chat.transaction">
                             <NuxtLink :to="'/seller/order/'+chat.transaction.id" class="flex items-center gap-4 mb-2 p-2 border rounded-lg border-blue-500 bg-gray-100">
-                              <NuxtImg :src="config.public.backendUrl +'/'+ chat.transaction.product.banner_url" width="50" height="50" />
+                              <NuxtImg :src="getImageUrl(chat.transaction.product.banner_url)" width="50" height="50" />
                               <div class="flex flex-col">
                                 <p class="text-sm"><UBadge>#{{ chat.transaction.id }}</UBadge></p>
                                 <p class="text-sm">{{ chat.transaction.product.name }}</p>
@@ -151,11 +156,11 @@
                           </div>
                           
                           <div v-if="chat.file" class="flex m-4"> <!-- File yang sudah diupload, klik untuk download -->
-                            <NuxtLink v-if="isImage(chat.file.format)" :to="config.public.backendUrl +'/'+ chat.file.url">
-                              <NuxtImg :src="config.public.backendUrl +'/'+ chat.file.url" width="100" height="100" />
+                            <NuxtLink v-if="isImage(chat.file.format)" :to="getImageUrl(chat.file.url)">
+                              <NuxtImg :src="getImageUrl(chat.file.url)" width="100" height="100" />
                             </NuxtLink>
                             <div v-else>
-                              <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(config.public.backendUrl + '/' + chat.file?.url)">{{ chat.file?.ori_name }}</UButton>
+                              <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(getImageUrl(chat.file?.url))">{{ chat.file?.ori_name }}</UButton>
                             </div>
                           </div>
                           <p
@@ -208,7 +213,7 @@
                     <div>
                       <div v-if="attachedProduct" class="flex flex-row gap-2 mt-2">
                         <NuxtLink :to="'/product/'+attachedProduct.id" class="flex items-center gap-4 mb-2 p-2 border rounded-lg border-blue-500 bg-gray-100">
-                          <NuxtImg :src="config.public.backendUrl +'/'+ attachedProduct.banner_url" width="50" height="50" />
+                          <NuxtImg :src="getImageUrl(attachedProduct.banner_url)" width="50" height="50" />
                           <div>
                             <p class="text-sm">{{ attachedProduct.name }}</p>
                             <p class="text-sm text-error">{{ attachedProduct.sell_price.toLocaleString('id-ID') }}</p>
@@ -259,9 +264,11 @@
                   </div>
                 </div>
               </div>
-              <div v-else class="rounded-2xl shadow-lg ">
-                <div class="">
-                  <NuxtImg :src="config.public.backendUrl +'/files/public/chat-info.png'" class="mx-auto" />
+              <div v-else class="rounded-2xl shadow-lg">
+                <div class="flex flex-col items-center justify-center py-20 text-gray-400">
+                  <UIcon name="mdi:chat-outline" class="text-7xl mb-4 text-primary-300" />
+                  <p class="text-base font-medium text-gray-500">Belum ada percakapan dipilih</p>
+                  <p class="text-sm mt-1 text-gray-400">Pilih percakapan di sebelah kiri untuk mulai chat</p>
                 </div>
               </div>
             </div>
@@ -339,8 +346,6 @@ definePageMeta({
     senderType: 'SELLER'
    })
   
-  //Ambil config
-  const config = useRuntimeConfig()
   const toast = useToast()
 
   //composables api

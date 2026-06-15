@@ -18,6 +18,20 @@
       </div>
     </div>
 
+    <ClientOnly>
+      <template #fallback>
+        <div class="space-y-6">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div v-for="i in 4" :key="i" class="bg-white border border-gray-200 rounded-xl p-4">
+              <USkeleton class="h-3 w-24 rounded mb-2" />
+              <USkeleton class="h-7 w-20 rounded" />
+            </div>
+          </div>
+          <UCard class="shadow-sm"><div class="h-64"><AppLoadingSkeleton /></div></UCard>
+          <UCard class="shadow-sm"><AppLoadingSkeleton /></UCard>
+        </div>
+      </template>
+
     <!-- Stats Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <UCard v-for="stat in statsCards" :key="stat.label" class="shadow-sm">
@@ -125,7 +139,7 @@
           class="flex items-center gap-3 py-3 hover:bg-gray-50 rounded-xl px-2 transition-colors"
         >
           <img
-            :src="config.public.backendUrl + '/' + tx.product?.banner_url"
+            :src="getImageUrl(tx.product?.banner_url)"
             :alt="tx.product?.name"
             class="w-11 h-11 rounded-lg object-cover flex-shrink-0 border border-gray-100"
           />
@@ -164,7 +178,7 @@
             class="flex items-center gap-3"
           >
             <img
-              :src="config.public.backendUrl + '/' + p.banner_url"
+              :src="getImageUrl(p.banner_url)"
               :alt="p.name"
               class="w-10 h-10 rounded-lg object-cover border border-gray-100 flex-shrink-0"
             />
@@ -248,6 +262,8 @@
       </NuxtLink>
     </div>
 
+    </ClientOnly>
+
   </div>
 </template>
 
@@ -266,7 +282,6 @@ import type { SystemSettingResponse } from '~/types/system-setting/SystemSetting
 
 definePageMeta({ layout: 'admin', label: 'Dashboard' })
 
-const config = useRuntimeConfig()
 const authStore = useAuthStore()
 const { fetchAllTx } = useTransactionApi()
 const { getProducts } = useProductsApi()

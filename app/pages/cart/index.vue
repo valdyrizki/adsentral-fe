@@ -37,7 +37,7 @@
               :class="{ 'opacity-60': cartItem.product?.status !== 'ACTIVE' }"
             >
               <div class="shrink-0 relative">
-                <img :src="config.public.backendUrl +'/'+ cartItem.product?.banner_url" :alt="cartItem.product?.name" class="size-24 rounded-md object-cover sm:size-48" />
+                <img :src="getImageUrl(cartItem.product?.banner_url)" :alt="cartItem.product?.name" class="size-24 rounded-md object-cover sm:size-48" />
                 <UBadge
                   v-if="cartItem.product?.status !== 'ACTIVE'"
                   color="error"
@@ -59,7 +59,7 @@
                     </div>
                     <div class="mt-1 text-sm">
                       <div class="text-gray-500 flex gap-2">
-                        <UAvatar :src="config.public.backendUrl +'/'+ cartItem.product?.merchant_logo" size="xs" />
+                        <UAvatar :src="getImageUrl(cartItem.product?.merchant_logo)" size="xs" />
                         {{ cartItem.product?.merchant_name }}
                       </div>
                     </div>
@@ -140,6 +140,10 @@
           </dl>
 
           <div class="mt-6">
+            <ClientOnly>
+              <template #fallback>
+                <AppLoadingSkeleton />
+              </template>
             <div v-if="paymentMethodLoading ">
               <AppLoadingSkeleton />
             </div>
@@ -202,6 +206,7 @@
               :loading="loading"
               :disabled="isSaldoInsufficient || loading || hasUnavailableItems || syncing"
             />
+            </ClientOnly>
           </div>
         </section>
       </form>

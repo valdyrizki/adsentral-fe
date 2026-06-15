@@ -1,5 +1,9 @@
 <template>
   <div class="space-y-6">
+    <ClientOnly>
+      <template #fallback>
+        <UCard class="rounded-2xl shadow-lg"><AppLoadingSkeleton /></UCard>
+      </template>
     <UCard class="rounded-2xl shadow-lg">
       <template #header>
         <div class="flex items-center justify-between flex-wrap gap-2">
@@ -134,6 +138,7 @@
         </div>
       </div>
     </UCard>
+    </ClientOnly>
 
     <!-- Modal Create / Edit -->
     <FormSystemSettingModal

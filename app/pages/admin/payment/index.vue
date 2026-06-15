@@ -1,6 +1,19 @@
 <template>
   <div class="space-y-6">
 
+    <ClientOnly>
+      <template #fallback>
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div v-for="i in 4" :key="i" class="bg-white border border-gray-200 rounded-xl p-4">
+              <USkeleton class="h-3 w-24 rounded mb-2" />
+              <USkeleton class="h-7 w-20 rounded" />
+            </div>
+          </div>
+          <UCard class="shadow-sm"><AppLoadingSkeleton /></UCard>
+        </div>
+      </template>
+
     <!-- Header Stats -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <UCard v-for="stat in statsCards" :key="stat.label" class="shadow-sm">
@@ -128,7 +141,7 @@
               <!-- <UTooltip text="Lihat Bukti Pembayaran">
                 <UButton
                   v-if="payment.payment_proof_url"
-                  :to="config.public.backendUrl + '/' + payment.payment_proof_url"
+                  :to="getImageUrl(payment.payment_proof_url)"
                   target="_blank"
                   size="xs"
                   variant="soft"
@@ -202,6 +215,7 @@
         />
       </div>
     </UCard>
+    </ClientOnly>
   </div>
 </template>
 
@@ -216,8 +230,7 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
 
   definePageMeta({ layout: 'admin', label: 'Manajemen Pembayaran' })
 
-  const config = useRuntimeConfig()
-  const toast = useToast()
+    const toast = useToast()
   const { fetchAllPayments, fetchConfirmPayment } = usePaymentApi()
   const { fetchDepositCancel } = useBalanceApi()
 

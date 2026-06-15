@@ -23,164 +23,195 @@
     </UCard>
 
     <!-- List -->
-    <UCard class="shadow-sm">
-      <template #header>
-        <p class="font-semibold text-gray-800">
-          Produk Saya
-          <span v-if="productPagination?.total_elements" class="text-xs text-gray-400 font-normal ml-2">
-            ({{ productPagination.total_elements }} total)
-          </span>
-        </p>
+    <ClientOnly>
+      <template #fallback>
+        <UCard class="shadow-sm">
+          <template #header>
+            <USkeleton class="h-5 w-32 rounded" />
+          </template>
+          <div class="divide-y divide-gray-100">
+            <div v-for="i in 5" :key="i" class="flex flex-row gap-4 py-4 px-2">
+              <USkeleton class="w-20 h-20 rounded-xl flex-shrink-0" />
+              <div class="flex-grow space-y-2">
+                <div class="flex gap-1.5">
+                  <USkeleton class="h-5 w-16 rounded-full" />
+                  <USkeleton class="h-5 w-20 rounded-full" />
+                </div>
+                <USkeleton class="h-4 w-48 rounded" />
+                <div class="flex gap-3 pt-1">
+                  <USkeleton class="h-3 w-20 rounded" />
+                  <USkeleton class="h-3 w-16 rounded" />
+                  <USkeleton class="h-3 w-16 rounded" />
+                </div>
+              </div>
+              <div class="flex flex-col gap-2 items-end">
+                <USkeleton class="h-7 w-14 rounded" />
+                <USkeleton class="h-7 w-20 rounded" />
+              </div>
+            </div>
+          </div>
+        </UCard>
       </template>
 
-      <AppLoadingSkeleton v-if="loading" />
+      <UCard class="shadow-sm">
+        <template #header>
+          <p class="font-semibold text-gray-800">
+            Produk Saya
+            <span v-if="productPagination?.total_elements" class="text-xs text-gray-400 font-normal ml-2">
+              ({{ productPagination.total_elements }} total)
+            </span>
+          </p>
+        </template>
 
-      <UAlert
-        v-else-if="error"
-        title="Terjadi Kesalahan"
-        :description="error.message"
-        icon="icon-park-solid:error"
-        color="error"
-      />
+        <AppLoadingSkeleton v-if="loading" />
 
-      <div v-else-if="!productPagination?.content?.length" class="py-10 text-center text-gray-400 text-sm">
-        <UIcon name="i-heroicons-inbox" class="text-4xl text-gray-300 mb-3" />
-        <p>Produk tidak ditemukan.</p>
-      </div>
+        <UAlert
+          v-else-if="error"
+          title="Terjadi Kesalahan"
+          :description="error.message"
+          icon="icon-park-solid:error"
+          color="error"
+        />
 
-      <div v-else class="divide-y divide-gray-100">
-        <div
-          v-for="product in productPagination.content"
-          :key="product.id"
-          class="flex flex-row gap-4 py-4 px-2 hover:bg-gray-50 rounded-xl transition-colors"
-        >
-          <!-- Banner -->
-          <div class="flex-none">
-            <img
-              :src="config.public.backendUrl + '/' + product.banner_url"
-              :alt="product.name"
-              class="w-20 h-20 rounded-xl object-cover border border-gray-100 bg-gray-50"
-            />
-          </div>
+        <div v-else-if="!productPagination?.content?.length" class="py-10 text-center text-gray-400 text-sm">
+          <UIcon name="i-heroicons-inbox" class="text-4xl text-gray-300 mb-3" />
+          <p>Produk tidak ditemukan.</p>
+        </div>
 
-          <!-- Info -->
-          <div class="flex-grow flex flex-col min-w-0">
-            <div class="flex flex-wrap gap-1.5 items-center mb-1">
-              <UBadge :color="statusColor(product.status)" :label="statusLabel(product.status)" size="sm" variant="solid" />
-              <UBadge :color="deliveryTypeColor(product.delivery_type)" :label="deliveryTypeLabel(product.delivery_type)" size="sm" variant="subtle" />
-              <span class="text-xs font-mono text-gray-400">#{{ product.id }}</span>
-            </div>
-            <p class="text-sm font-semibold text-gray-800 truncate">{{ product.name }}</p>
-
-            <div class="mt-auto flex flex-wrap gap-3 pt-3 text-xs text-gray-400">
-              <span class="flex items-center gap-1">
-                <UIcon name="fa6-solid:rupiah-sign" />
-                <span class="font-semibold text-gray-700">{{ product.sell_price.toLocaleString('id-ID') }}</span>
-              </span>
-              <span class="flex items-center gap-1">
-                <UIcon name="mdi:package-variant" />
-                Stok: {{ product.stock }}
-              </span>
-              <span class="flex items-center gap-1">
-                <UIcon name="mdi:cart" />
-                {{ product.sold }} Terjual
-              </span>
-              <span class="flex items-center gap-1">
-                <UIcon name="mdi:calendar" />
-                {{ dayjs(product.created_at).format('DD MMM YYYY, HH:mm') }}
-              </span>
+        <div v-else class="divide-y divide-gray-100">
+          <div
+            v-for="product in productPagination.content"
+            :key="product.id"
+            class="flex flex-row gap-4 py-4 px-2 hover:bg-gray-50 rounded-xl transition-colors"
+          >
+            <!-- Banner -->
+            <div class="flex-none">
+              <img
+                :src="getImageUrl(product.banner_url)"
+                :alt="product.name"
+                class="w-20 h-20 rounded-xl object-cover border border-gray-100 bg-gray-50"
+              />
             </div>
 
-            <!-- Keterangan REVIEW -->
-            <p v-if="product.status === 'REVIEW'" class="text-xs text-blue-400 mt-1">
-              Menunggu persetujuan admin.
-            </p>
-            <!-- Keterangan NONACTIVE -->
-            <p v-else-if="product.status === 'NONACTIVE'" class="text-xs text-red-400 mt-1">
-              Produk ditolak / dinonaktifkan admin. Hubungi admin untuk mengajukan banding.
-            </p>
-            <!-- Keterangan INACTIVE -->
-            <p v-else-if="product.status === 'INACTIVE'" class="text-xs text-amber-500 mt-1">
-              Produk ditangguhkan oleh Anda.
-            </p>
-            <!-- Keterangan SUSPEND -->
-            <p v-else-if="product.status === 'SUSPEND'" class="text-xs text-gray-500 mt-1">
-              Produk disuspend karena melanggar ketentuan.
-            </p>
-          </div>
+            <!-- Info -->
+            <div class="flex-grow flex flex-col min-w-0">
+              <div class="flex flex-wrap gap-1.5 items-center mb-1">
+                <UBadge :color="statusColor(product.status)" :label="statusLabel(product.status)" size="sm" variant="solid" />
+                <UBadge :color="deliveryTypeColor(product.delivery_type)" :label="deliveryTypeLabel(product.delivery_type)" size="sm" variant="subtle" />
+                <span class="text-xs font-mono text-gray-400">#{{ product.id }}</span>
+              </div>
+              <p class="text-sm font-semibold text-gray-800 truncate">{{ product.name }}</p>
 
-          <!-- Actions -->
-          <div class="ml-auto flex-none flex flex-col gap-2 items-end justify-start">
-            <UButton
-              :to="`/seller/product/edit/${product.id}`"
-              icon="mdi:edit"
-              size="xs"
-              color="primary"
-              variant="outline"
-            >
-              Edit
-            </UButton>
+              <div class="mt-auto flex flex-wrap gap-3 pt-3 text-xs text-gray-400">
+                <span class="flex items-center gap-1">
+                  <UIcon name="fa6-solid:rupiah-sign" />
+                  <span class="font-semibold text-gray-700">{{ product.sell_price.toLocaleString('id-ID') }}</span>
+                </span>
+                <span class="flex items-center gap-1">
+                  <UIcon name="mdi:package-variant" />
+                  Stok: {{ product.stock }}
+                </span>
+                <span class="flex items-center gap-1">
+                  <UIcon name="mdi:cart" />
+                  {{ product.sold }} Terjual
+                </span>
+                <span class="flex items-center gap-1">
+                  <UIcon name="mdi:calendar" />
+                  {{ dayjs(product.created_at).format('DD MMM YYYY, HH:mm') }}
+                </span>
+              </div>
 
-            <NuxtLink v-if="product.delivery_type === 'STOCKING'" :to="`/seller/stock/${product.id}`">
-              <UButton icon="i-lucide-file-plus" size="xs" color="info" variant="soft">
-                Kelola Stok
+              <!-- Keterangan REVIEW -->
+              <p v-if="product.status === 'REVIEW'" class="text-xs text-blue-400 mt-1">
+                Menunggu persetujuan admin.
+              </p>
+              <!-- Keterangan NONACTIVE -->
+              <p v-else-if="product.status === 'NONACTIVE'" class="text-xs text-red-400 mt-1">
+                Produk ditolak / dinonaktifkan admin. Hubungi admin untuk mengajukan banding.
+              </p>
+              <!-- Keterangan INACTIVE -->
+              <p v-else-if="product.status === 'INACTIVE'" class="text-xs text-amber-500 mt-1">
+                Produk ditangguhkan oleh Anda.
+              </p>
+              <!-- Keterangan SUSPEND -->
+              <p v-else-if="product.status === 'SUSPEND'" class="text-xs text-gray-500 mt-1">
+                Produk disuspend karena melanggar ketentuan.
+              </p>
+            </div>
+
+            <!-- Actions -->
+            <div class="ml-auto flex-none flex flex-col gap-2 items-end justify-start">
+              <UButton
+                :to="`/seller/product/edit/${product.id}`"
+                icon="mdi:edit"
+                size="xs"
+                color="primary"
+                variant="outline"
+              >
+                Edit
               </UButton>
-            </NuxtLink>
 
-            <UButton
-              v-if="product.status === 'ACTIVE'"
-              icon="mdi:pause-circle"
-              size="xs"
-              color="error"
-              variant="soft"
-              :loading="loadingId === product.id"
-              @click="deactivateHandler(product.id)"
-            >
-              Tangguhkan
-            </UButton>
+              <NuxtLink v-if="product.delivery_type === 'STOCKING'" :to="`/seller/stock/${product.id}`">
+                <UButton icon="i-lucide-file-plus" size="xs" color="info" variant="soft">
+                  Kelola Stok
+                </UButton>
+              </NuxtLink>
 
-            <UButton
-              v-if="product.status === 'INACTIVE'"
-              icon="mdi:play-circle"
-              size="xs"
-              color="success"
-              variant="soft"
-              :loading="loadingId === product.id"
-              @click="activateHandler(product.id)"
-            >
-              Aktifkan
-            </UButton>
+              <UButton
+                v-if="product.status === 'ACTIVE'"
+                icon="mdi:pause-circle"
+                size="xs"
+                color="error"
+                variant="soft"
+                :loading="loadingId === product.id"
+                @click="deactivateHandler(product.id)"
+              >
+                Tangguhkan
+              </UButton>
 
-            <UButton
-              v-if="product.status === 'NONACTIVE' || product.status === 'SUSPEND'"
-              :to="buildWaLink(product)"
-              target="_blank"
-              icon="i-heroicons-chat-bubble-left-ellipsis"
-              size="xs"
-              color="success"
-              variant="solid"
-            >
-              Ajukan Banding
-            </UButton>
+              <UButton
+                v-if="product.status === 'INACTIVE'"
+                icon="mdi:play-circle"
+                size="xs"
+                color="success"
+                variant="soft"
+                :loading="loadingId === product.id"
+                @click="activateHandler(product.id)"
+              >
+                Aktifkan
+              </UButton>
+
+              <UButton
+                v-if="product.status === 'NONACTIVE' || product.status === 'SUSPEND'"
+                :to="buildWaLink(product)"
+                target="_blank"
+                icon="i-heroicons-chat-bubble-left-ellipsis"
+                size="xs"
+                color="success"
+                variant="solid"
+              >
+                Ajukan Banding
+              </UButton>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Pagination -->
-      <div
-        v-if="productPagination && productPagination.total_pages > 1 && !loading"
-        class="flex justify-center items-center pt-4"
-      >
-        <UPagination
-          :page="page + 1"
-          :total="productPagination.total_elements"
-          :items-per-page="perPageValue"
-          :sibling-count="1"
-          show-edges
-          @update:page="onPageChange"
-        />
-      </div>
-    </UCard>
+        <!-- Pagination -->
+        <div
+          v-if="productPagination && productPagination.total_pages > 1 && !loading"
+          class="flex justify-center items-center pt-4"
+        >
+          <UPagination
+            :page="page + 1"
+            :total="productPagination.total_elements"
+            :items-per-page="perPageValue"
+            :sibling-count="1"
+            show-edges
+            @update:page="onPageChange"
+          />
+        </div>
+      </UCard>
+    </ClientOnly>
 
   </div>
 </template>
@@ -193,7 +224,6 @@ import type { ProductResponse } from '~/types/product/ProductResponse'
 
 definePageMeta({ layout: 'seller', label: 'Products' })
 
-const config = useRuntimeConfig()
 const toast = useToast()
 const systemSettingStore = useSystemSettingStore()
 const { fetchMyProduct, deactivateProduct, activateProduct } = useProductsApi()

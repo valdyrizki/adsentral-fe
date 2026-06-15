@@ -19,6 +19,21 @@
   </UCard>
 
   <!-- Chart example -->
+  <ClientOnly>
+    <template #fallback>
+      <div class="mt-6">
+        <UCard>
+          <template #header><USkeleton class="h-5 w-32 rounded" /></template>
+          <div v-for="i in 5" :key="i" class="flex items-center gap-4 py-4 px-2 border-b border-gray-100">
+            <USkeleton class="w-40 h-40 rounded-lg flex-none" />
+            <div class="flex-1 space-y-2">
+              <USkeleton class="h-4 w-32 rounded" />
+              <USkeleton class="h-4 w-48 rounded" />
+            </div>
+          </div>
+        </UCard>
+      </div>
+    </template>
   <div class="mt-6">
     <UCard>
       <template #header>
@@ -50,7 +65,7 @@
             <div class="flex flex-row gap-4 w-full">
               <div class="flex-none">
                 <div class=" sm:order-first">
-                  <img :src="config.public.backendUrl +'/'+ tx.product?.banner_url" :alt="tx.product?.name" class=" size-40 rounded-lg object-cover " />
+                  <img :src="getImageUrl(tx.product?.banner_url)" :alt="tx.product?.name" class=" size-40 rounded-lg object-cover " />
                 </div>
               </div>
                 <div class="flex-grow flex flex-col">
@@ -134,6 +149,7 @@
       </div>
     </UCard>
   </div>
+  </ClientOnly>
 
   <RejectTxModal
     v-model="isRejectingTxModal"
@@ -172,9 +188,6 @@
 
   // Ambil API function
   const { fetchTxSeller, fetchConfirmTx, fetchRejectTx } = useTransactionApi()
-
-  //Ambil config
-  const config = useRuntimeConfig()
 
   // FILTER STATE
   const page = ref(0)

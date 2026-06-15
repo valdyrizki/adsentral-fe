@@ -24,6 +24,10 @@
           />
         </div>
 
+        <ClientOnly>
+          <template #fallback>
+            <AppLoadingSkeleton />
+          </template>
         <!-- Loading -->
         <AppLoadingSkeleton v-if="pending" />
 
@@ -96,7 +100,7 @@
               <div class="flex flex-col gap-2 items-end sm:ml-2 flex-shrink-0">
                 <UButton
                   v-if="payment.payment_proof_url"
-                  :to="config.public.backendUrl + '/' + payment.payment_proof_url"
+                  :to="getImageUrl(payment.payment_proof_url)"
                   target="_blank"
                   size="xs"
                   variant="soft"
@@ -134,6 +138,7 @@
             @update:page="onPageChange"
           />
         </div>
+        </ClientOnly>
 
       </div>
     </div>
@@ -151,7 +156,6 @@ definePageMeta({ layout: 'default' })
 
 useHead({ title: 'Riwayat Pembayaran — Adsentral' })
 
-const config = useRuntimeConfig()
 const { fetchMyPayments } = usePaymentApi()
 
 const breadcrumb = [

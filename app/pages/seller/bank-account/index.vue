@@ -8,6 +8,9 @@
       </div>
     </div>
 
+    <ClientOnly>
+      <template #fallback><AppLoadingSkeleton /></template>
+
     <!-- Loading -->
     <AppLoadingSkeleton v-if="pending" />
 
@@ -79,6 +82,8 @@
       </UCard>
 
     </template>
+
+    </ClientOnly>
 
     <!-- Modal Form -->
     <UModal v-model:open="isFormOpen" :title="bankAccount ? 'Ubah Rekening Bank' : 'Tambah Rekening Bank'">

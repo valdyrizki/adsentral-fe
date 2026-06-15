@@ -52,6 +52,10 @@
           </div>
           <USeparator class="mt-2"/>
 
+          <ClientOnly>
+            <template #fallback>
+              <AppLoadingSkeleton class="p-6" />
+            </template>
           <!-- LOADING -->
           <div v-if="loadingDepositHistory" class="p-6">
             <AppLoadingSkeleton/>
@@ -131,6 +135,7 @@
               />
             </div>
           </div>
+          </ClientOnly>
 
 
         </section>
@@ -144,6 +149,10 @@
         </div>
         <USeparator class="mt-2" />
 
+        <ClientOnly>
+          <template #fallback>
+            <AppLoadingSkeleton class="p-6" />
+          </template>
         <!-- LOADING -->
         <div v-if="loadingBalanceLog" class="p-6">
           <AppLoadingSkeleton />
@@ -216,6 +225,7 @@
             />
           </div>
         </div>
+        </ClientOnly>
       </section>
     </div>
   </div>
@@ -282,7 +292,7 @@ import type { PageResponse } from '~/types/PageResponse'
     error:errorDepositHistory, 
     refresh:refreshDepositHistory } 
     = await useAsyncData<PageResponse<DepositResponse>>(
-    `deposit-history-page-${perPageValue.value}-${page.value}`,
+    () => `deposit-history-page-${perPageValue.value}-${page.value}`,
     () => fetchDepositHistory(page.value, perPageValue.value),
     {
       watch: [page, perPageValue], // Refetch saat page atau perPageValue berubah
@@ -312,7 +322,7 @@ import type { PageResponse } from '~/types/PageResponse'
     pending: loadingBalanceLog,
     refresh: refreshBalanceLog,
   } = await useAsyncData<PageResponse<BalanceLogResponse>>(
-    `balance-log-${logPage.value}-${logPerPageValue.value}`,
+    () => `balance-log-${logPage.value}-${logPerPageValue.value}`,
     () => fetchBalanceLog(logPage.value, logPerPageValue.value),
     { watch: [logPage, logPerPageValue], server: false }
   )

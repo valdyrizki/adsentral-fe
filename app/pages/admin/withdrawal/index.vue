@@ -1,6 +1,19 @@
 <template>
   <div class="space-y-6">
 
+    <ClientOnly>
+      <template #fallback>
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div v-for="i in 4" :key="i" class="bg-white border border-gray-200 rounded-xl p-4">
+              <USkeleton class="h-3 w-24 rounded mb-2" />
+              <USkeleton class="h-7 w-20 rounded" />
+            </div>
+          </div>
+          <UCard class="shadow-sm"><AppLoadingSkeleton /></UCard>
+        </div>
+      </template>
+
     <!-- Stats -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <UCard v-for="stat in statsCards" :key="stat.label" class="shadow-sm">
@@ -184,6 +197,7 @@
         />
       </div>
     </UCard>
+    </ClientOnly>
 
     <!-- Modal Tandai Selesai -->
     <UModal v-model:open="isApproveOpen" title="Konfirmasi Transfer Selesai">

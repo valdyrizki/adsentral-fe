@@ -4,12 +4,13 @@
     <!-- Merchant Info Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white border border-blue-100 rounded-2xl p-4 shadow-sm">
       <div class="flex items-center gap-3">
-        <img
-          v-if="merchantStore.merchant?.logo_url"
-          :src="config.public.backendUrl + '/' + merchantStore.merchant.logo_url"
-          class="w-12 h-12 rounded-xl object-cover border border-gray-200"
-          alt="logo toko"
-        />
+        <ClientOnly>
+          <img
+            v-if="merchantStore.merchant"
+            :src="getImageUrl(merchantStore.merchant.logo_url)"
+            class="w-12 h-12 rounded-xl object-cover border border-gray-200"
+            alt="logo toko"
+          />
         <div v-else class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
           <UIcon name="material-symbols:store" class="text-primary text-2xl" />
         </div>
@@ -17,6 +18,8 @@
           <p class="font-bold text-gray-800 text-lg">{{ merchantStore.merchant?.name ?? 'Toko Saya' }}</p>
           <p class="text-xs text-gray-400">{{ user }}</p>
         </div>
+        
+        </ClientOnly>
       </div>
       <div class="flex gap-2 flex-wrap">
         <UButton to="/seller/product/create" size="sm" icon="i-heroicons-plus" color="primary">
@@ -29,24 +32,42 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <UCard
-        v-for="stat in statsCards"
-        :key="stat.label"
-        class="shadow-sm"
-      >
-        <div class="flex items-start justify-between">
-          <div>
-            <p class="text-xs text-gray-400 mb-1">{{ stat.label }}</p>
-            <p class="text-xl font-bold text-gray-800">{{ stat.value }}</p>
-            <p v-if="stat.sub" class="text-xs text-gray-400 mt-0.5">{{ stat.sub }}</p>
-          </div>
-          <div :class="`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${stat.bgColor}`">
-            <UIcon :name="stat.icon" :class="`text-xl ${stat.iconColor}`" />
-          </div>
+    <ClientOnly>
+      <template #fallback>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <UCard v-for="i in 4" :key="i" class="shadow-sm">
+            <div class="flex items-start justify-between">
+              <div class="space-y-2 flex-1">
+                <USkeleton class="h-3 w-24 rounded" />
+                <USkeleton class="h-7 w-28 rounded" />
+                <USkeleton class="h-3 w-20 rounded" />
+              </div>
+              <USkeleton class="w-10 h-10 rounded-xl flex-shrink-0" />
+            </div>
+          </UCard>
         </div>
-      </UCard>
-    </div>
+      </template>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <UCard
+          v-for="stat in statsCards"
+          :key="stat.label"
+          class="shadow-sm"
+        >
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs text-gray-400 mb-1">{{ stat.label }}</p>
+              <USkeleton v-if="pending" class="h-7 w-28 rounded mb-1" />
+              <p v-else class="text-xl font-bold text-gray-800">{{ stat.value }}</p>
+              <USkeleton v-if="pending" class="h-3 w-20 rounded mt-0.5" />
+              <p v-else-if="stat.sub" class="text-xs text-gray-400 mt-0.5">{{ stat.sub }}</p>
+            </div>
+            <div :class="`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${stat.bgColor}`">
+              <UIcon :name="stat.icon" :class="`text-xl ${stat.iconColor}`" />
+            </div>
+          </div>
+        </UCard>
+      </div>
+    </ClientOnly>
 
     <!-- Penalty Status Card -->
     <UCard v-if="penaltyStat && (penaltyStat.suspend_status !== 'NONE' || (merchantStore.merchant?.penalty_points ?? 0) > 0)"
@@ -120,103 +141,120 @@
     </UCard>
 
     <!-- Balance Card -->
-    <UCard class="shadow-sm overflow-hidden">
-      <template #header>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <UIcon name="i-heroicons-banknotes" class="text-primary text-lg" />
-            <p class="font-semibold text-gray-800">Informasi Saldo</p>
+    <ClientOnly>
+      <template #fallback>
+        <UCard class="shadow-sm overflow-hidden">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <UIcon name="i-heroicons-banknotes" class="text-primary text-lg" />
+                <p class="font-semibold text-gray-800">Informasi Saldo</p>
+              </div>
+            </div>
+          </template>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <USkeleton v-for="i in 3" :key="i" class="h-40 rounded-2xl" />
           </div>
-          <div class="flex items-center gap-2">
+        </UCard>
+      </template>
+      <UCard class="shadow-sm overflow-hidden">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <UIcon name="i-heroicons-banknotes" class="text-primary text-lg" />
+              <p class="font-semibold text-gray-800">Informasi Saldo</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <UButton
+                size="xs"
+                icon="mdi:refresh"
+                color="neutral"
+                variant="outline"
+                :loading="balanceLoading"
+                @click="balanceStore.loadBalance({ force: true })"
+              >
+                Refresh
+              </UButton>
+              <UButton size="xs" to="/seller/balance" variant="soft" color="primary" trailing-icon="i-heroicons-arrow-right">
+                Kelola Saldo
+              </UButton>
+            </div>
+          </div>
+        </template>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+          <!-- Saldo Efektif -->
+          <div class="bg-gradient-to-br from-primary to-teal-600 rounded-2xl p-5 text-white">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                <UIcon name="i-heroicons-check-circle" class="text-white text-base" />
+              </div>
+              <p class="text-sm font-medium text-white/80">Saldo Efektif</p>
+            </div>
+            <USkeleton v-if="balanceLoading" class="h-8 w-36 rounded-lg bg-white/30 mb-1" />
+            <p v-else class="text-2xl font-bold">{{ formatRp(balanceStore.balance) }}</p>
+            <p class="text-xs text-white/60 mt-1">Tersedia untuk ditarik</p>
             <UButton
               size="xs"
-              icon="mdi:refresh"
-              color="neutral"
-              variant="outline"
-              :loading="balanceLoading"
-              @click="balanceStore.loadBalance({ force: true })"
+              color="primary"
+              variant="solid"
+              icon="mdi:cash-minus"
+              class="mt-3 border-white/30 text-white hover:bg-white/10"
+              @click="isWithdrawalOpen = true"
             >
-              Refresh
-            </UButton>
-            <UButton size="xs" to="/seller/balance" variant="soft" color="primary" trailing-icon="i-heroicons-arrow-right">
-              Kelola Saldo
+              Tarik Dana
             </UButton>
           </div>
+
+          <!-- Saldo Ditahan -->
+          <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                <UIcon name="i-heroicons-lock-closed" class="text-amber-500 text-base" />
+              </div>
+              <p class="text-sm font-medium text-amber-700">Saldo Ditahan</p>
+            </div>
+            <USkeleton v-if="balanceLoading" class="h-8 w-36 rounded-lg bg-amber-200 mb-1" />
+            <p v-else class="text-2xl font-bold text-amber-700">{{ formatRp(balanceStore.balanceHeld) }}</p>
+            <p class="text-xs text-amber-500 mt-1">Menunggu transaksi selesai</p>
+            <div class="mt-3 flex items-center gap-1 text-xs text-amber-600">
+              <UIcon name="i-heroicons-information-circle" class="text-sm" />
+              Dana akan cair otomatis saat pesanan selesai
+            </div>
+          </div>
+
+          <!-- Total Saldo -->
+          <div class="bg-gray-50 border border-gray-200 rounded-2xl p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center">
+                <UIcon name="i-heroicons-calculator" class="text-gray-500 text-base" />
+              </div>
+              <p class="text-sm font-medium text-gray-600">Total Saldo</p>
+            </div>
+            <USkeleton v-if="balanceLoading" class="h-8 w-36 rounded-lg bg-gray-300 mb-1" />
+            <p v-else class="text-2xl font-bold text-gray-800">{{ formatRp(balanceStore.balanceTotal) }}</p>
+            <p class="text-xs text-gray-400 mt-1">Efektif + Ditahan</p>
+            <div class="mt-3 space-y-1">
+              <div class="flex justify-between text-xs text-gray-500">
+                <span>Efektif</span>
+                <span class="font-medium text-gray-700">{{ formatRp(balanceStore.balance) }}</span>
+              </div>
+              <div class="flex justify-between text-xs text-gray-500">
+                <span>Ditahan</span>
+                <span class="font-medium text-amber-600">{{ formatRp(balanceStore.balanceHeld) }}</span>
+              </div>
+              <USeparator class="my-1" />
+              <div class="flex justify-between text-xs font-semibold text-gray-800">
+                <span>Total</span>
+                <span>{{ formatRp(balanceStore.balanceTotal) }}</span>
+              </div>
+            </div>
+          </div>
+
         </div>
-      </template>
-
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-
-        <!-- Saldo Efektif -->
-        <div class="bg-gradient-to-br from-primary to-teal-600 rounded-2xl p-5 text-white">
-          <div class="flex items-center gap-2 mb-3">
-            <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-              <UIcon name="i-heroicons-check-circle" class="text-white text-base" />
-            </div>
-            <p class="text-sm font-medium text-white/80">Saldo Efektif</p>
-          </div>
-          <USkeleton v-if="balanceLoading" class="h-8 w-36 rounded-lg bg-white/30 mb-1" />
-          <p v-else class="text-2xl font-bold">{{ formatRp(balanceStore.balance) }}</p>
-          <p class="text-xs text-white/60 mt-1">Tersedia untuk ditarik</p>
-          <UButton
-            size="xs"
-            color="primary"
-            variant="solid"
-            icon="mdi:cash-minus"
-            class="mt-3 border-white/30 text-white hover:bg-white/10"
-            @click="isWithdrawalOpen = true"
-          >
-            Tarik Dana
-          </UButton>
-        </div>
-
-        <!-- Saldo Ditahan -->
-        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-          <div class="flex items-center gap-2 mb-3">
-            <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
-              <UIcon name="i-heroicons-lock-closed" class="text-amber-500 text-base" />
-            </div>
-            <p class="text-sm font-medium text-amber-700">Saldo Ditahan</p>
-          </div>
-          <USkeleton v-if="balanceLoading" class="h-8 w-36 rounded-lg bg-amber-200 mb-1" />
-          <p v-else class="text-2xl font-bold text-amber-700">{{ formatRp(balanceStore.balanceHeld) }}</p>
-          <p class="text-xs text-amber-500 mt-1">Menunggu transaksi selesai</p>
-          <div class="mt-3 flex items-center gap-1 text-xs text-amber-600">
-            <UIcon name="i-heroicons-information-circle" class="text-sm" />
-            Dana akan cair otomatis saat pesanan selesai
-          </div>
-        </div>
-
-        <!-- Total Saldo -->
-        <div class="bg-gray-50 border border-gray-200 rounded-2xl p-5">
-          <div class="flex items-center gap-2 mb-3">
-            <div class="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center">
-              <UIcon name="i-heroicons-calculator" class="text-gray-500 text-base" />
-            </div>
-            <p class="text-sm font-medium text-gray-600">Total Saldo</p>
-          </div>
-          <USkeleton v-if="balanceLoading" class="h-8 w-36 rounded-lg bg-gray-300 mb-1" />
-          <p v-else class="text-2xl font-bold text-gray-800">{{ formatRp(balanceStore.balanceTotal) }}</p>
-          <p class="text-xs text-gray-400 mt-1">Efektif + Ditahan</p>
-          <div class="mt-3 space-y-1">
-            <div class="flex justify-between text-xs text-gray-500">
-              <span>Efektif</span>
-              <span class="font-medium text-gray-700">{{ formatRp(balanceStore.balance) }}</span>
-            </div>
-            <div class="flex justify-between text-xs text-gray-500">
-              <span>Ditahan</span>
-              <span class="font-medium text-amber-600">{{ formatRp(balanceStore.balanceHeld) }}</span>
-            </div>
-            <USeparator class="my-1" />
-            <div class="flex justify-between text-xs font-semibold text-gray-800">
-              <span>Total</span>
-              <span>{{ formatRp(balanceStore.balanceTotal) }}</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </UCard>
+      </UCard>
+    </ClientOnly>
 
     <UModal v-model:open="isWithdrawalOpen" title="Tarik Dana">
       <template #body>
@@ -225,109 +263,152 @@
     </UModal>
 
     <!-- Chart & Status Summary -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-      <!-- Sales Chart -->
-      <UCard class="lg:col-span-2 shadow-sm">
-        <template #header>
-          <div class="flex items-center justify-between">
-            <p class="font-semibold text-gray-800">Grafik Pendapatan</p>
-            <span class="text-xs text-gray-400">6 bulan terakhir</span>
-          </div>
-        </template>
-        <div class="h-64">
-          <UChart
-            v-if="chartData"
-            type="line"
-            :data="chartData"
-            :options="{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                y: {
-                  ticks: { callback: (v: number | string) => 'Rp ' + Number(v).toLocaleString('id-ID') }
-                }
-              }
-            }"
-          />
-        </div>
-      </UCard>
-
-      <!-- Status Breakdown -->
-      <UCard class="shadow-sm">
-        <template #header>
-          <p class="font-semibold text-gray-800">Status Pesanan</p>
-        </template>
-        <div class="space-y-3">
-          <div
-            v-for="s in statusBreakdown"
-            :key="s.label"
-            class="flex items-center justify-between"
-          >
-            <div class="flex items-center gap-2">
-              <span :class="`w-2 h-2 rounded-full ${s.dotColor}`" />
-              <span class="text-sm text-gray-600">{{ s.label }}</span>
+    <ClientOnly>
+      <template #fallback>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <UCard class="lg:col-span-2 shadow-sm">
+            <template #header>
+              <div class="flex items-center justify-between">
+                <p class="font-semibold text-gray-800">Grafik Pendapatan</p>
+                <span class="text-xs text-gray-400">6 bulan terakhir</span>
+              </div>
+            </template>
+            <USkeleton class="h-64 w-full rounded-lg" />
+          </UCard>
+          <UCard class="shadow-sm">
+            <template #header>
+              <p class="font-semibold text-gray-800">Status Pesanan</p>
+            </template>
+            <div class="space-y-3">
+              <div v-for="i in 6" :key="i" class="flex items-center justify-between">
+                <USkeleton class="h-4 w-32 rounded" />
+                <USkeleton class="h-5 w-8 rounded-full" />
+              </div>
             </div>
-            <UBadge :color="s.color" variant="soft" size="sm">{{ s.count }}</UBadge>
-          </div>
-        </div>
-      </UCard>
-
-    </div>
-
-    <!-- Recent Orders -->
-    <UCard class="shadow-sm">
-      <template #header>
-        <div class="flex items-center justify-between">
-          <p class="font-semibold text-gray-800">Pesanan Terbaru</p>
-          <UButton to="/seller/order" size="sm" variant="ghost" trailing-icon="i-heroicons-arrow-right">
-            Lihat semua
-          </UButton>
+          </UCard>
         </div>
       </template>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <AppLoadingSkeleton v-if="pending" />
+        <!-- Sales Chart -->
+        <UCard class="lg:col-span-2 shadow-sm">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <p class="font-semibold text-gray-800">Grafik Pendapatan</p>
+              <span class="text-xs text-gray-400">6 bulan terakhir</span>
+            </div>
+          </template>
+          <div class="h-64">
+            <USkeleton v-if="pending" class="h-full w-full rounded-lg" />
+            <UChart
+              v-else-if="chartData"
+              type="line"
+              :data="chartData"
+              :options="{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                  y: {
+                    ticks: { callback: (v: number | string) => 'Rp ' + Number(v).toLocaleString('id-ID') }
+                  }
+                }
+              }"
+            />
+          </div>
+        </UCard>
 
-      <UAlert
-        v-else-if="error"
-        title="Gagal memuat data"
-        :description="error.message"
-        color="error"
-        icon="icon-park-solid:error"
-      />
+        <!-- Status Breakdown -->
+        <UCard class="shadow-sm">
+          <template #header>
+            <p class="font-semibold text-gray-800">Status Pesanan</p>
+          </template>
+          <div class="space-y-3">
+            <div
+              v-for="s in statusBreakdown"
+              :key="s.label"
+              class="flex items-center justify-between"
+            >
+              <div class="flex items-center gap-2">
+                <span :class="`w-2 h-2 rounded-full ${s.dotColor}`" />
+                <span class="text-sm text-gray-600">{{ s.label }}</span>
+              </div>
+              <USkeleton v-if="pending" class="h-5 w-8 rounded-full" />
+              <UBadge v-else :color="s.color" variant="soft" size="sm">{{ s.count }}</UBadge>
+            </div>
+          </div>
+        </UCard>
 
-      <div v-else-if="!recentOrders.length" class="py-8 text-center text-gray-400 text-sm">
-        Belum ada pesanan masuk.
       </div>
+    </ClientOnly>
 
-      <div v-else class="divide-y divide-gray-100">
-        <div
-          v-for="tx in recentOrders"
-          :key="tx.id"
-          class="flex items-center gap-3 py-3 hover:bg-gray-50 rounded-xl px-2 transition-colors"
-        >
-          <img
-            :src="config.public.backendUrl + '/' + tx.product?.banner_url"
-            :alt="tx.product?.name"
-            class="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-gray-100"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-gray-800 truncate">{{ tx.product?.name }}</p>
-            <p class="text-xs text-gray-400">
-              {{ tx.buyer_username }} · {{ dayjs(tx.created_at).format('DD MMM YYYY') }}
-            </p>
+    <!-- Recent Orders -->
+    <ClientOnly>
+      <template #fallback>
+        <UCard class="shadow-sm">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <p class="font-semibold text-gray-800">Pesanan Terbaru</p>
+              <UButton to="/seller/order" size="sm" variant="ghost" trailing-icon="i-heroicons-arrow-right">
+                Lihat semua
+              </UButton>
+            </div>
+          </template>
+          <AppLoadingSkeleton />
+        </UCard>
+      </template>
+      <UCard class="shadow-sm">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <p class="font-semibold text-gray-800">Pesanan Terbaru</p>
+            <UButton to="/seller/order" size="sm" variant="ghost" trailing-icon="i-heroicons-arrow-right">
+              Lihat semua
+            </UButton>
           </div>
-          <div class="flex flex-col items-end gap-1 flex-shrink-0">
-            <p class="text-sm font-semibold text-gray-800">
-              Rp {{ tx.total_price.toLocaleString('id-ID') }}
-            </p>
-            <TransactionStatusBadge :status="tx.status" />
-          </div>
-          <UButton :to="`/seller/order/${tx.id}`" size="xs" variant="ghost" icon="i-heroicons-eye" />
+        </template>
+
+        <AppLoadingSkeleton v-if="pending" />
+
+        <UAlert
+          v-else-if="error"
+          title="Gagal memuat data"
+          :description="error.message"
+          color="error"
+          icon="icon-park-solid:error"
+        />
+
+        <div v-else-if="!recentOrders.length" class="py-8 text-center text-gray-400 text-sm">
+          Belum ada pesanan masuk.
         </div>
-      </div>
-    </UCard>
+
+        <div v-else class="divide-y divide-gray-100">
+          <div
+            v-for="tx in recentOrders"
+            :key="tx.id"
+            class="flex items-center gap-3 py-3 hover:bg-gray-50 rounded-xl px-2 transition-colors"
+          >
+            <img
+              :src="getImageUrl(tx.product?.banner_url)"
+              :alt="tx.product?.name"
+              class="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-gray-100"
+            />
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-800 truncate">{{ tx.product?.name }}</p>
+              <p class="text-xs text-gray-400">
+                {{ tx.buyer_username }} · {{ dayjs(tx.created_at).format('DD MMM YYYY') }}
+              </p>
+            </div>
+            <div class="flex flex-col items-end gap-1 flex-shrink-0">
+              <p class="text-sm font-semibold text-gray-800">
+                Rp {{ tx.total_price.toLocaleString('id-ID') }}
+              </p>
+              <TransactionStatusBadge :status="tx.status" />
+            </div>
+            <UButton :to="`/seller/order/${tx.id}`" size="xs" variant="ghost" icon="i-heroicons-eye" />
+          </div>
+        </div>
+      </UCard>
+    </ClientOnly>
 
     <!-- Quick Actions -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -358,7 +439,6 @@ import type { TransactionResponse } from '~/types/TransactionResponse'
 
 definePageMeta({ layout: 'seller', label: 'Dashboard' })
 
-const config = useRuntimeConfig()
 const merchantStore = useMerchantStore()
 const authStore = useAuthStore()
 const balanceStore = useBalanceStore()
@@ -366,8 +446,14 @@ const user = computed(() => authStore.user?.username ?? '-')
 const { fetchTxSeller } = useTransactionApi()
 const { fetchMyPenaltyStat } = usePenaltyApi()
 
-const penaltyStat = ref<MyPenaltyStat | null>(null)
-onMounted(async () => { penaltyStat.value = await fetchMyPenaltyStat() })
+const { data: penaltyStat } = await useAsyncData<MyPenaltyStat | null>(
+  'seller-dashboard-penalty',
+  async () => {
+    if (!authStore.accessToken) return null
+    return await fetchMyPenaltyStat()
+  },
+  { server: false, watch: [() => authStore.accessToken] }
+)
 
 // Load merchant info & balance
 await Promise.allSettled([
@@ -414,7 +500,7 @@ const statsCards = computed(() => {
     .filter(t => ['DONE', 'COMPLETE'].includes(t.status))
     .reduce((sum, t) => sum + t.total_price, 0)
 
-  const pending = list.filter(t => t.status === 'PAID').length
+  const pendingCount = list.filter(t => t.status === 'PAID').length
   const diproses = list.filter(t => t.status === 'IN_PROGRESS').length
 
   return [
@@ -436,7 +522,7 @@ const statsCards = computed(() => {
     },
     {
       label: 'Menunggu Konfirmasi',
-      value: pending.toString(),
+      value: pendingCount.toString(),
       sub: 'Perlu tindakan',
       icon: 'i-heroicons-clock',
       bgColor: 'bg-yellow-50',

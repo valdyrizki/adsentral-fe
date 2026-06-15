@@ -34,7 +34,7 @@
             <div class="flex gap-4 sm:flex-row flex-col">
               <img 
                 v-if="product?.banner_url " 
-                :src="config.public.backendUrl +'/'+ product?.banner_url" :alt="product.name"
+                :src="getImageUrl(product?.banner_url)" :alt="product.name"
                 class="w-64 min-h-48 rounded object-cover border"
               />
               <UFileUpload 
@@ -55,7 +55,7 @@
               <div class="text-sm p-1">Foto Tambahan 1</div>
               <img 
                 v-if="product?.banner_url " 
-                :src="config.public.backendUrl +'/'+ product?.product_image_url[0]" :alt="product.name"
+                :src="getImageUrl(product?.product_image_url[0])" :alt="product.name"
                 class="w-64 min-h-24 rounded object-cover border"
               />
             </div>
@@ -63,7 +63,7 @@
               <div class="text-sm p-1">Foto Tambahan 2</div>
               <img 
                 v-if="product?.banner_url " 
-                :src="config.public.backendUrl +'/'+ product?.product_image_url[1]" :alt="product.name"
+                :src="getImageUrl(product?.product_image_url[1])" :alt="product.name"
                 class="w-64 min-h-24 rounded object-cover border"
               />
             </div>
@@ -71,7 +71,7 @@
               <div class="text-sm p-1">Foto Tambahan 3</div>
               <img 
                 v-if="product?.banner_url " 
-                :src="config.public.backendUrl +'/'+ product?.product_image_url[2]" :alt="product.name"
+                :src="getImageUrl(product?.product_image_url[2])" :alt="product.name"
                 class="w-64 min-h-24 rounded object-cover border"
               />
             </div>
@@ -305,9 +305,6 @@ const { updateProduct,fetchMyProductById } = useProductsApi()
 
 //ambil route param
 const route = useRoute() 
-
-//Ambil config
-const config = useRuntimeConfig()
 
 // Store for categories
 const categoryStore  = useCategoryStore()

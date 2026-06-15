@@ -17,6 +17,19 @@
       @penalty-cancelled="refresh()"
     />
 
+    <ClientOnly>
+      <template #fallback>
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div v-for="i in 4" :key="i" class="bg-white border border-gray-200 rounded-xl p-4">
+              <USkeleton class="h-3 w-24 rounded mb-2" />
+              <USkeleton class="h-7 w-20 rounded" />
+            </div>
+          </div>
+          <UCard class="shadow-sm"><AppLoadingSkeleton /></UCard>
+        </div>
+      </template>
+
     <!-- Stats -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <UCard v-for="stat in statsCards" :key="stat.label" class="shadow-sm">
@@ -102,7 +115,7 @@
             >
               <NuxtImg
                 v-if="user.user.avatar_url"
-                :src="config.public.backendUrl + user.user.avatar_url"
+                :src="getImageUrl(user.user.avatar_url)"
                 class="w-full h-full object-cover"
                 alt="avatar"
               />
@@ -154,6 +167,7 @@
         />
       </div>
     </UCard>
+    </ClientOnly>
 
   </div>
 </template>
@@ -169,7 +183,6 @@ import type { UserResponse } from '~/types/UserResponse'
 
 definePageMeta({ layout: 'admin', label: 'Manage Penalty' })
 
-const config = useRuntimeConfig()
 const { fetchPenaltyUsers } = usePenaltyApi()
 const { fetchAllPenaltyRules } = usePenaltyRuleApi()
 

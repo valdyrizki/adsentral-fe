@@ -10,7 +10,13 @@
     
   </UCard>
 
-  <!-- Chart example -->
+  <!-- Form -->
+  <ClientOnly>
+    <template #fallback>
+      <div class="mt-6">
+        <AppLoadingSkeleton />
+      </div>
+    </template>
   <div class="mt-6">
 
     <!-- Loading -->
@@ -19,7 +25,7 @@
     </div>
 
     <!-- Product Not Found -->
-    <UCard v-else-if="!authStore.isInitializing && (productError || !product)">
+    <UCard v-else-if="productError || !product">
       <div class="flex flex-col items-center justify-center py-16 gap-4 text-center">
         <UIcon name="i-lucide-package-x" class="size-16 text-gray-400" />
         <div class="text-xl font-semibold text-gray-700">Produk Tidak Ditemukan</div>
@@ -52,7 +58,7 @@
             <div class="flex gap-4 sm:flex-row flex-col">
               <img 
                 v-if="product?.banner_url" 
-                :src="config.public.backendUrl +'/'+ product?.banner_url" :alt="product.name"
+                :src="getImageUrl(product?.banner_url)" :alt="product.name"
                 class="w-64 min-h-48 rounded object-cover border"
               />
               <UFileUpload 
@@ -73,7 +79,7 @@
               <div class="text-sm p-1">Foto Tambahan 1</div>
               <img 
                 v-if="product?.banner_url " 
-                :src="config.public.backendUrl +'/'+ product?.product_image_url[0]" :alt="product.name"
+                :src="getImageUrl(product?.product_image_url[0])" :alt="product.name"
                 class="w-64 min-h-24 rounded object-cover border"
               />
             </div>
@@ -81,7 +87,7 @@
               <div class="text-sm p-1">Foto Tambahan 2</div>
               <img 
                 v-if="product?.banner_url " 
-                :src="config.public.backendUrl +'/'+ product?.product_image_url[1]" :alt="product.name"
+                :src="getImageUrl(product?.product_image_url[1])" :alt="product.name"
                 class="w-64 min-h-24 rounded object-cover border"
               />
             </div>
@@ -89,7 +95,7 @@
               <div class="text-sm p-1">Foto Tambahan 3</div>
               <img 
                 v-if="product?.banner_url " 
-                :src="config.public.backendUrl +'/'+ product?.product_image_url[2]" :alt="product.name"
+                :src="getImageUrl(product?.product_image_url[2])" :alt="product.name"
                 class="w-64 min-h-24 rounded object-cover border"
               />
             </div>
@@ -270,7 +276,7 @@
                   <div v-if="product?.auto_config?.file_url" class="mb-2 flex items-center gap-2 text-sm text-gray-600">
                     <UIcon name="i-lucide-file" class="size-4 text-blue-500" />
                     <span>File saat ini tersimpan</span>
-                    <a :href="config.public.backendUrl + '/' + product.auto_config_file_url" target="_blank" class="text-blue-500 hover:underline">Lihat</a>
+                    <a :href="getImageUrl(product.auto_config_file_url)" target="_blank" class="text-blue-500 hover:underline">Lihat</a>
                   </div>
                   <UFileUpload
                     id="auto_config_file"
@@ -401,6 +407,7 @@
       </div>
     </UCard>
   </div>
+  </ClientOnly>
 </template>
 
 <script lang="ts" setup>
@@ -512,9 +519,6 @@ const { updateProduct,fetchMyProductById } = useProductsApi()
 
 //ambil route param
 const route = useRoute() 
-
-//Ambil config
-const config = useRuntimeConfig()
 
 // Store for categories
 const categoryStore  = useCategoryStore()

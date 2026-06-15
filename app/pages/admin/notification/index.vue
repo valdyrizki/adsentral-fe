@@ -38,6 +38,20 @@
     </div>
 
     <!-- List -->
+    <ClientOnly>
+      <template #fallback>
+        <UCard class="shadow-sm overflow-hidden p-0">
+          <div class="divide-y divide-gray-100">
+            <div v-for="i in 5" :key="i" class="flex items-start gap-4 px-5 py-4">
+              <USkeleton class="w-10 h-10 rounded-xl flex-none" />
+              <div class="flex-1 space-y-2">
+                <USkeleton class="h-4 w-40 rounded" />
+                <USkeleton class="h-3 w-64 rounded" />
+              </div>
+            </div>
+          </div>
+        </UCard>
+      </template>
     <UCard class="shadow-sm overflow-hidden p-0">
       <AppLoadingSkeleton v-if="pending" class="p-4" />
 
@@ -123,6 +137,7 @@
         />
       </div>
     </UCard>
+    </ClientOnly>
 
   </div>
 </template>

@@ -1,13 +1,19 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
-
 export default defineNuxtConfig({
   imports: {
     dirs: ['stores'],
   },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@nuxt/ui', '@nuxt/image', '@pinia/nuxt','pinia-plugin-persistedstate/nuxt'],
+
+  modules: [
+    '@nuxt/ui',
+    '@nuxt/image',
+    '@pinia/nuxt',
+    'pinia-plugin-persistedstate/nuxt',
+  ],
+
   css: ['~/assets/css/main.css'],
+
   ui: {
     colorMode: false,
     theme: {
@@ -22,17 +28,30 @@ export default defineNuxtConfig({
       ]
     }
   },
-  runtimeConfig: {
-    // hanya tersedia di server
-    apiSecret: process.env.API_SECRET,
 
-    // tersedia di client & server
-    public: {
-      apiBase: process.env.API_BASE || 'http://localhost:8080/api',
-      backendUrl: process.env.BACKEND_URL || 'http://localhost:8080'
+  // HAPUS routeRules proxy yang lama
+  // routeRules: {
+  //   '/api/**': {
+  //     proxy: 'http://103.179.57.147:8080/api/**'
+  //   }
+  // },
+
+  // Ganti dengan nitro devProxy (lebih reliable + support cookie rewrite)
+  nitro: {
+    devProxy: {
+      '/backend': {
+        target: 'http://103.179.57.147:8080/api',
+        changeOrigin: true,
+        cookieDomainRewrite: 'localhost',
+        cookiePathRewrite: '/',
+      }
     }
   },
-  ssr: true
 
-
+  runtimeConfig: {
+    public: {
+      apiBase: '/backend',
+      backendUrl: 'http://103.179.57.147:8080'
+    }
+  },
 })

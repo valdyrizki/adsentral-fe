@@ -87,9 +87,9 @@
             <!-- Bukti Pembayaran (existing) -->
             <div v-if="payment.payment_proof_url" class="px-5 pb-5">
               <p class="text-xs text-gray-400 mb-2">Bukti Pembayaran</p>
-              <a :href="config.public.backendUrl + '/' + payment.payment_proof_url" target="_blank" class="inline-block">
+              <a :href="getImageUrl(payment.payment_proof_url)" target="_blank" class="inline-block">
                 <img
-                  :src="config.public.backendUrl + '/' + payment.payment_proof_url"
+                  :src="getImageUrl(payment.payment_proof_url)"
                   alt="Bukti Pembayaran"
                   class="max-h-52 rounded-xl border border-gray-200 shadow-sm object-contain hover:opacity-90 transition-opacity"
                 />
@@ -280,7 +280,7 @@
                   >
                     <NuxtLink :to="`/transaction/${tx.id}`" class="flex items-center gap-4 flex-1 min-w-0">
                       <img
-                        :src="config.public.backendUrl + '/' + tx.product?.banner_url"
+                        :src="getImageUrl(tx.product?.banner_url)"
                         :alt="tx.product?.name"
                         class="w-14 h-14 rounded-xl object-cover border border-gray-100 flex-shrink-0 bg-gray-50"
                       />
@@ -361,7 +361,6 @@ import type { PageResponse } from '~/types/PageResponse'
 definePageMeta({ layout: 'default' })
 
 const route = useRoute()
-const config = useRuntimeConfig()
 const toast = useToast()
 const { fetchPaymentById, cancelPayment, fetchTxByPaymentId } = usePaymentApi()
 const { fetchPublicSystemSettingByGroup } = useSystemSettingApi()

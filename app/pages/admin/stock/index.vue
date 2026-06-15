@@ -52,6 +52,21 @@
     </UCard>
 
     <!-- List -->
+    <ClientOnly>
+      <template #fallback>
+        <UCard class="shadow-sm">
+          <div class="divide-y divide-gray-100">
+            <div v-for="i in 5" :key="i" class="flex items-center gap-4 py-4 px-2">
+              <USkeleton class="w-12 h-12 rounded-xl flex-none" />
+              <div class="flex-1 space-y-2">
+                <USkeleton class="h-4 w-40 rounded" />
+                <USkeleton class="h-3 w-24 rounded" />
+              </div>
+              <USkeleton class="h-6 w-16 rounded-full" />
+            </div>
+          </div>
+        </UCard>
+      </template>
     <UCard class="shadow-sm">
       <template #header>
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -93,7 +108,7 @@
           <div class="flex-none">
             <img
               v-if="item.product_banner_url"
-              :src="config.public.backendUrl + '/' + item.product_banner_url"
+              :src="getImageUrl(item.product_banner_url)"
               class="w-12 h-12 rounded-xl object-cover border border-gray-100 bg-gray-50"
             />
             <div v-else class="w-12 h-12 rounded-xl flex items-center justify-center bg-gray-100">
@@ -109,7 +124,7 @@
             </p>
             <a
               v-if="item.file_name"
-              :href="item.file_url ? config.public.backendUrl + '/' + item.file_url : undefined"
+              :href="item.file_url ? getImageUrl(item.file_url) : undefined"
               :download="item.file_name"
               target="_blank"
               class="text-xs text-blue-500 hover:underline truncate flex items-center gap-1 w-fit max-w-full"
@@ -160,6 +175,7 @@
         />
       </div>
     </UCard>
+    </ClientOnly>
 
   </div>
 </template>
@@ -172,7 +188,6 @@ import type { PageResponse } from '~/types/PageResponse'
 
 definePageMeta({ layout: 'admin', label: 'Stok File', ssr: false })
 
-const config = useRuntimeConfig()
 const { getAdminAllStockItems } = useProductsApi()
 
 const page = ref(0)

@@ -10,6 +10,9 @@
       />
     </div>
 
+    <ClientOnly>
+      <template #fallback><AppLoadingSkeleton /></template>
+
     <div v-if="loadingMerchant">
       <AppLoadingSkeleton />
     </div>
@@ -27,7 +30,7 @@
           <div class="w-full h-28 rounded-xl overflow-hidden bg-gray-200 relative">
             <img
               v-if="bannerPreview || merchantStore.merchant?.banner_url"
-              :src="bannerPreview ?? config.public.backendUrl + '/' + merchantStore.merchant?.banner_url"
+              :src="bannerPreview ?? getImageUrl(merchantStore.merchant?.banner_url)"
               class="w-full h-full object-cover"
               alt="banner"
             />
@@ -41,7 +44,7 @@
             <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow bg-gray-100 flex-shrink-0">
               <img
                 v-if="logoPreview || merchantStore.merchant?.logo_url"
-                :src="logoPreview ?? config.public.backendUrl + '/' + merchantStore.merchant?.logo_url"
+                :src="logoPreview ?? getImageUrl(merchantStore.merchant?.logo_url)"
                 class="w-full h-full object-cover"
                 alt="logo"
               />
@@ -188,6 +191,8 @@
 
       </div>
     </div>
+
+    </ClientOnly>
 
   </div>
 </template>

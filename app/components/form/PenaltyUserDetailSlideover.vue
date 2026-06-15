@@ -14,7 +14,7 @@
           >
             <NuxtImg
               v-if="user.user.avatar_url"
-              :src="config.public.backendUrl + user.user.avatar_url"
+              :src="getImageUrl(user.user.avatar_url)"
               class="w-full h-full object-cover"
               alt="avatar"
             />
@@ -139,7 +139,6 @@ const emit = defineEmits<{
   'penalty-cancelled': []
 }>()
 
-const config = useRuntimeConfig()
 const toast = useToast()
 const { cancelPenalty, fetchUserPenaltyDetail } = usePenaltyApi()
 

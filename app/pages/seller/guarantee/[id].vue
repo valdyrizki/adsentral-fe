@@ -6,6 +6,11 @@
       Kembali ke Daftar Garansi
     </NuxtLink>
 
+    <ClientOnly>
+      <template #fallback>
+        <div class="mt-4"><AppLoadingSkeleton /></div>
+      </template>
+
     <!-- Loading -->
     <div v-if="pending">
       <AppLoadingSkeleton />
@@ -165,7 +170,7 @@
       <UCard v-if="guarantee.status === 'DONE' && guarantee.file_url">
         <div class="flex flex-col gap-2">
           <p class="font-medium text-sm text-gray-700">File Akun Garansi</p>
-          <UButton icon="mdi:download" color="primary" variant="soft" size="sm" class="w-fit" @click="downloadFile(config.public.backendUrl + '/' + guarantee.file_url)">
+          <UButton icon="mdi:download" color="primary" variant="soft" size="sm" class="w-fit" @click="downloadFile(getImageUrl(guarantee.file_url))">
             {{ guarantee.file_ori_name }}
           </UButton>
         </div>
@@ -302,6 +307,7 @@
       </UCard>
 
     </template>
+    </ClientOnly>
   </div>
 
   <!-- Reject Modal -->
@@ -333,7 +339,6 @@ definePageMeta({ layout: 'seller', label: 'Detail Garansi' })
 
 const route = useRoute()
 const toast = useToast()
-const config = useRuntimeConfig()
 const { fetchGuaranteeById, fetchReviewGuarantee, fetchSendGuarantee, sendGuaranteeViaStock } = useGuaranteeApi()
 
 // ===== Data =====

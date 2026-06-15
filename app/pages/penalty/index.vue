@@ -57,79 +57,85 @@
         </UButton>
       </div>
 
-      <AppLoadingSkeleton v-if="pending" class="p-4" />
+      <ClientOnly>
+        <template #fallback>
+          <AppLoadingSkeleton class="p-4" />
+        </template>
 
-      <UAlert
-        v-else-if="error"
-        title="Terjadi Kesalahan"
-        :description="error.message || 'Gagal memuat data'"
-        icon="icon-park-solid:error"
-        color="error"
-        class="m-4"
-      />
+        <AppLoadingSkeleton v-if="pending" class="p-4" />
 
-      <div v-else-if="!data?.content?.length" class="py-12 text-center text-gray-400 text-sm">
-        <UIcon name="i-heroicons-shield-check" class="text-4xl text-gray-300 mb-3" />
-        <p class="font-medium">Tidak ada riwayat penalty</p>
-        <p class="text-xs mt-1">Akun Anda dalam kondisi baik.</p>
-      </div>
+        <UAlert
+          v-else-if="error"
+          title="Terjadi Kesalahan"
+          :description="error.message || 'Gagal memuat data'"
+          icon="icon-park-solid:error"
+          color="error"
+          class="m-4"
+        />
 
-      <div v-else class="divide-y divide-gray-100">
-        <div
-          v-for="log in data.content"
-          :key="log.id"
-          class="flex items-start gap-4 px-4 py-4"
-        >
-          <!-- Icon -->
+        <div v-else-if="!data?.content?.length" class="py-12 text-center text-gray-400 text-sm">
+          <UIcon name="i-heroicons-shield-check" class="text-4xl text-gray-300 mb-3" />
+          <p class="font-medium">Tidak ada riwayat penalty</p>
+          <p class="text-xs mt-1">Akun Anda dalam kondisi baik.</p>
+        </div>
+
+        <div v-else class="divide-y divide-gray-100">
           <div
-            class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-            :class="log.is_expired ? 'bg-gray-100' : 'bg-red-50'"
+            v-for="log in data.content"
+            :key="log.id"
+            class="flex items-start gap-4 px-4 py-4"
           >
-            <UIcon
-              name="i-heroicons-shield-exclamation"
-              :class="log.is_expired ? 'text-gray-400' : 'text-red-400'"
-              class="text-lg"
-            />
-          </div>
-
-          <!-- Info -->
-          <div class="flex-1 min-w-0">
-            <div class="flex items-start justify-between gap-2">
-              <div class="min-w-0">
-                <p class="text-sm font-semibold text-gray-800">{{ log.rule_name }}</p>
-                <div class="flex flex-wrap gap-1 mt-1">
-                  <UBadge :color="log.is_expired ? 'neutral' : 'error'" variant="subtle" size="xs">
-                    {{ log.is_expired ? 'Kedaluwarsa' : 'Aktif' }}
-                  </UBadge>
-                  <UBadge color="neutral" variant="soft" size="xs">
-                    {{ log.points }} poin
-                  </UBadge>
-                </div>
-              </div>
-              <p class="text-xs text-gray-400 flex-shrink-0">
-                {{ dayjs(log.created_at).format('DD MMM YYYY') }}
-              </p>
+            <!-- Icon -->
+            <div
+              class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+              :class="log.is_expired ? 'bg-gray-100' : 'bg-red-50'"
+            >
+              <UIcon
+                name="i-heroicons-shield-exclamation"
+                :class="log.is_expired ? 'text-gray-400' : 'text-red-400'"
+                class="text-lg"
+              />
             </div>
-            <p v-if="log.notes" class="text-xs text-gray-500 italic mt-1.5">{{ log.notes }}</p>
-            <div class="flex flex-wrap gap-x-3 text-xs text-gray-400 mt-1.5">
-              <span>Berlaku hingga {{ dayjs(log.expired_at).format('DD MMM YYYY') }}</span>
-              <span v-if="log.transaction_id">Transaksi: {{ log.transaction_id }}</span>
+
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-gray-800">{{ log.rule_name }}</p>
+                  <div class="flex flex-wrap gap-1 mt-1">
+                    <UBadge :color="log.is_expired ? 'neutral' : 'error'" variant="subtle" size="xs">
+                      {{ log.is_expired ? 'Kedaluwarsa' : 'Aktif' }}
+                    </UBadge>
+                    <UBadge color="neutral" variant="soft" size="xs">
+                      {{ log.points }} poin
+                    </UBadge>
+                  </div>
+                </div>
+                <p class="text-xs text-gray-400 flex-shrink-0">
+                  {{ dayjs(log.created_at).format('DD MMM YYYY') }}
+                </p>
+              </div>
+              <p v-if="log.notes" class="text-xs text-gray-500 italic mt-1.5">{{ log.notes }}</p>
+              <div class="flex flex-wrap gap-x-3 text-xs text-gray-400 mt-1.5">
+                <span>Berlaku hingga {{ dayjs(log.expired_at).format('DD MMM YYYY') }}</span>
+                <span v-if="log.transaction_id">Transaksi: {{ log.transaction_id }}</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Pagination -->
-      <div v-if="data && data.total_pages > 1 && !pending" class="flex justify-center py-4 border-t border-gray-100">
-        <UPagination
-          :page="page + 1"
-          :total="data.total_elements"
-          :items-per-page="perPageValue"
-          :sibling-count="1"
-          show-edges
-          @update:page="(p) => { page = p - 1 }"
-        />
-      </div>
+        <!-- Pagination -->
+        <div v-if="data && data.total_pages > 1 && !pending" class="flex justify-center py-4 border-t border-gray-100">
+          <UPagination
+            :page="page + 1"
+            :total="data.total_elements"
+            :items-per-page="perPageValue"
+            :sibling-count="1"
+            show-edges
+            @update:page="(p) => { page = p - 1 }"
+          />
+        </div>
+      </ClientOnly>
     </div>
 
   </div>
@@ -160,24 +166,16 @@ const waLink = computed(() => {
 const page = ref(0)
 const perPageValue = ref(20)
 
-const data = ref<PageResponse<PenaltyResponse> | null>(null)
-const pending = ref(false)
-const error = ref<Error | null>(null)
-
-async function refresh() {
-  pending.value = true
-  error.value = null
-  try {
-    data.value = await fetchMyPenalties(page.value, perPageValue.value)
-  } catch (err: any) {
-    error.value = err
-  } finally {
-    pending.value = false
-  }
-}
-
-watch([page, perPageValue], refresh)
-onMounted(refresh)
+const {
+  data,
+  pending,
+  error,
+  refresh,
+} = await useAsyncData<PageResponse<PenaltyResponse>>(
+  () => `my-penalties-${page.value}-${perPageValue.value}`,
+  () => fetchMyPenalties(page.value, perPageValue.value),
+  { watch: [page, perPageValue], server: false }
+)
 
 const statsCards = computed(() => {
   const list = data.value?.content ?? []

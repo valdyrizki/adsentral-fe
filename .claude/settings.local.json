@@ -13,7 +13,18 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\" -Directory)",
       "Bash(Select-Object Name)",
       "PowerShell(npm run *)",
-      "Bash(Get-ChildItem *)"
+      "Bash(Get-ChildItem *)",
+      "Bash(powershell *)",
+      "PowerShell(\\(Get-Content \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\seller\\\\stock\\\\index.vue\"\\)[114..123])",
+      "PowerShell(\\(Get-Content \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\seller\\\\stock\\\\index.vue\"\\)[189..195])",
+      "PowerShell(\\(Get-Content \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\seller\\\\stock\\\\index.vue\"\\)[188..193])",
+      "PowerShell(Get-Content \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\seller\\\\product\\\\edit\\\\[[id]].vue\" | Select-Object -Index \\(50..100\\))",
+      "PowerShell(Get-Content -LiteralPath \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\admin\\\\payment\\\\index.vue\" | Select-Object -Index \\(127..143\\))",
+      "PowerShell(Get-Content -LiteralPath \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\guarantee\\\\[id].vue\" | Select-Object -Index \\(124..132\\))",
+      "PowerShell(Get-Content -LiteralPath \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\payment\\\\index.vue\" | Select-Object -Index \\(95..105\\))",
+      "PowerShell(Get-Content -LiteralPath \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\seller\\\\guarantee\\\\[id].vue\" | Select-Object -Index \\(164..172\\))",
+      "PowerShell(Get-Content -LiteralPath \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\seller\\\\stock\\\\bulk.vue\" | Select-Object -Index \\(28..36\\))",
+      "PowerShell(Invoke-WebRequest -Uri \"http://103.179.57.147:8080/files/public/chat-info.png\" -OutFile \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\public\\\\chat-info.png\" -UseBasicParsing; Write-Host \"Downloaded: $\\(\\(Get-Item 'C:\\\\Project Aplikasi\\\\adsentral-fe\\\\public\\\\chat-info.png'\\).Length\\) bytes\")"
     ]
   }
 }

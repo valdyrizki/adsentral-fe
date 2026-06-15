@@ -7,7 +7,11 @@
         <p class="mt-2 text-sm text-gray-500">Pantau status pesanan, ajukan pembatalan, dan lihat detail transaksi Anda.</p>
       </div>
 
-      <div class="mt-16">
+      <ClientOnly>
+        <template #fallback>
+          <div class="mt-16 p-6"><AppLoadingSkeleton /></div>
+        </template>
+        <div class="mt-16">
         <h2 class="sr-only">Recent orders</h2>
 
         <div class="space-y-16 sm:space-y-24">
@@ -51,7 +55,7 @@
                 <div class="flex flex-row gap-4 w-full">
                   <div class="flex-none">
                     <div class=" sm:order-first">
-                      <img :src="config.public.backendUrl +'/'+ transaction.product?.banner_url" :alt="transaction.product.name" class=" size-40 rounded-lg object-cover " />
+                      <img :src="getImageUrl(transaction.product?.banner_url)" :alt="transaction.product.name" class=" size-40 rounded-lg object-cover " />
                     </div>
                   </div>
                     <div class="flex-grow flex flex-col">
@@ -129,6 +133,7 @@
           </div>
         </div>
       </div>
+      </ClientOnly>
     </div>
   </div>
 
@@ -165,9 +170,6 @@ const breadcrumb = [
   const page = ref(0)
   const perPageValue = ref<number>(10)
   const perPageItems = ref<number[]>([5, 10, 25, 50, 100])
-
-  //Ambil config
-  const config = useRuntimeConfig()
 
   // ✅ SSR SAFE FETCH NEW
   const { 

@@ -19,7 +19,7 @@
 
                 <div v-if="profile?.avatar_url" class="mb-4 text-center">
                   <label for="avatar_url" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Avatar</label>
-                  <NuxtImg :src="`${config.public.backendUrl + profile?.avatar_url}`" alt="Avatar" class="w-32 h-32 rounded-full object-cover mx-auto"/>
+                  <NuxtImg :src="getImageUrl(profile?.avatar_url)" alt="Avatar" class="w-32 h-32 rounded-full object-cover mx-auto"/>
                 </div>
                 <div>
                   <UFileUpload 

@@ -8,6 +8,11 @@
     </NuxtLink>
   </UCard>
 
+  <ClientOnly>
+    <template #fallback>
+      <div class="mt-6"><AppLoadingSkeleton /></div>
+    </template>
+
   <div class="mt-6">
 
     <div v-if="productLoading">
@@ -48,7 +53,7 @@
             <div class="flex gap-4 sm:flex-row flex-col">
               <img
                 v-if="product.banner_url"
-                :src="config.public.backendUrl + '/' + product.banner_url"
+                :src="getImageUrl(product.banner_url)"
                 :alt="product.name"
                 class="w-64 min-h-48 rounded object-cover border"
               />
@@ -64,7 +69,7 @@
               <div v-for="(imgUrl, idx) in product.product_image_url.slice(0, 3)" :key="idx">
                 <div class="text-sm p-1">Foto Tambahan {{ idx + 1 }}</div>
                 <img
-                  :src="config.public.backendUrl + '/' + imgUrl"
+                  :src="getImageUrl(imgUrl)"
                   :alt="product.name"
                   class="w-64 min-h-24 rounded object-cover border"
                 />
@@ -183,7 +188,7 @@
                 <div v-if="product.auto_config.file_url" class="flex items-center gap-2 text-sm text-gray-600 p-2 border rounded-md bg-gray-50">
                   <UIcon name="i-lucide-file" class="size-4 text-blue-500" />
                   <span>{{ product.auto_config.file_name || 'File tersimpan' }}</span>
-                  <a :href="config.public.backendUrl + '/' + product.auto_config.file_url" target="_blank" class="text-blue-500 hover:underline ml-auto">Lihat</a>
+                  <a :href="getImageUrl(product.auto_config.file_url)" target="_blank" class="text-blue-500 hover:underline ml-auto">Lihat</a>
                 </div>
                 <div v-else class="p-2 border rounded-md bg-gray-50 text-sm text-gray-400">Tidak ada file</div>
               </div>
@@ -200,6 +205,7 @@
       </div>
     </UCard>
   </div>
+  </ClientOnly>
 </template>
 
 <script lang="ts" setup>
@@ -212,7 +218,6 @@ definePageMeta({
   ssr: false,
 })
 
-const config = useRuntimeConfig()
 const route = useRoute()
 const { fetchProductByIdAdmin } = useProductsApi()
 

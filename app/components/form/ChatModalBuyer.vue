@@ -6,7 +6,7 @@
           <div class="flex flex-col gap-2 border-1 border-gray-300 p-4 rounded-2xl bg-blue-100">
             <p class="text-sm"> Produk Terkait : </p>
             <div class="flex gap-4">
-              <NuxtImg :src="config.public.backendUrl +'/'+ product.banner_url" width="50" height="50" />
+              <NuxtImg :src="getImageUrl(product.banner_url)" width="50" height="50" />
               <div class="flex flex-col">
                 <p class="text-sm">{{ product.name }}</p>
                 <p class="text-sm text-error">Rp. {{ product.sell_price.toLocaleString('id-ID') }}</p>
@@ -21,7 +21,7 @@
           <div class="flex flex-col gap-2 border-1 border-gray-300 p-4 rounded-2xl bg-blue-100">
             <p class="text-sm"> Transaksi Terkait : </p>
             <div class="flex gap-4">
-              <NuxtImg :src="config.public.backendUrl +'/'+ transaction.product.banner_url" width="50" height="50" />
+              <NuxtImg :src="getImageUrl(transaction.product.banner_url)" width="50" height="50" />
                 <div class="flex flex-col">
                   <p class="text-sm"><UBadge>#{{ transaction.id }}</UBadge></p>
                   <p class="text-sm">{{ transaction.product.name }}</p>
@@ -124,8 +124,6 @@ import type { TransactionResponse } from '~/types/TransactionResponse';
     (e: 'update:modelValue', value: boolean): void
   }>()
 
-  //Ambil config
-  const config = useRuntimeConfig()
   const toast = useToast()
 
   // Reactive open & close state yang terhubung dengan modelValue

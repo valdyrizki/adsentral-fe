@@ -7,6 +7,11 @@
         <UBreadcrumb :items="breadcrumb" />
       </nav>
 
+      <ClientOnly>
+        <template #fallback>
+          <AppLoadingSkeleton />
+        </template>
+
       <div v-if="pending">
         <AppLoadingSkeleton/>
       </div>
@@ -24,7 +29,7 @@
           <div class="m-2 md:m-4">
             <div class="flex md:flex-row flex-col gap-4">
               <div class="basis-1/3">
-                <img :src="config.public.backendUrl +'/'+ product?.banner_url" alt="Product Banner"  class="mx-auto"  width="300" height="300"   />
+                <img :src="getImageUrl(product?.banner_url)" alt="Product Banner"  class="mx-auto"  width="300" height="300"   />
               </div>
               <div class="ml-4 basis-auto">
                 <p class="text-2xl "> {{ product?.name }} </p>
@@ -148,7 +153,7 @@
                     class="mt-4"
                   >
                     <div class="m-1">
-                      <img :src="config.public.backendUrl +'/'+ item" class="mx-auto rounded-2xl"    />
+                      <img :src="getImageUrl(item)" class="mx-auto rounded-2xl"    />
                     </div>
                   </UCarousel>
                 </div>
@@ -160,7 +165,7 @@
                   <div class="basis-auto">
                     <NuxtLink :to="`/merchant/${product?.merchant_id}`" class="text-xs text-gray-600 hover:underline">
                       <UAvatar
-                      :src="config.public.backendUrl +'/'+ product?.merchant_logo"
+                      :src="getImageUrl(product?.merchant_logo)"
                       :chip="{
                         inset: true,
                         color: 'success'
@@ -343,7 +348,7 @@
                       <div v-if="group.seller" class="ml-10 pl-4 border-l-2 border-blue-200 bg-blue-50 rounded-r-xl py-3 pr-3">
                         <div class="flex gap-3">
                           <UAvatar
-                            :src="config.public.backendUrl + '/' + product?.merchant_logo"
+                            :src="getImageUrl(product?.merchant_logo)"
                             :alt="product?.merchant_name"
                             size="sm"
                           />
@@ -376,8 +381,9 @@
           </div>
         </div>
       </div>
+      </ClientOnly>
 
-      
+
     </div>
   </div>
 
@@ -424,7 +430,8 @@ const { fetchReviewByProduct } = useReviewApi()
 // ✅ SSR SAFE FETCH OLD
 const { data: product, pending, refresh } = await useAsyncData<ProductResponse>(
   `product-${route.params.id}`,
-  () => fetchProductById(route.params.id as string)
+  () => fetchProductById(route.params.id as string),
+  { server: false }
 )
 
   const {
@@ -440,6 +447,7 @@ const { data: product, pending, refresh } = await useAsyncData<ProductResponse>(
   {
     watch: [() => product.value?.merchant_id],  // ✅ re-fetch saat merchant_id berubah
     immediate: !!product.value?.merchant_id,    // ✅ skip initial run kalau product belum ada
+    server: false,
   }
 )
 

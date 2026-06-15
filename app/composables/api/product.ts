@@ -23,28 +23,26 @@ export const useProductsApi = () => {
   }
 
   const fetchProductsByCategoryId = async (
-    id: number, 
-    page = 0, 
-    size = 10, 
-    keyword = '', 
+    id: number,
+    page = 0,
+    size = 10,
+    keyword = '',
     sort = 'terbaru'): Promise<PageResponse<ProductResponse>> => {
-    
-    
-    if (!id) {
-      throw new Error('STOPPED: id is required')
-    }
-    
+
+    if (!id) throw new Error('STOPPED: id is required')
+
     try {
-      const res = await api<WebResponse<PageResponse<ProductResponse>>>(`/product/category/${id}`, {
-        query: { page, size, keyword, sort },
-      })
+      const query: Record<string, any> = { page, size, sort }
+      if (keyword) query.keyword = keyword
+
+      const res = await api<WebResponse<PageResponse<ProductResponse>>>(`/product/category/${id}`, { query })
       if (res.status !== 'success' || !res.data) throw new Error(res.message)
       return res.data
     } catch (err: any) {
       console.error('Failed fetch product', err)
       throw createError({ statusCode: err.statusCode || 500, statusMessage: err.message || 'Failed to fetch product' })
     }
-}
+  }
 
   const fetchProductsByMerchantId = async (merchantId: any, page = 0, size = 10, keyword = '', sort = 'terbaru'): Promise<PageResponse<ProductResponse>> => {
     try {

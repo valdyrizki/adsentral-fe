@@ -9,6 +9,10 @@
     <h1 class="text-base font-medium ">Order Detail</h1>
   </div>
 
+  <ClientOnly>
+    <template #fallback>
+      <div class="mt-4"><AppLoadingSkeleton /></div>
+    </template>
   <!-- Loading -->
   <div v-if="pending">
     <AppLoadingSkeleton/>
@@ -20,7 +24,7 @@
       <!-- Product Image   -->
       <div class="flex-none mx-auto">
         <NuxtLink :to="`/product/${transaction?.product.id}`" class=" sm:order-first text-center">
-          <img :src="config.public.backendUrl +'/'+ transaction?.product?.banner_url" :alt="transaction?.product.name" class=" size-40 rounded-lg object-cover " />
+          <img :src="getImageUrl(transaction?.product?.banner_url)" :alt="transaction?.product.name" class=" size-40 rounded-lg object-cover " />
         </NuxtLink>
       </div>
 
@@ -177,7 +181,7 @@
         </div>
         <p v-if="guarantee.seller_description" class="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{{ guarantee.seller_description }}</p>
         <div v-if="guarantee.file_url" class="mt-2">
-          <UButton icon="mdi:download" color="primary" variant="soft" size="sm" @click="downloadFile(config.public.backendUrl + '/' + guarantee.file_url)">
+          <UButton icon="mdi:download" color="primary" variant="soft" size="sm" @click="downloadFile(getImageUrl(guarantee.file_url))">
             {{ guarantee.file_ori_name }}
           </UButton>
         </div>
@@ -501,7 +505,7 @@
               variant="solid"
               size="sm"
               class="flex-none"
-              @click="downloadFile(config.public.backendUrl + '/' + fileOrder.file.url)"
+              @click="downloadFile(getImageUrl(fileOrder.file.url))"
             >
               {{ fileOrder.file.ori_name }}
             </UButton>
@@ -583,7 +587,7 @@
             variant="solid"
             size="sm"
             class="flex-none"
-            @click="downloadFile(config.public.backendUrl + '/' + guarantee.discussions[0].file.url)"
+            @click="downloadFile(getImageUrl(guarantee.discussions[0].file.url))"
           >
             {{ guarantee.discussions[0].file.ori_name }}
           </UButton>
@@ -684,11 +688,11 @@
                   <!-- <div><UBadge>Badge</UBadge></div> -->
                   <div class="text-gray-600">{{ orderDiscussion.message }}</div>
                   <div v-if="orderDiscussion.file" class="flex flex-row items-center gap-1"> <!-- File yang sudah diupload, klik untuk download -->
-                    <NuxtLink v-if="isImage(orderDiscussion.file.format)" :to="config.public.backendUrl +'/'+ orderDiscussion.file.url">
-                      <NuxtImg :src="config.public.backendUrl +'/'+ orderDiscussion.file.url" width="100" height="100" />
+                    <NuxtLink v-if="isImage(orderDiscussion.file.format)" :to="getImageUrl(orderDiscussion.file.url)">
+                      <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />
                     </NuxtLink>
                     <div v-else>
-                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(config.public.backendUrl + '/' + orderDiscussion.file?.url)">{{ orderDiscussion.file?.ori_name }}</UButton>
+                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.file?.ori_name }}</UButton>
                     </div>
                   </div>
                 </div>
@@ -723,10 +727,10 @@
                   <div class="text-gray-600">{{ orderDiscussion.message }}</div>
                   <div v-if="orderDiscussion.file" class="flex flex-row items-center gap-1"> <!-- File yang sudah diupload, klik untuk download -->
                     <div v-if="isImage(orderDiscussion.file.format)">
-                      <NuxtImg :src="config.public.backendUrl +'/'+ orderDiscussion.file.url" width="100" height="100" />
+                      <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />
                     </div>
                     <div v-else>
-                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(config.public.backendUrl + '/' + orderDiscussion.file?.url)">{{ orderDiscussion.file?.ori_name }}</UButton>
+                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.file?.ori_name }}</UButton>
                     </div>
                   </div>
                 </div>
@@ -762,10 +766,10 @@
                   <div class="text-gray-600">{{ orderDiscussion.message }}</div>
                   <div v-if="orderDiscussion.file" class="flex flex-row items-center gap-1"> <!-- File yang sudah diupload, klik untuk download -->
                     <div v-if="isImage(orderDiscussion.file.format)">
-                      <NuxtImg :src="config.public.backendUrl +'/'+ orderDiscussion.file.url" width="100" height="100" />
+                      <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />
                     </div>
                     <div v-else>
-                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(config.public.backendUrl + '/' + orderDiscussion.file?.url)">{{ orderDiscussion.file?.ori_name }}</UButton>
+                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.file?.ori_name }}</UButton>
                     </div>
                   </div>
                 </div>
@@ -809,6 +813,7 @@
       </div>
     </div>
   </section>
+  </ClientOnly>
 
   <RejectTxModal
     v-model="isRejectingTxModal"
@@ -920,8 +925,6 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
   // Ambil parameter route
   const route = useRoute()
 
-  //Ambil config
-  const config = useRuntimeConfig()
   const toast = useToast()
 
   const selectRating = ref<SelectItem[]>(

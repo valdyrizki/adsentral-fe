@@ -18,6 +18,20 @@
     </UCard>
 
     <!-- List -->
+    <ClientOnly>
+      <template #fallback>
+        <UCard class="shadow-sm">
+          <div class="divide-y divide-gray-100">
+            <div v-for="i in 5" :key="i" class="flex items-center gap-4 py-4 px-2">
+              <div class="flex-1 space-y-2">
+                <USkeleton class="h-4 w-24 rounded-full" />
+                <USkeleton class="h-4 w-48 rounded" />
+                <USkeleton class="h-3 w-64 rounded" />
+              </div>
+            </div>
+          </div>
+        </UCard>
+      </template>
     <UCard class="shadow-sm">
       <template #header>
         <p class="font-semibold text-gray-800">
@@ -101,6 +115,7 @@
         />
       </div>
     </UCard>
+    </ClientOnly>
 
   </div>
 </template>

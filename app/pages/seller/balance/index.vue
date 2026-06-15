@@ -1,6 +1,11 @@
 <template>
   <div class="space-y-6">
 
+    <ClientOnly>
+      <template #fallback>
+        <div class="space-y-4"><AppLoadingSkeleton /></div>
+      </template>
+
     <!-- Saldo Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
@@ -353,6 +358,8 @@
         />
       </div>
     </UCard>
+
+    </ClientOnly>
 
     <!-- Modals -->
     <UModal v-model:open="isWithdrawalOpen" title="Tarik Dana">

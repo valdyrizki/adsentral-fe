@@ -28,7 +28,7 @@
       <UCard class="mb-6 shadow-sm">
         <div class="flex items-center gap-4">
           <img
-            :src="config.public.backendUrl + '/' + product.banner_url"
+            :src="getImageUrl(product.banner_url)"
             :alt="product.name"
             class="w-16 h-16 rounded-xl object-cover border border-gray-100 bg-gray-50 flex-none"
           />
@@ -231,7 +231,6 @@ import type { PageResponse } from '~/types/PageResponse'
 
 definePageMeta({ layout: 'seller', label: 'Kelola Stok File', ssr: false })
 
-const config = useRuntimeConfig()
 const route = useRoute()
 const toast = useToast()
 const { confirm, close: closeConfirm } = useConfirm()

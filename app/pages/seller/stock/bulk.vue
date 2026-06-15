@@ -29,7 +29,7 @@
 
         <div v-if="selectedProduct" class="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
           <img
-            :src="config.public.backendUrl + '/' + selectedProduct.banner_url"
+            :src="getImageUrl(selectedProduct.banner_url)"
             :alt="selectedProduct.name"
             class="w-12 h-12 rounded-lg object-cover border border-blue-100 flex-none"
           />
@@ -268,7 +268,6 @@ import type { ProductResponse } from '~/types/product/ProductResponse'
 
 definePageMeta({ layout: 'seller', label: 'Tambah Stok Massal', ssr: false })
 
-const config = useRuntimeConfig()
 const toast = useToast()
 const { fetchMyProduct, addProductStockItem } = useProductsApi()
 

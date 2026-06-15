@@ -23,7 +23,7 @@
         : 'border-gray-200 hover:border-gray-400'"
           @click="selectProductHandler(product)">
             <div class="flex gap-4">
-              <NuxtImg :src="config.public.backendUrl +'/'+ product?.banner_url" width="50" height="50" />
+              <NuxtImg :src="getImageUrl(product?.banner_url)" width="50" height="50" />
               <div>
                  <p class="text-sm">{{ product?.name }}</p>
               <p class="text-sm text-error">{{ product?.sell_price.toLocaleString('id-ID') }}</p>
@@ -78,8 +78,6 @@ import type { ProductResponse } from '~/types/product/ProductResponse';
     (e: 'submit', product: ProductResponse): void
   }>()
 
-  //Ambil config
-  const config = useRuntimeConfig()
   const toast = useToast()
 
   // Reactive open & close state yang terhubung dengan modelValue

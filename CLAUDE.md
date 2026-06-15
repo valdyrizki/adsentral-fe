@@ -18,8 +18,8 @@ No test or lint commands are configured.
 Create a `.env` file (no `.env.example` exists yet):
 
 ```
-API_BASE=http://localhost:8080/api
-BACKEND_URL=http://localhost:8080
+API_BASE=http://103.139.192.48:8080/api
+BACKEND_URL=http://103.139.192.48:8080
 ```
 
 ## Architecture Overview

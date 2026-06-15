@@ -3,7 +3,7 @@
     <NuxtLink :to="`/product/${product.id}`" >
       <div class="relative aspect-square w-full overflow-hidden rounded-lg">
         <img
-          :src="config.public.backendUrl +'/'+ product?.banner_url"
+          :src="getImageUrl(product?.banner_url)"
           :alt="product.name"
           class="size-full object-cover hover:scale-115 block transition"
         />
@@ -61,7 +61,7 @@
           <NuxtLink :to="`/merchant/${product.merchant_id}`" class="text-xs text-gray-600 hover:underline">
           <UAvatar
             size="sm"
-            :src="config.public.backendUrl +'/'+ product?.merchant_logo"
+            :src="getImageUrl(product?.merchant_logo)"
           />
         <UAvatar  size="xs" />
 
@@ -75,8 +75,6 @@
 
 <script lang="ts" setup>
 import type { ProductResponse } from '~/types/product/ProductResponse';
-
-const config = useRuntimeConfig()
 
 const props = defineProps<{
   product: ProductResponse

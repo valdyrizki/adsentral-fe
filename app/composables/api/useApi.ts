@@ -66,7 +66,7 @@ export const useApi = () => {
       // Ini artinya refresh token pun sudah invalid/expired.
       // Jangan retry (bisa bikin infinite loop) — langsung logout.
       // ============================================================
-      if (requestUrl.includes('/api/user/refresh')) {
+      if (requestUrl.includes('/user/refresh')) {
           console.warn(`Refresh failed: ${errorCode} → forcing logout`);
   
           // Untuk debugging, bedakan log per kasus

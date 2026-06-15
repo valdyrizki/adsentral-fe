@@ -5,6 +5,10 @@
       <UBreadcrumb :items="breadcrumb" class="mb-4" />
       <div class="mx-auto mt-4 flow-root pb-10  ">
 
+        <ClientOnly>
+          <template #fallback>
+            <AppLoadingSkeleton />
+          </template>
         <div v-if="loadingMechant">
           <AppLoadingSkeleton/>
         </div>
@@ -12,7 +16,7 @@
         <div v-else>
           <!-- Banner / Foto Sampul -->
           <div class="w-full h-60 relative rounded-t-2xl overflow-hidden">
-            <NuxtImg :src="config.public.backendUrl +'/'+ merchant?.banner_url" alt="Banner" 
+            <NuxtImg :src="getImageUrl(merchant?.banner_url)" alt="Banner"
             
             class="object-fill max-h-60 mx-auto" />
             <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50 rounded-t-2xl"></div>
@@ -26,7 +30,7 @@
                   <div class="flex gap-4">
                     <!-- Foto Profil -->
                     <div class="w-32 h-32 relative rounded-full overflow-hidden border-4 border-white">
-                      <NuxtImg :src="config.public.backendUrl +'/'+ merchant?.logo_url" alt="Foto Profil" class="object-cover w-full h-full" />
+                      <NuxtImg :src="getImageUrl(merchant?.logo_url)" alt="Foto Profil" class="object-cover w-full h-full" />
                     </div>
 
                     <!-- Nama & Rating -->
@@ -101,6 +105,7 @@
             </div>
           </div>
         </div>
+        </ClientOnly>
 
         <!-- PRODUCTS -->
         <div>
@@ -132,6 +137,10 @@
                     </div>
                   </div>
 
+                <ClientOnly>
+                  <template #fallback>
+                    <AppLoadingSkeleton />
+                  </template>
                 <div v-if="loadingProducts">
                   <AppLoadingSkeleton/>
                 </div>
@@ -175,6 +184,7 @@
                     />
                   </div>
                 </div>
+                </ClientOnly>
 
 
               </div>
@@ -256,7 +266,8 @@
     `products-by-merchant-${route.params.id}`,
     () => fetchProductsByMerchantId(route.params.id as string, page.value, perPageValue.value, keyword.value, sortBy.value),
     {
-      watch: [page, keyword, sortBy]
+      watch: [page, keyword, sortBy],
+      server: false,
     }
   )
 
@@ -269,6 +280,7 @@
     = await useAsyncData<MerchantResponse>(
     `mechant-by-id-${route.params.id}`,
     () => fetchMerchantById(route.params.id as string),
+    { server: false }
   )
 
   //PAGINATION HANDLER

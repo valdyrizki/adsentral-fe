@@ -108,12 +108,12 @@
         <div v-if="payment.payment_proof_url" class="mt-6 pt-4 border-t border-gray-100">
           <p class="text-xs text-gray-400 mb-3">Bukti Pembayaran</p>
           <a
-            :href="config.public.backendUrl + '/' + payment.payment_proof_url"
+            :href="getImageUrl(payment.payment_proof_url)"
             target="_blank"
             class="inline-block"
           >
             <img
-              :src="config.public.backendUrl + '/' + payment.payment_proof_url"
+              :src="getImageUrl(payment.payment_proof_url)"
               alt="Bukti Pembayaran"
               class="max-h-64 rounded-xl border border-gray-200 shadow-sm object-contain hover:opacity-90 transition-opacity"
             />
@@ -190,7 +190,7 @@
               <NuxtLink :to="`/admin/order/${tx.id}`" class="flex items-center gap-4 flex-1 min-w-0">
                 <!-- Product Image -->
                 <NuxtImg 
-                  :src="config.public.backendUrl +'/'+ tx.product?.banner_url" 
+                  :src="getImageUrl(tx.product?.banner_url)"
                   :alt="tx.product?.name"
                   width="50" 
                   height="50" 
@@ -264,7 +264,6 @@ import type { TransactionResponse } from '~/types/TransactionResponse'
 definePageMeta({ layout: 'admin', label: 'Detail Pembayaran' })
 
 const route = useRoute()
-const config = useRuntimeConfig()
 const toast = useToast()
 const { fetchPaymentById, fetchTxByPaymentId, fetchConfirmPayment, fetchRejectPayment } = usePaymentApi()
   const { fetchDepositCancel } = useBalanceApi()

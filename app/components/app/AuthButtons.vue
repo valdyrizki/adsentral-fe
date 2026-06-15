@@ -1,11 +1,19 @@
 <template>
-  <ClientOnly >
-    
+  <ClientOnly>
+    <template #fallback>
+      <div class="flex gap-2 items-center">
+        <USkeleton class="h-9 w-9 rounded-lg" />
+        <USkeleton class="h-9 w-9 rounded-lg" />
+        <USkeleton class="h-9 w-9 rounded-lg" />
+        <USkeleton class="h-10 w-28 rounded-lg" />
+      </div>
+    </template>
+
   <div class="flex gap-2 items-center">
     <!-- Always visible -->
     <div flex class="flex gap-2">
         <template v-if="authStore.accessToken">
-          <UChip :text="notifUnreadCount || 0" color="error" size="3xl">
+          <UChip :text="notificationStore.unreadCount || 0" color="error" size="3xl">
             <UButton to="/notification" color="neutral" variant="subtle" icon="material-symbols:notifications-rounded" />
           </UChip>
           <UChip :text="5" color="error" size="3xl">
@@ -55,25 +63,16 @@
 
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
-import { useNotificationApi } from '~/composables/api/notification'
 
-const authStore  = useAuthStore()
-const { fetchUnreadCount } = useNotificationApi()
-
-const notifUnreadCount = ref(0)
+const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 
 const route = useRoute()
-watch(() => route.path, async (path) => {
+watch(() => route.path, (path) => {
   if (path === '/notification') {
-    notifUnreadCount.value = 0
+    notificationStore.resetUnreadCount()
   } else if (authStore.accessToken) {
-    notifUnreadCount.value = await fetchUnreadCount()
-  }
-})
-
-onMounted(async () => {
-  if (authStore.accessToken) {
-    notifUnreadCount.value = await fetchUnreadCount()
+    notificationStore.loadUnreadCount()
   }
 })
 const toast = useToast()

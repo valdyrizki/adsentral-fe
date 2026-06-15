@@ -36,91 +36,97 @@
         </div>
       </div>
 
-      <AppLoadingSkeleton v-if="pending" class="p-4" />
+      <ClientOnly>
+        <template #fallback>
+          <AppLoadingSkeleton class="p-4" />
+        </template>
 
-      <UAlert
-        v-else-if="error"
-        title="Terjadi Kesalahan"
-        :description="error.message || 'Gagal memuat data'"
-        icon="icon-park-solid:error"
-        color="error"
-        class="m-4"
-      />
+        <AppLoadingSkeleton v-if="pending" class="p-4" />
 
-      <div v-else-if="!data?.content?.length" class="py-12 text-center text-gray-400 text-sm">
-        <UIcon name="i-heroicons-bell-slash" class="text-4xl text-gray-300 mb-3" />
-        <p class="font-medium">Belum ada notifikasi</p>
-        <p class="text-xs mt-1">Notifikasi Anda akan muncul di sini.</p>
-      </div>
+        <UAlert
+          v-else-if="error"
+          title="Terjadi Kesalahan"
+          :description="error.message || 'Gagal memuat data'"
+          icon="icon-park-solid:error"
+          color="error"
+          class="m-4"
+        />
 
-      <div v-else class="divide-y divide-gray-100">
-        <div
-          v-for="notif in data.content"
-          :key="notif.id"
-          class="flex items-start gap-4 px-4 py-4 transition-colors"
-          :class="!notif.read_at ? 'bg-sky-50 hover:bg-sky-100/60' : 'hover:bg-gray-50'"
-        >
-          <!-- Icon -->
+        <div v-else-if="!data?.content?.length" class="py-12 text-center text-gray-400 text-sm">
+          <UIcon name="i-heroicons-bell-slash" class="text-4xl text-gray-300 mb-3" />
+          <p class="font-medium">Belum ada notifikasi</p>
+          <p class="text-xs mt-1">Notifikasi Anda akan muncul di sini.</p>
+        </div>
+
+        <div v-else class="divide-y divide-gray-100">
           <div
-            class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-            :class="notifIconBg(notif.type)"
+            v-for="notif in data.content"
+            :key="notif.id"
+            class="flex items-start gap-4 px-4 py-4 transition-colors"
+            :class="!notif.read_at ? 'bg-sky-50 hover:bg-sky-100/60' : 'hover:bg-gray-50'"
           >
-            <UIcon :name="notifIcon(notif.type)" class="text-lg" :class="notifIconColor(notif.type)" />
-          </div>
+            <!-- Icon -->
+            <div
+              class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+              :class="notifIconBg(notif.type)"
+            >
+              <UIcon :name="notifIcon(notif.type)" class="text-lg" :class="notifIconColor(notif.type)" />
+            </div>
 
-          <!-- Info -->
-          <div class="flex-1 min-w-0">
-            <div class="flex items-start justify-between gap-2">
-              <div class="min-w-0">
-                <p class="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
-                  {{ notif.title }}
-                  <span v-if="!notif.read_at" class="inline-block w-2 h-2 rounded-full bg-sky-500 flex-shrink-0" />
-                </p>
-                <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">{{ notif.message }}</p>
-                <div class="flex flex-wrap gap-1 mt-1.5">
-                  <UBadge :color="notif.read_at ? 'neutral' : 'info'" variant="subtle" size="xs">
-                    {{ notif.read_at ? 'Sudah Dibaca' : 'Belum Dibaca' }}
-                  </UBadge>
-                  <UBadge color="neutral" variant="soft" size="xs">
-                    {{ notif.type }}
-                  </UBadge>
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                    {{ notif.title }}
+                    <span v-if="!notif.read_at" class="inline-block w-2 h-2 rounded-full bg-sky-500 flex-shrink-0" />
+                  </p>
+                  <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">{{ notif.message }}</p>
+                  <div class="flex flex-wrap gap-1 mt-1.5">
+                    <UBadge :color="notif.read_at ? 'neutral' : 'info'" variant="subtle" size="xs">
+                      {{ notif.read_at ? 'Sudah Dibaca' : 'Belum Dibaca' }}
+                    </UBadge>
+                    <UBadge color="neutral" variant="soft" size="xs">
+                      {{ notif.type }}
+                    </UBadge>
+                  </div>
+                </div>
+                <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                  <p class="text-xs text-gray-400">{{ dayjs(notif.created_at).format('DD MMM YYYY') }}</p>
+                  <UButton
+                    v-if="!notif.read_at"
+                    size="xs"
+                    color="neutral"
+                    variant="outline"
+                    icon="i-heroicons-check"
+                    :loading="readingId === notif.id"
+                    @click="handleRead(notif)"
+                  >
+                    Tandai Dibaca
+                  </UButton>
                 </div>
               </div>
-              <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
-                <p class="text-xs text-gray-400">{{ dayjs(notif.created_at).format('DD MMM YYYY') }}</p>
-                <UButton
-                  v-if="!notif.read_at"
-                  size="xs"
-                  color="neutral"
-                  variant="outline"
-                  icon="i-heroicons-check"
-                  :loading="readingId === notif.id"
-                  @click="handleRead(notif)"
-                >
-                  Tandai Dibaca
+              <div v-if="notif.action_url" class="mt-2">
+                <UButton :to="notif.action_url" size="xs" color="primary" variant="soft" trailing-icon="i-heroicons-arrow-right">
+                  Lihat Detail
                 </UButton>
               </div>
             </div>
-            <div v-if="notif.action_url" class="mt-2">
-              <UButton :to="notif.action_url" size="xs" color="primary" variant="soft" trailing-icon="i-heroicons-arrow-right">
-                Lihat Detail
-              </UButton>
-            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Pagination -->
-      <div v-if="data && data.total_pages > 1 && !pending" class="flex justify-center py-4 border-t border-gray-100">
-        <UPagination
-          :page="page + 1"
-          :total="data.total_elements"
-          :items-per-page="perPageValue"
-          :sibling-count="1"
-          show-edges
-          @update:page="(p) => { page = p - 1 }"
-        />
-      </div>
+        <!-- Pagination -->
+        <div v-if="data && data.total_pages > 1 && !pending" class="flex justify-center py-4 border-t border-gray-100">
+          <UPagination
+            :page="page + 1"
+            :total="data.total_elements"
+            :items-per-page="perPageValue"
+            :sibling-count="1"
+            show-edges
+            @update:page="(p) => { page = p - 1 }"
+          />
+        </div>
+      </ClientOnly>
     </div>
 
   </div>
@@ -148,23 +154,18 @@ const perPageValue = ref(10)
 const readingId = ref<number | null>(null)
 const readingAll = ref(false)
 
-const data = ref<PageResponse<NotificationResponse> | null>(null)
-const pending = ref(false)
-const error = ref<Error | null>(null)
+const {
+  data,
+  pending,
+  error,
+  refresh,
+} = await useAsyncData<PageResponse<NotificationResponse>>(
+  () => `notifications-${page.value}-${perPageValue.value}`,
+  () => fetchNotifications(page.value, perPageValue.value),
+  { watch: [page, perPageValue], server: false }
+)
 
 const hasUnread = computed(() => data.value?.content?.some(n => !n.read_at) ?? false)
-
-async function refresh() {
-  pending.value = true
-  error.value = null
-  try {
-    data.value = await fetchNotifications(page.value, perPageValue.value)
-  } catch (err: any) {
-    error.value = err
-  } finally {
-    pending.value = false
-  }
-}
 
 async function handleRead(notif: NotificationResponse) {
   readingId.value = notif.id
@@ -191,9 +192,6 @@ async function handleReadAll() {
     readingAll.value = false
   }
 }
-
-watch([page, perPageValue], refresh)
-onMounted(refresh)
 
 function notifIcon(type: NotificationType): string {
   const map: Record<string, string> = {

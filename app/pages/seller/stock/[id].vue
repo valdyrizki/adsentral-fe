@@ -8,6 +8,10 @@
     </NuxtLink>
   </UCard>
 
+  <ClientOnly>
+    <template #fallback>
+      <div class="mt-6"><AppLoadingSkeleton /></div>
+    </template>
   <div class="mt-6">
 
     <AppLoadingSkeleton v-if="productLoading" />
@@ -28,7 +32,7 @@
       <UCard class="mb-6 shadow-sm">
         <div class="flex items-center gap-4">
           <img
-            :src="config.public.backendUrl + '/' + product.banner_url"
+            :src="getImageUrl(product.banner_url)"
             :alt="product.name"
             class="w-16 h-16 rounded-xl object-cover border border-gray-100 bg-gray-50 flex-none"
           />
@@ -101,6 +105,7 @@
 
     </template>
   </div>
+  </ClientOnly>
 </template>
 
 <script lang="ts" setup>
@@ -109,7 +114,6 @@ import type { ProductResponse } from '~/types/product/ProductResponse'
 
 definePageMeta({ layout: 'seller', label: 'Tambah Stok', ssr: false })
 
-const config = useRuntimeConfig()
 const route = useRoute()
 const toast = useToast()
 const { fetchMyProductById, addProductStockItem } = useProductsApi()

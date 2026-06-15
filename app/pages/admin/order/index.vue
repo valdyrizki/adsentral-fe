@@ -29,6 +29,21 @@
     </UCard>
 
     <!-- List -->
+    <ClientOnly>
+      <template #fallback>
+        <UCard class="shadow-sm">
+          <div class="divide-y divide-gray-100">
+            <div v-for="i in 5" :key="i" class="flex gap-4 py-4 px-2">
+              <USkeleton class="w-20 h-20 rounded-xl flex-none" />
+              <div class="flex-1 space-y-2">
+                <USkeleton class="h-4 w-48 rounded" />
+                <USkeleton class="h-3 w-32 rounded" />
+                <USkeleton class="h-3 w-64 rounded" />
+              </div>
+            </div>
+          </div>
+        </UCard>
+      </template>
     <UCard class="shadow-sm">
       <template #header>
         <p class="font-semibold text-gray-800">
@@ -63,7 +78,7 @@
           <!-- Product Image -->
           <div class="flex-none">
             <img
-              :src="config.public.backendUrl + '/' + tx.product?.banner_url"
+              :src="getImageUrl(tx.product?.banner_url)"
               :alt="tx.product?.name"
               class="w-20 h-20 rounded-xl object-cover border border-gray-100"
             />
@@ -152,6 +167,7 @@
         />
       </div>
     </UCard>
+    </ClientOnly>
 
   </div>
 
@@ -172,7 +188,6 @@ import type { TransactionResponse } from '~/types/TransactionResponse'
 
 definePageMeta({ layout: 'admin', label: 'Orders' })
 
-const config = useRuntimeConfig()
 const toast = useToast()
 const { fetchAllTx, fetchConfirmTx, fetchRejectTx } = useTransactionApi()
 

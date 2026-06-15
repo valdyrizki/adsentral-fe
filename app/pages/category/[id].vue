@@ -2,44 +2,51 @@
   <div class="w-full">
     <div class="m-1 sm:m-3 border rounded-2xl border-blue-200 bg-gray-100">
       <div class="p-4">
-        <!-- Header kategori -->
-        <div v-if="loadingCategories">
-          <AppLoadingSkeleton />
-        </div>
-        <div v-else-if="currentCategory" class="mb-4">
-          <UBreadcrumb :items="breadcrumb" class="mb-3" />
-          <h1 class="text-2xl font-bold">
-            Kategori: <span class="text-primary">{{ currentCategory.name }}</span>
-          </h1>
-          <p v-if="currentCategory.description" class="text-gray-600 text-sm mt-1">
-            {{ currentCategory.description }}
-          </p>
-        </div>
+        <!-- Header kategori & Category Chips -->
+        <ClientOnly>
+          <template #fallback>
+            <AppLoadingSkeleton class="mb-4" />
+          </template>
 
-        <!-- Category Chips -->
-        <div v-if="categories && categories.length > 0" class="mb-4">
-          <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            <button
-              v-for="cat in categories"
-              :key="cat.id"
-              :class="[
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 border',
-                cat.id === categoryId
-                  ? 'bg-primary text-white border-primary'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-primary hover:text-primary'
-              ]"
-              @click="navigateToCategory(cat.id)"
-            >
-              <img
-                v-if="cat.image_url"
-                :src="cat.image_url"
-                :alt="cat.name"
-                class="w-5 h-5 rounded-full object-cover"
-              />
-              {{ cat.name }}
-            </button>
+          <div v-if="loadingCategories" class="mb-4">
+            <AppLoadingSkeleton />
           </div>
-        </div>
+          <template v-else>
+            <div v-if="currentCategory" class="mb-4">
+              <UBreadcrumb :items="breadcrumb" class="mb-3" />
+              <h1 class="text-2xl font-bold">
+                Kategori: <span class="text-primary">{{ currentCategory.name }}</span>
+              </h1>
+              <p v-if="currentCategory.description" class="text-gray-600 text-sm mt-1">
+                {{ currentCategory.description }}
+              </p>
+            </div>
+
+            <div v-if="categories && categories.length > 0" class="mb-4">
+              <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                <button
+                  v-for="cat in categories"
+                  :key="cat.id"
+                  :class="[
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 border',
+                    cat.id === categoryId
+                      ? 'bg-primary text-white border-primary'
+                      : 'bg-white text-gray-700 border-gray-200 hover:border-primary hover:text-primary'
+                  ]"
+                  @click="navigateToCategory(cat.id)"
+                >
+                  <img
+                    v-if="cat.image_url"
+                    :src="cat.image_url"
+                    :alt="cat.name"
+                    class="w-5 h-5 rounded-full object-cover"
+                  />
+                  {{ cat.name }}
+                </button>
+              </div>
+            </div>
+          </template>
+        </ClientOnly>
 
         <!-- Search & Sort -->
         <div class="flex flex-col md:flex-row md:items-center gap-2 mb-4">
@@ -62,50 +69,56 @@
         </div>
 
         <!-- Product States -->
-        <AppLoadingSkeleton v-if="loadingProducts" />
+        <ClientOnly>
+          <template #fallback>
+            <AppLoadingSkeleton />
+          </template>
 
-        <UAlert
-          v-else-if="errorProducts"
-          title="Terjadi Kesalahan"
-          :description="errorProducts.message"
-          icon="icon-park-solid:error"
-          color="error"
-        />
+          <AppLoadingSkeleton v-if="loadingProducts" />
 
-        <UAlert
-          v-else-if="!productsPagination?.content?.length"
-          title="Tidak ada produk"
-          description="Belum ada produk di kategori ini."
-          icon="ix:anomaly-found"
-          color="neutral"
-        />
+          <UAlert
+            v-else-if="errorProducts"
+            title="Terjadi Kesalahan"
+            :description="errorProducts.message"
+            icon="icon-park-solid:error"
+            color="error"
+          />
 
-        <div v-else>
-          <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-6 xxl:grid-cols-8 gap-4">
+          <UAlert
+            v-else-if="!productsPagination?.content?.length"
+            title="Tidak ada produk"
+            description="Belum ada produk di kategori ini."
+            icon="ix:anomaly-found"
+            color="neutral"
+          />
+
+          <div v-else>
+            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-6 xxl:grid-cols-8 gap-4">
+              <div
+                v-for="product in productsPagination.content"
+                :key="product.id"
+                class="relative group border border-transparent hover:border hover:rounded-2xl hover:border-blue-200 p-1 transition-all duration-300 ease-in-out"
+              >
+                <AppProductItem :product="product" />
+              </div>
+            </div>
+
+            <!-- Pagination -->
             <div
-              v-for="product in productsPagination.content"
-              :key="product.id"
-              class="relative group border border-transparent hover:border hover:rounded-2xl hover:border-blue-200 p-1 transition-all duration-300 ease-in-out"
+              v-if="productsPagination.total_pages > 1"
+              class="flex justify-center items-center pt-4"
             >
-              <AppProductItem :product="product" />
+              <UPagination
+                :page="page + 1"
+                :total="productsPagination.total_elements"
+                :items-per-page="perPageValue"
+                :sibling-count="1"
+                show-edges
+                @update:page="onPageChange"
+              />
             </div>
           </div>
-
-          <!-- Pagination -->
-          <div
-            v-if="productsPagination.total_pages > 1"
-            class="flex justify-center items-center pt-4"
-          >
-            <UPagination
-              :page="page + 1"
-              :total="productsPagination.total_elements"
-              :items-per-page="perPageValue"
-              :sibling-count="1"
-              show-edges
-              @update:page="onPageChange"
-            />
-          </div>
-        </div>
+        </ClientOnly>
       </div>
     </div>
   </div>
@@ -113,6 +126,7 @@
 
 <script lang="ts" setup>
   import { useProductsApi } from '~/composables/api/product'
+  import { useCategoryApi } from '~/composables/api/category'
   import type { PageResponse } from '~/types/PageResponse'
   import type { ProductResponse } from '~/types/product/ProductResponse'
 
@@ -123,8 +137,8 @@ definePageMeta({
 // ===== ROUTE & API =====
 const route = useRoute()
 const router = useRouter()
-const categoryStore = useCategoryStore()
 const { fetchProductsByCategoryId } = useProductsApi()
+const { fetchCategories } = useCategoryApi()
 
 const categoryId = computed(() => Number(route.params.id))
 
@@ -154,10 +168,8 @@ if (!categoryId.value || isNaN(categoryId.value)) {
 // ===== FETCH CATEGORIES =====
 const { data: categories, pending: loadingCategories } = await useAsyncData(
   'categories-list',
-  async () => {
-    await categoryStore.getCategoriesStore()
-    return categoryStore.categories
-  }
+  () => fetchCategories(),
+  { server: false }
 )
 
 const currentCategory = computed(() =>
@@ -178,7 +190,8 @@ const {
     perPageValue.value,
     keyword.value,
     sortBy.value
-  )
+  ),
+  { server: false }
 )
 
 // ===== BREADCRUMB =====
