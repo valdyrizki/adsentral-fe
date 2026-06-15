@@ -9,7 +9,6 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     '@nuxt/image',
     '@pinia/nuxt',
-    // 'pinia-plugin-persistedstate/nuxt',  ← HAPUS/COMMENT
   ],
 
   css: ['~/assets/css/main.css'],
@@ -24,15 +23,11 @@ export default defineNuxtConfig({
     }
   },
 
-  // routeRules: bekerja di dev DAN production
-  routeRules: {
-    '/backend/**': {
-      proxy: `${process.env.NUXT_PUBLIC_BACKEND_URL}/api/**`
-    }
-  },
+  // HAPUS routeRules yang pakai env variable
+  // routeRules: { ... }
 
-  // devProxy untuk cookie rewrite saat development lokal
   nitro: {
+    // devProxy: untuk development lokal (cookie rewrite)
     devProxy: {
       '/backend': {
         target: `${process.env.NUXT_PUBLIC_BACKEND_URL}/api`,
@@ -44,6 +39,10 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // Private: hanya tersedia di server-side
+    // Ini dibaca saat RUNTIME, bukan build time
+    backendInternalUrl: process.env.BACKEND_INTERNAL_URL || 'http://adsentral-be-dev:8080',
+
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '/backend',
       backendUrl: process.env.NUXT_PUBLIC_BACKEND_URL || 'http://localhost:8080',
