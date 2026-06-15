@@ -9,7 +9,7 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     '@nuxt/image',
     '@pinia/nuxt',
-    'pinia-plugin-persistedstate/nuxt',
+    // 'pinia-plugin-persistedstate/nuxt',  ← HAPUS/COMMENT
   ],
 
   css: ['~/assets/css/main.css'],
@@ -18,29 +18,24 @@ export default defineNuxtConfig({
     colorMode: false,
     theme: {
       colors: [
-        'primary',
-        'secondary',
-        'tertiary',
-        'info',
-        'success',
-        'warning',
-        'error'
+        'primary', 'secondary', 'tertiary',
+        'info', 'success', 'warning', 'error'
       ]
     }
   },
 
-  // HAPUS routeRules proxy yang lama
-  // routeRules: {
-  //   '/api/**': {
-  //     proxy: 'http://103.179.57.147:8080/api/**'
-  //   }
-  // },
+  // routeRules: bekerja di dev DAN production
+  routeRules: {
+    '/backend/**': {
+      proxy: `${process.env.NUXT_PUBLIC_BACKEND_URL}/api/**`
+    }
+  },
 
-  // Ganti dengan nitro devProxy (lebih reliable + support cookie rewrite)
+  // devProxy untuk cookie rewrite saat development lokal
   nitro: {
     devProxy: {
       '/backend': {
-        target: 'http://103.179.57.147:8080/api',
+        target: `${process.env.NUXT_PUBLIC_BACKEND_URL}/api`,
         changeOrigin: true,
         cookieDomainRewrite: 'localhost',
         cookiePathRewrite: '/',
@@ -50,8 +45,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: '/backend',
-      backendUrl: 'http://103.179.57.147:8080'
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/backend',
+      backendUrl: process.env.NUXT_PUBLIC_BACKEND_URL || 'http://localhost:8080',
     }
   },
 })

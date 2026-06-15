@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.npm
+
+# Build output (di-generate saat build)
+.output/
+.nuxt/
+dist/
+
+# Development files
+.env
+.env.*
+*.local
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Docs
+*.md
+README.md
