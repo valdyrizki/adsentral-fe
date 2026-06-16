@@ -76,7 +76,7 @@
             <UAlert
               title="Belum ada riwayat deposit"
               description="Riwayat deposit Anda akan muncul di sini"
-              icon="imdi:tag-off-outline"
+              icon="lucide:history"
               color="neutral"
             />
           </div>
@@ -163,7 +163,7 @@
           <UAlert
             title="Belum ada mutasi saldo"
             description="Riwayat mutasi saldo Anda akan muncul di sini"
-            icon="imdi:tag-off-outline"
+            icon="lucide:history"
             color="neutral"
           />
         </div>

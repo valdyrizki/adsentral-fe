@@ -29,7 +29,7 @@
             <UAlert
               title="Tidak ada kategori"
               description="Belum ada kategori tersedia saat ini"
-              icon="imdi:tag-off-outline"
+              icon="lucide:history"
               color="neutral"
               class="m-4"
             />

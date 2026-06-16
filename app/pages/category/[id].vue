@@ -88,7 +88,7 @@
             v-else-if="!productsPagination?.content?.length"
             title="Tidak ada produk"
             description="Belum ada produk di kategori ini."
-            icon="imdi:tag-off-outline"
+            icon="lucide:history"
             color="neutral"
           />
 

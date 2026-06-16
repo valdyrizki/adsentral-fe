@@ -16,7 +16,7 @@
             v-else-if="!categories || categories.length === 0"
             title="Tidak ada kategori"
             description="Belum ada kategori yang tersedia."
-            icon="imdi:tag-off-outline"
+            icon="lucide:history"
             color="neutral"
           />
 
@@ -112,7 +112,7 @@
             v-else-if="!productsPagination?.content?.length"
             title="Tidak ada produk"
             description="Belum ada produk untuk kategori ini."
-            icon="imdi:tag-off-outline"
+            icon="lucide:history"
             color="neutral"
           />
 

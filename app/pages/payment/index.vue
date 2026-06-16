@@ -46,7 +46,7 @@
           v-else-if="!payments?.content?.length"
           title="Belum ada pembayaran"
           description="Riwayat pembayaran Anda akan muncul di sini."
-          icon="imdi:tag-off-outline"
+          icon="lucide:history"
           color="neutral"
         />
 

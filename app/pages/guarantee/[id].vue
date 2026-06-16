@@ -159,7 +159,7 @@
               </div>
             </div>
             <div v-if="guarantee.done_at" class="flex items-start gap-2">
-              <UIcon name="mdi:circle-check" class="size-3 text-green-500 mt-0.5 flex-none" />
+              <UIcon name="mdi:check-circle" class="size-3 text-green-500 mt-0.5 flex-none" />
               <div>
                 <span class="font-medium text-green-700">Selesai</span>
                 <span class="text-gray-400 ml-2">{{ dayjs(guarantee.done_at).format('D MMM YYYY, HH:mm') }}</span>

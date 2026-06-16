@@ -156,7 +156,7 @@
                   <UAlert
                       title="Tidak ada data untuk ditampilkan"
                       description=""
-                      icon="imdi:tag-off-outline"
+                      icon="lucide:history"
                       color="neutral"
                     />
 

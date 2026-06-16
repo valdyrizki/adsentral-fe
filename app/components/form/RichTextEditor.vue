@@ -133,7 +133,11 @@ onMounted(() => {
   editor.value = new Editor({
     content: props.modelValue,
     extensions: [
-      StarterKit,
+      // ✅ MATIKAN LINK BAWAAN STARTERKIT DI SINI
+      StarterKit.configure({
+        link: false,
+      }),
+      // ✅ SEKARANG EXTENSION LINK INI TIDAK AKAN DUPLIKAT LAGI
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {

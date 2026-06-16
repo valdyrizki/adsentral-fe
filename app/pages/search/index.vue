@@ -46,7 +46,7 @@
             v-else-if="!productPagination?.content?.length"
             title="Produk tidak ditemukan"
             :description="`Tidak ada produk yang cocok dengan &quot;${keyword}&quot;`"
-            icon="imdi:tag-off-outline"
+            icon="lucide:history"
             color="neutral"
           />
 

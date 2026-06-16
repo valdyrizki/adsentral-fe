@@ -37,7 +37,7 @@
               <UAlert
                 title="Belum ada transaksi"
                 description="Transaksi anda akan muncul di sini"
-                icon="imdi:tag-off-outline"
+                icon="lucide:history"
                 color="neutral"
               />
             </div>

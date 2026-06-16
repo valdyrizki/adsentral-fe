@@ -35,7 +35,7 @@
             <UAlert
               title="Tidak ada produk"
               description="Belum ada produk tersedia saat ini"
-              icon="imdi:tag-off-outline"
+              icon="lucide:history"
               color="neutral"
             />
           </div>

@@ -56,7 +56,7 @@
           <UAlert
               title="Anda belum mempunyai pesanan"
               description=""
-              icon="imdi:tag-off-outline"
+              icon="lucide:history"
               color="neutral"
             />
         </div>
