@@ -25,7 +25,7 @@
             <UAlert
               title="Terjadi Kesalahan"
               :description="error.message || 'Gagal memuat produk'"
-              icon="icon-park-solid:error"
+              icon="mdi:alert-circle:error"
               color="error"
             />
           </div>
@@ -35,7 +35,7 @@
             <UAlert
               title="Tidak ada produk"
               description="Belum ada produk tersedia saat ini"
-              icon="ix:anomaly-found"
+              icon="imdi:tag-off-outline"
               color="neutral"
             />
           </div>

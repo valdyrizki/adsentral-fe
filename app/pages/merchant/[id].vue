@@ -63,7 +63,7 @@
                 <div class="basis-2/3">
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
                     <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="majesticons:box" class="size-5 text-gray-500 shrink-0" />
+                      <UIcon name="lucide:box" class="size-5 text-gray-500 shrink-0" />
                       <span class="text-gray-600">Produk :</span>
                       <span class="font-medium">{{ merchant?.product_count?.toLocaleString('id-ID') ?? '-' }}</span>
                     </div>
@@ -75,7 +75,7 @@
                     </div>
 
                     <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="gridicons:add-outline" class="size-5 text-gray-500 shrink-0" />
+                      <UIcon name="lucide:calendar-plus" class="size-5 text-gray-500 shrink-0" />
                       <span class="text-gray-600">Bergabung :</span>
                       <span class="font-medium">{{ merchant?.created_at ? formatDate(merchant.created_at) : '-' }}</span>
                     </div>
@@ -87,13 +87,13 @@
                     </div>
 
                     <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="gis:search-country" class="size-5 text-gray-500 shrink-0" />
+                      <UIcon name="lucide:globe" class="size-5 text-gray-500 shrink-0" />
                       <span class="text-gray-600">Negara :</span>
                       <span class="font-medium">{{ merchant?.country ?? '-' }}</span>
                     </div>
 
                     <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="mingcute:time-line" class="size-5 text-gray-500 shrink-0" />
+                      <UIcon name="lucide:clock" class="size-5 text-gray-500 shrink-0" />
                       <span class="text-gray-600">Jam Operasional :</span>
                       <span class="font-medium">
                         {{ merchant?.open_time && merchant?.close_time ? `${merchant.open_time} - ${merchant.close_time}` : '24 Jam' }}
@@ -148,7 +148,7 @@
                   <UAlert
                       title="Terjadi Kesalahan"
                       :description="errorProducts.message"
-                      icon="icon-park-solid:error"
+                      icon="mdi:alert-circle:error"
                       color="error"
                     />
                 </div>
@@ -156,7 +156,7 @@
                   <UAlert
                       title="Tidak ada data untuk ditampilkan"
                       description=""
-                      icon="ix:anomaly-found"
+                      icon="imdi:tag-off-outline"
                       color="neutral"
                     />
 

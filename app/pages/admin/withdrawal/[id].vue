@@ -18,7 +18,7 @@
       v-else-if="error"
       title="Terjadi Kesalahan"
       :description="error.message || 'Gagal memuat detail penarikan'"
-      icon="icon-park-solid:error"
+      icon="mdi:alert-circle:error"
       color="error"
     />
 
@@ -122,7 +122,7 @@
             </p>
           </template>
           <AppLoadingSkeleton v-if="sumPending" />
-          <UAlert v-else-if="sumError" :description="sumError.message || 'Gagal memuat data'" color="error" icon="icon-park-solid:error" />
+          <UAlert v-else-if="sumError" :description="sumError.message || 'Gagal memuat data'" color="error" icon="mdi:alert-circle:error" />
           <div v-else-if="sellerSum" class="space-y-3">
             <div class="bg-gray-50 rounded-xl p-3">
               <p class="text-xs text-gray-400 mb-0.5">Jumlah Transaksi</p>
@@ -144,7 +144,7 @@
             </p>
           </template>
           <AppLoadingSkeleton v-if="depositSumPending" />
-          <UAlert v-else-if="depositSumError" :description="depositSumError.message || 'Gagal memuat data'" color="error" icon="icon-park-solid:error" />
+          <UAlert v-else-if="depositSumError" :description="depositSumError.message || 'Gagal memuat data'" color="error" icon="mdi:alert-circle:error" />
           <div v-else-if="depositSum" class="space-y-3">
             <div class="bg-gray-50 rounded-xl p-3">
               <p class="text-xs text-gray-400 mb-0.5">Jumlah Deposit</p>
@@ -166,7 +166,7 @@
             </p>
           </template>
           <AppLoadingSkeleton v-if="withdrawalSumPending" />
-          <UAlert v-else-if="withdrawalSumError" :description="withdrawalSumError.message || 'Gagal memuat data'" color="error" icon="icon-park-solid:error" />
+          <UAlert v-else-if="withdrawalSumError" :description="withdrawalSumError.message || 'Gagal memuat data'" color="error" icon="mdi:alert-circle:error" />
           <div v-else-if="withdrawalSum" class="space-y-3">
             <div class="bg-gray-50 rounded-xl p-3">
               <p class="text-xs text-gray-400 mb-0.5">Jumlah Penarikan</p>

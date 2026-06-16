@@ -17,7 +17,7 @@
           v-else-if="error"
           title="Gagal memuat data"
           :description="error.message || 'Terjadi kesalahan'"
-          icon="icon-park-solid:error"
+          icon="mdi:alert-circle:error"
           color="error"
         />
 
@@ -263,7 +263,7 @@
                   v-else-if="txError"
                   title="Gagal memuat transaksi"
                   :description="txError.message"
-                  icon="icon-park-solid:error"
+                  icon="mdi:alert-circle:error"
                   color="error"
                 />
 

@@ -62,7 +62,7 @@
 
           <div class="space-y-1.5 text-sm">
             <div class="flex items-center gap-2 text-gray-600">
-              <UIcon name="mingcute:time-line" class="size-4 shrink-0" />
+              <UIcon name="lucide:clock" class="size-4 shrink-0" />
               <span>
                 {{ operationalHoursPreview }}
               </span>

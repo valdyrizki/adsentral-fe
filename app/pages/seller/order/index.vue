@@ -48,7 +48,7 @@
           <UAlert
               title="Terjadi Kesalahan"
               :description="error.message  || 'Gagal memuat data pesanan'"
-              icon="icon-park-solid:error"
+              icon="mdi:alert-circle:error"
               color="error"
             />
         </div>
@@ -56,7 +56,7 @@
           <UAlert
               title="Anda belum mempunyai pesanan"
               description=""
-              icon="ix:anomaly-found"
+              icon="imdi:tag-off-outline"
               color="neutral"
             />
         </div>

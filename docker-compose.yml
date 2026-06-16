@@ -1,12 +1,10 @@
 services:
   adsentral-fe:
-    image: valdyrizki/adsentral-fe:latest
+    image: adsentral/adsentral-fe:latest  # ← pull dari Docker Hub
     container_name: adsentral-fe-dev
     restart: unless-stopped
-
     ports:
       - "3000:3000"
-
     environment:
       NODE_ENV: production
       NITRO_PORT: 3000
@@ -14,7 +12,6 @@ services:
       NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-/backend}
       NUXT_PUBLIC_BACKEND_URL: ${NUXT_PUBLIC_BACKEND_URL:-http://103.179.57.147:8080}
       BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://adsentral-be-dev:8080}
-
     networks:
       - proxy
 

@@ -88,7 +88,7 @@
                     <div class="absolute top-0 right-0">
                       <button type="button" class="-m-2 inline-flex p-2 text-gray-400 hover:text-gray-500">
                         <span class="sr-only">Remove</span>
-                        <UIcon name="system-uicons:cross" class="size-5" aria-hidden="true" @click="deleteCartItem(cartItem)"/>
+                        <UIcon name="lucide:trash-2" class="size-5" aria-hidden="true" @click="deleteCartItem(cartItem)"/>
                       </button>
                     </div>
                   </div>
@@ -118,7 +118,7 @@
                 <span>Biaya lain</span>
                 <a href="#" class="ml-2 shrink-0 text-gray-400 hover:text-gray-500">
                   <span class="sr-only">Learn more about how shipping is calculated</span>
-                  <UIcon name="mingcute:question-fill" class="size-5" aria-hidden="true" />
+                  <UIcon name="mdi:help-circle" class="size-5" aria-hidden="true" />
                 </a>
               </dt>
               <dd class="text-sm font-medium text-gray-900">Rp 0</dd>
@@ -128,7 +128,7 @@
                 <span>Fee</span>
                 <a href="#" class="ml-2 shrink-0 text-gray-400 hover:text-gray-500">
                   <span class="sr-only">Learn more about how tax is calculated</span>
-                  <UIcon name="mingcute:question-fill" class="size-5" aria-hidden="true" />
+                  <UIcon name="mdi:help-circle" class="size-5" aria-hidden="true" />
                 </a>
               </dt>
               <dd class="text-sm font-medium text-gray-900">Rp 0</dd>

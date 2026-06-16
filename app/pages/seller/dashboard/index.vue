@@ -374,7 +374,7 @@
           title="Gagal memuat data"
           :description="error.message"
           color="error"
-          icon="icon-park-solid:error"
+          icon="mdi:alert-circle:error"
         />
 
         <div v-else-if="!recentOrders.length" class="py-8 text-center text-gray-400 text-sm">

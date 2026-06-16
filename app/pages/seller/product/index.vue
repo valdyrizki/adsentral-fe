@@ -69,7 +69,7 @@
           v-else-if="error"
           title="Terjadi Kesalahan"
           :description="error.message"
-          icon="icon-park-solid:error"
+          icon="mdi:alert-circle:error"
           color="error"
         />
 

@@ -39,7 +39,7 @@
               <!-- Drawer -->
               <div class="visible md:hidden basis1/4 pl-4">
                 <UDrawer v-model:open="drawerOpen" direction="left">
-                  <UButton color="info" trailing-icon="game-icons:hamburger-menu" @click="drawerOpen = true" />
+                  <UButton color="info" trailing-icon="lucide:menu" @click="drawerOpen = true" />
 
                   <template #content>
                     <LazyAppSidebar class="min-w-96 min-h-96 size-full m-4" />

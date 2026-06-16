@@ -80,7 +80,7 @@
             v-else-if="errorProducts"
             title="Terjadi Kesalahan"
             :description="errorProducts.message"
-            icon="icon-park-solid:error"
+            icon="mdi:alert-circle:error"
             color="error"
           />
 
@@ -88,7 +88,7 @@
             v-else-if="!productsPagination?.content?.length"
             title="Tidak ada produk"
             description="Belum ada produk di kategori ini."
-            icon="ix:anomaly-found"
+            icon="imdi:tag-off-outline"
             color="neutral"
           />
 

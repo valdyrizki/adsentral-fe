@@ -140,7 +140,7 @@
           v-else-if="stockError"
           title="Gagal Memuat Stok"
           :description="stockError.message"
-          icon="icon-park-solid:error"
+          icon="mdi:alert-circle:error"
           color="error"
         />
 

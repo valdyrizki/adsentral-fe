@@ -43,7 +43,7 @@
         <UAlert
           title="Belum ada system setting"
           description="Belum ada data konfigurasi sistem yang tersimpan."
-          icon="icon-park-solid:error"
+          icon="mdi:alert-circle:error"
           color="neutral"
         />
       </div>

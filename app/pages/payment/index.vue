@@ -36,7 +36,7 @@
           v-else-if="error"
           title="Terjadi Kesalahan"
           :description="error.message || 'Gagal memuat data pembayaran'"
-          icon="icon-park-solid:error"
+          icon="mdi:alert-circle:error"
           color="error"
           class="mb-4"
         />
@@ -46,7 +46,7 @@
           v-else-if="!payments?.content?.length"
           title="Belum ada pembayaran"
           description="Riwayat pembayaran Anda akan muncul di sini."
-          icon="ix:anomaly-found"
+          icon="imdi:tag-off-outline"
           color="neutral"
         />
 

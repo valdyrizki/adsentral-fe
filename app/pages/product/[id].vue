@@ -19,7 +19,7 @@
         <UAlert
             title="Terjadi Kesalahan"
             description="Produk tidak ditemukan atau telah dihapus."
-            icon="icon-park-solid:error"
+            icon="mdi:alert-circle:error"
             color="neutral"
         />
       </div>
@@ -63,7 +63,7 @@
                 <!-- Informasi Stock -->
                 <div class="flex flex-wrap gap-4 text-sm">
                   <div v-if="product?.delivery_type !== 'AUTO'" class="flex items-center gap-1.5">
-                    <UIcon name="majesticons:box" class="size-4 text-gray-400" />
+                    <UIcon name="lucide:box" class="size-4 text-gray-400" />
                     <span class="text-gray-500">Stok:</span>
                     <span v-if="product?.stock === null || product?.stock === undefined" class="font-medium text-green-600">Tidak terbatas</span>
                     <span v-else-if="product.stock === 0" class="font-medium text-red-500">Habis</span>
@@ -201,7 +201,7 @@
                 <div class="pt-2">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="majesticons:box" class="size-5 text-gray-500 shrink-0" />
+                      <UIcon name="lucide:box" class="size-5 text-gray-500 shrink-0" />
                       <span class="text-gray-600 text-sm">Produk :</span>
                       <span class="text-sm font-medium">{{ merchant?.product_count?.toLocaleString('id-ID') ?? '-' }}</span>
                     </div>
@@ -213,7 +213,7 @@
                     </div>
 
                     <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="gridicons:add-outline" class="size-5 text-gray-500 shrink-0" />
+                      <UIcon name="lucide:calendar-plus" class="size-5 text-gray-500 shrink-0" />
                       <span class="text-gray-600 text-sm">Bergabung :</span>
                       <span class="text-sm font-medium">{{ merchant?.created_at ? formatDate(merchant.created_at) : '-' }}</span>
                     </div>
@@ -225,13 +225,13 @@
                     </div>
 
                     <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="gis:search-country" class="size-5 text-gray-500 shrink-0" />
+                      <UIcon name="lucide:globe-country" class="size-5 text-gray-500 shrink-0" />
                       <span class="text-gray-600 text-sm">Negara :</span>
                       <span class="text-sm font-medium">{{ merchant?.country ?? '-' }}</span>
                     </div>
 
                     <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="mingcute:time-line" class="size-5 text-gray-500 shrink-0" />
+                      <UIcon name="lucide:clock" class="size-5 text-gray-500 shrink-0" />
                       <span class="text-gray-600 text-sm">Jam Operasional :</span>
                       <span class="text-sm font-medium">
                         {{ merchant?.open_time && merchant?.close_time ? `${merchant.open_time} - ${merchant.close_time}` : '24 Jam' }}
@@ -583,7 +583,7 @@ const addToCart = async() =>{
     description: "Berhasil masukan produk ke keranjang",
     color: "success",
     actions: [{
-      icon: 'mynaui:cart',
+      icon: 'mdi:cart',
       label: 'Lihat Keranjang',
       color: 'neutral',
       variant: 'outline',
@@ -625,7 +625,7 @@ const buyNow = async() =>{
 const items = ref([
   {
     label: 'Deskripsi Produk',
-    icon: 'majesticons:box',
+    icon: 'lucide:box',
     slot: 'description' as const
   },
   {

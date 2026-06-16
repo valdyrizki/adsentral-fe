@@ -125,7 +125,7 @@
         title="Gagal memuat data"
         :description="txError.message"
         color="error"
-        icon="icon-park-solid:error"
+        icon="mdi:alert-circle:error"
       />
 
       <div v-else-if="!recentTx.length" class="py-8 text-center text-gray-400 text-sm">

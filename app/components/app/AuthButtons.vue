@@ -14,14 +14,14 @@
     <div flex class="flex gap-2">
         <template v-if="authStore.accessToken">
           <UChip :text="notificationStore.unreadCount || 0" color="error" size="3xl">
-            <UButton to="/notification" color="neutral" variant="subtle" icon="material-symbols:notifications-rounded" />
+            <UButton to="/notification" color="neutral" variant="subtle" icon="mdi:bell-outline" />
           </UChip>
           <UChip :text="5" color="error" size="3xl">
-            <UButton to="/chat" color="neutral" variant="subtle" icon="mynaui:envelope" />
+            <UButton to="/chat" color="neutral" variant="subtle" icon="mdi:email-outline" />
           </UChip>
         </template>
         <UChip :text="totalItems" color="error" size="3xl">
-          <UButton to="/cart" color="neutral" variant="soft" icon="mynaui:cart" />
+          <UButton to="/cart" color="neutral" variant="soft" icon="mdi:cart-outline" />
         </UChip>
       </div>
     

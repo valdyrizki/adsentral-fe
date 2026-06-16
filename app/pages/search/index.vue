@@ -38,7 +38,7 @@
             v-else-if="error"
             title="Terjadi Kesalahan"
             :description="error.message || 'Gagal memuat produk'"
-            icon="icon-park-solid:error"
+            icon="mdi:alert-circle:error"
             color="error"
           />
 
@@ -46,7 +46,7 @@
             v-else-if="!productPagination?.content?.length"
             title="Produk tidak ditemukan"
             :description="`Tidak ada produk yang cocok dengan &quot;${keyword}&quot;`"
-            icon="ix:anomaly-found"
+            icon="imdi:tag-off-outline"
             color="neutral"
           />
 

@@ -56,21 +56,10 @@ export default defineNuxtConfig({
         'mdi',
         'lucide',
         'material-symbols',
-        'ix',
-        'icon-park-solid',
+        'mdi',
         'fa6-solid',
-        'game-icons',
-        'mynaui',        // ← tambah
-        'simple-icons',  // ← tambah
-        'mingcute',
-        'mynaui',
         'simple-icons',
-        'iconamoon',
-        'majesticons',
-        'system-uicons',
         'uiw',
-        'gridicons',
-        'gis',
 
       ]
     }

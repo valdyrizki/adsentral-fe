@@ -6,7 +6,7 @@
           title="Category"
           description="Cari kebutuhanmu berdasarkan kategori produk yang tersedia disini!"
           to="/category"
-          icon="iconamoon:category-light"
+          icon="lucide:layout-grid"
         />
         <USeparator />
 
@@ -19,7 +19,7 @@
             <UAlert
               title="Terjadi Kesalahan"
               :description="error.message || 'Gagal memuat kategori'"
-              icon="icon-park-solid:error"
+              icon="mdi:alert-circle:error"
               color="error"
               class="m-4"
             />
@@ -29,7 +29,7 @@
             <UAlert
               title="Tidak ada kategori"
               description="Belum ada kategori tersedia saat ini"
-              icon="ix:anomaly-found"
+              icon="imdi:tag-off-outline"
               color="neutral"
               class="m-4"
             />

@@ -27,7 +27,7 @@
               <UAlert
                 title="Terjadi Kesalahan"
                 :description="error"
-                icon="icon-park-solid:error"
+                icon="mdi:alert-circle:error"
                 color="error"
               />
             </div>
@@ -37,7 +37,7 @@
               <UAlert
                 title="Belum ada transaksi"
                 description="Transaksi anda akan muncul di sini"
-                icon="ix:anomaly-found"
+                icon="imdi:tag-off-outline"
                 color="neutral"
               />
             </div>

@@ -59,7 +59,7 @@
         v-else-if="error"
         title="Terjadi Kesalahan"
         :description="error.message || 'Gagal memuat data produk'"
-        icon="icon-park-solid:error"
+        icon="mdi:alert-circle:error"
         color="error"
       />
 

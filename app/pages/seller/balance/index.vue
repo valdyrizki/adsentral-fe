@@ -131,7 +131,7 @@
         v-else-if="withdrawalError"
         title="Terjadi Kesalahan"
         :description="withdrawalError.message || 'Gagal memuat riwayat penarikan'"
-        icon="icon-park-solid:error"
+        icon="mdi:alert-circle:error"
         color="error"
         class="mb-4"
       />
@@ -284,7 +284,7 @@
         v-else-if="logError"
         title="Terjadi Kesalahan"
         :description="logError.message || 'Gagal memuat mutasi saldo'"
-        icon="icon-park-solid:error"
+        icon="mdi:alert-circle:error"
         color="error"
         class="mb-4"
       />
