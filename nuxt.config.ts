@@ -62,6 +62,16 @@ export default defineNuxtConfig({
         'game-icons',
         'mynaui',        // ← tambah
         'simple-icons',  // ← tambah
+        'mingcute',
+        'mynaui',
+        'simple-icons',
+        'iconamoon',
+        'majesticons',
+        'system-uicons',
+        'uiw',
+        'gridicons',
+        'gis',
+
       ]
     }
   },
