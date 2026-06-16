@@ -225,7 +225,7 @@
                     </div>
 
                     <div class="flex flex-row gap-1 items-center">
-                      <UIcon name="lucide:globe-country" class="size-5 text-gray-500 shrink-0" />
+                      <UIcon name="heroicons:globe-alt" class="size-5 text-gray-500 shrink-0" />
                       <span class="text-gray-600 text-sm">Negara :</span>
                       <span class="text-sm font-medium">{{ merchant?.country ?? '-' }}</span>
                     </div>
