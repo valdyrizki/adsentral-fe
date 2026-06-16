@@ -59,7 +59,9 @@ export default defineNuxtConfig({
         'ix',
         'icon-park-solid',
         'fa6-solid',
-        'game-icons'
+        'game-icons',
+        'mynaui',        // ← tambah
+        'simple-icons',  // ← tambah
       ]
     }
   },
