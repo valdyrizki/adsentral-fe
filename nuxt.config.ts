@@ -48,4 +48,20 @@ export default defineNuxtConfig({
       backendUrl: process.env.NUXT_PUBLIC_BACKEND_URL || 'http://localhost:8080',
     }
   },
+
+  icon: {
+    serverBundle: {
+      collections: [
+        'heroicons',
+        'mdi',
+        'lucide',
+        'material-symbols',
+        'ix',
+        'icon-park-solid',
+        'fa6-solid',
+        'game-icons'
+      ]
+    }
+  },
+
 })

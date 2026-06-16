@@ -90,7 +90,7 @@ const handleRegisterSuccess = () => {
 
 const balanceStore = useBalanceStore()
 
-const itemsProfile = computed<DropdownMenuItem[]>(() => {
+const itemsProfile = computed<DropdownMenuItem[][]>(() => {
   const role = authStore.role
 
   const merchantItem: DropdownMenuItem = 
