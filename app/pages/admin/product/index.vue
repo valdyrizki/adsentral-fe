@@ -232,9 +232,9 @@ const {
   error,
   refresh,
 } = await useAsyncData<PageResponse<ProductResponse>>(
-  () => `admin-all-products-${page.value}-${perPageValue.value}-${keyword.value}-${filterStatus.value}`,
+  'admin-all-products',
   () => getAllProductsAdmin(page.value, perPageValue.value, keyword.value, 'terbaru', filterStatus.value),
-  { watch: [page, perPageValue], server: false }
+  { watch: [page, perPageValue, keyword, filterStatus], server: false }
 )
 
 watch(search, (val) => {

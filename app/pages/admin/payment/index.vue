@@ -259,9 +259,9 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
     error,
     refresh,
   } = await useAsyncData<PageResponse<PaymentResponse>>(
-    () => `admin-payments-${page.value}-${perPageValue.value}-${keyword.value}-${filterStatus.value}`,
+    'admin-payments',
     () => fetchAllPayments(page.value, perPageValue.value, keyword.value, filterStatus.value),
-    { watch: [page, perPageValue], server: false }
+    { watch: [page, perPageValue, keyword, filterStatus], server: false }
   )
 
   // ===== STATS =====

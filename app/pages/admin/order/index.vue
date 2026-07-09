@@ -219,9 +219,9 @@ const {
   error,
   refresh,
 } = useAsyncData<PageResponse<TransactionResponse>>(
-  () => `admin-all-tx-${page.value}-${perPageValue.value}-${debouncedSearch.value}-${filterStatus.value}`,
+  'admin-all-tx',
   () => fetchAllTx(page.value, perPageValue.value, debouncedSearch.value, filterStatus.value),
-  { server: false }
+  { watch: [page, perPageValue, debouncedSearch, filterStatus], server: false }
 )
 
 watch(search, (val) => {

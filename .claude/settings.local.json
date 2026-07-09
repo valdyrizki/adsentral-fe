@@ -24,7 +24,10 @@
       "PowerShell(Get-Content -LiteralPath \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\payment\\\\index.vue\" | Select-Object -Index \\(95..105\\))",
       "PowerShell(Get-Content -LiteralPath \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\seller\\\\guarantee\\\\[id].vue\" | Select-Object -Index \\(164..172\\))",
       "PowerShell(Get-Content -LiteralPath \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\seller\\\\stock\\\\bulk.vue\" | Select-Object -Index \\(28..36\\))",
-      "PowerShell(Invoke-WebRequest -Uri \"http://103.179.57.147:8080/files/public/chat-info.png\" -OutFile \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\public\\\\chat-info.png\" -UseBasicParsing; Write-Host \"Downloaded: $\\(\\(Get-Item 'C:\\\\Project Aplikasi\\\\adsentral-fe\\\\public\\\\chat-info.png'\\).Length\\) bytes\")"
+      "PowerShell(Invoke-WebRequest -Uri \"http://103.179.57.147:8080/files/public/chat-info.png\" -OutFile \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\public\\\\chat-info.png\" -UseBasicParsing; Write-Host \"Downloaded: $\\(\\(Get-Item 'C:\\\\Project Aplikasi\\\\adsentral-fe\\\\public\\\\chat-info.png'\\).Length\\) bytes\")",
+      "PowerShell(ls \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\admin\\\\\"; echo \"---\"; ls \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\composables\\\\api\\\\\"; echo \"---\"; ls \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\types\\\\\")",
+      "PowerShell(New-Item *)",
+      "PowerShell(ls \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\pages\\\\admin\\\\finance\\\\\" -Recurse; echo \"---\"; ls \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\types\\\\finance\\\\\"; echo \"---\"; ls \"C:\\\\Project Aplikasi\\\\adsentral-fe\\\\app\\\\composables\\\\api\\\\finance.ts\")"
     ]
   }
 }

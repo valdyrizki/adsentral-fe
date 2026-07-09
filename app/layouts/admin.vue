@@ -49,6 +49,15 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     to: '/admin/withdrawal'
   },
   {
+    label: 'Keuangan',
+    icon: 'mdi:chart-finance',
+    children: [
+      { label: 'Dashboard Finance', to: '/admin/finance' },
+      { label: 'Jurnal', to: '/admin/finance/journal' },
+      { label: 'Kategori', to: '/admin/finance/category' },
+    ]
+  },
+  {
     label: 'Penalty',
     icon: 'i-heroicons-shield-exclamation',
     children: [

@@ -225,9 +225,9 @@ const {
   error,
   refresh,
 } = useAsyncData<PageResponse<ProductResponse>>(
-  () => `admin-review-products-${page.value}-${perPageValue.value}-${keyword.value}-${filterStatus.value}`,
+  'admin-review-products',
   () => getAllProductsAdmin(page.value, perPageValue.value, keyword.value, 'terbaru', filterStatus.value),
-  { watch: [page, perPageValue], server: false }
+  { watch: [page, perPageValue, keyword, filterStatus], server: false }
 )
 
 watch(search, (val) => {

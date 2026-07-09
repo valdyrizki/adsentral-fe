@@ -321,9 +321,9 @@ const {
   error,
   refresh,
 } = await useAsyncData<PageResponse<AdminWithdrawalResponse>>(
-  () => `admin-withdrawals-${page.value}-${perPageValue.value}-${filterStatus.value}`,
+  'admin-withdrawals',
   () => fetchAllWithdrawals(page.value, perPageValue.value, filterStatus.value),
-  { watch: [page, perPageValue], server: false }
+  { watch: [page, perPageValue, filterStatus], server: false }
 )
 
 // ===== STATS =====
