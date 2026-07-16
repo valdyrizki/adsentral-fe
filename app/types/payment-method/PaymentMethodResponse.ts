@@ -1,7 +1,10 @@
+import type { PaymentChannelResponse } from '../payment-channel/PaymentChannelResponse'
 
 export interface PaymentMethodResponse {
   id: string;
-  payment_gateway: string;
+  name: string;
   description: string;
-  status: string;
+  icon_url: string | null;
+  status: 'ACTIVE' | 'SUSPENDED';
+  channels: PaymentChannelResponse[];
 }

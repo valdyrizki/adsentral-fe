@@ -41,7 +41,16 @@ const items = computed<NavigationMenuItem[][]>(() => [[
   {
     label: 'Pembayaran',
     icon: 'i-heroicons-credit-card',
-    to: '/admin/payment'
+    children: [
+      { label: 'Riwayat Pembayaran', to: '/admin/payment' },
+      { label: 'Metode Pembayaran', to: '/admin/payment-method' },
+      { label: 'Payment Channel', to: '/admin/payment-channel' },
+    ]
+  },
+  {
+    label: 'Voucher',
+    icon: 'mdi:ticket-percent-outline',
+    to: '/admin/voucher',
   },
   {
     label: 'Penarikan Dana',

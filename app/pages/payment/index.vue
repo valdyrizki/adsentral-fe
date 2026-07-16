@@ -81,7 +81,7 @@
                     {{ payment.payment_type === 'DEPOSIT' ? 'Deposit' : 'Transaksi' }}
                   </UBadge>
                   <UBadge v-if="payment.payment_method" color="info" variant="soft" size="xs">
-                    {{ payment.payment_method.payment_gateway }}
+                    {{ payment.payment_method.name }}
                   </UBadge>
                 </div>
                 <p class="text-xs text-gray-400">

@@ -395,20 +395,8 @@ async function handleDepositSubmit(payload: DepositRequest) {
   try {
     const deposit = await fetchDepositBalance(payload)
     
-    toast.add({
-      title: 'Deposit Dibuat',
-      description: 'Silakan lanjutkan pembayaran',
-      color: 'success',
-      icon: 'material-symbols:check-circle-outline',
-    })
-    
     isDepositOpen.value = false
-    await refreshBalance()
-    
-    // Optional: redirect ke halaman payment
-    if (deposit.checkout_url) {
-      window.open(deposit.checkout_url, '_blank')
-    }
+    navigateTo(`/payment/${deposit.payment_id}`)
   } catch (err: any) {
     toast.add({
       title: 'Deposit Gagal',

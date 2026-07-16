@@ -108,34 +108,105 @@
         <section aria-labelledby="summary-heading" class="mt-16 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8">
           <h2 id="summary-heading" class="text-lg font-medium text-gray-900">Rincian Order</h2>
 
-          <dl class="mt-6 space-y-4">
+          <!-- Voucher -->
+          <div class="mt-4 mb-2 space-y-3">
+            <p class="text-sm font-medium text-gray-700">Voucher</p>
+
+            <!-- Daftar voucher publik -->
+            <div v-if="publicVouchers && publicVouchers.length" class="space-y-1.5">
+              <p class="text-xs text-gray-400">Pilih voucher yang tersedia:</p>
+              <div class="flex flex-col gap-1.5">
+                <button
+                  v-for="v in publicVouchers"
+                  :key="v.code"
+                  type="button"
+                  class="flex items-center justify-between rounded-lg border px-3 py-2 text-left text-xs transition-all duration-150"
+                  :class="appliedVoucherCode === v.code
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                    : 'border-gray-200 bg-white hover:border-primary/50 hover:bg-primary/5'"
+                  @click="selectPublicVoucher(v.code)"
+                >
+                  <div class="flex items-center gap-2 min-w-0">
+                    <UIcon name="mdi:ticket-percent-outline" class="text-primary shrink-0" />
+                    <div class="min-w-0">
+                      <span class="font-mono font-bold text-gray-800">{{ v.code }}</span>
+                      <span v-if="v.name" class="text-gray-500 ml-1">— {{ v.name }}</span>
+                      <p class="text-gray-400 mt-0.5">
+                        {{ formatVoucherDiscount(v) }}
+                        <span v-if="v.min_transaction_amount"> · Min. Rp{{ v.min_transaction_amount.toLocaleString('id-ID') }}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <UIcon
+                    v-if="appliedVoucherCode === v.code"
+                    name="mdi:check-circle"
+                    class="text-primary shrink-0 ml-2"
+                  />
+                </button>
+              </div>
+            </div>
+
+            <!-- Input manual kode privat -->
+            <div>
+              <p class="text-xs text-gray-400 mb-1.5">Atau masukkan kode voucher:</p>
+              <div class="flex gap-2">
+                <UInput
+                  v-model="voucherCode"
+                  placeholder="Kode voucher..."
+                  class="flex-1 uppercase"
+                  :disabled="checkingVoucher"
+                  @keydown.enter="applyVoucher"
+                />
+                <UButton
+                  color="primary"
+                  variant="outline"
+                  :loading="checkingVoucher"
+                  :disabled="!voucherCode.trim()"
+                  @click="applyVoucher"
+                >
+                  Pakai
+                </UButton>
+              </div>
+            </div>
+
+            <p v-if="voucherError" class="text-xs text-red-500">{{ voucherError }}</p>
+            <div v-if="voucherDiscount > 0" class="flex items-center gap-2 text-xs text-green-600 font-medium">
+              <UIcon name="mdi:check-circle" class="size-4" />
+              Hemat Rp{{ voucherDiscount.toLocaleString('id-ID') }} dengan voucher
+              <span class="font-mono font-bold">{{ appliedVoucherCode }}</span>
+            </div>
+          </div>
+
+          <dl class="mt-4 space-y-4">
             <div class="flex items-center justify-between">
               <dt class="text-sm text-gray-600">Subtotal</dt>
               <dd class="text-sm font-medium text-gray-900">Rp {{ cartStore.subTotal.toLocaleString() ?? 0 }}</dd>
             </div>
             <div class="flex items-center justify-between border-t border-gray-200 pt-4">
               <dt class="flex items-center text-sm text-gray-600">
-                <span>Biaya lain</span>
-                <a href="#" class="ml-2 shrink-0 text-gray-400 hover:text-gray-500">
-                  <span class="sr-only">Learn more about how shipping is calculated</span>
-                  <UIcon name="mdi:help-circle" class="size-5" aria-hidden="true" />
-                </a>
+                <span>Biaya Pembayaran</span>
+                <UTooltip :text="feeTooltip">
+                  <UIcon name="mdi:help-circle" class="size-5 ml-2 shrink-0 text-gray-400 hover:text-gray-500" />
+                </UTooltip>
               </dt>
-              <dd class="text-sm font-medium text-gray-900">Rp 0</dd>
+              <dd class="text-sm font-medium text-gray-900">Rp {{ feeAmount.toLocaleString('id-ID') }}</dd>
             </div>
             <div class="flex items-center justify-between border-t border-gray-200 pt-4">
-              <dt class="flex text-sm text-gray-600">
-                <span>Fee</span>
-                <a href="#" class="ml-2 shrink-0 text-gray-400 hover:text-gray-500">
-                  <span class="sr-only">Learn more about how tax is calculated</span>
-                  <UIcon name="mdi:help-circle" class="size-5" aria-hidden="true" />
-                </a>
+              <dt class="flex items-center text-sm text-gray-600">
+                <span>Biaya Aplikasi</span>
+                <UTooltip text="Biaya layanan platform yang dikenakan untuk setiap transaksi.">
+                  <UIcon name="mdi:help-circle" class="size-5 ml-2 shrink-0 text-gray-400 hover:text-gray-500" />
+                </UTooltip>
               </dt>
-              <dd class="text-sm font-medium text-gray-900">Rp 0</dd>
+              <dd class="text-sm font-medium text-gray-900">Rp {{ appFee.toLocaleString('id-ID') }}</dd>
+            </div>
+            <div v-if="voucherDiscount > 0" class="flex items-center justify-between border-t border-gray-200 pt-4">
+              <dt class="text-sm text-green-600 font-medium">Diskon Voucher</dt>
+              <dd class="text-sm font-medium text-green-600">- Rp {{ voucherDiscount.toLocaleString('id-ID') }}</dd>
             </div>
             <div class="flex items-center justify-between border-t border-gray-200 pt-4">
               <dt class="text-base font-medium text-gray-900">Order total</dt>
-              <dd class="text-base font-medium text-gray-900">{{ cartStore.subTotal.toLocaleString() ?? 0 }}</dd>
+              <dd class="text-base font-medium text-gray-900">Rp {{ orderTotal.toLocaleString('id-ID') }}</dd>
             </div>
           </dl>
 
@@ -150,6 +221,7 @@
             <div v-else>
               <PaymentMethodSelector
                 v-model="cartStore.payment_method"
+                v-model:channel-value="cartStore.payment_channel_code"
                 :methods="paymentMethodData ?? []"
                 type="payment"
               />
@@ -219,9 +291,11 @@ import PaymentMethodSelector from '~/components/u/PaymentMethodSelector.vue';
 import { useBalanceStore } from '~/stores/balance';
 import { usePaymentMethodApi } from '~/composables/api/payment-method';
 import { useSystemSettingApi } from '~/composables/api/system-setting';
+import { useVoucherApi } from '~/composables/api/voucher';
 import type { CartItem } from '~/types/CartItem';
 import type { PaymentMethodResponse } from '~/types/payment-method/PaymentMethodResponse';
 import type { SystemSettingResponse } from '~/types/system-setting/SystemSettingResponse';
+import type { VoucherResponse } from '~/types/voucher/VoucherResponse';
 
 const breadcrumb = [
   { label: 'Home', icon: 'i-lucide-home', to: '/' },
@@ -231,6 +305,64 @@ const breadcrumb = [
 // reactive state
 const loading = ref<boolean>(false)
 const copiedKey = ref<string | null>(null)
+
+// voucher state
+const voucherCode = ref('')
+const appliedVoucherCode = ref<string | null>(null)
+const voucherDiscount = ref(0)
+const voucherError = ref('')
+const checkingVoucher = ref(false)
+
+const { checkVoucher, fetchPublicVouchers } = useVoucherApi()
+
+const { data: publicVouchers } = await useAsyncData<VoucherResponse[]>(
+  'public-vouchers-cart',
+  () => fetchPublicVouchers(),
+  { server: false }
+)
+
+function formatVoucherDiscount(v: VoucherResponse): string {
+  if (v.discount_type === 'NOMINAL') return `Diskon Rp${v.discount_value.toLocaleString('id-ID')}`
+  const pct = `Diskon ${v.discount_value}%`
+  return v.max_discount_amount ? `${pct} (maks. Rp${v.max_discount_amount.toLocaleString('id-ID')})` : pct
+}
+
+function clearVoucher() {
+  voucherDiscount.value = 0
+  appliedVoucherCode.value = null
+  voucherError.value = ''
+}
+
+watch(voucherCode, clearVoucher)
+
+async function selectPublicVoucher(code: string) {
+  if (appliedVoucherCode.value === code) {
+    voucherCode.value = ''
+    clearVoucher()
+    return
+  }
+  voucherCode.value = code
+  await applyVoucher()
+}
+
+async function applyVoucher() {
+  const code = voucherCode.value.trim().toUpperCase()
+  if (!code) return
+  checkingVoucher.value = true
+  voucherError.value = ''
+  voucherDiscount.value = 0
+  appliedVoucherCode.value = null
+  try {
+    const result = await checkVoucher(code, cartStore.subTotal)
+    voucherDiscount.value = result.discount_amount
+    appliedVoucherCode.value = code
+    toast.add({ title: 'Voucher berhasil dipakai', description: `Hemat Rp${result.discount_amount.toLocaleString('id-ID')}`, color: 'success', icon: 'mdi:check-circle' })
+  } catch (err: any) {
+    voucherError.value = err.message || 'Voucher tidak valid'
+  } finally {
+    checkingVoucher.value = false
+  }
+}
 
 function copyToClipboard(key: string, value: string) {
   navigator.clipboard.writeText(value).then(() => {
@@ -243,7 +375,7 @@ const syncing = ref<boolean>(false)
 
 // composables api
 const { fetchPaymentMethod,paymentMethodLoading } = usePaymentMethodApi()
-const { fetchPublicSystemSettingByGroup } = useSystemSettingApi()
+const { fetchPublicSystemSettingByGroup, fetchPublicSystemSetting } = useSystemSettingApi()
 const { balance } = useBalanceStore()
 
 //store
@@ -304,7 +436,7 @@ const checkout = async () =>{
   //update data stock from backend
   try{
     loading.value = true 
-    await cartStore.checkout()
+    await cartStore.checkout(appliedVoucherCode.value)
     toast.add({
       title: "Berhasil",
       description: "Checkout berhasil",
@@ -348,9 +480,47 @@ const checkout = async () =>{
     { server: false }
   )
 
+  const {
+    data: publicSystemSettings,
+  } = await useAsyncData<SystemSettingResponse[]>(
+    'public-system-settings-cart',
+    async () => (await fetchPublicSystemSetting()) ?? [],
+    { server: false }
+  )
+
+  const appFee = computed(() => {
+    const setting = (publicSystemSettings.value ?? []).find(s => s.key === 'FEE_APP')
+    const parsed = Number(setting?.value)
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 1000
+  })
+
   const isSaldoInsufficient = computed(() => {
   if (cartStore.payment_method !== 'SALDO') return false
   return balance < cartStore.subTotal
+})
+
+const selectedChannel = computed(() => {
+  const method = (paymentMethodData.value ?? []).find(m => m.id === cartStore.payment_method)
+  return method?.channels?.find(c => c.code === cartStore.payment_channel_code) ?? null
+})
+
+const feeAmount = computed(() => {
+  const channel = selectedChannel.value
+  if (!channel) return 0
+  const percentFee = ((channel.fee_percent ?? 0) / 100) * cartStore.subTotal
+  return Math.round((channel.fee_flat ?? 0) + percentFee)
+})
+
+const orderTotal = computed(() => Math.max(0, cartStore.subTotal + feeAmount.value + appFee.value - voucherDiscount.value))
+
+const feeTooltip = computed(() => {
+  const channel = selectedChannel.value
+  if (!channel) return 'Biaya yang dikenakan oleh payment gateway untuk metode pembayaran yang dipilih.'
+  const parts: string[] = []
+  if (channel.fee_flat) parts.push(`Rp${channel.fee_flat.toLocaleString('id-ID')}`)
+  if (channel.fee_percent) parts.push(`${channel.fee_percent}% dari subtotal`)
+  const breakdown = parts.length ? parts.join(' + ') : 'Gratis'
+  return `Biaya admin dari ${channel.name}: ${breakdown}.`
 })
 
 const hasUnavailableItems = computed(() =>

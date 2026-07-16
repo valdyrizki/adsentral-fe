@@ -49,7 +49,7 @@
                       {{ payment.payment_type === 'DEPOSIT' ? 'Deposit Saldo' : 'Pembayaran Transaksi' }}
                     </UBadge>
                     <UBadge v-if="payment.payment_method" color="info" variant="soft" size="xs">
-                      {{ payment.payment_method.payment_gateway }}
+                      {{ payment.payment_method.name }}
                     </UBadge>
                   </div>
                   <p class="text-xs text-gray-400 font-mono mt-1">#{{ payment.id }}</p>
@@ -59,29 +59,135 @@
             </div>
 
             <!-- Card Body -->
-            <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
-                <p class="text-xs text-gray-400 mb-1">Nominal</p>
-                <p class="text-2xl font-bold text-gray-800">Rp {{ payment.amount.toLocaleString('id-ID') }}</p>
+            <div class="p-5 space-y-5">
+
+              <!-- Rincian Nominal -->
+              <div class="rounded-xl bg-gray-50 border border-gray-100 divide-y divide-gray-100">
+                <div class="flex items-center justify-between px-4 py-3">
+                  <span class="text-sm text-gray-500">Nominal</span>
+                  <span class="text-sm font-semibold text-gray-900">Rp {{ payment.amount.toLocaleString('id-ID') }}</span>
+                </div>
+                <div v-if="payment.app_fee" class="flex items-center justify-between px-4 py-3">
+                  <span class="text-sm text-gray-500">Biaya Aplikasi</span>
+                  <span class="text-sm font-medium text-gray-900">Rp {{ payment.app_fee.toLocaleString('id-ID') }}</span>
+                </div>
+                <div v-if="payment.discount_amount && payment.discount_amount > 0" class="flex items-center justify-between px-4 py-3">
+                  <span class="text-sm text-gray-500 flex items-center gap-1.5">
+                    Diskon
+                    <UBadge v-if="payment.coupon" color="success" variant="subtle" size="xs" icon="mdi:ticket-percent-outline">
+                      {{ payment.coupon }}
+                    </UBadge>
+                  </span>
+                  <span class="text-sm font-medium text-green-600">- Rp {{ payment.discount_amount.toLocaleString('id-ID') }}</span>
+                </div>
               </div>
 
-              <div>
-                <p class="text-xs text-gray-400 mb-1">Metode Pembayaran</p>
-                <p class="text-sm font-semibold text-gray-700">
-                  {{ payment.payment_method?.payment_gateway ?? '-' }}
-                </p>
-                <p v-if="payment.payment_method?.description" class="text-xs text-gray-400">
-                  {{ payment.payment_method.description }}
-                </p>
+              <!-- Info Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p class="text-xs text-gray-400 mb-1">Metode Pembayaran</p>
+                  <p class="text-sm font-semibold text-gray-700">{{ payment.payment_method?.name ?? '-' }}</p>
+                  <p v-if="payment.payment_method?.description" class="text-xs text-gray-400 mt-0.5">
+                    {{ payment.payment_method.description }}
+                  </p>
+                </div>
+
+                <div v-if="payment.payment_channel">
+                  <p class="text-xs text-gray-400 mb-1">Channel Pembayaran</p>
+                  <div class="flex items-center gap-2">
+                    <img
+                      v-if="payment.payment_channel.icon_url"
+                      :src="payment.payment_channel.icon_url"
+                      class="w-5 h-5 object-contain"
+                    />
+                    <p class="text-sm font-semibold text-gray-700">{{ payment.payment_channel.name }}</p>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-0.5">{{ payment.payment_channel.group }}</p>
+                </div>
+
+                <div v-if="payment.ref_id">
+                  <p class="text-xs text-gray-400 mb-1">Referensi Gateway</p>
+                  <p class="text-sm font-mono text-gray-700">{{ payment.ref_id }}</p>
+                </div>
+
+                <div>
+                  <p class="text-xs text-gray-400 mb-1">Tanggal Dibuat</p>
+                  <p class="text-sm text-gray-700">{{ dayjs(payment.created_at).format('DD MMM YYYY, HH:mm') }}</p>
+                </div>
+
+                <div v-if="payment.paid_at">
+                  <p class="text-xs text-gray-400 mb-1">Tanggal Dibayar</p>
+                  <p class="text-sm font-medium text-green-700">{{ dayjs(payment.paid_at).format('DD MMM YYYY, HH:mm') }}</p>
+                </div>
+
+                <div v-if="payment.unique_code">
+                  <p class="text-xs text-gray-400 mb-1">Kode Unik</p>
+                  <p class="text-sm font-mono font-bold text-primary">{{ payment.unique_code }}</p>
+                </div>
               </div>
 
-              <div>
-                <p class="text-xs text-gray-400 mb-1">Tanggal Dibuat</p>
-                <p class="text-sm text-gray-700">{{ dayjs(payment.created_at).format('DD MMM YYYY, HH:mm') }}</p>
-                <p v-if="payment.updated_at" class="text-xs text-gray-400">
-                  Diperbarui: {{ dayjs(payment.updated_at).format('DD MMM YYYY, HH:mm') }}
+              <!-- Kode / VA / QR (tampil jika UNPAID dan ada instruksi) -->
+              <div
+                v-if="payment.status === 'UNPAID' && (payment.pay_code || payment.qr_url || payment.pay_url || payment.checkout_url)"
+                class="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-4"
+              >
+                <p class="text-sm font-semibold text-primary flex items-center gap-2">
+                  <UIcon name="mdi:information-outline" class="size-4" />
+                  Instruksi Pembayaran
                 </p>
+
+                <!-- Virtual Account / Kode Bayar -->
+                <div v-if="payment.pay_code">
+                  <p class="text-xs text-gray-500 mb-1">Nomor Virtual Account / Kode Bayar</p>
+                  <div class="flex items-center gap-2">
+                    <code class="text-lg font-bold tracking-widest text-gray-900 bg-white border border-gray-200 rounded-lg px-3 py-2 flex-1 text-center">
+                      {{ payment.pay_code }}
+                    </code>
+                    <UButton
+                      :icon="copiedPayCode ? 'i-heroicons-check' : 'i-heroicons-clipboard'"
+                      :color="copiedPayCode ? 'success' : 'neutral'"
+                      variant="outline"
+                      size="sm"
+                      @click="copyPayCode"
+                    />
+                  </div>
+                </div>
+
+                <!-- QR Code -->
+                <div v-if="payment.qr_url" class="flex flex-col items-center gap-2">
+                  <p class="text-xs text-gray-500 self-start">QR Code Pembayaran</p>
+                  <img
+                    :src="payment.qr_url"
+                    alt="QR Code"
+                    class="w-48 h-48 object-contain border border-gray-200 rounded-xl bg-white p-2"
+                  />
+                </div>
+
+                <!-- Tombol Bayar -->
+                <div class="flex flex-wrap gap-2">
+                  <UButton
+                    v-if="payment.pay_url"
+                    :to="payment.pay_url"
+                    target="_blank"
+                    icon="mdi:open-in-new"
+                    color="primary"
+                    size="sm"
+                  >
+                    Bayar Sekarang
+                  </UButton>
+                  <UButton
+                    v-else-if="payment.checkout_url"
+                    :to="payment.checkout_url"
+                    target="_blank"
+                    icon="mdi:open-in-new"
+                    color="primary"
+                    size="sm"
+                  >
+                    Buka Halaman Pembayaran
+                  </UButton>
+                </div>
               </div>
+
             </div>
 
             <!-- Bukti Pembayaran (existing) -->
@@ -431,12 +537,23 @@ const {
 
 // ===== COPY TO CLIPBOARD =====
 const copiedKey = ref<string | null>(null)
+const copiedPayCode = ref(false)
 
 function copyToClipboard(key: string, value: string) {
   navigator.clipboard.writeText(value).then(() => {
     copiedKey.value = key
     toast.add({ title: 'Disalin!', description: value, color: 'success', icon: 'i-heroicons-check-circle' })
     setTimeout(() => { copiedKey.value = null }, 2000)
+  })
+}
+
+function copyPayCode() {
+  const code = payment.value?.pay_code
+  if (!code) return
+  navigator.clipboard.writeText(code).then(() => {
+    copiedPayCode.value = true
+    toast.add({ title: 'Kode disalin!', description: code, color: 'success', icon: 'i-heroicons-check-circle' })
+    setTimeout(() => { copiedPayCode.value = false }, 2000)
   })
 }
 

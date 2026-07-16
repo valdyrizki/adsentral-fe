@@ -12,7 +12,8 @@ export const useCartStore = defineStore('cart', {
   state: () => ({
     items: [] as CartItem[],
     payment_method: 'QRIS' as string,
-    loading: false as boolean 
+    payment_channel_code: null as string | null,
+    loading: false as boolean
   }),
 
   getters: {
@@ -221,7 +222,7 @@ export const useCartStore = defineStore('cart', {
 
 
     },
-    async checkout() {
+    async checkout(voucher_code?: string | null) {
       if (this.items.length === 0){
           throw new Error("Item tidak boleh kosong!")
       }
@@ -243,6 +244,8 @@ export const useCartStore = defineStore('cart', {
 
         const request:TransactionRequest = {
           payment_method: this.payment_method,
+          channel_code: this.payment_channel_code,
+          voucher_code: voucher_code ?? null,
           transaction_details: detailRequest
         }
 
