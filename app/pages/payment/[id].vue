@@ -63,13 +63,29 @@
 
               <!-- Rincian Nominal -->
               <div class="rounded-xl bg-gray-50 border border-gray-100 divide-y divide-gray-100">
-                <div class="flex items-center justify-between px-4 py-3">
+
+                <!-- Saldo Masuk ke Akun (DEPOSIT) — paling atas -->
+                <div v-if="payment.payment_type === 'DEPOSIT'" class="flex items-center justify-between px-4 py-3 bg-emerald-50 rounded-t-xl">
+                  <span class="text-sm font-medium text-emerald-700 flex items-center gap-1.5">
+                    <UIcon name="i-heroicons-arrow-down-circle" class="size-4" />
+                    Saldo Masuk ke Akun
+                  </span>
+                  <span class="text-sm font-bold text-emerald-700">Rp {{ payment.amount.toLocaleString('id-ID') }}</span>
+                </div>
+
+                <!-- Nominal (TRANSACTION only) -->
+                <div v-else class="flex items-center justify-between px-4 py-3">
                   <span class="text-sm text-gray-500">Nominal</span>
                   <span class="text-sm font-semibold text-gray-900">Rp {{ payment.amount.toLocaleString('id-ID') }}</span>
                 </div>
+
                 <div v-if="payment.app_fee" class="flex items-center justify-between px-4 py-3">
                   <span class="text-sm text-gray-500">Biaya Aplikasi</span>
                   <span class="text-sm font-medium text-gray-900">Rp {{ payment.app_fee.toLocaleString('id-ID') }}</span>
+                </div>
+                <div v-if="payment.gateway_fee" class="flex items-center justify-between px-4 py-3">
+                  <span class="text-sm text-gray-500">Biaya Payment Gateway</span>
+                  <span class="text-sm font-medium text-gray-900">Rp {{ payment.gateway_fee.toLocaleString('id-ID') }}</span>
                 </div>
                 <div v-if="payment.discount_amount && payment.discount_amount > 0" class="flex items-center justify-between px-4 py-3">
                   <span class="text-sm text-gray-500 flex items-center gap-1.5">
@@ -79,6 +95,12 @@
                     </UBadge>
                   </span>
                   <span class="text-sm font-medium text-green-600">- Rp {{ payment.discount_amount.toLocaleString('id-ID') }}</span>
+                </div>
+
+                <!-- Total Tagihan -->
+                <div class="flex items-center justify-between px-4 py-3.5 bg-gray-100 rounded-b-xl">
+                  <span class="text-sm font-semibold text-gray-800">Total Tagihan</span>
+                  <span class="text-base font-bold text-primary">Rp {{ (payment.total_amount ?? payment.amount).toLocaleString('id-ID') }}</span>
                 </div>
               </div>
 
@@ -260,9 +282,8 @@
             <!-- ===== DEPOSIT ACTIONS (only for DEPOSIT type) ===== -->
             <template v-if="payment.payment_type === 'DEPOSIT'">
 
-              <!-- UNPAID: cancel only (bukti via WA di panel rekening atas) -->
-              <div v-if="payment.status === 'UNPAID'" class="px-5 pb-5 pt-0 border-t border-gray-100 mt-2">
-                <p class="text-sm font-semibold text-gray-700 mb-3 pt-4">Langkah selanjutnya</p>
+              <!-- UNPAID -->
+              <div v-if="payment.status === 'UNPAID'" class="px-5 pb-5 pt-0 border-t border-gray-100 mt-2 space-y-3">
                 <UAlert
                   title="Selesaikan pembayaran"
                   :description="payment.payment_method?.id === 'MANUAL_BANK'
@@ -270,17 +291,15 @@
                     : 'Lakukan pembayaran sesuai metode yang dipilih.'"
                   icon="i-heroicons-information-circle"
                   color="info"
-                  class="mb-4"
+                  class="mt-4"
                 />
-
-                <!-- Cancel -->
                 <UButton
                   icon="material-symbols:cancel"
                   color="error"
                   variant="outline"
                   size="sm"
                   :loading="cancelling"
-                  @click="isCancelConfirmOpen = true"
+                  @click="handleCancel"
                 >
                   Batalkan Pembayaran
                 </UButton>
@@ -433,23 +452,6 @@
     </div>
   </div>
 
-  <!-- Cancel Confirm Modal -->
-  <UModal v-model:open="isCancelConfirmOpen" title="Batalkan Pembayaran">
-    <template #body>
-      <div class="space-y-4">
-        <UAlert
-          title="Yakin ingin membatalkan?"
-          description="Pembayaran deposit ini akan dibatalkan dan tidak dapat diurungkan."
-          icon="i-heroicons-exclamation-triangle"
-          color="warning"
-        />
-        <div class="flex justify-end gap-2">
-          <UButton variant="outline" color="neutral" @click="isCancelConfirmOpen = false">Kembali</UButton>
-          <UButton color="error" :loading="cancelling" @click="handleCancel">Ya, Batalkan</UButton>
-        </div>
-      </div>
-    </template>
-  </UModal>
 </template>
 
 <script lang="ts" setup>
@@ -468,7 +470,8 @@ definePageMeta({ layout: 'default' })
 
 const route = useRoute()
 const toast = useToast()
-const { fetchPaymentById, cancelPayment, fetchTxByPaymentId } = usePaymentApi()
+const { fetchPaymentById, fetchTxByPaymentId, cancelPayment } = usePaymentApi()
+const { confirm, close } = useConfirm()
 const { fetchPublicSystemSettingByGroup } = useSystemSettingApi()
 const systemSettingStore = useSystemSettingStore()
 
@@ -535,6 +538,32 @@ const {
   { server: false }
 )
 
+
+// ===== CANCEL PAYMENT =====
+const cancelling = ref(false)
+
+async function handleCancel() {
+  const yes = await confirm({
+    title: 'Batalkan Pembayaran?',
+    message: 'Pembayaran yang dibatalkan tidak dapat diurungkan. Yakin?',
+    confirmText: 'Ya, Batalkan',
+    cancelText: 'Tidak',
+    confirmColor: 'error',
+  })
+  if (!yes) return
+  cancelling.value = true
+  try {
+    await cancelPayment(paymentId.value)
+    toast.add({ title: 'Pembayaran berhasil dibatalkan', color: 'success', icon: 'i-heroicons-check-circle' })
+    await refresh()
+  } catch (err: any) {
+    toast.add({ title: 'Gagal membatalkan', description: err.data?.message || err.message, color: 'error', icon: 'material-symbols:error-outline' })
+  } finally {
+    cancelling.value = false
+    close()
+  }
+}
+
 // ===== COPY TO CLIPBOARD =====
 const copiedKey = ref<string | null>(null)
 const copiedPayCode = ref(false)
@@ -557,21 +586,4 @@ function copyPayCode() {
   })
 }
 
-// ===== CANCEL =====
-const cancelling = ref(false)
-const isCancelConfirmOpen = ref(false)
-
-async function handleCancel() {
-  cancelling.value = true
-  try {
-    await cancelPayment(paymentId.value)
-    toast.add({ title: 'Pembayaran berhasil dibatalkan', color: 'success' })
-    isCancelConfirmOpen.value = false
-    await refresh()
-  } catch (err: any) {
-    toast.add({ title: 'Gagal membatalkan', description: err.statusMessage || err.message, color: 'error' })
-  } finally {
-    cancelling.value = false
-  }
-}
 </script>

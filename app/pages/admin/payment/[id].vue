@@ -68,6 +68,20 @@
           <div>
             <p class="text-xs text-gray-400 mb-1">Nominal</p>
             <p class="text-xl font-bold text-gray-800">Rp {{ payment.amount.toLocaleString('id-ID') }}</p>
+            <div class="mt-1 space-y-0.5">
+              <p v-if="payment.app_fee" class="text-xs text-gray-400">
+                + Biaya Aplikasi: Rp {{ payment.app_fee.toLocaleString('id-ID') }}
+              </p>
+              <p v-if="payment.gateway_fee" class="text-xs text-gray-400">
+                + Biaya Gateway: Rp {{ payment.gateway_fee.toLocaleString('id-ID') }}
+              </p>
+              <p v-if="payment.discount_amount && payment.discount_amount > 0" class="text-xs text-green-600">
+                - Diskon: Rp {{ payment.discount_amount.toLocaleString('id-ID') }}
+              </p>
+              <p v-if="payment.total_amount" class="text-xs font-semibold text-gray-700 pt-0.5 border-t border-gray-200 mt-1">
+                Total: Rp {{ payment.total_amount.toLocaleString('id-ID') }}
+              </p>
+            </div>
           </div>
 
           <!-- Status -->

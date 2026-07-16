@@ -8,7 +8,9 @@ export interface PaymentResponse {
   status: string
   payment_type: 'TRANSACTION' | 'DEPOSIT' | string
   amount: number
+  total_amount: number | null
   app_fee: number | null
+  gateway_fee: number | null
   discount_amount: number | null
   coupon: string | null
   unique_code: number | null

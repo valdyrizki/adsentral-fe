@@ -88,7 +88,7 @@ export const usePaymentApi = () => {
 
   // User: cancel own DEPOSIT payment
   const cancelPayment = async (paymentId: string): Promise<void> => {
-    const res = await api<WebResponse<void>>(`/payment/cancel/${paymentId}`, {
+    const res = await api<WebResponse<void>>(`/balance/deposit/cancel/${paymentId}`, {
       method: 'POST',
     })
     if (res.status !== 'success') {

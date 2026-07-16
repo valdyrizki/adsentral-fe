@@ -60,6 +60,7 @@
         type="submit"
         color="primary"
         :loading="loading"
+        :disabled="loading || !canSubmit"
       >
         Deposit
       </UButton>
@@ -98,6 +99,14 @@ const selectedChannel = ref<string | null>(null)
 
 // Validation errors (local, untuk field error display)
 const errors = ref<Record<string, string>>({})
+
+const canSubmit = computed(() => {
+  if (!selectedPayment.value) return false
+  const method = (paymentMethod.value ?? []).find(m => m.id === selectedPayment.value)
+  if (!method) return false
+  if (method.channels?.length && !selectedChannel.value) return false
+  return true
+})
 
 const selectedChannelData = computed<PaymentChannelResponse | null>(() => {
   const method = paymentMethod.value?.find(m => m.id === selectedPayment.value)
@@ -143,7 +152,7 @@ function handleSubmit() {
   const form: DepositRequest = {
     amount: amount.value,
     payment_method: selectedPayment.value,
-    payment_channel_code: selectedChannel.value,
+    channel_code: selectedChannel.value,
   }
 
   emit('submit', form)
