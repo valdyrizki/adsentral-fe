@@ -128,7 +128,15 @@
                 <UIcon name="i-heroicons-user" class="text-xs" /> {{ payment.user?.full_name ?? payment.user?.username ?? '-' }}
               </p>
               <p class="text-xs text-gray-400 truncate">{{ payment.user?.email ?? '' }}</p>
-              <p class="text-sm font-bold text-gray-800 mt-2">Rp {{ payment.amount.toLocaleString('id-ID') }}</p>
+              <div class="mt-2 flex flex-col gap-0.5">
+                <p class="text-xs text-gray-400">Nominal: Rp {{ payment.amount.toLocaleString('id-ID') }}</p>
+                <p class="text-sm font-bold text-gray-800">
+                  Total: Rp {{ (payment.total_amount ?? payment.amount).toLocaleString('id-ID') }}
+                </p>
+                <p v-if="payment.unique_code" class="text-xs font-mono text-amber-600">
+                  Kode Unik: +{{ payment.unique_code }}
+                </p>
+              </div>
             </div>
           </NuxtLink>
 

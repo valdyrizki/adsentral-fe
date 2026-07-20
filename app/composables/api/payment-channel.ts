@@ -36,13 +36,16 @@ export const usePaymentChannelApi = () => {
     return res.data
   }
 
-  const updatePaymentChannelName = async (code: string, name: string): Promise<PaymentChannelResponse | null> => {
+  const updatePaymentChannel = async (
+    code: string,
+    body: { name?: string; fee_flat?: number; fee_percent?: number; status?: string }
+  ): Promise<PaymentChannelResponse | null> => {
     const res = await api<WebResponse<PaymentChannelResponse>>(`/payment/channel/update/${code}`, {
       method: 'PATCH',
-      body: { name },
+      body,
     })
     if (res.status !== 'success') {
-      throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal mengupdate nama channel' })
+      throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal mengupdate channel' })
     }
     return res.data ?? null
   }
@@ -60,7 +63,7 @@ export const usePaymentChannelApi = () => {
   return {
     fetchAllPaymentChannels,
     fetchActiveChannelsByMethod,
-    updatePaymentChannelName,
+    updatePaymentChannel,
     syncTripayChannels,
   }
 }

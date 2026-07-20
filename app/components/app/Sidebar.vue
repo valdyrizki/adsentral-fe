@@ -21,7 +21,7 @@ const items = computed<NavigationMenuItem[][]>(() => {
     [
       { label: 'Account Info', icon: 'mdi:user', to: '/profile' },
       {
-        label: 'Saldo : ' + `Rp ${balanceStore.balance.toLocaleString('id-ID')}`,
+        label: 'Saldo Belanja : ' + `Rp ${balanceStore.depositBalance.toLocaleString('id-ID')}`,
         icon: 'i-lucide-credit-card',
         to: '/balance',
       },

@@ -9,14 +9,14 @@
     <!-- Saldo Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-      <!-- Saldo Efektif -->
+      <!-- Saldo Jualan (bisa ditarik) -->
       <div class="bg-gradient-to-br from-primary to-teal-600 rounded-2xl p-6 text-white shadow-sm">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
             <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
               <UIcon name="i-heroicons-check-circle" class="text-white text-lg" />
             </div>
-            <p class="text-sm font-medium text-white/80">Saldo Efektif</p>
+            <p class="text-sm font-medium text-white/80">Saldo Jualan</p>
           </div>
           <UButton
             size="xs"
@@ -29,7 +29,7 @@
           />
         </div>
         <USkeleton v-if="balanceLoading" class="h-9 w-40 rounded-lg bg-white/30 mb-2" />
-        <p v-else class="text-3xl font-bold mb-1">{{ formatRp(balanceStore.balance) }}</p>
+        <p v-else class="text-3xl font-bold mb-1">{{ formatRp(balanceStore.salesBalance) }}</p>
         <p class="text-xs text-white/60">Tersedia untuk ditarik</p>
         <div class="flex gap-2 mt-4">
           <UButton
@@ -45,57 +45,49 @@
         </div>
       </div>
 
-      <!-- Saldo Ditahan -->
+      <!-- Saldo Belanja (dari top up) -->
+      <div class="bg-sky-50 border border-sky-200 rounded-2xl p-6 shadow-sm">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center">
+            <UIcon name="i-heroicons-shopping-bag" class="text-sky-500 text-lg" />
+          </div>
+          <p class="text-sm font-medium text-sky-700">Saldo Belanja</p>
+        </div>
+        <USkeleton v-if="balanceLoading" class="h-9 w-40 rounded-lg bg-sky-200 mb-2" />
+        <p v-else class="text-3xl font-bold text-sky-700 mb-1">{{ formatRp(balanceStore.depositBalance) }}</p>
+        <p class="text-xs text-sky-500">Hasil top up, hanya bisa dipakai belanja</p>
+        <div v-if="isSeller" class="flex gap-2 mt-4">
+          <UButton
+            size="sm"
+            color="primary"
+            variant="outline"
+            icon="mdi:swap-horizontal"
+            class="flex-1 justify-center"
+            :disabled="balanceStore.salesBalance <= 0"
+            @click="isTransferOpen = true"
+          >
+            Transfer dari Saldo Jualan
+          </UButton>
+        </div>
+      </div>
+
+      <!-- Dana Tertahan -->
       <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 shadow-sm">
         <div class="flex items-center gap-2 mb-4">
           <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center">
             <UIcon name="i-heroicons-lock-closed" class="text-amber-500 text-lg" />
           </div>
-          <p class="text-sm font-medium text-amber-700">Saldo Ditahan</p>
+          <p class="text-sm font-medium text-amber-700">Dana Tertahan</p>
         </div>
         <USkeleton v-if="balanceLoading" class="h-9 w-40 rounded-lg bg-amber-200 mb-2" />
-        <p v-else class="text-3xl font-bold text-amber-700 mb-1">{{ formatRp(balanceStore.balanceHeld) }}</p>
-        <p class="text-xs text-amber-500">Menunggu transaksi selesai</p>
+        <p v-else class="text-3xl font-bold text-amber-700 mb-1">{{ formatRp(balanceStore.salesHeld) }}</p>
+        <p class="text-xs text-amber-500">Escrow belum cair / penarikan diproses</p>
         <div class="mt-4 bg-amber-100 rounded-xl p-3">
           <div class="flex items-start gap-2">
             <UIcon name="i-heroicons-information-circle" class="text-amber-500 text-sm mt-0.5 flex-shrink-0" />
             <p class="text-xs text-amber-600 leading-relaxed">
-              Dana akan otomatis cair ke saldo efektif setelah pembeli mengkonfirmasi penerimaan pesanan.
+              Dana akan otomatis cair ke saldo jualan setelah pembeli mengkonfirmasi penerimaan pesanan, atau setelah penarikan selesai diproses.
             </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Total Saldo -->
-      <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-        <div class="flex items-center gap-2 mb-4">
-          <div class="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center">
-            <UIcon name="i-heroicons-calculator" class="text-gray-500 text-lg" />
-          </div>
-          <p class="text-sm font-medium text-gray-600">Total Saldo</p>
-        </div>
-        <USkeleton v-if="balanceLoading" class="h-9 w-40 rounded-lg bg-gray-200 mb-2" />
-        <p v-else class="text-3xl font-bold text-gray-800 mb-1">{{ formatRp(balanceStore.balanceTotal) }}</p>
-        <p class="text-xs text-gray-400">Efektif + Ditahan</p>
-        <div class="mt-4 space-y-2">
-          <div class="flex justify-between items-center text-sm">
-            <span class="text-gray-500 flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-primary inline-block" />
-              Saldo Efektif
-            </span>
-            <span class="font-semibold text-gray-800">{{ formatRp(balanceStore.balance) }}</span>
-          </div>
-          <div class="flex justify-between items-center text-sm">
-            <span class="text-gray-500 flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-amber-400 inline-block" />
-              Saldo Ditahan
-            </span>
-            <span class="font-semibold text-amber-600">{{ formatRp(balanceStore.balanceHeld) }}</span>
-          </div>
-          <USeparator />
-          <div class="flex justify-between items-center text-sm font-bold text-gray-800">
-            <span>Total</span>
-            <span>{{ formatRp(balanceStore.balanceTotal) }}</span>
           </div>
         </div>
       </div>
@@ -316,10 +308,13 @@
 
           <!-- Info -->
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-gray-800 truncate">{{ log.description || '-' }}</p>
+            <div class="flex items-center gap-2 flex-wrap">
+              <p class="text-sm font-medium text-gray-800 truncate">{{ log.description || '-' }}</p>
+              <UBadge color="neutral" variant="subtle" size="xs">{{ walletSourceLabel(log.source) }}</UBadge>
+            </div>
             <p class="text-xs text-gray-400">{{ dayjs(log.created_at).format('DD MMM YYYY, HH:mm') }}</p>
             <p class="text-xs text-gray-400 mt-0.5">
-              {{ formatRp(log.old_balance) }} → {{ formatRp(log.new_balance) }}
+              {{ getBalanceLogBucket(log).label }}: {{ formatRp(getBalanceLogBucket(log).old) }} → {{ formatRp(getBalanceLogBucket(log).new) }}
             </p>
           </div>
 
@@ -368,6 +363,12 @@
       </template>
     </UModal>
 
+    <UModal v-if="isSeller" v-model:open="isTransferOpen" title="Transfer ke Saldo Belanja">
+      <template #body>
+        <FormBalanceTransfer @transfer-success="handleTransferSuccess" @cancel="isTransferOpen = false" />
+      </template>
+    </UModal>
+
   </div>
 </template>
 
@@ -377,16 +378,21 @@ import { useBalanceApi } from '~/composables/api/balance'
 import type { BalanceLogResponse } from '~/types/balance/BalanceLogResponse'
 import type { WithdrawalResponse } from '~/types/balance/WithdrawalResponse'
 import type { PageResponse } from '~/types/PageResponse'
+import { walletSourceLabel, getBalanceLogBucket } from '~/utils/walletSource'
 
 definePageMeta({ layout: 'seller', label: 'Kelola Saldo' })
 
 const balanceStore = useBalanceStore()
+const authStore = useAuthStore()
 const toast = useToast()
 const { confirm, close: closeConfirm } = useConfirm()
 const { fetchBalance, fetchBalanceLog, fetchWithdrawalHistory, cancelWithdrawal } = useBalanceApi()
 
+const isSeller = computed(() => authStore.isSeller)
+
 // ===== MODAL STATE =====
 const isWithdrawalOpen = ref(false)
+const isTransferOpen = ref(false)
 
 // ===== PAGINATION STATE =====
 const perPageItems = [5, 10, 25, 50]
@@ -404,8 +410,7 @@ const { pending: balanceLoading, refresh: refreshBalance } = await useAsyncData(
   'seller-balance',
   async () => {
     const res = await fetchBalance()
-    balanceStore.setBalance(res.balance)
-    balanceStore.setBalanceHeld(res.balance_held)
+    balanceStore.setBalance(res)
   },
   { server: false }
 )
@@ -456,6 +461,12 @@ function handleWithdrawalSuccess() {
   isWithdrawalOpen.value = false
   refreshBalance()
   refreshWithdrawal()
+  refreshLog()
+}
+
+// ===== TRANSFER =====
+function handleTransferSuccess() {
+  isTransferOpen.value = false
   refreshLog()
 }
 

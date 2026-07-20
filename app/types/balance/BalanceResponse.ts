@@ -1,5 +1,7 @@
 
 export interface BalanceResponse {
-  balance: number;
-  balance_held: number;
+  deposit_balance: number;
+  sales_balance: number;
+  deposit_held: number;
+  sales_held: number;
 }

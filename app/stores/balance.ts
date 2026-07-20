@@ -1,13 +1,16 @@
 // stores/balance.ts
 import { defineStore } from 'pinia'
 import { useBalanceApi } from '~/composables/api/balance'
+import type { BalanceResponse } from '~/types/balance/BalanceResponse'
 import type { DepositResponse } from '~/types/balance/DepositResponse'
 import type { PageResponse } from '~/types/PageResponse'
 
 interface BalanceState {
   id: string
-  balance: number
-  balanceHeld: number
+  depositBalance: number
+  salesBalance: number
+  depositHeld: number
+  salesHeld: number
   lastFetched: number | null  // timestamp in ms
   depositHistory: PageResponse<DepositResponse>
   loading: boolean
@@ -16,8 +19,10 @@ interface BalanceState {
 export const useBalanceStore = defineStore('balance', {
   state: (): BalanceState => ({
     id: '',
-    balance: 0,
-    balanceHeld: 0,
+    depositBalance: 0,
+    salesBalance: 0,
+    depositHeld: 0,
+    salesHeld: 0,
     lastFetched: null,  // timestamp in ms
     depositHistory: {
       page: 0,
@@ -31,8 +36,9 @@ export const useBalanceStore = defineStore('balance', {
   }),
 
   getters: {
-    balanceTotal: (state) => state.balance + state.balanceHeld,
-    
+    // Total dana tertahan (escrow belum clear + penarikan sedang diproses)
+    heldTotal: (state) => state.depositHeld + state.salesHeld,
+
     // Apakah data fresh (kurang dari 1 menit)?
     isFresh: (state) => {
       if (!state.lastFetched) return false
@@ -42,39 +48,28 @@ export const useBalanceStore = defineStore('balance', {
 
 
   actions: {
-    setBalance(balance: number) {
-      this.balance = balance
-      this.lastFetched = Date.now()
-    },
-
-    setBalanceHeld(balanceHeld: number) {
-      this.balanceHeld = balanceHeld
+    setBalance(data: BalanceResponse) {
+      this.depositBalance = data.deposit_balance
+      this.salesBalance = data.sales_balance
+      this.depositHeld = data.deposit_held
+      this.salesHeld = data.sales_held
       this.lastFetched = Date.now()
     },
 
     async loadBalance(options: { force?: boolean } = {}) {
       const { force = false } = options
-      
+
       if (!force && this.isFresh) return
-      
+
       const { fetchBalance } = useBalanceApi()
-      
+
       this.loading = true
       try {
         const data = await fetchBalance()
-        this.setBalance(data.balance)
-        this.setBalanceHeld(data.balance_held)
+        this.setBalance(data)
       } finally {
         this.loading = false
       }
-    },
-
-
-    setBalanceDetail(id : string, balance: number, balanceHeld: number) {
-      this.id = id
-      this.balance = balance
-      this.balanceHeld = balanceHeld
-      this.lastFetched = Date.now()
     },
 
     setDepositHistory(depositHistory: PageResponse<DepositResponse>) {
@@ -86,8 +81,10 @@ export const useBalanceStore = defineStore('balance', {
     },
 
     reset() {
-      this.balance = 0
-      this.balanceHeld = 0
+      this.depositBalance = 0
+      this.salesBalance = 0
+      this.depositHeld = 0
+      this.salesHeld = 0
       this.lastFetched = null
       this.loading = false
     },

@@ -184,16 +184,16 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-          <!-- Saldo Efektif -->
+          <!-- Saldo Jualan (bisa ditarik) -->
           <div class="bg-gradient-to-br from-primary to-teal-600 rounded-2xl p-5 text-white">
             <div class="flex items-center gap-2 mb-3">
               <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
                 <UIcon name="i-heroicons-check-circle" class="text-white text-base" />
               </div>
-              <p class="text-sm font-medium text-white/80">Saldo Efektif</p>
+              <p class="text-sm font-medium text-white/80">Saldo Jualan</p>
             </div>
             <USkeleton v-if="balanceLoading" class="h-8 w-36 rounded-lg bg-white/30 mb-1" />
-            <p v-else class="text-2xl font-bold">{{ formatRp(balanceStore.balance) }}</p>
+            <p v-else class="text-2xl font-bold">{{ formatRp(balanceStore.salesBalance) }}</p>
             <p class="text-xs text-white/60 mt-1">Tersedia untuk ditarik</p>
             <UButton
               size="xs"
@@ -207,48 +207,33 @@
             </UButton>
           </div>
 
-          <!-- Saldo Ditahan -->
+          <!-- Saldo Belanja (dari top up) -->
+          <div class="bg-sky-50 border border-sky-200 rounded-2xl p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center">
+                <UIcon name="i-heroicons-shopping-bag" class="text-sky-500 text-base" />
+              </div>
+              <p class="text-sm font-medium text-sky-700">Saldo Belanja</p>
+            </div>
+            <USkeleton v-if="balanceLoading" class="h-8 w-36 rounded-lg bg-sky-200 mb-1" />
+            <p v-else class="text-2xl font-bold text-sky-700">{{ formatRp(balanceStore.depositBalance) }}</p>
+            <p class="text-xs text-sky-500 mt-1">Hasil top up, hanya bisa dipakai belanja</p>
+          </div>
+
+          <!-- Dana Tertahan -->
           <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5">
             <div class="flex items-center gap-2 mb-3">
               <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
                 <UIcon name="i-heroicons-lock-closed" class="text-amber-500 text-base" />
               </div>
-              <p class="text-sm font-medium text-amber-700">Saldo Ditahan</p>
+              <p class="text-sm font-medium text-amber-700">Dana Tertahan</p>
             </div>
             <USkeleton v-if="balanceLoading" class="h-8 w-36 rounded-lg bg-amber-200 mb-1" />
-            <p v-else class="text-2xl font-bold text-amber-700">{{ formatRp(balanceStore.balanceHeld) }}</p>
-            <p class="text-xs text-amber-500 mt-1">Menunggu transaksi selesai</p>
+            <p v-else class="text-2xl font-bold text-amber-700">{{ formatRp(balanceStore.salesHeld) }}</p>
+            <p class="text-xs text-amber-500 mt-1">Escrow belum cair / penarikan diproses</p>
             <div class="mt-3 flex items-center gap-1 text-xs text-amber-600">
               <UIcon name="i-heroicons-information-circle" class="text-sm" />
               Dana akan cair otomatis saat pesanan selesai
-            </div>
-          </div>
-
-          <!-- Total Saldo -->
-          <div class="bg-gray-50 border border-gray-200 rounded-2xl p-5">
-            <div class="flex items-center gap-2 mb-3">
-              <div class="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center">
-                <UIcon name="i-heroicons-calculator" class="text-gray-500 text-base" />
-              </div>
-              <p class="text-sm font-medium text-gray-600">Total Saldo</p>
-            </div>
-            <USkeleton v-if="balanceLoading" class="h-8 w-36 rounded-lg bg-gray-300 mb-1" />
-            <p v-else class="text-2xl font-bold text-gray-800">{{ formatRp(balanceStore.balanceTotal) }}</p>
-            <p class="text-xs text-gray-400 mt-1">Efektif + Ditahan</p>
-            <div class="mt-3 space-y-1">
-              <div class="flex justify-between text-xs text-gray-500">
-                <span>Efektif</span>
-                <span class="font-medium text-gray-700">{{ formatRp(balanceStore.balance) }}</span>
-              </div>
-              <div class="flex justify-between text-xs text-gray-500">
-                <span>Ditahan</span>
-                <span class="font-medium text-amber-600">{{ formatRp(balanceStore.balanceHeld) }}</span>
-              </div>
-              <USeparator class="my-1" />
-              <div class="flex justify-between text-xs font-semibold text-gray-800">
-                <span>Total</span>
-                <span>{{ formatRp(balanceStore.balanceTotal) }}</span>
-              </div>
             </div>
           </div>
 

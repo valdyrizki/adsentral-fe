@@ -4,9 +4,14 @@
       <div class="p-4 md:p-6 space-y-6">
 
         <!-- Back + Breadcrumb -->
-        <div class="flex items-center gap-2">
-          <UButton icon="i-heroicons-arrow-left" variant="ghost" color="neutral" to="/payment" size="sm" />
-          <UBreadcrumb :items="breadcrumb" />
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <UButton icon="i-heroicons-arrow-left" variant="ghost" color="neutral" to="/payment" size="sm" />
+            <UBreadcrumb :items="breadcrumb" />
+          </div>
+          <UButton icon="mdi:refresh" color="neutral" variant="outline" size="sm" :loading="pending" @click="refresh()">
+            Refresh
+          </UButton>
         </div>
 
         <!-- Loading -->
@@ -70,7 +75,7 @@
                     <UIcon name="i-heroicons-arrow-down-circle" class="size-4" />
                     Saldo Masuk ke Akun
                   </span>
-                  <span class="text-sm font-bold text-emerald-700">Rp {{ payment.amount.toLocaleString('id-ID') }}</span>
+                  <span class="text-sm font-bold text-emerald-700">Rp {{ depositReceived.toLocaleString('id-ID') }}</span>
                 </div>
 
                 <!-- Nominal (TRANSACTION only) -->
@@ -87,6 +92,16 @@
                   <span class="text-sm text-gray-500">Biaya Payment Gateway</span>
                   <span class="text-sm font-medium text-gray-900">Rp {{ payment.gateway_fee.toLocaleString('id-ID') }}</span>
                 </div>
+                <!-- Kode Unik -->
+                <div v-if="payment.unique_code" class="flex items-center justify-between px-4 py-3">
+                  <span class="text-sm text-gray-500 flex items-center gap-1.5">
+                    <UIcon name="mdi:numeric" class="size-4 text-amber-500" />
+                    Kode Unik
+                  </span>
+                  <span class="text-sm font-mono font-bold text-amber-600">+{{ payment.unique_code }}</span>
+                </div>
+
+                <!-- Diskon -->
                 <div v-if="payment.discount_amount && payment.discount_amount > 0" class="flex items-center justify-between px-4 py-3">
                   <span class="text-sm text-gray-500 flex items-center gap-1.5">
                     Diskon
@@ -142,10 +157,6 @@
                   <p class="text-sm font-medium text-green-700">{{ dayjs(payment.paid_at).format('DD MMM YYYY, HH:mm') }}</p>
                 </div>
 
-                <div v-if="payment.unique_code">
-                  <p class="text-xs text-gray-400 mb-1">Kode Unik</p>
-                  <p class="text-sm font-mono font-bold text-primary">{{ payment.unique_code }}</p>
-                </div>
               </div>
 
               <!-- Kode / VA / QR (tampil jika UNPAID dan ada instruksi) -->
@@ -303,17 +314,6 @@
                 >
                   Batalkan Pembayaran
                 </UButton>
-              </div>
-
-              <!-- PAID: waiting for admin -->
-              <div v-else-if="payment.status === 'PAID'" class="px-5 pb-5 pt-0 border-t border-gray-100 mt-2">
-                <UAlert
-                  title="Menunggu konfirmasi admin"
-                  description="Bukti pembayaran Anda sudah diterima. Admin akan segera mengkonfirmasi pembayaran ini."
-                  icon="i-heroicons-clock"
-                  color="warning"
-                  class="mt-4"
-                />
               </div>
 
               <!-- DONE / COMPLETE -->
@@ -527,6 +527,17 @@ const {
 watch(payment, (val) => {
   if (val?.payment_type === 'TRANSACTION') refreshTx()
 }, { immediate: true })
+
+// ===== RINCIAN NOMINAL =====
+// Untuk MANUAL_BANK, transfer harus include unique_code agar teridentifikasi
+const depositReceived = computed(() => {
+  const p = payment.value
+  if (!p) return 0
+  if (p.payment_type === 'DEPOSIT' && p.payment_method?.id === 'MANUAL_BANK') {
+    return p.amount + (p.unique_code ?? 0)
+  }
+  return p.amount
+})
 
 // ===== FETCH REKENING (MANUAL_BANK) =====
 const {

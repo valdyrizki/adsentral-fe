@@ -106,6 +106,7 @@
                       <TransactionStatusBadge :status="transaction?.status" />                
                       <UButton icon="uiw:message" size="xs" color="primary" variant="outline" @click="openChatHandler(transaction)">Chat Penjual</UButton>
                       <UButton v-if="transaction.status === 'DONE' || transaction.status === 'COMPLETE'" icon="mdi:cart-outline" color="primary" variant="soft" size="xs" @click="addToCart">Beli Lagi</UButton>
+                      <UButton v-if="transaction.status === 'UNPAID' && transaction.payment_id" :to="`/payment/${transaction.payment_id}`" icon="mdi:credit-card-outline" color="warning" variant="solid" size="xs">Lakukan Pembayaran</UButton>
                       <UButton v-if="transaction.status === 'UNPAID'" icon="material-symbols:cancel" color="error" variant="soft" size="xs" @click="addToCart">Batalkan</UButton>
                       <UButton v-if="transaction.status === 'DELIVERED' || transaction.status === 'DONE' " icon="material-symbols:help-outline-rounded" color="error" variant="solid" size="xs" @click="addToCart">Tangguhkan</UButton>
 

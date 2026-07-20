@@ -33,7 +33,7 @@
                 <USkeleton class="w-50 h-5 bg-gray-300" />
               </div>
               <div v-else>
-                Saldo: Rp{{ balanceStore.balance.toLocaleString() }}
+                Saldo: Rp{{ balanceStore.depositBalance.toLocaleString() }}
               </div>
             </div>
           </div>

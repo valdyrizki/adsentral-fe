@@ -12,6 +12,7 @@ import type { DepositSubmitResponse } from '~/types/balance/DepositSubmitRespons
 import type { BalanceLogResponse } from '~/types/balance/BalanceLogResponse'
 import type { WithdrawalRequest } from '~/types/balance/WithdrawalRequest'
 import type { WithdrawalResponse } from '~/types/balance/WithdrawalResponse'
+import type { BalanceTransferRequest } from '~/types/balance/BalanceTransferRequest'
 
 export const useBalanceApi = () => {
   const balanceStore = useBalanceStore()
@@ -24,6 +25,22 @@ export const useBalanceApi = () => {
       throw createError({
         statusCode: 400,
         statusMessage: res.message || 'Gagal memuat produk',
+      })
+    }
+
+    return res.data
+  }
+
+  const fetchBalanceTransfer = async (request: BalanceTransferRequest): Promise<BalanceResponse> => {
+    const res = await api<WebResponse<BalanceResponse>>('/balance/transfer', {
+      method: 'POST',
+      body: request,
+    })
+
+    if (res.status !== 'success' || !res.data) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: res.message || 'Gagal transfer saldo',
       })
     }
 
@@ -151,6 +168,7 @@ export const useBalanceApi = () => {
 
   return {
     fetchBalance,
+    fetchBalanceTransfer,
     fetchDepositBalance,
     fetchDepositHistory,
     fetchDepositCancel,

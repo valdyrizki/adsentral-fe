@@ -124,6 +124,16 @@
                 : 'Segera lakukan pembayaran sebelum transaksi dibatalkan otomatis.'
               }}
             </p>
+            <UButton
+              v-if="!isCountdownExpired && transaction?.payment_id"
+              :to="`/payment/${transaction.payment_id}`"
+              icon="mdi:credit-card-outline"
+              color="warning"
+              variant="solid"
+              size="sm"
+            >
+              Lakukan Pembayaran
+            </UButton>
           </div>
         </div>
 

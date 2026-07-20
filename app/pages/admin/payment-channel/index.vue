@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-6">
 
-    <!-- Modal: Edit Nama Channel (v-if agar tidak dirender saat SSR) -->
-    <UModal v-if="showEditModal" v-model:open="showEditModal" title="Edit Nama Channel" :ui="{ footer: 'justify-end' }">
+    <!-- Modal: Edit Channel -->
+    <UModal v-if="showEditModal" v-model:open="showEditModal" title="Edit Payment Channel" :ui="{ footer: 'justify-end' }">
       <template #body>
         <div class="space-y-4">
           <UFormField label="Code Channel">
@@ -11,11 +11,42 @@
           <UFormField label="Nama" required>
             <UInput v-model="editForm.name" placeholder="Nama channel..." class="w-full" />
           </UFormField>
+          <div class="grid grid-cols-2 gap-4">
+            <UFormField label="Fee Flat (Rp)">
+              <UInputNumber
+                v-model="editForm.fee_flat"
+                :min="0"
+                placeholder="0"
+                class="w-full"
+              />
+            </UFormField>
+            <UFormField label="Fee Persen (%)">
+              <UInputNumber
+                v-model="editForm.fee_percent"
+                :min="0"
+                :max="100"
+                :step="0.01"
+                placeholder="0"
+                class="w-full"
+              />
+            </UFormField>
+          </div>
+          <UFormField label="Status">
+            <USelect
+              v-model="editForm.status"
+              :items="[{ label: 'Aktif', value: 'ACTIVE' }, { label: 'Suspend', value: 'SUSPEND' }]"
+              value-key="value"
+              class="w-full"
+            />
+          </UFormField>
+          <div class="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-sm text-gray-600">
+            Preview fee: <span class="font-semibold text-gray-800">{{ previewFee }}</span>
+          </div>
         </div>
       </template>
       <template #footer>
         <UButton color="neutral" variant="outline" @click="closeEditModal">Batal</UButton>
-        <UButton color="primary" :loading="saving" icon="mdi:content-save-outline" @click="handleSaveName">
+        <UButton color="primary" :loading="saving" icon="mdi:content-save-outline" @click="handleSave">
           Simpan
         </UButton>
       </template>
@@ -193,7 +224,7 @@ import type { PageResponse } from '~/types/PageResponse'
 definePageMeta({ layout: 'admin', label: 'Payment Channel' })
 
 const toast = useToast()
-const { fetchAllPaymentChannels, syncTripayChannels, updatePaymentChannelName } = usePaymentChannelApi()
+const { fetchAllPaymentChannels, syncTripayChannels, updatePaymentChannel } = usePaymentChannelApi()
 const { fetchAllPaymentMethods } = usePaymentMethodApi()
 
 const statusFilterOptions = [
@@ -280,15 +311,25 @@ const statsCards = computed(() => {
   ]
 })
 
-// ===== EDIT NAME =====
+// ===== EDIT CHANNEL =====
 const showEditModal = ref(false)
 const editingChannel = ref<PaymentChannelResponse | null>(null)
 const saving = ref(false)
-const editForm = reactive({ name: '' })
+const editForm = reactive({ name: '', fee_flat: 0, fee_percent: 0, status: 'ACTIVE' })
+
+const previewFee = computed(() => {
+  const parts: string[] = []
+  if (editForm.fee_flat) parts.push(`Rp${Number(editForm.fee_flat).toLocaleString('id-ID')}`)
+  if (editForm.fee_percent) parts.push(`${editForm.fee_percent}%`)
+  return parts.length ? parts.join(' + ') : 'Gratis'
+})
 
 function openEditModal(channel: PaymentChannelResponse) {
   editingChannel.value = channel
   editForm.name = channel.name
+  editForm.fee_flat = channel.fee_flat ?? 0
+  editForm.fee_percent = channel.fee_percent ?? 0
+  editForm.status = channel.status ?? 'ACTIVE'
   showEditModal.value = true
 }
 
@@ -297,7 +338,7 @@ function closeEditModal() {
   editingChannel.value = null
 }
 
-async function handleSaveName() {
+async function handleSave() {
   if (!editingChannel.value) return
   if (!editForm.name.trim()) {
     toast.add({ title: 'Nama channel wajib diisi', color: 'warning' })
@@ -305,8 +346,13 @@ async function handleSaveName() {
   }
   saving.value = true
   try {
-    await updatePaymentChannelName(editingChannel.value.code, editForm.name.trim())
-    toast.add({ title: 'Nama channel berhasil diupdate', color: 'success', icon: 'mdi:check-circle' })
+    await updatePaymentChannel(editingChannel.value.code, {
+      name: editForm.name.trim(),
+      fee_flat: Number(editForm.fee_flat),
+      fee_percent: Number(editForm.fee_percent),
+      status: editForm.status,
+    })
+    toast.add({ title: 'Channel berhasil diupdate', color: 'success', icon: 'mdi:check-circle' })
     closeEditModal()
     await refresh()
   } catch (err: any) {

@@ -227,39 +227,13 @@
               />
             </div>
 
-            <!-- Info Rekening MANUAL_BANK -->
-            <div v-if="cartStore.payment_method === 'MANUAL_BANK'" class="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-              <div class="flex items-center gap-2 mb-2">
-                <UIcon name="mdi:bank-outline" class="size-5 text-yellow-600" />
-                <h3 class="font-semibold text-yellow-800">Informasi Rekening Pembayaran</h3>
-              </div>
-              <p class="text-xs text-yellow-700 mb-3">
-                Transfer sejumlah total pesanan ke rekening berikut, lalu tunggu admin memverifikasi pembayaran Anda.
-              </p>
-              <div v-if="rekeningLoading" class="py-2">
-                <AppLoadingSkeleton />
-              </div>
-              <div v-else-if="rekeningSettings && rekeningSettings.length > 0" class="flex flex-col gap-1.5">
-                <div
-                  v-for="setting in rekeningSettings"
-                  :key="setting.id"
-                  class="flex justify-between items-center text-sm bg-white rounded px-3 py-2 border border-yellow-100"
-                >
-                  <span class="text-gray-500">{{ setting.description || setting.key }}</span>
-                  <div class="flex items-center gap-2">
-                    <span class="font-semibold text-gray-900">{{ setting.value }}</span>
-                    <UButton
-                      :icon="copiedKey === setting.key ? 'i-heroicons-check' : 'i-heroicons-clipboard'"
-                      size="xs"
-                      :color="copiedKey === setting.key ? 'success' : 'neutral'"
-                      variant="ghost"
-                      @click="copyToClipboard(setting.key, setting.value)"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div v-else class="text-sm text-yellow-700 italic">
-                Informasi rekening belum tersedia. Silakan hubungi admin.
+            <!-- Info MANUAL_BANK -->
+            <div v-if="cartStore.payment_method === 'MANUAL_BANK'" class="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+              <div class="flex items-center gap-2">
+                <UIcon name="mdi:bank-outline" class="size-4 text-yellow-600 shrink-0" />
+                <p class="text-xs text-yellow-700">
+                  Setelah checkout, Anda akan diarahkan ke halaman pembayaran dengan informasi rekening transfer.
+                </p>
               </div>
             </div>
 
@@ -304,7 +278,6 @@ const breadcrumb = [
 
 // reactive state
 const loading = ref<boolean>(false)
-const copiedKey = ref<string | null>(null)
 
 // voucher state
 const voucherCode = ref('')
@@ -364,26 +337,17 @@ async function applyVoucher() {
   }
 }
 
-function copyToClipboard(key: string, value: string) {
-  navigator.clipboard.writeText(value).then(() => {
-    copiedKey.value = key
-    toast.add({ title: 'Disalin!', description: value, color: 'success', icon: 'i-heroicons-check-circle' })
-    setTimeout(() => { copiedKey.value = null }, 2000)
-  })
-}
 const syncing = ref<boolean>(false)
 
 // composables api
 const { fetchPaymentMethod,paymentMethodLoading } = usePaymentMethodApi()
-const { fetchPublicSystemSettingByGroup, fetchPublicSystemSetting } = useSystemSettingApi()
-const { balance } = useBalanceStore()
+const { fetchPublicSystemSetting } = useSystemSettingApi()
+const { depositBalance } = useBalanceStore()
 
 //store
 const cartStore = useCartStore()
 const balanceStore = useBalanceStore()
 
-//Ambil config
-const config = useRuntimeConfig()
 const toast = useToast()
 
 
@@ -435,8 +399,8 @@ const checkout = async () =>{
 
   //update data stock from backend
   try{
-    loading.value = true 
-    await cartStore.checkout(appliedVoucherCode.value)
+    loading.value = true
+    const result = await cartStore.checkout(appliedVoucherCode.value)
     toast.add({
       title: "Berhasil",
       description: "Checkout berhasil",
@@ -445,7 +409,11 @@ const checkout = async () =>{
     })
 
     balanceStore.loadBalance({force:true})
-    navigateTo("/transaction")
+    if (cartStore.payment_method === 'MANUAL_BANK' && result?.paymentId) {
+      navigateTo(`/payment/${result.paymentId}`)
+    } else {
+      navigateTo("/transaction")
+    }
 
   }catch(e:any){
     loading.value = false
@@ -461,22 +429,8 @@ const checkout = async () =>{
   }
 }
 
-  const {
-    data: paymentMethodData,
-    pending:paymenMethodLoading,
-    error:errorPaymentMethod,
-    refresh:refreshPaymentMethod }
-  = await useAsyncData<PaymentMethodResponse[]>(
-    `payment-method-cart-page`, async () =>  await fetchPaymentMethod(),
-    { server: false }
-  )
-
-  const {
-    data: rekeningSettings,
-    pending: rekeningLoading,
-  } = await useAsyncData<SystemSettingResponse[]>(
-    'rekening-settings-cart',
-    () => fetchPublicSystemSettingByGroup('REKENING'),
+  const { data: paymentMethodData } = await useAsyncData<PaymentMethodResponse[]>(
+    `payment-method-cart-page`, () => fetchPaymentMethod(),
     { server: false }
   )
 
@@ -496,7 +450,7 @@ const checkout = async () =>{
 
   const isSaldoInsufficient = computed(() => {
   if (cartStore.payment_method !== 'SALDO') return false
-  return balance < cartStore.subTotal
+  return depositBalance < cartStore.subTotal
 })
 
 const selectedChannel = computed(() => {
@@ -507,7 +461,9 @@ const selectedChannel = computed(() => {
 const feeAmount = computed(() => {
   const channel = selectedChannel.value
   if (!channel) return 0
-  const percentFee = ((channel.fee_percent ?? 0) / 100) * cartStore.subTotal
+  // Base = subtotal + app_fee - diskon, sesuai perhitungan Tripay
+  const base = cartStore.subTotal + appFee.value - voucherDiscount.value
+  const percentFee = ((channel.fee_percent ?? 0) / 100) * base
   return Math.round((channel.fee_flat ?? 0) + percentFee)
 })
 
@@ -518,7 +474,7 @@ const feeTooltip = computed(() => {
   if (!channel) return 'Biaya yang dikenakan oleh payment gateway untuk metode pembayaran yang dipilih.'
   const parts: string[] = []
   if (channel.fee_flat) parts.push(`Rp${channel.fee_flat.toLocaleString('id-ID')}`)
-  if (channel.fee_percent) parts.push(`${channel.fee_percent}% dari subtotal`)
+  if (channel.fee_percent) parts.push(`${channel.fee_percent}% dari (subtotal + biaya aplikasi - diskon)`)
   const breakdown = parts.length ? parts.join(' + ') : 'Gratis'
   return `Biaya admin dari ${channel.name}: ${breakdown}.`
 })

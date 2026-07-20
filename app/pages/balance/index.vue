@@ -10,10 +10,10 @@
             <!-- HEADER (Warna 1 - Gradient) -->
             <div class="bg-gradient-to-r from-primary-500 to-primary-700 p-6 text-white border rounded-2xl">
               <div class="flex justify-between">
-                <p class="text-center">                         
+                <p class="text-center">
                 <UIcon name="mdi:dollar" class="size-5" />
-                Saldo Efektif
-              </p> 
+                Saldo Belanja
+              </p>
               <UButton size="xs" label="Refresh" icon="mdi:refresh" color="neutral" variant="outline" @click="handleRefresh()" />
               </div>
               <div>
@@ -21,8 +21,9 @@
                   <USkeleton class="h-10 w-50 mb-2 rounded-lg bg-gray-300" />
                 </h2>
                 <h2 v-else="balanceLoading" class="text-3xl font-bold mt-1">
-                  {{ formatRupiah(balanceStore.balance) }}
+                  {{ formatRupiah(balanceStore.depositBalance) }}
                 </h2>
+                <p class="text-xs text-white/70 mt-1">Hasil top up, hanya bisa dipakai belanja</p>
               </div>
               <div class="flex justify-center mt-4">
                 <UButton size="xl" label="Deposit" icon="mdi:cash-plus" color="neutral" variant="outline" @click="isDepositOpen = true" />
@@ -37,8 +38,22 @@
                 </UModal>
               </div>
             </div>
-  
+
           </UCard>
+
+          <!-- Saldo Jualan & Dana Tertahan (relevan buat akun seller) -->
+          <div v-if="balanceStore.salesBalance > 0 || balanceStore.salesHeld > 0" class="grid grid-cols-2 gap-3 mt-4">
+            <div class="rounded-xl border border-gray-200 bg-white p-4">
+              <p class="text-xs text-gray-400 mb-1">Saldo Jualan</p>
+              <p class="text-lg font-bold text-gray-800">{{ formatRupiah(balanceStore.salesBalance) }}</p>
+              <p class="text-[11px] text-gray-400 mt-0.5">Bisa ditarik ke bank</p>
+            </div>
+            <div class="rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <p class="text-xs text-amber-600 mb-1">Dana Tertahan</p>
+              <p class="text-lg font-bold text-amber-700">{{ formatRupiah(balanceStore.salesHeld) }}</p>
+              <p class="text-[11px] text-amber-500 mt-0.5">Escrow / penarikan diproses</p>
+            </div>
+          </div>
 
         </section>
 
@@ -189,7 +204,10 @@
 
             <!-- Info -->
             <div class="flex-grow flex flex-col gap-0.5">
-              <p class="font-medium text-gray-800 text-sm">{{ log.description || '-' }}</p>
+              <div class="flex items-center gap-2 flex-wrap">
+                <p class="font-medium text-gray-800 text-sm">{{ log.description || '-' }}</p>
+                <UBadge color="neutral" variant="subtle" size="xs">{{ walletSourceLabel(log.source) }}</UBadge>
+              </div>
               <div class="flex gap-3 text-xs text-gray-500 flex-wrap">
                 <span class="flex items-center gap-1">
                   <UIcon name="mdi:calendar" class="size-3.5" />
@@ -197,7 +215,7 @@
                 </span>
                 <span class="flex items-center gap-1">
                   <UIcon name="mdi:history" class="size-3.5" />
-                  {{ formatRupiah(log.old_balance) }} → {{ formatRupiah(log.new_balance) }}
+                  {{ getBalanceLogBucket(log).label }}: {{ formatRupiah(getBalanceLogBucket(log).old) }} → {{ formatRupiah(getBalanceLogBucket(log).new) }}
                 </span>
               </div>
             </div>
@@ -246,6 +264,7 @@ const breadcrumb = [
 import type { DepositResponse } from '~/types/balance/DepositResponse'
 import type { BalanceLogResponse } from '~/types/balance/BalanceLogResponse'
 import type { PageResponse } from '~/types/PageResponse'
+import { walletSourceLabel, getBalanceLogBucket } from '~/utils/walletSource'
 
   // Reactive state
   const error = ref<string | null | any >(null)
@@ -279,8 +298,7 @@ import type { PageResponse } from '~/types/PageResponse'
     `balance-page`,
     async () => {
       const res = await fetchBalance()
-      balanceStore.setBalance(res.balance)
-      balanceStore.setBalanceHeld(res.balance_held)
+      balanceStore.setBalance(res)
     },
     { server: false }
   )

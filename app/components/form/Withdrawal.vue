@@ -63,7 +63,7 @@
     <!-- Saldo tersedia -->
     <div class="flex justify-between text-sm px-1">
       <span class="text-gray-400">Saldo tersedia</span>
-      <span class="font-semibold text-gray-700">{{ formatRp(balanceStore.balance) }}</span>
+      <span class="font-semibold text-gray-700">{{ formatRp(balanceStore.salesBalance) }}</span>
     </div>
 
     <UFormField label="Catatan (opsional)">
@@ -143,7 +143,7 @@ async function handleSubmit() {
     error.value = 'Jumlah penarikan maksimal Rp 5.000.000.'
     return
   }
-  if (amount.value > balanceStore.balance) {
+  if (amount.value > balanceStore.salesBalance) {
     error.value = 'Jumlah penarikan melebihi saldo tersedia.'
     return
   }
