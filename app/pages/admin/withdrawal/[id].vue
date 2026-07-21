@@ -259,6 +259,20 @@
               <span class="text-green-600">{{ formatRp(withdrawal.amount_received) }}</span>
             </div>
           </template>
+          <template v-else-if="withdrawal.status === 'PENDING'">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-400 flex items-center gap-1">
+                Biaya Admin (WD_FEE)
+                <UIcon name="mdi:information-outline" class="size-3.5 text-gray-300" />
+              </span>
+              <span class="text-red-500">- {{ formatRp(wdFee) }}</span>
+            </div>
+            <USeparator />
+            <div class="flex justify-between text-sm font-bold">
+              <span class="text-gray-700">Estimasi Diterima Seller</span>
+              <span class="text-green-600">{{ formatRp(withdrawal.amount - wdFee) }}</span>
+            </div>
+          </template>
           <div class="flex justify-between text-sm">
             <span class="text-gray-400">Tanggal Pengajuan</span>
             <span class="text-gray-600">{{ dayjs(withdrawal.created_at).format('DD MMM YYYY, HH:mm') }}</span>
@@ -332,17 +346,13 @@
             color="warning"
             icon="mdi:information-outline"
           />
-          <UFormField label="Biaya Admin (Rp)" hint="Biaya yang dipotong dari jumlah penarikan">
-            <UInputCurrency
-              v-model="adminFeeInput"
-              placeholder="0"
-              class="w-full"
-              inputmode="numeric"
-            />
-          </UFormField>
+          <div class="flex justify-between items-center text-sm px-1">
+            <span class="text-gray-400">Biaya Admin (otomatis)</span>
+            <span class="font-semibold text-gray-700">{{ formatRp(wdFee) }}</span>
+          </div>
           <div v-if="withdrawal" class="rounded-lg bg-green-50 border border-green-200 px-4 py-3 flex justify-between items-center">
             <span class="text-sm text-gray-600">Jumlah diterima seller</span>
-            <span class="text-base font-bold text-green-700">{{ formatRp(withdrawal.amount - adminFeeInput) }}</span>
+            <span class="text-base font-bold text-green-700">{{ formatRp(withdrawal.amount - wdFee) }}</span>
           </div>
           <div class="flex justify-end gap-2 pt-1">
             <UButton color="neutral" variant="outline" @click="isApproveOpen = false">Batal</UButton>
@@ -388,6 +398,7 @@
 <script lang="ts" setup>
 import dayjs from 'dayjs'
 import { useAdminWithdrawalApi } from '~/composables/api/admin-withdrawal'
+import { useSystemSettingApi } from '~/composables/api/system-setting'
 import type { AdminWithdrawalResponse } from '~/types/balance/AdminWithdrawalResponse'
 import type { SellerTransactionSumResponse } from '~/types/balance/SellerTransactionSumResponse'
 import type { DepositSumResponse } from '~/types/balance/DepositSumResponse'
@@ -398,8 +409,22 @@ definePageMeta({ layout: 'admin', label: 'Detail Penarikan Dana' })
 const route = useRoute()
 const toast = useToast()
 const { fetchWithdrawalDetail, fetchSellerTransactionSum, fetchSellerDepositSum, fetchSellerWithdrawalSum, approveWithdrawal, rejectWithdrawal } = useAdminWithdrawalApi()
+const { fetchAllSystemSetting } = useSystemSettingApi()
 
 const id = route.params.id as string
+
+// ===== WD_FEE (biaya admin penarikan, otomatis dari system setting) =====
+const { data: systemSettings } = await useAsyncData(
+  'admin-withdrawal-detail-system-settings',
+  () => fetchAllSystemSetting(),
+  { server: false }
+)
+
+const wdFee = computed(() => {
+  const setting = (systemSettings.value ?? []).find(s => s.key === 'WD_FEE')
+  const parsed = Number(setting?.value)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 2500
+})
 
 const {
   data: withdrawal,
@@ -481,13 +506,11 @@ const isAnomalous = computed(() => {
 // ===== ACTION STATE =====
 const isApproveOpen = ref(false)
 const isRejectOpen = ref(false)
-const adminFeeInput = ref<number>(0)
 const rejectReason = ref('')
 const actionLoading = ref(false)
 const actionError = ref<string | null>(null)
 
 function openApprove() {
-  adminFeeInput.value = 0
   actionError.value = null
   isApproveOpen.value = true
 }
@@ -500,22 +523,18 @@ function openReject() {
 
 async function handleApprove() {
   if (!withdrawal.value) return
-  if (adminFeeInput.value < 0) {
-    actionError.value = 'Biaya admin tidak boleh negatif.'
-    return
-  }
-  if (adminFeeInput.value >= withdrawal.value.amount) {
-    actionError.value = 'Biaya admin tidak boleh melebihi jumlah penarikan.'
+  if (wdFee.value >= withdrawal.value.amount) {
+    actionError.value = 'Biaya admin (WD_FEE) tidak boleh melebihi jumlah penarikan.'
     return
   }
 
   try {
     actionLoading.value = true
     actionError.value = null
-    await approveWithdrawal(withdrawal.value.id, adminFeeInput.value)
+    await approveWithdrawal(withdrawal.value.id, wdFee.value)
     toast.add({
       title: 'Transfer Ditandai Selesai',
-      description: `Seller menerima ${formatRp(withdrawal.value.amount - adminFeeInput.value)}.`,
+      description: `Seller menerima ${formatRp(withdrawal.value.amount - wdFee.value)}.`,
       color: 'success',
       icon: 'mdi:bank-transfer',
     })

@@ -81,7 +81,7 @@
           @update:model-value="handleFilter"
         />
         <USelect v-model="perPageValue" :items="perPageItems" class="w-24" @update:model-value="handleFilter" />
-        <UButton icon="mdi:refresh" color="neutral" variant="outline" :loading="pending" @click="refresh()">
+        <UButton icon="mdi:refresh" color="neutral" variant="outline" :loading="pending || loadingTotals" @click="refresh(); loadCategoryTotals()">
           Refresh
         </UButton>
         <UButton icon="mdi:plus" color="primary" class="sm:ml-auto" @click="openAddModal">
@@ -170,6 +170,19 @@
               <p v-if="cat.notes" class="text-xs text-gray-400 mt-0.5">Catatan: {{ cat.notes }}</p>
             </div>
 
+            <!-- Nominal Saldo -->
+            <div class="text-right shrink-0 sm:min-w-35">
+              <p class="text-[11px] text-gray-400">Nominal Saldo</p>
+              <USkeleton v-if="loadingTotals" class="h-5 w-24 rounded ml-auto" />
+              <p
+                v-else
+                class="text-sm font-bold"
+                :class="cat.db_cr === 'CREDIT' ? 'text-green-600' : 'text-red-500'"
+              >
+                Rp {{ (categoryTotals[cat.id] ?? 0).toLocaleString('id-ID') }}
+              </p>
+            </div>
+
             <!-- Status + Toggle + Edit -->
             <div class="flex items-center gap-3 shrink-0">
               <UBadge :color="cat.is_active ? 'success' : 'neutral'" variant="soft" size="sm">
@@ -216,7 +229,7 @@ import type { PageResponse } from '~/types/PageResponse'
 definePageMeta({ layout: 'admin', label: 'Kategori Keuangan' })
 
 const toast = useToast()
-const { fetchCategories, createCategory, updateCategory, toggleCategory } = useFinanceApi()
+const { fetchCategories, createCategory, updateCategory, toggleCategory, fetchCategoryTotals } = useFinanceApi()
 
 // ===== FILTER & PAGINATION =====
 const page = ref(0)
@@ -254,6 +267,23 @@ const {
 function handleFilter() {
   page.value = 0
 }
+
+// ===== NOMINAL SALDO (total jurnal per kategori) =====
+const categoryTotals = ref<Record<string, number>>({})
+const loadingTotals = ref(false)
+
+async function loadCategoryTotals() {
+  loadingTotals.value = true
+  try {
+    categoryTotals.value = await fetchCategoryTotals()
+  } catch (err: any) {
+    toast.add({ title: 'Gagal memuat nominal saldo kategori', description: err.statusMessage || err.message, color: 'error' })
+  } finally {
+    loadingTotals.value = false
+  }
+}
+
+onMounted(loadCategoryTotals)
 
 // ===== TOGGLE =====
 const toggling = ref<string | null>(null)

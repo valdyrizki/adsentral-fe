@@ -99,6 +99,26 @@ export const useFinanceApi = () => {
     return res.data
   }
 
+  // Total nominal transaksi per kategori (akumulasi seluruh jurnal non-void).
+  // Backend tidak punya endpoint sum-per-kategori, jadi dihitung di FE dengan
+  // menelusuri seluruh halaman /admin/finance/journal.
+  const fetchCategoryTotals = async (): Promise<Record<string, number>> => {
+    const totals: Record<string, number> = {}
+    const size = 200
+    const maxPages = 100 // guard, ~20.000 entri jurnal
+
+    for (let page = 0; page < maxPages; page++) {
+      const res = await fetchJournals({ page, size })
+      for (const item of res.content) {
+        if (item.is_void) continue
+        totals[item.category_id] = (totals[item.category_id] ?? 0) + item.amount
+      }
+      if (res.last || res.content.length === 0) break
+    }
+
+    return totals
+  }
+
   const voidJournal = async (id: number, reason: string): Promise<void> => {
     const res = await api<WebResponse<null>>(`/admin/finance/journal/${id}/void`, {
       method: 'PATCH',
@@ -137,6 +157,7 @@ export const useFinanceApi = () => {
     toggleCategory,
     createJournal,
     fetchJournals,
+    fetchCategoryTotals,
     voidJournal,
     fetchSummary,
     fetchBalance,

@@ -66,6 +66,22 @@
       <span class="font-semibold text-gray-700">{{ formatRp(balanceStore.salesBalance) }}</span>
     </div>
 
+    <!-- Info biaya admin -->
+    <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 space-y-1.5">
+      <div class="flex justify-between text-sm">
+        <span class="text-amber-700 flex items-center gap-1.5">
+          <UIcon name="mdi:information-outline" class="size-4" />
+          Biaya Admin
+        </span>
+        <span class="font-semibold text-amber-800">{{ formatRp(wdFee) }}</span>
+      </div>
+      <div v-if="amount > 0" class="flex justify-between text-sm border-t border-amber-200 pt-1.5">
+        <span class="text-amber-700">Perkiraan Diterima</span>
+        <span class="font-semibold text-amber-800">{{ formatRp(Math.max(amount - wdFee, 0)) }}</span>
+      </div>
+      <p class="text-[11px] text-amber-600">Biaya admin otomatis dipotong dari jumlah penarikan saat disetujui.</p>
+    </div>
+
     <UFormField label="Catatan (opsional)">
       <UTextarea
         v-model="notes"
@@ -95,6 +111,7 @@
 <script setup lang="ts">
 import { useBankAccountApi } from '~/composables/api/bank-account'
 import { useBalanceApi } from '~/composables/api/balance'
+import { useSystemSettingApi } from '~/composables/api/system-setting'
 import type { BankAccountResponse } from '~/types/bank-account/BankAccountResponse'
 
 const emit = defineEmits<{
@@ -106,6 +123,7 @@ const toast = useToast()
 const balanceStore = useBalanceStore()
 const { fetchBankAccount } = useBankAccountApi()
 const { fetchWithdrawal, fetchWithdrawalHistory } = useBalanceApi()
+const { fetchPublicSystemSetting } = useSystemSettingApi()
 
 const loading = ref(false)
 const error = ref<string | null>(null)
@@ -117,6 +135,19 @@ const { data: bankAccount } = await useAsyncData<BankAccountResponse | null>(
   () => fetchBankAccount(),
   { server: false }
 )
+
+// ===== WD_FEE (biaya admin penarikan) =====
+const { data: publicSystemSettings } = await useAsyncData(
+  'withdrawal-public-system-settings',
+  async () => (await fetchPublicSystemSetting()) ?? [],
+  { server: false }
+)
+
+const wdFee = computed(() => {
+  const setting = (publicSystemSettings.value ?? []).find(s => s.key === 'WD_FEE')
+  const parsed = Number(setting?.value)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 2500
+})
 
 const { data: withdrawalCheck } = await useAsyncData(
   'withdrawal-pending-check',
