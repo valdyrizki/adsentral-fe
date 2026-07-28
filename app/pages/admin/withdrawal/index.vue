@@ -226,7 +226,7 @@
 
           <div v-if="selectedItem" class="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-1">
             <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Transfer ke</p>
-            <p class="text-sm font-semibold text-gray-800">{{ selectedItem.seller_name }}</p>
+            <p class="text-sm font-semibold text-gray-800">{{ selectedItem.user.full_name ?? selectedItem.user.username }}</p>
             <p class="text-sm text-gray-700">{{ selectedItem.bank_name }} — {{ selectedItem.account_number }}</p>
             <p class="text-xs text-gray-500">a.n. {{ selectedItem.account_holder_name }}</p>
             <p class="text-lg font-bold text-gray-800 mt-2">{{ formatRp(selectedItem.amount) }}</p>
@@ -263,10 +263,41 @@
             icon="material-symbols:error-outline"
           />
 
-          <div v-if="selectedItem" class="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-1">
-            <p class="text-sm font-semibold text-gray-800">{{ selectedItem.seller_name }}</p>
-            <p class="text-xs text-gray-500">{{ selectedItem.bank_name }} — {{ selectedItem.account_number }}</p>
-            <p class="text-base font-bold text-gray-800 mt-2">{{ formatRp(selectedItem.amount) }}</p>
+          <div v-if="selectedItem" class="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-2">
+            <div>
+              <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Seller</p>
+              <p class="text-sm font-semibold text-gray-800">{{ selectedItem.user.full_name ?? selectedItem.user.username }}</p>
+              <p class="text-xs text-gray-500">{{ selectedItem.user.email }}</p>
+            </div>
+            <USeparator />
+            <div>
+              <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Rekening Tujuan</p>
+              <p class="text-sm text-gray-700">{{ selectedItem.bank_name }} — {{ selectedItem.account_number }}</p>
+              <p class="text-xs text-gray-500">a.n. {{ selectedItem.account_holder_name }}</p>
+            </div>
+            <USeparator />
+            <div class="space-y-1">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-400">Jumlah Penarikan</span>
+                <span class="font-semibold text-gray-800">{{ formatRp(selectedItem.amount) }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-400">Biaya Admin (WD_FEE)</span>
+                <span class="text-gray-600">{{ formatRp(wdFee) }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-400">Estimasi Diterima</span>
+                <span class="text-gray-600">{{ formatRp(selectedItem.amount - wdFee) }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-400">Tanggal Pengajuan</span>
+                <span class="text-gray-600">{{ dayjs(selectedItem.created_at).format('DD MMM YYYY, HH:mm') }}</span>
+              </div>
+            </div>
+            <template v-if="selectedItem.notes">
+              <USeparator />
+              <p class="text-xs text-gray-400 italic">Catatan seller: {{ selectedItem.notes }}</p>
+            </template>
           </div>
 
           <UFormField label="Alasan Penolakan" required>

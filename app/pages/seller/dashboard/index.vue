@@ -22,6 +22,16 @@
         </ClientOnly>
       </div>
       <div class="flex gap-2 flex-wrap">
+        <UButton
+          v-if="merchantStore.merchant"
+          :to="`/merchant/${merchantStore.merchant.id}`"
+          size="sm"
+          icon="material-symbols:storefront-outline"
+          variant="outline"
+          color="primary"
+        >
+          Lihat Toko
+        </UButton>
         <UButton to="/seller/product/create" size="sm" icon="i-heroicons-plus" color="primary">
           Tambah Produk
         </UButton>

@@ -2,12 +2,24 @@
   <div class="space-y-6">
 
     <!-- Header -->
-    <div class="mx-auto w-full border rounded-2xl border-blue-200 bg-gray-100">
+    <div class="mx-auto w-full border rounded-2xl border-blue-200 bg-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-1">
       <AppHeaderSection
         title="Profil Toko"
         description="Kelola informasi dan tampilan toko Anda"
         icon="material-symbols:store-outline"
+        class="flex-1"
       />
+      <UButton
+        v-if="merchantStore.merchant"
+        :to="`/merchant/${merchantStore.merchant.id}`"
+        size="sm"
+        icon="material-symbols:storefront-outline"
+        variant="outline"
+        color="primary"
+        class="mr-3 flex-shrink-0"
+      >
+        Lihat Toko
+      </UButton>
     </div>
 
     <ClientOnly>

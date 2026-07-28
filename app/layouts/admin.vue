@@ -26,6 +26,7 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     children: [
       { label: 'Semua Produk', to: '/admin/product' },
       { label: 'Review Produk', to: '/admin/product/review' },
+      { label: 'Kategori Produk', to: '/admin/category' },
     ]
   },
   {

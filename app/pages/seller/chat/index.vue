@@ -41,6 +41,17 @@
                   <LoadingSkeleton class="w-full mt-4"/>
               </div>
 
+              <!-- Jika belum ada / tidak ditemukan percakapan -->
+              <div v-else-if="!conversations?.content?.length" class="flex flex-col items-center justify-center py-16 px-4 text-center text-gray-400">
+                <UIcon name="mdi:chat-remove-outline" class="text-5xl mb-3 text-gray-300" />
+                <p class="text-sm font-medium text-gray-500">
+                  {{ conversationKeyword ? 'Percakapan tidak ditemukan' : 'Belum ada percakapan' }}
+                </p>
+                <p class="text-xs mt-1 text-gray-400">
+                  {{ conversationKeyword ? 'Coba kata kunci lain' : 'Percakapan dengan pembeli akan muncul di sini' }}
+                </p>
+              </div>
+
               <div @click="loadChatByConversation(conversation)" v-else v-for="conversation in conversations?.content ?? []" :key="conversation?.id" class="border-b border-gray-200 p-4 hover:bg-gray-50 cursor-pointer">
                 <div class="flex justify-between">
                   <div class="flex items-center gap-4">

@@ -11,7 +11,7 @@ import { useAuthStore } from './auth'
 export const useCartStore = defineStore('cart', {
   state: () => ({
     items: [] as CartItem[],
-    payment_method: 'QRIS' as string,
+    payment_method: 'SALDO' as string,
     payment_channel_code: null as string | null,
     loading: false as boolean
   }),

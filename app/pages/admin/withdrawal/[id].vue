@@ -374,6 +374,44 @@
             color="error"
             icon="material-symbols:error-outline"
           />
+
+          <div v-if="withdrawal" class="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-2">
+            <div>
+              <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Seller</p>
+              <p class="text-sm font-semibold text-gray-800">{{ withdrawal.user.full_name ?? withdrawal.user.username }}</p>
+              <p class="text-xs text-gray-500">{{ withdrawal.user.email }}</p>
+            </div>
+            <USeparator />
+            <div>
+              <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Rekening Tujuan</p>
+              <p class="text-sm text-gray-700">{{ withdrawal.bank_name }} — {{ withdrawal.account_number }}</p>
+              <p class="text-xs text-gray-500">a.n. {{ withdrawal.account_holder_name }}</p>
+            </div>
+            <USeparator />
+            <div class="space-y-1">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-400">Jumlah Penarikan</span>
+                <span class="font-semibold text-gray-800">{{ formatRp(withdrawal.amount) }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-400">Biaya Admin (WD_FEE)</span>
+                <span class="text-gray-600">{{ formatRp(wdFee) }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-400">Estimasi Diterima</span>
+                <span class="text-gray-600">{{ formatRp(withdrawal.amount - wdFee) }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-400">Tanggal Pengajuan</span>
+                <span class="text-gray-600">{{ dayjs(withdrawal.created_at).format('DD MMM YYYY, HH:mm') }}</span>
+              </div>
+            </div>
+            <template v-if="withdrawal.notes">
+              <USeparator />
+              <p class="text-xs text-gray-400 italic">Catatan seller: {{ withdrawal.notes }}</p>
+            </template>
+          </div>
+
           <UFormField label="Alasan Penolakan" required>
             <UTextarea
               v-model="rejectReason"

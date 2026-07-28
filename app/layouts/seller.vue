@@ -10,6 +10,14 @@ watch(() => route.path, (path) => {
   if (path === '/seller/notification') notificationStore.resetUnreadCount()
 })
 
+const systemSettingStore = useSystemSettingStore()
+
+const waLink = computed(() => {
+  const number = systemSettingStore.systemSettings.find(s => s.key === 'WA_NUMBER')?.value
+  if (!number) return null
+  return `https://wa.me/${number.replace(/\D/g, '')}`
+})
+
 
 const items = computed<NavigationMenuItem[][]>(() => [[
   {
@@ -73,21 +81,26 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     to: '/seller/notification',
     ...(notificationStore.unreadCount > 0 && { badge: String(notificationStore.unreadCount) }),
   },
-  {
-    label: 'Settings',
-    icon: 'i-lucide-settings',
-    children: [
-      { label: 'General', to: '/seller/settings/general' },
-      { label: 'Members', to: '/seller/settings/members' },
-      { label: 'Notifications', to: '/seller/settings/notifications' }
-    ]
-  }
+  // {
+  //   label: 'Settings',
+  //   icon: 'i-lucide-settings',
+  //   children: [
+  //     { label: 'General', to: '/seller/settings/general' },
+  //     { label: 'Members', to: '/seller/settings/members' },
+  //     { label: 'Notifications', to: '/seller/settings/notifications' }
+  //   ]
+  // }
 ], [
   {
-    label: 'Help & Support',
-    icon: 'i-lucide-life-buoy',
-    to: 'https://ui.nuxt.com/docs',
-    target: '_blank'
+    label: 'Bantuan Admin',
+    icon: 'i-simple-icons-whatsapp',
+    to: waLink.value ?? undefined,
+    target: '_blank',
+    class: 'text-[#25D366] hover:text-[#1EBE5B]',
+    ui: {
+      linkLeadingIcon: 'text-[#25D366]',
+      linkLabel: 'text-[#25D366]',
+    },
   }
 ]])
 
@@ -151,7 +164,7 @@ const items = computed<NavigationMenuItem[][]>(() => [[
           variant="ghost"
           class="w-full"
           :block="collapsed"
-          to="/profile"
+          to="/seller/profile"
         />
       </template>
     </UDashboardSidebar>

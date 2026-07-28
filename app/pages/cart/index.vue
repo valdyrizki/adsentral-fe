@@ -243,6 +243,7 @@
               :label="
                 loading ? 'Please Wait'
                 : hasUnavailableItems ? 'Ada Produk Tidak Tersedia'
+                : !cartStore.payment_method ? 'Pilih Metode Pembayaran'
                 : isSaldoInsufficient ? 'Saldo Tidak Cukup'
                 : 'Checkout'
               "
@@ -250,7 +251,7 @@
               variant="solid"
               @click="checkout"
               :loading="loading"
-              :disabled="isSaldoInsufficient || loading || hasUnavailableItems || syncing"
+              :disabled="!cartStore.payment_method || isSaldoInsufficient || loading || hasUnavailableItems || syncing"
             />
             </ClientOnly>
           </div>
@@ -377,6 +378,16 @@ const checkStock = async (cartItem:CartItem) =>{
   const { confirm, close } = useConfirm()
 
 const checkout = async () =>{
+  if(!cartStore.payment_method){
+    toast.add({
+      title: "Metode pembayaran belum dipilih",
+      description: "Silakan pilih metode pembayaran terlebih dahulu.",
+      color: "error",
+      icon: "material-symbols:error-outline"
+    })
+    return
+  }
+
   if(isSaldoInsufficient.value){
     toast.add({
       title: "Saldo tidak cukup",
