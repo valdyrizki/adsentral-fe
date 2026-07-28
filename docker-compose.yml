@@ -14,7 +14,7 @@ services:
       NITRO_HOST: 0.0.0.0
       NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-/backend}
       NUXT_PUBLIC_BACKEND_URL: ${NUXT_PUBLIC_BACKEND_URL}
-      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL}
+      NUXT_BACKEND_INTERNAL_URL: ${NUXT_BACKEND_INTERNAL_URL:-http://adsentral-be-dev:8080}
     networks:
       - proxy
 

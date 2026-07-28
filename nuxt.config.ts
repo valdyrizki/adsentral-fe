@@ -40,9 +40,12 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    // Private: hanya tersedia di server-side
-    // Ini dibaca saat RUNTIME, bukan build time
-    backendInternalUrl: process.env.BACKEND_INTERNAL_URL || 'http://adsentral-be-dev:8080',
+    // Private: hanya tersedia di server-side.
+    // Nuxt otomatis override value ini saat container start lewat env var
+    // NUXT_BACKEND_INTERNAL_URL (wajib prefix NUXT_ agar dibaca ulang saat
+    // runtime, bukan cuma saat build). Jangan baca process.env manual di sini
+    // karena nuxt.config.ts dieksekusi saat build time, bukan runtime.
+    backendInternalUrl: 'http://adsentral-be-dev:8080',
 
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '/backend',
