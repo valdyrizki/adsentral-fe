@@ -129,6 +129,8 @@ const nav = {
     { name: 'Tentang Kami', to: '/tentang-kami' },
     { name: 'Karir', to: '/karir' },
     { name: 'Panduan Berjualan', to: '/panduan-berjualan' },
+    { name: 'Kebijakan Privasi', to: '/kebijakan-privasi' },
+    { name: 'Syarat & Ketentuan', to: '/syarat-ketentuan' },
   ],
 }
 </script>

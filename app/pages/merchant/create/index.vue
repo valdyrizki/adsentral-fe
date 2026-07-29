@@ -52,7 +52,7 @@
           </div>
 
           <div class="mt-6 flex justify-end">
-            <UButton type="submit" size="lg" @click.prevent="onSubmit">Save</UButton>
+            <UButton type="submit" size="lg" :loading="loading" :disabled="loading" @click.prevent="onSubmit">Save</UButton>
           </div>
         </form>
       </div>
@@ -103,11 +103,10 @@ import { useMerchantStore } from '#imports';
   const merchantStore = useMerchantStore()
 
   const errors = ref<string[]>([])
-  
+  const loading = ref<boolean>(false)
+
   const onSubmit = async() => {
   errors.value = []
-  // Reactive state
-  const loading = ref<boolean>(true)
 
   // ✅ Validasi logo
   if (merchantRequest.logo) {
