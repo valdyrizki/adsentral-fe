@@ -10,14 +10,14 @@
           Terakhir diperbarui: {{ lastUpdated }}
         </p>
 
-        <UAlert
+        <!-- <UAlert
           color="warning"
           variant="soft"
           icon="i-heroicons-exclamation-triangle"
           title="Draft — belum ditinjau tim legal"
           description="Isi halaman ini masih rancangan awal dan belum final secara hukum. Mohon direview oleh pihak yang berwenang (legal/product owner) sebelum dipublikasikan ke pengguna."
           class="mb-8"
-        />
+        /> -->
 
         <div class="space-y-8">
           <section v-for="(section, index) in sections" :key="index" class="bg-white rounded-2xl p-6 shadow-sm border border-blue-100">
