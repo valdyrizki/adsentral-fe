@@ -16,7 +16,7 @@
           <UChip :text="notificationStore.unreadCount || 0" color="error" size="3xl">
             <UButton to="/notification" color="neutral" variant="subtle" icon="mdi:bell-outline" />
           </UChip>
-          <UChip :text="5" color="error" size="3xl">
+          <UChip :text="chatStore.unreadCount || 0" color="error" size="3xl">
             <UButton to="/chat" color="neutral" variant="subtle" icon="mdi:email-outline" />
           </UChip>
         </template>
@@ -28,12 +28,15 @@
     
 
   <!-- Auth conditional -->
-    <div v-if="authStore.isInitializing">
+    <!-- Profile dropdown disembunyikan di mobile, fungsinya sudah ada di drawer (AppSidebar) -->
+    <div v-if="authStore.isInitializing" class="hidden md:block">
       <USkeleton class="h-10 w-32" />
     </div>
-    <UDropdownMenu v-else-if="authStore.accessToken" :items="itemsProfile">
-      <UButton label="Profile" icon="i-lucide-user" size="xl" color="neutral" variant="outline"/>
-    </UDropdownMenu>
+    <div v-else-if="authStore.accessToken" class="hidden md:block">
+      <UDropdownMenu :items="itemsProfile">
+        <UButton label="Profile" icon="i-lucide-user" size="xl" color="neutral" variant="outline"/>
+      </UDropdownMenu>
+    </div>
     <div v-else>
       <div class="flex gap-2">
         <UButton @click="isRegisterOpen = true">Daftar</UButton>
@@ -66,13 +69,13 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
+const chatStore = useChatStore()
 
 const route = useRoute()
-watch(() => route.path, (path) => {
-  if (path === '/notification') {
-    notificationStore.resetUnreadCount()
-  } else if (authStore.accessToken) {
+watch(() => route.path, () => {
+  if (authStore.accessToken) {
     notificationStore.loadUnreadCount()
+    chatStore.loadUnreadCount()
   }
 })
 const toast = useToast()

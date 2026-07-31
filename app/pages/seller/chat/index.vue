@@ -1,6 +1,16 @@
 <template>
   <div class="bg-white">
     <div class="mx-auto max-w-2xl px-2 pb-4 lg:max-w-7xl lg:px-4">
+      <!-- Warning larangan tukar kontak -->
+      <UAlert
+        v-if="chatWarning"
+        icon="i-heroicons-exclamation-triangle"
+        color="warning"
+        variant="soft"
+        :description="chatWarning"
+        class="mt-4"
+      />
+
       <div class="mt-6 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
         
         <!-- Sidebar percakapan -->
@@ -57,13 +67,14 @@
                   <div class="flex items-center gap-4">
                     <div class="flex-shrink-0">
                       <UAvatar
-                        src="https://i.pravatar.cc/100?img=3"
+                        :src="getImageUrl(conversation?.buyer_avatar_url)"
+                        :alt="conversation?.buyer_username"
                         :chip="{
                           inset: true,
                           color: 'success'
                         }"
                         size="xs"
-                      />                  
+                      />
                     </div>
                     <div class="min-w-0 flex-1">
                       <p class="truncate text-sm font-medium text-gray-900">{{ conversation?.buyer_username }}</p>
@@ -103,13 +114,14 @@
                       <div class="flex items-center gap-4">
                       <div class="flex-shrink-0">
                         <UAvatar
-                          src="https://i.pravatar.cc/100?img=3"
+                          :src="getImageUrl(selectedConversation?.buyer_avatar_url)"
+                          :alt="selectedConversation?.buyer_username"
                           :chip="{
                             inset: true,
                             color: 'success'
                           }"
                           size="2xl"
-                        />                  
+                        />
                       </div>
                       <div class="min-w-0 flex-1">
                         <p class="truncate text-lg font-medium text-white">{{ selectedConversation?.buyer_username }}</p>
@@ -358,6 +370,12 @@ definePageMeta({
    })
   
   const toast = useToast()
+  const chatStore = useChatStore()
+  const systemSettingStore = useSystemSettingStore()
+
+  const chatWarning = computed(() =>
+    systemSettingStore.systemSettings.find(s => s.key === 'CHAT_WARNING')?.value
+  )
 
   //composables api
   const {fetchSellerConversation,fetchSendChat,fetchChatByConversation} = useChatApi()
@@ -416,6 +434,7 @@ definePageMeta({
       loadingChat.value = false
 
       await refreshConversations() // Refresh conversations untuk update last_message dan last_message_at
+      chatStore.loadUnreadCount({ force: true }) // Sync badge chat di sidebar
       await nextTick()
       scrollToBottom()
     } catch (err) {

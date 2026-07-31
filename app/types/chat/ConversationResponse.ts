@@ -4,6 +4,7 @@ export interface ConversationResponse {
   id: number
   buyer_id: number
   buyer_username: string
+  buyer_avatar_url?: string | null
   merchant: MerchantResponse
   created_at: string
   last_message?: string | null

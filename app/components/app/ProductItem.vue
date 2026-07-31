@@ -6,6 +6,7 @@
           :src="getImageUrl(product?.banner_url)"
           :alt="product.name"
           class="size-full object-cover hover:scale-115 block transition"
+          :class="isOutOfStock ? 'opacity-50 grayscale' : ''"
         />
         <div
           v-if="product.delivery_type === 'AUTO' || product.delivery_type === 'STOCKING'"
@@ -17,6 +18,14 @@
               Instant
             </span>
           </UTooltip>
+        </div>
+        <div
+          v-if="isOutOfStock"
+          class="absolute inset-0 flex items-center justify-center bg-black/30"
+        >
+          <span class="bg-white/90 text-gray-800 text-xs font-semibold px-3 py-1 rounded-full">
+            Stok Habis
+          </span>
         </div>
       </div>
     </NuxtLink>
@@ -79,6 +88,10 @@ import type { ProductResponse } from '~/types/product/ProductResponse';
 const props = defineProps<{
   product: ProductResponse
 }>()
+
+const isOutOfStock = computed(() =>
+  props.product.delivery_type !== 'AUTO' && props.product.stock === 0
+)
 
 const limitWords = (text: string, maxWords: number) => {
   if (!text) return ''

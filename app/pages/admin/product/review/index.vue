@@ -12,14 +12,6 @@
           clearable
           @keyup.enter="handleSearchEnter"
         />
-        <USelect
-          v-model="filterStatus"
-          :items="statusOptions"
-          placeholder="Semua Status"
-          value-key="value"
-          class="w-full sm:w-52"
-          @update:model-value="handleFilter"
-        />
         <USelect v-model="perPageValue" :items="perPageItems" class="w-full sm:w-24" />
         <UButton icon="mdi:refresh" color="neutral" variant="outline" :loading="pending" @click="refresh()">
           Refresh
@@ -205,16 +197,7 @@ const perPageValue = ref(10)
 const perPageItems = [5, 10, 25, 50]
 const search = ref('')
 const keyword = ref('')
-const filterStatus = ref('REVIEW')
-
-const statusOptions = [
-  { label: 'Menunggu Review', value: 'REVIEW' },
-  { label: 'Aktif', value: 'ACTIVE' },
-  { label: 'Ditangguhkan Seller', value: 'INACTIVE' },
-  { label: 'Ditolak / Nonaktif', value: 'NONACTIVE' },
-  { label: 'Suspend', value: 'SUSPEND' },
-  { label: 'Semua Status', value: '' },
-]
+const filterStatus = 'REVIEW'
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
@@ -226,8 +209,8 @@ const {
   refresh,
 } = useAsyncData<PageResponse<ProductResponse>>(
   'admin-review-products',
-  () => getAllProductsAdmin(page.value, perPageValue.value, keyword.value, 'terbaru', filterStatus.value),
-  { watch: [page, perPageValue, keyword, filterStatus], server: false }
+  () => getAllProductsAdmin(page.value, perPageValue.value, keyword.value, 'terbaru', filterStatus),
+  { watch: [page, perPageValue, keyword], server: false }
 )
 
 watch(search, (val) => {
@@ -242,11 +225,6 @@ watch(search, (val) => {
 function handleSearchEnter() {
   if (searchTimeout) clearTimeout(searchTimeout)
   keyword.value = search.value
-  page.value = 0
-  refresh()
-}
-
-function handleFilter() {
   page.value = 0
   refresh()
 }

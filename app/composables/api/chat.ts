@@ -75,5 +75,25 @@ export const useChatApi = () => {
     }
   }
 
-  return { fetchBuyerConversation, fetchSellerConversation, fetchChatByConversation, fetchSendChat }
+  const fetchBuyerUnreadCount = async (): Promise<number> => {
+    try {
+      const res = await api<WebResponse<number>>('/chat/buyer/unread-count')
+      if (res.status !== 'success' || res.data === undefined) return 0
+      return res.data
+    } catch {
+      return 0
+    }
+  }
+
+  const fetchSellerUnreadCount = async (): Promise<number> => {
+    try {
+      const res = await api<WebResponse<number>>('/chat/seller/unread-count')
+      if (res.status !== 'success' || res.data === undefined) return 0
+      return res.data
+    } catch {
+      return 0
+    }
+  }
+
+  return { fetchBuyerConversation, fetchSellerConversation, fetchChatByConversation, fetchSendChat, fetchBuyerUnreadCount, fetchSellerUnreadCount }
 }

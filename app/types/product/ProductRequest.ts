@@ -8,7 +8,7 @@ export class ProductRequest {
   description: string = ''
   base_price: number = 0
   sell_price: number = 0
-  stock: number | null = null
+  stock: number | null = 0
   delivery_days: number | null = null
   guarantee_days: number | null = null
   distributor?: string = ''

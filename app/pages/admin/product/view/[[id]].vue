@@ -108,6 +108,21 @@
             <div>
               <label class="block text-sm font-medium text-gray-900 mb-1">Harga Jual</label>
               <UInput :model-value="'Rp ' + product.sell_price.toLocaleString('id-ID')" disabled class="block w-full" />
+
+              <div v-if="product.sell_price > 0" class="mt-3 rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs space-y-1">
+                <div class="flex justify-between text-gray-600">
+                  <span>Harga Jual</span>
+                  <span class="font-medium text-gray-800">Rp {{ product.sell_price.toLocaleString('id-ID') }}</span>
+                </div>
+                <div class="flex justify-between text-gray-600">
+                  <span>Biaya Admin ({{ trxFeePercent }}%)</span>
+                  <span class="font-medium text-red-500">- Rp {{ adminFeeAmount.toLocaleString('id-ID') }}</span>
+                </div>
+                <div class="flex justify-between border-t border-blue-200 pt-1 font-semibold text-blue-700">
+                  <span>Estimasi Pendapatan Diterima</span>
+                  <span>Rp {{ estimatedIncome.toLocaleString('id-ID') }}</span>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -210,7 +225,9 @@
 
 <script lang="ts" setup>
 import { useProductsApi } from '~/composables/api/product'
+import { useSystemSettingApi } from '~/composables/api/system-setting'
 import type { ProductResponse } from '~/types/product/ProductResponse'
+import type { SystemSettingResponse } from '~/types/system-setting/SystemSettingResponse'
 
 definePageMeta({
   layout: 'admin',
@@ -282,4 +299,22 @@ const {
   },
   { server: false }
 )
+
+// ===== TRX_FEE (biaya admin transaksi, untuk estimasi pendapatan diterima) =====
+const { fetchPublicSystemSetting } = useSystemSettingApi()
+
+const { data: publicSystemSettings } = await useAsyncData<SystemSettingResponse[]>(
+  'public-system-settings-admin-product-view',
+  async () => (await fetchPublicSystemSetting()) ?? [],
+  { server: false }
+)
+
+const trxFeePercent = computed(() => {
+  const setting = (publicSystemSettings.value ?? []).find(s => s.key === 'TRX_FEE')
+  const parsed = Number(setting?.value)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 5
+})
+
+const adminFeeAmount = computed(() => Math.round((product.value?.sell_price || 0) * trxFeePercent.value / 100))
+const estimatedIncome = computed(() => Math.max(0, (product.value?.sell_price || 0) - adminFeeAmount.value))
 </script>

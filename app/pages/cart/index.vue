@@ -508,12 +508,22 @@ onMounted(async () => {
   if (cartStore.items.length === 0) return
   syncing.value = true
   try {
-    const { removed, priceChanged } = await cartStore.syncCart()
+    const { removed, priceChanged, adjusted } = await cartStore.syncCart()
 
     if (removed.length > 0) {
       toast.add({
         title: 'Produk dihapus dari keranjang',
         description: `${removed.join(', ')} tidak lagi tersedia.`,
+        color: 'warning',
+        icon: 'i-heroicons-exclamation-triangle',
+        duration: 6000,
+      })
+    }
+
+    if (adjusted.length > 0) {
+      toast.add({
+        title: 'Jumlah pesanan disesuaikan',
+        description: `Stok terbatas: ${adjusted.join(', ')}.`,
         color: 'warning',
         icon: 'i-heroicons-exclamation-triangle',
         duration: 6000,

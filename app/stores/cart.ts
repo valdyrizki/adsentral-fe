@@ -91,14 +91,14 @@ export const useCartStore = defineStore('cart', {
     async validation() {
 
       const useUserStore = useAuthStore()
-      
+
       if(!useUserStore.isAuthenticated){
         throw new Error("Silahkan login untuk melanjutkan checkout")
       }
 
-      this.items.map(async (item) => {
+      for (const item of this.items) {
         this.checkValidQty(item)
-      })
+      }
     },
     
 
@@ -110,11 +110,12 @@ export const useCartStore = defineStore('cart', {
       this.items = []
     },
 
-    async syncCart(): Promise<{ removed: string[], priceChanged: string[] }> {
-      if (this.items.length === 0) return { removed: [], priceChanged: [] }
+    async syncCart(): Promise<{ removed: string[], priceChanged: string[], adjusted: string[] }> {
+      if (this.items.length === 0) return { removed: [], priceChanged: [], adjusted: [] }
 
       const removed: string[] = []
       const priceChanged: string[] = []
+      const adjusted: string[] = []
 
       try {
         const { getProductsByIds } = useProductsApi()
@@ -147,6 +148,20 @@ export const useCartStore = defineStore('cart', {
             if (updated.status !== 'ACTIVE') {
               removed.push(updated.name)
               this.removeFromCart(item.product_id)
+              return
+            }
+
+            // Hapus dari cart jika stok habis (kecuali tipe AUTO yang stoknya tak terbatas)
+            if (updated.delivery_type !== 'AUTO' && updated.stock === 0) {
+              removed.push(`${updated.name} (stok habis)`)
+              this.removeFromCart(item.product_id)
+              return
+            }
+
+            // Sesuaikan qty jika stok tersisa lebih sedikit dari qty di keranjang
+            if (updated.delivery_type !== 'AUTO' && updated.stock != null && item.quantity > updated.stock) {
+              item.quantity = updated.stock
+              adjusted.push(`${updated.name} (tersisa ${updated.stock})`)
             }
           })
         }
@@ -154,7 +169,7 @@ export const useCartStore = defineStore('cart', {
         console.error('Sync cart failed:', err)
       }
 
-      return { removed, priceChanged }
+      return { removed, priceChanged, adjusted }
     },
 
     async updateDataFromBackend() {
@@ -191,6 +206,20 @@ export const useCartStore = defineStore('cart', {
               if (updatedProduct.status !== 'ACTIVE') {
                 removedNames.push(updatedProduct.name)
                 this.removeFromCart(item.product_id)
+                return
+              }
+
+              // Hapus dari cart jika stok habis (kecuali tipe AUTO yang stoknya tak terbatas)
+              if (updatedProduct.delivery_type !== 'AUTO' && updatedProduct.stock === 0) {
+                removedNames.push(`${updatedProduct.name} (stok habis)`)
+                this.removeFromCart(item.product_id)
+                return
+              }
+
+              // Sesuaikan qty jika stok tersisa lebih sedikit dari qty di keranjang
+              if (updatedProduct.delivery_type !== 'AUTO' && updatedProduct.stock != null && item.quantity > updatedProduct.stock) {
+                item.quantity = updatedProduct.stock
+                removedNames.push(`${updatedProduct.name} (jumlah disesuaikan menjadi ${updatedProduct.stock} karena stok terbatas, silakan checkout ulang)`)
               }
             } else {
               // Produk sudah tidak ada di backend
@@ -201,7 +230,7 @@ export const useCartStore = defineStore('cart', {
 
           if (removedNames.length > 0) {
             throw new Error(
-              `Beberapa produk tidak tersedia dan telah dihapus dari keranjang: ${removedNames.join(', ')}`
+              `Keranjang telah diperbarui karena ada perubahan stok/ketersediaan produk, silakan periksa kembali: ${removedNames.join(', ')}`
             )
           }
         }else{

@@ -33,7 +33,12 @@
       "Bash(npx vue-tsc *)",
       "Bash(curl -s -m 10 'http://103.139.192.48:8080/api/categories')",
       "Bash(curl -s -m 10 'http://103.179.57.147:8080/api/categories')",
-      "Bash(curl -v -m 10 'http://103.139.192.48:8080/api/categories')"
+      "Bash(curl -v -m 10 'http://103.139.192.48:8080/api/categories')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001/)",
+      "Bash(npx nuxi *)",
+      "Bash(curl -s http://localhost:3001/)",
+      "Bash(netstat -ano)"
     ]
   }
 }

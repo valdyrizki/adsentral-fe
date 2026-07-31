@@ -158,7 +158,7 @@
             color="error"
             variant="outline"
             icon="i-heroicons-x-circle"
-            @click="handleReject(payment.id)"
+            @click="handleReject(payment)"
           >
             Tolak Pembayaran
           </UButton>
@@ -280,7 +280,6 @@
 import dayjs from 'dayjs'
 import PaymentStatusBadge from '~/components/app/PaymentStatusBadge.vue'
 import AppTransactionStatusBadge from '~/components/app/TransactionStatusBadge.vue'
-import { useBalanceApi } from '~/composables/api/balance'
 import { usePaymentApi } from '~/composables/api/payment'
 import type { PageResponse } from '~/types/PageResponse'
 import type { PaymentResponse } from '~/types/payment/PaymentResponse'
@@ -290,8 +289,7 @@ definePageMeta({ layout: 'admin', label: 'Detail Pembayaran' })
 
 const route = useRoute()
 const toast = useToast()
-const { fetchPaymentById, fetchTxByPaymentId, fetchConfirmPayment, fetchRejectPayment } = usePaymentApi()
-  const { fetchDepositCancel } = useBalanceApi()
+const { fetchPaymentById, fetchTxByPaymentId, fetchConfirmPayment, fetchCancelPayment } = usePaymentApi()
 
 const paymentId = computed(() => route.params.id as string)
 
@@ -386,24 +384,27 @@ function applyTxSearch() {
 
   // ===== REJECT =====
 
-  async function handleReject(paymentId: string) {
-    
+  async function handleReject(payment: PaymentResponse) {
+    const isDeposit = payment.payment_type === 'DEPOSIT'
+
     const yes = await confirm({
-      title: 'Batalkan Deposit?',
-      message: 'Deposit yang dibatalkan tidak bisa dikembalikan. Yakin?',
-      confirmText: 'Ya, Batalkan',
+      title: isDeposit ? 'Batalkan Deposit?' : 'Tolak Pembayaran?',
+      message: isDeposit
+        ? 'Deposit yang dibatalkan tidak bisa dikembalikan. Yakin?'
+        : 'Pembayaran yang ditolak tidak bisa dikembalikan. Yakin?',
+      confirmText: isDeposit ? 'Ya, Batalkan' : 'Ya, Tolak',
       cancelText: 'Tidak',
       confirmColor: 'error',
     })
-    
+
     if (!yes) return
 
     try {
-      await fetchDepositCancel(paymentId)
-      toast.add({ title: 'Pembayaran dibatalkan', color: 'success', icon: 'i-heroicons-check-circle' })
+      await fetchCancelPayment(payment.id)
+      toast.add({ title: isDeposit ? 'Pembayaran dibatalkan' : 'Pembayaran ditolak', color: 'success', icon: 'i-heroicons-check-circle' })
       await refreshPayment()
     } catch (err: any) {
-      toast.add({ title: 'Gagal membatalkan', description: err.statusMessage || err.message, color: 'error' })
+      toast.add({ title: isDeposit ? 'Gagal membatalkan' : 'Gagal menolak', description: err.statusMessage || err.message, color: 'error' })
     } finally {
       close()
     }

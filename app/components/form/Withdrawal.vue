@@ -37,6 +37,7 @@
       title="Rekening bank belum diatur"
       description="Tambahkan rekening bank terlebih dahulu sebelum melakukan penarikan dana."
       color="warning"
+      variant="subtle"
       icon="mdi:bank-alert-outline"
     >
       <template #actions>

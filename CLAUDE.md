@@ -34,7 +34,7 @@ Nuxt 4 (Vue 3) e-commerce frontend with multi-role support: **buyer**, **seller*
 - `composables/api/` — One composable per domain (auth, product, transaction, merchant, etc.). All HTTP calls live here.
 - `types/` — TypeScript interfaces. `WebResponse<T>` and `PageResponse<T>` are the standard API response wrappers.
 - `components/app/` — Layout components (Header, Footer, Sidebar). `components/form/` — Modal/form components. `components/u/` — Utility components.
-- `helper/imageHelper.ts` — Image validation (max 5 MB, JPG/PNG, 1024×768 max resolution).
+- `helper/imageHelper.ts` — Image validation (max 5 MB, JPG/PNG, 1500×1500 max resolution).
 - `utils/slug.ts` — URL slug generation.
 
 ### API Layer (`composables/api/useApi.ts`)

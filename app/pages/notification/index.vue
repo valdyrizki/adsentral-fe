@@ -170,8 +170,12 @@ const hasUnread = computed(() => data.value?.content?.some(n => !n.read_at) ?? f
 async function handleRead(notif: NotificationResponse) {
   readingId.value = notif.id
   try {
+    const wasUnread = !notif.read_at
     await markAsRead(notif.id)
     notif.read_at = new Date().toISOString()
+    if (wasUnread) {
+      notificationStore.unreadCount = Math.max(0, notificationStore.unreadCount - 1)
+    }
   } catch {
     toast.add({ title: 'Gagal menandai notifikasi', color: 'error' })
   } finally {
@@ -185,6 +189,7 @@ async function handleReadAll() {
     await markAllAsRead()
     const now = new Date().toISOString()
     data.value?.content?.forEach(n => { n.read_at = now })
+    notificationStore.unreadCount = 0
     toast.add({ title: 'Semua notifikasi ditandai dibaca', color: 'success' })
   } catch {
     toast.add({ title: 'Gagal menandai semua notifikasi', color: 'error' })

@@ -4,6 +4,16 @@
       <UBreadcrumb :items="breadcrumb" class="mb-3" />
       <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Chat</h1>
 
+      <!-- Warning larangan tukar kontak -->
+      <UAlert
+        v-if="chatWarning"
+        icon="i-heroicons-exclamation-triangle"
+        color="warning"
+        variant="soft"
+        :description="chatWarning"
+        class="mt-4"
+      />
+
       <!-- Notifikasi untuk Seller -->
       <div v-if="authStore.isSeller" class="mt-6">
         <UAlert
@@ -387,7 +397,13 @@ import { useDebounceFn } from '@vueuse/core'
   const toast = useToast()
 
   //store
-  const authStore  = useAuthStore() 
+  const authStore  = useAuthStore()
+  const chatStore = useChatStore()
+  const systemSettingStore = useSystemSettingStore()
+
+  const chatWarning = computed(() =>
+    systemSettingStore.systemSettings.find(s => s.key === 'CHAT_WARNING')?.value
+  )
 
   //composables api
   const {fetchBuyerConversation,fetchSendChat,fetchChatByConversation} = useChatApi()
@@ -448,6 +464,7 @@ const { data: conversations, pending: pendingConversation, refresh: refreshConve
       loadingChat.value = false
 
       await refreshConversations() // Refresh conversations untuk update last_message dan last_message_at
+      chatStore.loadUnreadCount({ force: true }) // Sync badge chat di topbar
       await nextTick()
       scrollToBottom()
     } catch (err) {
@@ -471,6 +488,18 @@ const { data: conversations, pending: pendingConversation, refresh: refreshConve
       chatRequest.value.message = 'Pesan wajib diisi'
       return
     }
+
+    if (!authStore.accessToken) {
+      toast.add({
+        title: 'Perlu Login',
+        description: 'Silakan login terlebih dahulu untuk mengirim pesan',
+        color: 'error',
+        icon: 'material-symbols:error-outline'
+      })
+      navigateTo({ path: '/login', query: { redirect: '/chat' } })
+      return
+    }
+
     try {
       isSubmitting.value = true
 
@@ -499,9 +528,24 @@ const { data: conversations, pending: pendingConversation, refresh: refreshConve
       
     } catch (err : any) {
       console.error(err)
+
+      const authErrorCodes = ['TOKEN_MISSING', 'TOKEN_EXPIRED', 'TOKEN_INVALID_SIGNATURE', 'TOKEN_MALFORMED']
+      const errorCode = err.statusMessage || err.message
+
+      if (authErrorCodes.includes(errorCode)) {
+        toast.add({
+          title: 'Sesi Login Berakhir',
+          description: 'Silakan login kembali untuk mengirim pesan',
+          color: 'error',
+          duration: 3000
+        })
+        navigateTo({ path: '/login', query: { redirect: '/chat' } })
+        return
+      }
+
       toast.add({
         title: 'Gagal mengirim pesan',
-        description: err.statusMessage || err.message || 'Terjadi kesalahan saat mengirim pesan',
+        description: errorCode || 'Terjadi kesalahan saat mengirim pesan',
         color: 'error',
         duration: 3000
       })

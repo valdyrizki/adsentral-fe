@@ -4,8 +4,8 @@ const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 
 const route = useRoute()
-watch(() => route.path, (path) => {
-  if (path === '/admin/notification') notificationStore.resetUnreadCount()
+watch(() => route.path, () => {
+  if (authStore.accessToken) notificationStore.loadUnreadCount()
 })
 
 
@@ -97,10 +97,16 @@ const items = computed<NavigationMenuItem[][]>(() => [[
   }
 ], [
   {
-    label: 'Help & Support',
-    icon: 'i-lucide-life-buoy',
-    to: 'https://ui.nuxt.com/docs',
-    target: '_blank'
+    label: 'Menu Utama',
+    icon: 'i-lucide-home',
+    to: '/',
+  },
+  {
+    label: 'Logout',
+    icon: 'i-lucide-log-out',
+    onSelect() {
+      authStore.logout()
+    },
   }
 ]])
 
@@ -178,7 +184,7 @@ const items = computed<NavigationMenuItem[][]>(() => [[
         </template>
         <template #actions>
           <UButton icon="i-lucide-bell" variant="ghost" color="neutral" to="/admin/notification" />
-          <UButton icon="i-lucide-log-out" variant="ghost" color="error" />
+          <UButton icon="i-lucide-log-out" variant="ghost" color="error" @click="authStore.logout()" />
         </template>
       </UDashboardNavbar>
 

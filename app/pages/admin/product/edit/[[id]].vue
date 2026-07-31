@@ -155,7 +155,21 @@
                 />             
                 <p class="mt-2 text-sm text-gray-500">Masukan Harga Jual</p>
                 <p v-if="errors.sell_price" class="mt-1 text-sm text-red-500">{{ errors.sell_price }}</p>
-                
+
+                <div v-if="productRequest.sell_price > 0" class="mt-3 rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs space-y-1">
+                  <div class="flex justify-between text-gray-600">
+                    <span>Harga Jual</span>
+                    <span class="font-medium text-gray-800">Rp {{ productRequest.sell_price.toLocaleString('id-ID') }}</span>
+                  </div>
+                  <div class="flex justify-between text-gray-600">
+                    <span>Biaya Admin ({{ trxFeePercent }}%)</span>
+                    <span class="font-medium text-red-500">- Rp {{ adminFeeAmount.toLocaleString('id-ID') }}</span>
+                  </div>
+                  <div class="flex justify-between border-t border-blue-200 pt-1 font-semibold text-blue-700">
+                    <span>Estimasi Pendapatan Diterima</span>
+                    <span>Rp {{ estimatedIncome.toLocaleString('id-ID') }}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -178,13 +192,14 @@
             <div>
               <label for="stock" class="block text-sm font-medium text-gray-900">Stock <span class="text-red-500">*</span></label>
               <div class="mt-1">
-                <UInputNumber 
-                v-model="productRequest.stock" 
-                orientation="vertical" 
-                name="stock" id="stock" 
-                class="block w-full text-base text-gray-900" 
-                placeholder="Stock"/>
-                <p class="mt-2 text-sm text-gray-500">Kosong = unlimited, 0 = habis, > 0 = jumlah.</p>
+                <UInputNumber
+                v-model="productRequest.stock"
+                orientation="vertical"
+                name="stock" id="stock"
+                class="block w-full text-base text-gray-900"
+                placeholder="Stock"
+                :min="0"/>
+                <p class="mt-2 text-sm text-gray-500">Wajib diisi. 0 = stok habis, lebih dari 0 = jumlah stok tersedia.</p>
                 <p v-if="errors.stock" class="mt-1 text-sm text-red-500">{{ errors.stock }}</p>
               </div>
             </div>
@@ -240,9 +255,11 @@
 
 <script lang="ts" setup>
 import { useProductsApi } from '~/composables/api/product';
+import { useSystemSettingApi } from '~/composables/api/system-setting';
 import { validateImage } from '~/helper/imageHelper';
 import { ProductRequest } from '~/types/product/ProductRequest';
 import type { ProductResponse } from '~/types/product/ProductResponse';
+import type { SystemSettingResponse } from '~/types/system-setting/SystemSettingResponse';
 
 /* Validasi images
     1. tidak boleh menggunakan gambar yang sama
@@ -299,6 +316,24 @@ definePageMeta({
 
 const productRequest = reactive<ProductRequest>(new ProductRequest())
 const selectedCategory = ref(0)
+
+// ===== TRX_FEE (biaya admin transaksi, untuk estimasi pendapatan diterima) =====
+const { fetchPublicSystemSetting } = useSystemSettingApi()
+
+const { data: publicSystemSettings } = await useAsyncData<SystemSettingResponse[]>(
+  'public-system-settings-admin-product-edit',
+  async () => (await fetchPublicSystemSetting()) ?? [],
+  { server: false }
+)
+
+const trxFeePercent = computed(() => {
+  const setting = (publicSystemSettings.value ?? []).find(s => s.key === 'TRX_FEE')
+  const parsed = Number(setting?.value)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 5
+})
+
+const adminFeeAmount = computed(() => Math.round((productRequest.sell_price || 0) * trxFeePercent.value / 100))
+const estimatedIncome = computed(() => Math.max(0, (productRequest.sell_price || 0) - adminFeeAmount.value))
 
 // Ambil API function
 const { updateProduct,fetchMyProductById } = useProductsApi()
@@ -359,8 +394,10 @@ const validateProduct = (): boolean => {
     errors.category_id = 'Kategori wajib dipilih'
   }
 
-  // category_id
-  if (productRequest.stock != null && productRequest.stock < 0) {
+  // stock
+  if (productRequest.stock === null || productRequest.stock === undefined) {
+    errors.stock = 'Stok wajib diisi'
+  } else if (productRequest.stock < 0) {
     errors.stock = 'Stok tidak boleh negatif'
   }
 

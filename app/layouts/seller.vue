@@ -4,10 +4,14 @@ const merchantStore = useMerchantStore()
 const authStore = useAuthStore()
 const config = useRuntimeConfig()
 const notificationStore = useNotificationStore()
+const chatStore = useChatStore()
 
 const route = useRoute()
-watch(() => route.path, (path) => {
-  if (path === '/seller/notification') notificationStore.resetUnreadCount()
+watch(() => route.path, () => {
+  if (authStore.accessToken) {
+    notificationStore.loadUnreadCount()
+    chatStore.loadUnreadCount()
+  }
 })
 
 const systemSettingStore = useSystemSettingStore()
@@ -28,7 +32,8 @@ const items = computed<NavigationMenuItem[][]>(() => [[
   {
     label: 'Chat',
     icon: 'mdi:chat',
-    to: '/seller/chat'
+    to: '/seller/chat',
+    ...(chatStore.unreadCount > 0 && { badge: String(chatStore.unreadCount) }),
   },
   {
     label: 'Products',
@@ -101,6 +106,18 @@ const items = computed<NavigationMenuItem[][]>(() => [[
       linkLeadingIcon: 'text-[#25D366]',
       linkLabel: 'text-[#25D366]',
     },
+  },
+  {
+    label: 'Menu Utama',
+    icon: 'i-lucide-home',
+    to: '/',
+  },
+  {
+    label: 'Logout',
+    icon: 'i-lucide-log-out',
+    onSelect() {
+      authStore.logout()
+    },
   }
 ]])
 
@@ -125,22 +142,6 @@ const items = computed<NavigationMenuItem[][]>(() => [[
       </template>
 
       <template #default="{ collapsed }">
-        <UButton
-          :label="collapsed ? undefined : 'Search...'"
-          icon="i-lucide-search"
-          color="neutral"
-          variant="outline"
-          block
-          :square="collapsed"
-        >
-          <template v-if="!collapsed" #trailing>
-            <div class="flex items-center gap-0.5 ms-auto">
-              <UKbd value="⌘" variant="subtle" />
-              <UKbd value="K" variant="subtle" />
-            </div>
-          </template>
-        </UButton>
-
         <UNavigationMenu
           :collapsed="collapsed"
           :items="items[0]"
@@ -178,7 +179,7 @@ const items = computed<NavigationMenuItem[][]>(() => [[
         </template>
         <template #actions>
           <UButton icon="i-lucide-bell" variant="ghost" color="neutral" to="/seller/notification" />
-          <UButton icon="i-lucide-log-out" variant="ghost" color="error" />
+          <UButton icon="i-lucide-log-out" variant="ghost" color="error" @click="authStore.logout()" />
         </template>
       </UDashboardNavbar>
 

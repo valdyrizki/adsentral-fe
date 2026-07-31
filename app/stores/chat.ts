@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import { useNotificationApi } from '~/composables/api/notification'
+import { useChatApi } from '~/composables/api/chat'
 
-export const useNotificationStore = defineStore('notification', {
+export const useChatStore = defineStore('chat', {
   state: () => ({
     unreadCount: 0,
     loading: false,
@@ -24,18 +24,13 @@ export const useNotificationStore = defineStore('notification', {
       const authStore = useAuthStore()
       if (!authStore.accessToken) return
 
-      const { fetchUnreadCount, fetchSellerUnreadCount, fetchAdminUnreadCount } = useNotificationApi()
+      const { fetchBuyerUnreadCount, fetchSellerUnreadCount } = useChatApi()
 
       this.loading = true
       try {
-        const role = authStore.role
-        if (role === 'ADMIN') {
-          this.unreadCount = await fetchAdminUnreadCount()
-        } else if (role === 'SELLER') {
-          this.unreadCount = await fetchSellerUnreadCount()
-        } else {
-          this.unreadCount = await fetchUnreadCount()
-        }
+        this.unreadCount = authStore.isSeller
+          ? await fetchSellerUnreadCount()
+          : await fetchBuyerUnreadCount()
         this.lastFetched = Date.now()
       } finally {
         this.loading = false

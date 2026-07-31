@@ -29,7 +29,14 @@
           <div class="m-2 md:m-4">
             <div class="flex md:flex-row flex-col gap-4">
               <div class="basis-1/3">
-                <img :src="getImageUrl(product?.banner_url)" alt="Product Banner"  class="mx-auto"  width="300" height="300"   />
+                <img
+                  :src="getImageUrl(product?.banner_url)"
+                  alt="Product Banner"
+                  class="mx-auto cursor-zoom-in hover:opacity-90 transition-opacity"
+                  width="300"
+                  height="300"
+                  @click="openImagePreview(product?.banner_url)"
+                />
               </div>
               <div class="ml-4 basis-auto">
                 <p class="text-2xl "> {{ product?.name }} </p>
@@ -47,10 +54,6 @@
                     </div>
                     <p class="text-sm text-gray-500">( {{ reviews?.total_elements ?? 0 }} ulasan )</p>
                   </div>
-                  <div class="flex flex-row gap-2 items-center">
-                    <UBadge>5 Terjual</UBadge>
-                  </div>
-                  
                 </div>
                 <USeparator class="py-4" />
                 <div>
@@ -111,7 +114,7 @@
                   class="mt-2"
                 />
 
-                <template v-if="product.status === 'ACTIVE'">
+                <template v-if="product.status === 'ACTIVE' && !isOutOfStock">
                   <div class="flex flex-row gap-2 justify-center md:justify-normal mt-4">
                     <UInputNumber v-model="qty" :max="product?.stock ?? undefined" size="xl"/>
                   </div>
@@ -120,6 +123,20 @@
                     <UButton icon="uiw:message" size="md" color="primary" variant="outline" @click="isChatOpen = true">Chat Penjual</UButton>
                     <UButton icon="mdi:cart-outline" color="primary" variant="soft" size="xl" class="basis-auto" @click="addToCart">Masukan Keranjang</UButton>
                     <UButton trailing-icon="i-lucide-arrow-right" color="primary" variant="solid" size="xl" class="basis-auto" @click="buyNow">Beli Sekarang</UButton>
+                  </div>
+                </template>
+
+                <template v-else-if="product.status === 'ACTIVE' && isOutOfStock">
+                  <UAlert
+                    icon="mdi:package-variant-remove"
+                    color="error"
+                    variant="subtle"
+                    title="Stok Habis"
+                    description="Produk ini sedang tidak tersedia. Chat penjual untuk info ketersediaan berikutnya."
+                    class="mt-4"
+                  />
+                  <div class="flex flex-row gap-2 pt-2">
+                    <UButton icon="uiw:message" size="md" color="primary" variant="outline" @click="isChatOpen = true">Chat Penjual</UButton>
                   </div>
                 </template>
 
@@ -153,7 +170,11 @@
                     class="mt-4"
                   >
                     <div class="m-1">
-                      <img :src="getImageUrl(item)" class="mx-auto rounded-2xl"    />
+                      <img
+                        :src="getImageUrl(item)"
+                        class="mx-auto rounded-2xl cursor-zoom-in hover:opacity-90 transition-opacity"
+                        @click="openImagePreview(item)"
+                      />
                     </div>
                   </UCarousel>
                 </div>
@@ -393,6 +414,54 @@
     :merchant-id="product?.merchant_id"
   />
 
+  <!-- Preview Gambar Produk -->
+  <UModal v-model:open="isPreviewOpen" :ui="{ content: 'max-w-3xl' }">
+    <template #content>
+      <div class="relative bg-black flex items-center justify-center min-h-[50vh]">
+        <UButton
+          icon="i-lucide-x"
+          color="neutral"
+          variant="ghost"
+          class="absolute top-2 right-2 z-10 text-white hover:bg-white/10"
+          @click="isPreviewOpen = false"
+        />
+
+        <UButton
+          v-if="previewImages.length > 1"
+          icon="i-lucide-chevron-left"
+          color="neutral"
+          variant="ghost"
+          size="xl"
+          class="absolute left-2 z-10 text-white hover:bg-white/10"
+          @click="prevPreviewImage"
+        />
+
+        <img
+          :src="getImageUrl(previewImages[previewIndex])"
+          alt="Preview gambar produk"
+          class="max-h-[80vh] w-auto mx-auto object-contain"
+        />
+
+        <UButton
+          v-if="previewImages.length > 1"
+          icon="i-lucide-chevron-right"
+          color="neutral"
+          variant="ghost"
+          size="xl"
+          class="absolute right-2 z-10 text-white hover:bg-white/10"
+          @click="nextPreviewImage"
+        />
+
+        <div
+          v-if="previewImages.length > 1"
+          class="absolute bottom-2 left-1/2 -translate-x-1/2 text-white text-xs bg-black/50 px-2 py-1 rounded-full"
+        >
+          {{ previewIndex + 1 }} / {{ previewImages.length }}
+        </div>
+      </div>
+    </template>
+  </UModal>
+
 </template>
 
 <script setup lang="ts" >
@@ -413,6 +482,29 @@ dayjs.locale('id')
 //reactive state
 const isChatOpen = ref(false)
 const qty = ref<number>(1)
+
+//preview gambar produk
+const isPreviewOpen = ref(false)
+const previewIndex = ref(0)
+const previewImages = computed(() => [
+  product.value?.banner_url,
+  ...(product.value?.product_image_url ?? []),
+].filter((url): url is string => !!url))
+
+function openImagePreview(url?: string | null) {
+  if (!url) return
+  const index = previewImages.value.indexOf(url)
+  previewIndex.value = index === -1 ? 0 : index
+  isPreviewOpen.value = true
+}
+
+function nextPreviewImage() {
+  previewIndex.value = (previewIndex.value + 1) % previewImages.value.length
+}
+
+function prevPreviewImage() {
+  previewIndex.value = (previewIndex.value - 1 + previewImages.value.length) % previewImages.value.length
+}
 
 //ambil config
 const config = useRuntimeConfig()
@@ -489,6 +581,10 @@ const {
     server: false,
     watch: [reviewPage, reviewRating, reviewKeywordDebounced],
   }
+)
+
+const isOutOfStock = computed(() =>
+  product.value?.delivery_type !== 'AUTO' && product.value?.stock === 0
 )
 
 const productStatusInfo = computed(() => {

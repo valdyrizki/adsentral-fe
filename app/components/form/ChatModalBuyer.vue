@@ -119,6 +119,9 @@ import type { TransactionResponse } from '~/types/TransactionResponse';
   // Ambil API function
   const { fetchSendChat } = useChatApi()
 
+  const authStore = useAuthStore()
+  const route = useRoute()
+
   // Emit untuk update modelValue
   const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
@@ -170,6 +173,18 @@ import type { TransactionResponse } from '~/types/TransactionResponse';
       return
     }
 
+    if (!authStore.accessToken) {
+      emit('update:modelValue', false)
+      toast.add({
+        title: 'Perlu Login',
+        description: 'Silakan login terlebih dahulu untuk mengirim pesan ke penjual',
+        color: 'error',
+        icon: 'material-symbols:error-outline'
+      })
+      navigateTo({ path: '/login', query: { redirect: route.fullPath } })
+      return
+    }
+
     try {
       isSubmitting.value = true
       const formData = new FormData()
@@ -190,11 +205,24 @@ import type { TransactionResponse } from '~/types/TransactionResponse';
       navigateTo("/chat")
       emit('update:modelValue', false)
     } catch (err:any) {
-      console.log(err.statusMessage)
-      console.log(err.message)
+      const authErrorCodes = ['TOKEN_MISSING', 'TOKEN_EXPIRED', 'TOKEN_INVALID_SIGNATURE', 'TOKEN_MALFORMED']
+      const errorCode = err.statusMessage || err.message
+
+      if (authErrorCodes.includes(errorCode)) {
+        emit('update:modelValue', false)
+        toast.add({
+          title: 'Sesi Login Berakhir',
+          description: 'Silakan login kembali untuk mengirim pesan',
+          color: 'error',
+          icon: 'material-symbols:error-outline'
+        })
+        navigateTo({ path: '/login', query: { redirect: route.fullPath } })
+        return
+      }
+
       toast.add({
         title: 'Gagal Mengirim Pesan',
-        description: err.statusMessage || err.message || 'Terjadi kesalahan saat mengirim pesan',
+        description: errorCode || 'Terjadi kesalahan saat mengirim pesan',
         color: "error",
         icon: "i-heroicons-x-circle-solid"
       })

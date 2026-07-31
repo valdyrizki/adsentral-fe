@@ -60,6 +60,16 @@ export const usePaymentApi = () => {
     }
   }
 
+  // Admin: cancel payment (berlaku untuk DEPOSIT maupun TRANSACTION)
+  const fetchCancelPayment = async (paymentId: string): Promise<void> => {
+    const res = await api<WebResponse<void>>(`/payment/cancel/${paymentId}`, {
+      method: 'POST',
+    })
+    if (res.status !== 'success') {
+      throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal membatalkan payment' })
+    }
+  }
+
   // Admin: get single payment by id
   const fetchPaymentById = async (paymentId: string): Promise<PaymentResponse> => {
     const res = await api<WebResponse<PaymentResponse>>(`/payment/${paymentId}`)
@@ -109,5 +119,5 @@ export const usePaymentApi = () => {
     }
   }
 
-  return { fetchMyPayments, fetchAllPayments, fetchConfirmPayment, fetchRejectPayment, fetchPaymentById, fetchTxByPaymentId, cancelPayment, uploadPaymentProof }
+  return { fetchMyPayments, fetchAllPayments, fetchConfirmPayment, fetchRejectPayment, fetchCancelPayment, fetchPaymentById, fetchTxByPaymentId, cancelPayment, uploadPaymentProof }
 }
