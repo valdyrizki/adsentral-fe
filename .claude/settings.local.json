@@ -38,7 +38,9 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001/)",
       "Bash(npx nuxi *)",
       "Bash(curl -s http://localhost:3001/)",
-      "Bash(netstat -ano)"
+      "Bash(netstat -ano)",
+      "Bash(curl -s --max-time 5 \"http://localhost:8080/api/products?page=0&size=30\")",
+      "Bash(node -e ' *)"
     ]
   }
 }

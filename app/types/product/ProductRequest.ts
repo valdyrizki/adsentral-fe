@@ -9,6 +9,8 @@ export class ProductRequest {
   base_price: number = 0
   sell_price: number = 0
   stock: number | null = 0
+  min_qty: number | null = 1
+  max_qty: number | null = null
   delivery_days: number | null = null
   guarantee_days: number | null = null
   distributor?: string = ''

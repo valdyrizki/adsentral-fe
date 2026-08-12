@@ -23,13 +23,26 @@ export const useCartStore = defineStore('cart', {
 
   actions: {
     addToCart(quantity:number = 1, product:ProductResponse | undefined) {
-      
+
       if(quantity < 1 || !product || product?.id === 0){
         throw new Error("Item tidak boleh kosong!")
       }
 
+      const minQty = product.min_qty ?? 1
+      const maxQty = product.max_qty ?? Infinity
+
       const existing = this.items.find((i) => i.product_id === product?.id)
       if (existing) {
+
+        //check min qty
+        if((quantity+existing.quantity) < minQty){
+          throw new Error("Minimal pembelian "+minQty+" pcs")
+        }
+
+        //check max qty
+        if((quantity+existing.quantity) > maxQty){
+          throw new Error("Maksimal pembelian "+maxQty+" pcs")
+        }
 
         //check stock
         if(product.stock < (quantity+existing.quantity)){
@@ -40,7 +53,17 @@ export const useCartStore = defineStore('cart', {
         existing.lastUpdate = Date.now()
       } else {
 
-        //check stock         
+        //check min qty
+        if(quantity < minQty){
+          throw new Error("Minimal pembelian "+minQty+" pcs")
+        }
+
+        //check max qty
+        if(quantity > maxQty){
+          throw new Error("Maksimal pembelian "+maxQty+" pcs")
+        }
+
+        //check stock
         if(product.stock < (quantity)){
           throw new Error('Stock tidak cukup, tersisa : '+product.stock)
         }
@@ -68,13 +91,21 @@ export const useCartStore = defineStore('cart', {
         throw new Error("Silahkan masukan ulang produk ke keranjang")
       }
       
+      const minQty = cartItem.product?.min_qty ?? 1
+      const maxQty = cartItem.product?.max_qty ?? Infinity
+
       if(cartItem.quantity === undefined){
-        cartItem.quantity = 1
+        cartItem.quantity = minQty
       }
 
-      if(cartItem.quantity <= 0){
-        cartItem.quantity = 1          
-        throw new Error("Minimal membeli 1pcs")
+      if(cartItem.quantity < minQty){
+        cartItem.quantity = minQty
+        throw new Error("Minimal pembelian "+minQty+" pcs")
+      }
+
+      if(cartItem.quantity > maxQty){
+        cartItem.quantity = maxQty
+        throw new Error("Maksimal pembelian "+maxQty+" pcs")
       }
 
       if(cartItem.quantity > (cartItem.product?.stock ?? cartItem.quantity)){
@@ -163,6 +194,19 @@ export const useCartStore = defineStore('cart', {
               item.quantity = updated.stock
               adjusted.push(`${updated.name} (tersisa ${updated.stock})`)
             }
+
+            // Sesuaikan qty jika di bawah minimal pembelian terbaru
+            const minQty = updated.min_qty ?? 1
+            if (item.quantity < minQty) {
+              item.quantity = minQty
+              adjusted.push(`${updated.name} (min. pembelian ${minQty})`)
+            }
+
+            // Sesuaikan qty jika melebihi maksimal pembelian terbaru
+            if (updated.max_qty != null && item.quantity > updated.max_qty) {
+              item.quantity = updated.max_qty
+              adjusted.push(`${updated.name} (maks. pembelian ${updated.max_qty})`)
+            }
           })
         }
       } catch (err: any) {
@@ -220,6 +264,19 @@ export const useCartStore = defineStore('cart', {
               if (updatedProduct.delivery_type !== 'AUTO' && updatedProduct.stock != null && item.quantity > updatedProduct.stock) {
                 item.quantity = updatedProduct.stock
                 removedNames.push(`${updatedProduct.name} (jumlah disesuaikan menjadi ${updatedProduct.stock} karena stok terbatas, silakan checkout ulang)`)
+              }
+
+              // Sesuaikan qty jika di bawah minimal pembelian terbaru
+              const minQty = updatedProduct.min_qty ?? 1
+              if (item.quantity < minQty) {
+                item.quantity = minQty
+                removedNames.push(`${updatedProduct.name} (jumlah disesuaikan menjadi ${minQty} karena minimal pembelian berubah, silakan checkout ulang)`)
+              }
+
+              // Sesuaikan qty jika melebihi maksimal pembelian terbaru
+              if (updatedProduct.max_qty != null && item.quantity > updatedProduct.max_qty) {
+                item.quantity = updatedProduct.max_qty
+                removedNames.push(`${updatedProduct.name} (jumlah disesuaikan menjadi ${updatedProduct.max_qty} karena maksimal pembelian berubah, silakan checkout ulang)`)
               }
             } else {
               // Produk sudah tidak ada di backend

@@ -279,6 +279,38 @@
             </div>
 
             <div>
+              <label for="min_qty" class="block text-sm font-medium text-gray-900">Minimal Pembelian <span class="text-red-500">*</span></label>
+              <div class="mt-1">
+                <UInputNumber
+                  v-model="productRequest.min_qty"
+                  orientation="vertical"
+                  name="min_qty" id="min_qty"
+                  class="block w-full text-base text-gray-900"
+                  placeholder="Minimal Pembelian"
+                  :min="1"
+                />
+                <p class="mt-2 text-sm text-gray-500">Jumlah minimal qty yang harus dibeli pembeli dalam satu kali transaksi.</p>
+                <p v-if="errors.min_qty" class="mt-1 text-sm text-red-500">{{ errors.min_qty }}</p>
+              </div>
+            </div>
+
+            <div>
+              <label for="max_qty" class="block text-sm font-medium text-gray-900">Maksimal Pembelian</label>
+              <div class="mt-1">
+                <UInputNumber
+                  v-model="productRequest.max_qty"
+                  orientation="vertical"
+                  name="max_qty" id="max_qty"
+                  class="block w-full text-base text-gray-900"
+                  placeholder="Maksimal Pembelian"
+                  :min="1"
+                />
+                <p class="mt-2 text-sm text-gray-500">Jumlah maksimal qty yang boleh dibeli pembeli dalam satu kali transaksi. Kosongkan jika tidak ada batas.</p>
+                <p v-if="errors.max_qty" class="mt-1 text-sm text-red-500">{{ errors.max_qty }}</p>
+              </div>
+            </div>
+
+            <div>
               <label for="category_id" class="block text-sm font-medium text-gray-900">Category<span class="text-red-500">*</span></label>
               <div class="mt-1">
                 <USelect
@@ -522,6 +554,24 @@ const validateProduct = (): boolean => {
     errors.stock = 'Stok wajib diisi'
   } else if (productRequest.stock < 0) {
     errors.stock = 'Stok tidak boleh negatif'
+  }
+
+  // min_qty
+  if (productRequest.min_qty === null || productRequest.min_qty === undefined) {
+    errors.min_qty = 'Minimal pembelian wajib diisi'
+  } else if (productRequest.min_qty < 1) {
+    errors.min_qty = 'Minimal pembelian minimal 1'
+  } else if (productRequest.delivery_type === 'MANUAL' && productRequest.stock != null && productRequest.min_qty > productRequest.stock) {
+    errors.min_qty = 'Minimal pembelian tidak boleh melebihi stok'
+  }
+
+  // max_qty (opsional)
+  if (productRequest.max_qty !== null && productRequest.max_qty !== undefined) {
+    if (productRequest.max_qty < 1) {
+      errors.max_qty = 'Maksimal pembelian minimal 1'
+    } else if (productRequest.min_qty != null && productRequest.max_qty < productRequest.min_qty) {
+      errors.max_qty = 'Maksimal pembelian tidak boleh kurang dari minimal pembelian'
+    }
   }
 
   // delivery_days (hanya wajib untuk MANUAL)

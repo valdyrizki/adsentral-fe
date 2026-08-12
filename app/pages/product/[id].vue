@@ -72,6 +72,16 @@
                     <span v-else-if="product.stock === 0" class="font-medium text-red-500">Habis</span>
                     <span v-else class="font-medium text-gray-800">{{ product.stock.toLocaleString('id-ID') }}</span>
                   </div>
+                  <div v-if="product?.min_qty && product.min_qty > 1" class="flex items-center gap-1.5">
+                    <UIcon name="lucide:shopping-cart" class="size-4 text-gray-400" />
+                    <span class="text-gray-500">Min. pembelian:</span>
+                    <span class="font-medium text-gray-800">{{ product.min_qty.toLocaleString('id-ID') }} pcs</span>
+                  </div>
+                  <div v-if="product?.max_qty" class="flex items-center gap-1.5">
+                    <UIcon name="lucide:shopping-cart" class="size-4 text-gray-400" />
+                    <span class="text-gray-500">Maks. pembelian:</span>
+                    <span class="font-medium text-gray-800">{{ product.max_qty.toLocaleString('id-ID') }} pcs</span>
+                  </div>
                   <div class="flex items-center gap-1.5">
                     <UIcon name="mdi:shopping-outline" class="size-4 text-gray-400" />
                     <span class="text-gray-500">Terjual:</span>
@@ -116,7 +126,7 @@
 
                 <template v-if="product.status === 'ACTIVE' && !isOutOfStock">
                   <div class="flex flex-row gap-2 justify-center md:justify-normal mt-4">
-                    <UInputNumber v-model="qty" :max="product?.stock ?? undefined" size="xl"/>
+                    <UInputNumber v-model="qty" :min="product?.min_qty ?? 1" :max="effectiveMaxQty" size="xl"/>
                   </div>
 
                   <div class="flex flex-row gap-2 pt-2">
@@ -526,6 +536,14 @@ const { data: product, pending, refresh } = await useAsyncData<ProductResponse>(
   { server: false }
 )
 
+watch(
+  () => product.value?.min_qty,
+  (minQty) => {
+    qty.value = minQty ?? 1
+  },
+  { immediate: true }
+)
+
   const {
   data: merchant,
   pending: merchantLoading,
@@ -586,6 +604,17 @@ const {
 const isOutOfStock = computed(() =>
   product.value?.delivery_type !== 'AUTO' && product.value?.stock === 0
 )
+
+const effectiveMaxQty = computed(() => {
+  const limits: number[] = []
+  if (product.value?.delivery_type !== 'AUTO' && product.value?.stock != null) {
+    limits.push(product.value.stock)
+  }
+  if (product.value?.max_qty != null) {
+    limits.push(product.value.max_qty)
+  }
+  return limits.length ? Math.min(...limits) : undefined
+})
 
 const productStatusInfo = computed(() => {
   const map: Record<string, { title: string; description: string; icon: string; color: string }> = {

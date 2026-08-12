@@ -131,6 +131,16 @@
             </div>
 
             <div>
+              <label class="block text-sm font-medium text-gray-900 mb-1">Minimal Pembelian</label>
+              <UInput :model-value="(product.min_qty ?? 1) + ' pcs'" disabled class="block w-full" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-900 mb-1">Maksimal Pembelian</label>
+              <UInput :model-value="product.max_qty != null ? product.max_qty + ' pcs' : 'Tidak terbatas'" disabled class="block w-full" />
+            </div>
+
+            <div>
               <label class="block text-sm font-medium text-gray-900 mb-1">Terjual</label>
               <UInput :model-value="String(product.sold)" disabled class="block w-full" />
             </div>

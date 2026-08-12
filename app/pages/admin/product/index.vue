@@ -106,6 +106,14 @@
                 Stok: {{ product.stock }}
               </span>
               <span class="flex items-center gap-1">
+                <UIcon name="mdi:cart-arrow-down" />
+                Min. Beli: {{ product.min_qty ?? 1 }}
+              </span>
+              <span v-if="product.max_qty != null" class="flex items-center gap-1">
+                <UIcon name="mdi:cart-arrow-up" />
+                Maks. Beli: {{ product.max_qty }}
+              </span>
+              <span class="flex items-center gap-1">
                 <UIcon name="mdi:cart" />
                 {{ product.sold }} Terjual
               </span>

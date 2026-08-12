@@ -11,6 +11,8 @@ export interface ProductResponse {
   base_price: number;   // BigDecimal → number
   sell_price: number;   // BigDecimal → number
   stock: number;
+  min_qty: number;
+  max_qty: number | null;
   delivery_days: number | null;
   sold: number;
   average_rating: number;   // ✅ TAMBAHAN — BigDecimal serialized as number

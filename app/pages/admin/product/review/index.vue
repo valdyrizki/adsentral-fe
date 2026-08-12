@@ -67,13 +67,13 @@
           class="flex flex-row gap-4 py-4 px-2 hover:bg-gray-50 rounded-xl transition-colors"
         >
           <!-- Banner -->
-          <div class="flex-none">
+          <NuxtLink :to="`/admin/product/view/${product.id}`" class="flex-none">
             <img
               :src="getImageUrl(product.banner_url)"
               :alt="product.name"
               class="w-20 h-20 rounded-xl object-cover border border-gray-100 bg-gray-50"
             />
-          </div>
+          </NuxtLink>
 
           <!-- Info -->
           <div class="flex-grow flex flex-col min-w-0">
@@ -81,7 +81,9 @@
               <UBadge :color="statusColor(product.status)" :label="statusLabel(product.status)" size="sm" variant="solid" />
               <span class="text-xs font-mono text-gray-400">#{{ product.id }}</span>
             </div>
-            <p class="text-sm font-semibold text-gray-800 truncate">{{ product.name }}</p>
+            <NuxtLink :to="`/admin/product/view/${product.id}`" class="block text-sm font-semibold text-gray-800 truncate hover:text-blue-600 hover:underline">
+              {{ product.name }}
+            </NuxtLink>
             <p class="text-xs text-gray-500 mt-0.5">
               <UIcon name="i-lucide-store" class="size-3.5 inline mr-0.5" />
               {{ product.merchant_name }}
@@ -97,6 +99,14 @@
                 Stok: {{ product.stock }}
               </span>
               <span class="flex items-center gap-1">
+                <UIcon name="mdi:cart-arrow-down" />
+                Min. Beli: {{ product.min_qty ?? 1 }}
+              </span>
+              <span v-if="product.max_qty != null" class="flex items-center gap-1">
+                <UIcon name="mdi:cart-arrow-up" />
+                Maks. Beli: {{ product.max_qty }}
+              </span>
+              <span class="flex items-center gap-1">
                 <UIcon name="mdi:tag-outline" />
                 {{ product.category_name }}
               </span>
@@ -109,6 +119,16 @@
 
           <!-- Actions -->
           <div class="ml-auto flex-none flex flex-col gap-2 items-end justify-start">
+            <UButton
+              :to="`/admin/product/view/${product.id}`"
+              icon="i-lucide-eye"
+              size="xs"
+              color="neutral"
+              variant="outline"
+            >
+              Lihat Produk
+            </UButton>
+
             <template v-if="product.status === 'REVIEW'">
               <UButton
                 icon="mdi:check-circle"

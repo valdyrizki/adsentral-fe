@@ -79,10 +79,18 @@
                           :key="cartItem.product_id"
                           v-model="cartItem.quantity"
                           size="md"
+                          :min="cartItem.product?.min_qty ?? 1"
+                          :max="cartItemMaxQty(cartItem)"
                           :disabled="cartItem.product?.status !== 'ACTIVE'"
                           @update:model-value="checkStock(cartItem)"
                         />
                       </div>
+                      <p v-if="cartItem.product?.min_qty && cartItem.product.min_qty > 1" class="mt-1 text-xs text-gray-500">
+                        Min. pembelian: {{ cartItem.product.min_qty }} pcs
+                      </p>
+                      <p v-if="cartItem.product?.max_qty" class="mt-1 text-xs text-gray-500">
+                        Maks. pembelian: {{ cartItem.product.max_qty }} pcs
+                      </p>
                     </div>
 
                     <div class="absolute top-0 right-0">
@@ -354,6 +362,17 @@ const toast = useToast()
 
 const deleteCartItem = (cartItem:CartItem) =>{
   cartStore.items = cartStore.items.filter(item => item !== cartItem)
+}
+
+const cartItemMaxQty = (cartItem:CartItem): number | undefined => {
+  const limits: number[] = []
+  if (cartItem.product?.delivery_type !== 'AUTO' && cartItem.product?.stock != null) {
+    limits.push(cartItem.product.stock)
+  }
+  if (cartItem.product?.max_qty != null) {
+    limits.push(cartItem.product.max_qty)
+  }
+  return limits.length ? Math.min(...limits) : undefined
 }
 
 const checkStock = async (cartItem:CartItem) =>{
