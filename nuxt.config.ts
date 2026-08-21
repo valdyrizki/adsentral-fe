@@ -5,6 +5,18 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
+  app: {
+    head: {
+      script: [
+        {
+          type: 'module',
+          src: 'https://static.cloudflareinsights.com/beacon.min.js',
+          'data-cf-beacon': '{"token": "9408fcaf2e244b2cb4dffe3e2841a6e7"}',
+        },
+      ],
+    },
+  },
+
   modules: [
     '@nuxt/ui',
     '@nuxt/image',
