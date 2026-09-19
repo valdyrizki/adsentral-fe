@@ -113,6 +113,7 @@
                 <!-- Bank -->
                 <p class="text-xs text-gray-600 mt-1">{{ item.bank_name }} — {{ item.account_number }}</p>
                 <p class="text-xs text-gray-400">a.n. {{ item.account_holder_name }}</p>
+                <NameCheckBadge :status="item.name_check_status" size="xs" class="mt-1" />
                 <!-- Tanggal -->
                 <p class="text-xs text-gray-400 mt-1">{{ dayjs(item.created_at).format('DD MMM YYYY, HH:mm') }}</p>
                 <!-- Catatan seller -->
@@ -324,6 +325,7 @@
 
 <script lang="ts" setup>
 import dayjs from 'dayjs'
+import NameCheckBadge from '~/components/bank-account/NameCheckBadge.vue'
 import { useAdminWithdrawalApi } from '~/composables/api/admin-withdrawal'
 import { useSystemSettingApi } from '~/composables/api/system-setting'
 import type { AdminWithdrawalResponse } from '~/types/balance/AdminWithdrawalResponse'

@@ -7,13 +7,18 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      script: [
-        {
-          type: 'module',
-          src: 'https://static.cloudflareinsights.com/beacon.min.js',
-          'data-cf-beacon': '{"token": "9408fcaf2e244b2cb4dffe3e2841a6e7"}',
-        },
-      ],
+      // Cloudflare Web Analytics hanya di-load di production.
+      // Di localhost, beacon-nya menolak origin http://localhost:3000 (CORS),
+      // karena token dikaitkan ke domain production.
+      script: process.env.NODE_ENV === 'production'
+        ? [
+          {
+            type: 'module',
+            src: 'https://static.cloudflareinsights.com/beacon.min.js',
+            'data-cf-beacon': '{"token": "9408fcaf2e244b2cb4dffe3e2841a6e7"}',
+          },
+        ]
+        : [],
     },
   },
 

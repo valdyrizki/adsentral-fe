@@ -1,4 +1,5 @@
 import type { UserResponse } from '~/types/UserResponse'
+import type { NameCheckStatus } from '~/types/bank-account/NameCheckStatus'
 
 export interface AdminWithdrawalResponse {
   id: string
@@ -15,4 +16,6 @@ export interface AdminWithdrawalResponse {
   processed_by: string | null
   processed_at: string | null
   created_at: string
+  // Snapshot status cross-check nama KTP vs rekening pada saat withdrawal diajukan. null = data lama sebelum fitur ini ada (treat sebagai NOT_APPLICABLE).
+  name_check_status?: NameCheckStatus | null
 }

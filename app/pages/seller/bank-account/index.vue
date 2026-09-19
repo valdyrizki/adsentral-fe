@@ -26,7 +26,10 @@
               </div>
               <p class="font-semibold text-gray-800">Rekening Tersimpan</p>
             </div>
-            <UBadge color="success" variant="soft" icon="mdi:check-circle">Aktif</UBadge>
+            <div class="flex items-center gap-2">
+              <NameCheckBadge :status="bankAccount.name_check_status" />
+              <UBadge color="success" variant="soft" icon="mdi:check-circle">Aktif</UBadge>
+            </div>
           </div>
         </template>
 
@@ -139,6 +142,7 @@
 
 <script lang="ts" setup>
 import dayjs from 'dayjs'
+import NameCheckBadge from '~/components/bank-account/NameCheckBadge.vue'
 import { useBankAccountApi } from '~/composables/api/bank-account'
 import type { BankAccountRequest } from '~/types/bank-account/BankAccountRequest'
 import type { BankAccountResponse } from '~/types/bank-account/BankAccountResponse'

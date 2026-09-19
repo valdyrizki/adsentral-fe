@@ -59,6 +59,11 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     to: '/admin/withdrawal'
   },
   {
+    label: 'Verifikasi Akun',
+    icon: 'mdi:card-account-details-outline',
+    to: '/admin/verification'
+  },
+  {
     label: 'Keuangan',
     icon: 'mdi:chart-finance',
     children: [

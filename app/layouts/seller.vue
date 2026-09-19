@@ -66,6 +66,11 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     to: '/seller/bank-account'
   },
   {
+    label: 'Verifikasi Akun',
+    icon: 'mdi:card-account-details-outline',
+    to: '/seller/verification'
+  },
+  {
     label: 'Garansi',
     icon: 'material-symbols:shield',
     to: '/seller/guarantee'

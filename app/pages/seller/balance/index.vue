@@ -171,6 +171,7 @@
                   <p class="text-sm font-medium text-gray-800">{{ item.bank_name }} — {{ item.account_number }}</p>
                   <p class="text-xs text-gray-500">a.n. {{ item.account_holder_name }}</p>
                   <p class="text-xs text-gray-400 mt-0.5">{{ dayjs(item.created_at).format('DD MMM YYYY, HH:mm') }}</p>
+                  <NameCheckBadge :status="item.name_check_status" size="xs" class="mt-1.5" />
                 </div>
                 <div class="text-right flex-shrink-0">
                   <p class="text-base font-bold text-red-500">-{{ formatRp(item.amount) }}</p>
@@ -374,6 +375,7 @@
 
 <script lang="ts" setup>
 import dayjs from 'dayjs'
+import NameCheckBadge from '~/components/bank-account/NameCheckBadge.vue'
 import { useBalanceApi } from '~/composables/api/balance'
 import type { BalanceLogResponse } from '~/types/balance/BalanceLogResponse'
 import type { WithdrawalResponse } from '~/types/balance/WithdrawalResponse'

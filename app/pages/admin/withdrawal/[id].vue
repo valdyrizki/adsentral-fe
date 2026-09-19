@@ -214,10 +214,22 @@
         <!-- Rekening Tujuan -->
         <UCard class="shadow-sm">
           <template #header>
-            <p class="font-semibold text-gray-800 flex items-center gap-2">
-              <UIcon name="mdi:bank" class="text-primary" /> Rekening Tujuan Transfer
-            </p>
+            <div class="flex items-center justify-between">
+              <p class="font-semibold text-gray-800 flex items-center gap-2">
+                <UIcon name="mdi:bank" class="text-primary" /> Rekening Tujuan Transfer
+              </p>
+              <NameCheckBadge :status="withdrawal.name_check_status" />
+            </div>
           </template>
+          <UAlert
+            v-if="withdrawal.name_check_status === 'MISMATCH'"
+            class="mb-3"
+            title="Nama rekening tidak cocok dengan nama KTP"
+            description="Ini snapshot status saat withdrawal diajukan — hanya informasi, tidak memblokir proses transfer."
+            color="warning"
+            icon="mdi:alert-outline"
+            variant="subtle"
+          />
           <div class="space-y-3">
             <div class="flex justify-between text-sm">
               <span class="text-gray-400">Bank</span>
@@ -435,6 +447,7 @@
 
 <script lang="ts" setup>
 import dayjs from 'dayjs'
+import NameCheckBadge from '~/components/bank-account/NameCheckBadge.vue'
 import { useAdminWithdrawalApi } from '~/composables/api/admin-withdrawal'
 import { useSystemSettingApi } from '~/composables/api/system-setting'
 import type { AdminWithdrawalResponse } from '~/types/balance/AdminWithdrawalResponse'
