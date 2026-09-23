@@ -134,6 +134,9 @@
             >
               {{ merchantStore.merchant?.penalty_points ?? 0 }} poin aktif
             </UBadge>
+            <UBadge v-if="penaltyStat.verified_seller" color="primary" variant="subtle" size="xs" icon="mdi:check-decagram">
+              Seller Terverifikasi
+            </UBadge>
           </div>
           <p class="text-xs text-gray-400 mt-1">
             {{

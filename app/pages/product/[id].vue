@@ -210,8 +210,11 @@
                   </div>
 
                   <div class="basis-auto">
-                    <NuxtLink :to="`/merchant/${product?.merchant_id}`" class="text-2xl hover:underline">
+                    <NuxtLink :to="`/merchant/${product?.merchant_id}`" class="text-2xl hover:underline inline-flex items-center gap-1.5">
                       {{ product?.merchant_name }}
+                      <UTooltip v-if="product?.verified_seller" text="Seller Terverifikasi">
+                        <UIcon name="mdi:check-decagram" class="text-primary size-5 shrink-0" />
+                      </UTooltip>
                     </NuxtLink>
                     <div v-if="merchantLoading">
                       <AppLoadingSkeleton/>

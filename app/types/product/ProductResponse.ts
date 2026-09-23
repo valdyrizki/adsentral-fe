@@ -29,4 +29,5 @@ export interface ProductResponse {
   guarantee_days: number | null
   delivery_type: string
   auto_config: ProductAutoConfigResponse | null
+  verified_seller: boolean
 }

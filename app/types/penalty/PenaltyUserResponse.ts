@@ -11,4 +11,5 @@ export interface PenaltyUserResponse {
   created_at: string
   updated_at: string
   user: UserResponse
+  verified_seller: boolean
 }

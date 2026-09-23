@@ -17,4 +17,5 @@ export interface MerchantResponse {
   country?: string
   open_time?: string
   close_time?: string
+  verified_seller: boolean
 }

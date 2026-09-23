@@ -35,7 +35,12 @@
 
                     <!-- Nama & Rating -->
                     <div class="flex flex-col">
-                      <p class="font-bold">{{ merchant?.name }}</p>
+                      <p class="font-bold inline-flex items-center gap-1">
+                        {{ merchant?.name }}
+                        <UTooltip v-if="merchant?.verified_seller" text="Seller Terverifikasi">
+                          <UIcon name="mdi:check-decagram" class="text-primary size-4 shrink-0" />
+                        </UTooltip>
+                      </p>
 
                       <!-- RATING -->
                       <div v-if="merchant?.average_rating != null && merchant.average_rating > 0" class="flex items-center gap-1 text-sm">

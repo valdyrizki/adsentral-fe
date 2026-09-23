@@ -23,7 +23,12 @@
               </div>
             </div>
             <div class="min-w-0 flex-1">
-              <p class="text-sm font-semibold text-gray-800">{{ selectedUser.user.full_name ?? selectedUser.user.username }}</p>
+              <p class="text-sm font-semibold text-gray-800 inline-flex items-center gap-1">
+                {{ selectedUser.user.full_name ?? selectedUser.user.username }}
+                <UTooltip v-if="selectedUser.verified_seller" text="Seller Terverifikasi">
+                  <UIcon name="mdi:check-decagram" class="text-primary size-4 shrink-0" />
+                </UTooltip>
+              </p>
               <p class="text-xs text-gray-400">{{ selectedUser.user.email }}</p>
               <div class="flex gap-1 mt-1">
                 <UBadge :color="suspendColor(selectedUser.suspend_status)" variant="subtle" size="xs">
@@ -185,7 +190,12 @@
               </div>
             </div>
             <div class="flex flex-col gap-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-800">{{ user.user.full_name ?? user.user.username }}</p>
+              <p class="text-sm font-semibold text-gray-800 inline-flex items-center gap-1">
+                {{ user.user.full_name ?? user.user.username }}
+                <UTooltip v-if="user.verified_seller" text="Seller Terverifikasi">
+                  <UIcon name="mdi:check-decagram" class="text-primary size-4 shrink-0" />
+                </UTooltip>
+              </p>
               <p class="text-xs text-gray-400">{{ user.user.email }}</p>
               <div class="flex flex-wrap gap-1 mt-0.5">
                 <UBadge :color="suspendColor(user.suspend_status)" variant="subtle" size="xs">

@@ -11,6 +11,7 @@ export interface MyPenaltyStat {
   active_point_merchant: number
   suspend_status: UserSuspendStatus
   suspend_until: string | null
+  verified_seller: boolean
 }
 
 export const usePenaltyApi = () => {

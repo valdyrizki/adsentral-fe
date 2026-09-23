@@ -74,7 +74,12 @@
           />
         <UAvatar  size="xs" />
 
-          <span class="text-xs text-gray-600">{{ product.merchant_name }}</span>
+          <span class="text-xs text-gray-600 inline-flex items-center gap-0.5">
+            {{ product.merchant_name }}
+            <UTooltip v-if="product.verified_seller" text="Seller Terverifikasi">
+              <UIcon name="mdi:check-decagram" class="text-primary size-3.5 shrink-0" />
+            </UTooltip>
+          </span>
           </NuxtLink>
         </div>
       </div>
