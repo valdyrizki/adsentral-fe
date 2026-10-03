@@ -117,8 +117,11 @@
         <!-- Catatan / Balasan Seller -->
         <UCard v-if="guarantee.seller_description">
           <div class="flex flex-col gap-2">
-            <p class="font-medium text-sm text-gray-700">Balasan Seller</p>
-            <p class="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">{{ guarantee.seller_description }}</p>
+            <div class="flex items-center justify-between gap-2">
+              <p class="font-medium text-sm text-gray-700">Balasan Seller</p>
+              <AppCopyButton :value="guarantee.seller_description" show-label />
+            </div>
+            <p class="text-sm text-gray-600 whitespace-pre-wrap break-words leading-relaxed">{{ guarantee.seller_description }}</p>
           </div>
         </UCard>
 

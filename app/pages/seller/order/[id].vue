@@ -492,10 +492,10 @@
           <div
             v-for="fileOrder in fileOrders.content"
             :key="fileOrder.id"
-            class="flex flex-col sm:flex-row items-center justify-between gap-2 bg-white rounded-lg p-3"
+            class="flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-2 bg-white rounded-lg p-3"
           >
-            <div class="flex flex-col gap-1 text-sm text-gray-600 text-center sm:text-left">
-              <span>{{ fileOrder.message || "Download filenya dibawah ini ya" }}</span>
+            <div class="flex flex-col gap-1 text-sm text-gray-600 text-left flex-1 min-w-0">
+              <AppAccountMessage :message="fileOrder.message" fallback="Download filenya dibawah ini ya" />
               <span class="text-xs text-gray-400">{{ dayjs(fileOrder.created_at).format('D MMM YYYY HH:mm') }}</span>
             </div>
             <UButton
@@ -575,9 +575,9 @@
           <UIcon name="material-symbols:shield" class="size-5 text-yellow-600" />
           <span>Akun garansi sudah dikirim penjual!</span>
         </div>
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-2 bg-white rounded-lg p-3">
-          <div class="flex flex-col gap-1 text-sm text-gray-600 text-center sm:text-left">
-            <span>{{ guarantee.discussions[0].message || "Download file akun garansi dibawah ini" }}</span>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-2 bg-white rounded-lg p-3">
+          <div class="flex flex-col gap-1 text-sm text-gray-600 text-left flex-1 min-w-0">
+            <AppAccountMessage :message="guarantee.discussions[0].message" fallback="Download file akun garansi dibawah ini" title="Detail Akun Garansi" />
             <span class="text-xs text-gray-400">{{ dayjs(guarantee.discussions[0].created_at).format('D MMM YYYY HH:mm') }}</span>
           </div>
           <UButton
@@ -686,7 +686,7 @@
                 <div class="flex flex-col gap-1 flex-grow">
                   <div class="font-medium">{{ orderDiscussion.username }}</div>
                   <!-- <div><UBadge>Badge</UBadge></div> -->
-                  <div class="text-gray-600">{{ orderDiscussion.message }}</div>
+                  <div class="text-gray-600 whitespace-pre-wrap break-words">{{ orderDiscussion.message }}</div>
                   <div v-if="orderDiscussion.file" class="flex flex-row items-center gap-1"> <!-- File yang sudah diupload, klik untuk download -->
                     <NuxtLink v-if="isImage(orderDiscussion.file.format)" :to="getImageUrl(orderDiscussion.file.url)">
                       <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />
@@ -724,7 +724,8 @@
                     <UBadge v-else-if="orderDiscussion.discussion_type === DiscussionType.AUTO_DELIVERY" class="max-w-44">Otomatis Kirim Akun</UBadge>
                     <UBadge v-else-if="orderDiscussion.discussion_type === DiscussionType.STOCK_DELIVERY" class="max-w-44">Otomatis Kirim Akun (Stocking)</UBadge>
                   </template>
-                  <div class="text-gray-600">{{ orderDiscussion.message }}</div>
+                  <AppAccountMessage v-if="orderDiscussion.discussion_type !== DiscussionType.MESSAGE" :message="orderDiscussion.message" />
+                  <div v-else class="text-gray-600 whitespace-pre-wrap break-words">{{ orderDiscussion.message }}</div>
                   <div v-if="orderDiscussion.file" class="flex flex-row items-center gap-1"> <!-- File yang sudah diupload, klik untuk download -->
                     <div v-if="isImage(orderDiscussion.file.format)">
                       <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />
@@ -763,7 +764,8 @@
                     <UBadge v-else-if="orderDiscussion.discussion_type === DiscussionType.AUTO_DELIVERY" class="max-w-44">Otomatis Kirim Akun</UBadge>
                     <UBadge v-else-if="orderDiscussion.discussion_type === DiscussionType.STOCK_DELIVERY" class="max-w-44">Otomatis Kirim Akun (Stocking)</UBadge>
                   </template>
-                  <div class="text-gray-600">{{ orderDiscussion.message }}</div>
+                  <AppAccountMessage v-if="orderDiscussion.discussion_type !== DiscussionType.MESSAGE" :message="orderDiscussion.message" />
+                  <div v-else class="text-gray-600 whitespace-pre-wrap break-words">{{ orderDiscussion.message }}</div>
                   <div v-if="orderDiscussion.file" class="flex flex-row items-center gap-1"> <!-- File yang sudah diupload, klik untuk download -->
                     <div v-if="isImage(orderDiscussion.file.format)">
                       <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />

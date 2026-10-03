@@ -151,7 +151,7 @@
                 Edit
               </UButton>
 
-              <NuxtLink v-if="product.delivery_type === 'STOCKING'" :to="`/seller/stock/${product.id}`">
+              <NuxtLink v-if="product.delivery_type === 'STOCKING'" :to="`/seller/stock/add/${product.id}`">
                 <UButton icon="i-lucide-file-plus" size="xs" color="info" variant="soft">
                   Kelola Stok
                 </UButton>
@@ -297,7 +297,7 @@ const deliveryTypeLabel = (type: string) => {
   const map: Record<string, string> = {
     MANUAL: 'Manual',
     AUTO: 'Otomatis',
-    STOCKING: 'Stok File',
+    STOCKING: 'Stok Akun',
   }
   return map[type] ?? type
 }

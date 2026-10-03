@@ -297,7 +297,7 @@ const deliveryTypeLabel = (type: string) => {
   const map: Record<string, string> = {
     MANUAL: 'Manual',
     AUTO: 'Otomatis',
-    STOCKING: 'Stok File',
+    STOCKING: 'Stok Akun',
   }
   return map[type] ?? type
 }

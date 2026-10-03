@@ -190,8 +190,8 @@
                 color="info"
                 variant="subtle"
                 class="mt-3"
-                title="Produk File Digital"
-                description="Setelah produk disimpan, Anda dapat mengupload file stok di halaman manajemen stok produk. Setiap file yang diupload akan menambah 1 stok produk dan akan dikirim otomatis ke pembeli saat pesanan masuk."
+                title="Produk Stok Akun"
+                description="Setelah produk disimpan, isi stok di halaman manajemen stok produk berupa data akun (UID, username, password, dll.), file, atau keduanya. Setiap item stok menambah 1 stok produk dan akan dikirim otomatis ke pembeli saat pesanan masuk."
               />
               <UAlert
                 v-if="productRequest.delivery_type === 'AUTO'"
@@ -272,7 +272,7 @@
                   :disabled="stockDisabled"
                 />
                 <p v-if="productRequest.delivery_type === 'AUTO'" class="mt-2 text-sm text-orange-500">Stok otomatis diatur ke 0 untuk tipe Otomatis (tidak terpakai).</p>
-                <p v-else-if="productRequest.delivery_type === 'STOCKING'" class="mt-2 text-sm text-blue-500">Stok diatur otomatis dari jumlah file yang diupload (stok = 0).</p>
+                <p v-else-if="productRequest.delivery_type === 'STOCKING'" class="mt-2 text-sm text-blue-500">Stok diatur otomatis dari jumlah item stok akun yang ditambahkan (stok = 0).</p>
                 <p v-else class="mt-2 text-sm text-gray-500">Wajib diisi. 0 = stok habis, lebih dari 0 = jumlah stok tersedia.</p>
                 <p v-if="errors.stock" class="mt-1 text-sm text-red-500">{{ errors.stock }}</p>
               </div>
@@ -490,9 +490,9 @@ const deliveryTypeOptions = [
   },
   {
     value: 'STOCKING',
-    label: 'Stok File',
+    label: 'Stok Akun',
     icon: 'i-lucide-file-check',
-    description: 'File dikirim otomatis ke pembeli. Seller perlu upload stok file terlebih dahulu. Setiap file = 1 stok.',
+    description: 'Akun dan/atau file dikirim otomatis ke pembeli. Seller perlu mengisi stok akun terlebih dahulu. Setiap item stok = 1 stok.',
   },
 ]
 

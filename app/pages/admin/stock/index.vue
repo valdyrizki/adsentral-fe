@@ -21,7 +21,7 @@
         <UInput
           v-model="filters.description"
           icon="i-lucide-text"
-          placeholder="Deskripsi..."
+          placeholder="Notes / Catatan..."
           clearable
           @update:model-value="handleFilter"
         />
@@ -30,6 +30,18 @@
           icon="i-lucide-receipt"
           placeholder="ID Transaksi..."
           clearable
+          @update:model-value="handleFilter"
+        />
+        <UInput
+          v-model="filters.account"
+          icon="i-lucide-user-search"
+          placeholder="Cari akun (UID / username / email)..."
+          clearable
+          @update:model-value="handleFilter"
+        />
+        <StockAccountTypeSelect
+          v-model="filters.accountTypeId"
+          empty-label="Semua Tipe Akun"
           @update:model-value="handleFilter"
         />
         <USelect
@@ -71,7 +83,7 @@
       <template #header>
         <div class="flex flex-wrap items-center justify-between gap-3">
           <p class="font-semibold text-gray-800">
-            Semua Stok File
+            Semua Stok
             <span v-if="stockData?.total_elements" class="text-xs text-gray-400 font-normal ml-2">
               ({{ stockData.total_elements }} item)
             </span>
@@ -79,6 +91,7 @@
           <div class="flex gap-2">
             <UBadge color="success" variant="soft">Aktif: {{ countActive }}</UBadge>
             <UBadge color="info" variant="soft">Terkirim: {{ countSent }}</UBadge>
+            <UBadge v-if="countReturned" color="warning" variant="soft">Dikembalikan: {{ countReturned }}</UBadge>
           </div>
         </div>
       </template>
@@ -95,7 +108,7 @@
 
       <div v-else-if="!stockData?.content?.length" class="py-12 text-center">
         <UIcon name="i-lucide-inbox" class="text-4xl text-gray-300 mb-3" />
-        <p class="text-gray-400 text-sm">Tidak ada stok file ditemukan.</p>
+        <p class="text-gray-400 text-sm">Tidak ada stok akun ditemukan.</p>
       </div>
 
       <div v-else class="divide-y divide-gray-100">
@@ -122,6 +135,18 @@
               <UIcon name="i-lucide-package" class="size-3.5 flex-none text-blue-500" />
               {{ item.product_name || '-' }}
             </p>
+            <div class="flex flex-wrap items-center gap-1.5 my-0.5">
+              <UBadge color="neutral" variant="soft" size="xs" :icon="STOCK_CONTENT_ICON[stockContentKind(item)]">
+                {{ STOCK_CONTENT_LABEL[stockContentKind(item)] }}
+              </UBadge>
+              <UBadge v-if="item.account_type_name" color="primary" variant="soft" size="xs">
+                {{ item.account_type_name }}
+              </UBadge>
+              <span v-if="stockAccountLabel(item)" class="text-xs text-gray-700 font-mono truncate flex items-center gap-1">
+                <UIcon name="i-lucide-user-round" class="size-3 flex-none text-gray-400" />
+                {{ stockAccountLabel(item) }}
+              </span>
+            </div>
             <a
               v-if="item.file_name"
               :href="item.file_url ? getImageUrl(item.file_url) : undefined"
@@ -148,14 +173,23 @@
                 {{ dayjs(item.created_at).format('DD MMM YYYY, HH:mm') }}
               </span>
               <span class="font-mono text-gray-300">#{{ item.id }}</span>
+              <NuxtLink
+                v-if="item.transaction_id"
+                :to="`/admin/order/${item.transaction_id}`"
+                class="font-mono text-blue-500 hover:underline flex items-center gap-1"
+                title="Lihat transaksi"
+                @click.stop
+              >
+                <UIcon name="i-lucide-receipt" class="size-3" />
+                {{ item.transaction_id }}
+              </NuxtLink>
             </div>
           </div>
 
           <!-- Status -->
-          <div class="flex-none">
-            <UBadge :color="stockStatusColor(item.status)" variant="soft" size="sm">
-              {{ stockStatusLabel(item.status) }}
-            </UBadge>
+          <div class="flex-none flex items-center gap-2">
+            <StockStatusBadge :status="item.status" />
+            <UButton icon="i-lucide-eye" size="xs" color="neutral" variant="ghost" title="Detail" @click="openDetail(item)" />
           </div>
         </div>
       </div>
@@ -177,6 +211,8 @@
     </UCard>
     </ClientOnly>
 
+    <StockItemDetailModal v-if="detailItem" v-model:open="detailOpen" :item="detailItem" masked transaction-base="/admin/order" />
+
   </div>
 </template>
 
@@ -185,8 +221,9 @@ import dayjs from 'dayjs'
 import { useProductsApi } from '~/composables/api/product'
 import type { ProductStockItemResponse } from '~/types/product/ProductStockItemResponse'
 import type { PageResponse } from '~/types/PageResponse'
+import { STOCK_CONTENT_ICON, STOCK_CONTENT_LABEL, STOCK_STATUS_FILTER_OPTIONS, stockAccountLabel, stockContentKind } from '~/helper/stockAccountHelper'
 
-definePageMeta({ layout: 'admin', label: 'Stok File', ssr: false })
+definePageMeta({ layout: 'admin', label: 'Stok Akun', ssr: false })
 
 const { getAdminAllStockItems } = useProductsApi()
 
@@ -200,23 +237,22 @@ const filters = reactive({
   fileName: '',
   description: '',
   productName: '',
+  accountTypeId: null as number | null,
+  account: '',
 })
 
 const appliedFilters = reactive({ ...filters })
 
-const statusFilterOptions = [
-  { label: 'Semua Status', value: 'ALL' },
-  { label: 'Aktif', value: 'ACTIVE' },
-  { label: 'Terkirim', value: 'SENT' },
-  { label: 'Dihapus', value: 'DELETED' },
-]
+const statusFilterOptions = STOCK_STATUS_FILTER_OPTIONS
 
 const hasActiveFilter = computed(() =>
   filters.status !== 'ALL' ||
   !!filters.transactionId ||
   !!filters.fileName ||
   !!filters.description ||
-  !!filters.productName
+  !!filters.productName ||
+  !!filters.accountTypeId ||
+  !!filters.account
 )
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
@@ -234,6 +270,7 @@ const {
 
 const countActive = computed(() => stockData.value?.content.filter(i => i.status === 'ACTIVE').length ?? 0)
 const countSent = computed(() => stockData.value?.content.filter(i => i.status === 'SENT').length ?? 0)
+const countReturned = computed(() => stockData.value?.content.filter(i => i.status === 'RETURNED').length ?? 0)
 
 function handleFilter() {
   if (debounceTimer) clearTimeout(debounceTimer)
@@ -250,24 +287,26 @@ function resetFilters() {
   filters.fileName = ''
   filters.description = ''
   filters.productName = ''
+  filters.accountTypeId = null
+  filters.account = ''
   Object.assign(appliedFilters, filters)
   page.value = 0
   refresh()
+}
+
+// ===== DETAIL =====
+const detailItem = ref<ProductStockItemResponse | null>(null)
+const detailOpen = ref(false)
+
+function openDetail(item: ProductStockItemResponse) {
+  detailItem.value = item
+  detailOpen.value = true
 }
 
 function onPageChange(p: number) { page.value = p - 1; refresh() }
 
 watch(perPageValue, () => { page.value = 0; refresh() })
 
-type BadgeColor = 'success' | 'warning' | 'error' | 'neutral' | 'info' | 'primary'
-function stockStatusColor(status: string): BadgeColor {
-  const map: Record<string, BadgeColor> = { ACTIVE: 'success', SENT: 'info', DELETED: 'error' }
-  return map[status] ?? 'neutral'
-}
-function stockStatusLabel(status: string): string {
-  const map: Record<string, string> = { ACTIVE: 'Aktif', SENT: 'Terkirim', DELETED: 'Dihapus' }
-  return map[status] ?? status
-}
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`

@@ -202,7 +202,7 @@
               <UIcon name="i-lucide-file-check" class="size-5 mt-0.5 flex-none" :class="sendMethod === 'stock' ? 'text-blue-500' : 'text-gray-400'" />
               <div>
                 <p class="font-semibold text-sm" :class="sendMethod === 'stock' ? 'text-blue-700' : 'text-gray-700'">Via Stok</p>
-                <p class="text-xs text-gray-500 mt-0.5">Kirim otomatis dari stok file yang tersedia.</p>
+                <p class="text-xs text-gray-500 mt-0.5">Kirim otomatis dari stok akun yang tersedia.</p>
               </div>
             </div>
           </div>
@@ -230,7 +230,7 @@
               icon="i-lucide-info"
               color="info"
               variant="subtle"
-              title="Kirim via Stok File"
+              title="Kirim via Stok Akun"
               :description="`Stok tersedia: ${guarantee.product.stock} file. Sistem akan mengambil file dari stok dan mengirimkannya otomatis ke pembeli.`"
             />
             <div class="flex flex-col gap-1.5">

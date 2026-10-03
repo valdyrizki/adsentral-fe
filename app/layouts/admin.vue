@@ -27,10 +27,11 @@ const items = computed<NavigationMenuItem[][]>(() => [[
       { label: 'Semua Produk', to: '/admin/product' },
       { label: 'Review Produk', to: '/admin/product/review' },
       { label: 'Kategori Produk', to: '/admin/category' },
+      { label: 'Tipe Akun', to: '/admin/account-type' },
     ]
   },
   {
-    label: 'Stok File',
+    label: 'Stok Akun',
     icon: 'i-lucide-file-check',
     to: '/admin/stock',
   },

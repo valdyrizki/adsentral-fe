@@ -263,9 +263,9 @@ const deliveryTypeOptions = [
   },
   {
     value: 'STOCKING',
-    label: 'Stok File',
+    label: 'Stok Akun',
     icon: 'i-lucide-file-check',
-    description: 'File dikirim otomatis ke pembeli. Seller perlu upload stok file terlebih dahulu. Setiap file = 1 stok.',
+    description: 'Akun dan/atau file dikirim otomatis ke pembeli. Seller perlu mengisi stok akun terlebih dahulu. Setiap item stok = 1 stok.',
   },
 ]
 
