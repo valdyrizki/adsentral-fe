@@ -583,7 +583,7 @@
                 </div>
                 <div>
                   <div class="ml-auto flex-none">   
-                    <div class="font-medium text-sm text-gray-500 px-2">{{ orderDiscussion.created_at }}</div>
+                    <div class="font-medium text-sm text-gray-500 px-2 whitespace-nowrap" :title="orderDiscussion.created_at">{{ dayjs(orderDiscussion.created_at).format('D MMM YYYY HH:mm') }}</div>
                   </div>
                 </div>
               </div>
@@ -621,7 +621,7 @@
                 </div>
                 <div>
                   <div class="ml-auto flex-none">
-                    <div class="font-medium text-sm text-gray-500 px-2">{{ orderDiscussion.created_at }}</div>
+                    <div class="font-medium text-sm text-gray-500 px-2 whitespace-nowrap" :title="orderDiscussion.created_at">{{ dayjs(orderDiscussion.created_at).format('D MMM YYYY HH:mm') }}</div>
                   </div>
                 </div>
               </div>
@@ -660,7 +660,7 @@
                 </div>
                 <div>
                   <div class="ml-auto flex-none">   
-                    <div class="font-medium text-sm text-gray-500 px-2">{{ orderDiscussion.created_at }}</div>
+                    <div class="font-medium text-sm text-gray-500 px-2 whitespace-nowrap" :title="orderDiscussion.created_at">{{ dayjs(orderDiscussion.created_at).format('D MMM YYYY HH:mm') }}</div>
                   </div>
                 </div>
               </div>

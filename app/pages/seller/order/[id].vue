@@ -492,7 +492,7 @@
           <div
             v-for="fileOrder in fileOrders.content"
             :key="fileOrder.id"
-            class="flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-2 bg-white rounded-lg p-3"
+            class="flex flex-col items-stretch gap-3 bg-white rounded-lg p-3"
           >
             <div class="flex flex-col gap-1 text-sm text-gray-600 text-left flex-1 min-w-0">
               <AppAccountMessage :message="fileOrder.message" fallback="Download filenya dibawah ini ya" />
@@ -504,10 +504,11 @@
               color="primary"
               variant="solid"
               size="sm"
-              class="flex-none"
+              class="self-start max-w-full"
+              :title="fileOrder.file.ori_name"
               @click="downloadFile(getImageUrl(fileOrder.file.url))"
             >
-              {{ fileOrder.file.ori_name }}
+              DOWNLOAD ALL ITEM
             </UButton>
           </div>
         </div>
@@ -575,7 +576,7 @@
           <UIcon name="material-symbols:shield" class="size-5 text-yellow-600" />
           <span>Akun garansi sudah dikirim penjual!</span>
         </div>
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-2 bg-white rounded-lg p-3">
+        <div class="flex flex-col items-stretch gap-3 bg-white rounded-lg p-3">
           <div class="flex flex-col gap-1 text-sm text-gray-600 text-left flex-1 min-w-0">
             <AppAccountMessage :message="guarantee.discussions[0].message" fallback="Download file akun garansi dibawah ini" title="Detail Akun Garansi" />
             <span class="text-xs text-gray-400">{{ dayjs(guarantee.discussions[0].created_at).format('D MMM YYYY HH:mm') }}</span>
@@ -586,7 +587,7 @@
             color="warning"
             variant="solid"
             size="sm"
-            class="flex-none"
+            class="self-start max-w-full"
             @click="downloadFile(getImageUrl(guarantee.discussions[0].file.url))"
           >
             {{ guarantee.discussions[0].file.ori_name }}
@@ -692,13 +693,13 @@
                       <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />
                     </NuxtLink>
                     <div v-else>
-                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.file?.ori_name }}</UButton>
+                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" :title="orderDiscussion.file?.ori_name" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.discussion_type !== DiscussionType.MESSAGE ? 'DOWNLOAD ALL ITEM' : orderDiscussion.file?.ori_name }}</UButton>
                     </div>
                   </div>
                 </div>
                 <div>
                   <div class="ml-auto flex-none">   
-                    <div class="font-medium text-sm text-gray-500 px-2">{{ orderDiscussion.created_at }}</div>
+                    <div class="font-medium text-sm text-gray-500 px-2 whitespace-nowrap" :title="orderDiscussion.created_at">{{ dayjs(orderDiscussion.created_at).format('D MMM YYYY HH:mm') }}</div>
                   </div>
                 </div>
               </div>
@@ -731,13 +732,13 @@
                       <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />
                     </div>
                     <div v-else>
-                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.file?.ori_name }}</UButton>
+                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" :title="orderDiscussion.file?.ori_name" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.discussion_type !== DiscussionType.MESSAGE ? 'DOWNLOAD ALL ITEM' : orderDiscussion.file?.ori_name }}</UButton>
                     </div>
                   </div>
                 </div>
                 <div>
                   <div class="ml-auto flex-none">
-                    <div class="font-medium text-sm text-gray-500 px-2">{{ orderDiscussion.created_at }}</div>
+                    <div class="font-medium text-sm text-gray-500 px-2 whitespace-nowrap" :title="orderDiscussion.created_at">{{ dayjs(orderDiscussion.created_at).format('D MMM YYYY HH:mm') }}</div>
                   </div>
                 </div>
               </div>
@@ -771,13 +772,13 @@
                       <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />
                     </div>
                     <div v-else>
-                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.file?.ori_name }}</UButton>
+                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" :title="orderDiscussion.file?.ori_name" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.discussion_type !== DiscussionType.MESSAGE ? 'DOWNLOAD ALL ITEM' : orderDiscussion.file?.ori_name }}</UButton>
                     </div>
                   </div>
                 </div>
                 <div>
                   <div class="ml-auto flex-none">   
-                    <div class="font-medium text-sm text-gray-500 px-2">{{ orderDiscussion.created_at }}</div>
+                    <div class="font-medium text-sm text-gray-500 px-2 whitespace-nowrap" :title="orderDiscussion.created_at">{{ dayjs(orderDiscussion.created_at).format('D MMM YYYY HH:mm') }}</div>
                   </div>
                 </div>
               </div>
