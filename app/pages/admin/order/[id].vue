@@ -87,7 +87,7 @@
           <UBadge icon="mdi:receipt-text" size="lg" class="font-medium text-white">#{{ transaction?.id }}</UBadge>
           <UButton icon="material-symbols:refresh" variant="outline" size="xs" @click="refreshHandler">Refresh</UButton>
           <UButton v-if="transaction?.status !== 'COMPLETE'" icon="material-symbols:cancel" color="error" variant="outline" size="xs" @click="isRefundingTxModal = true">Refund Transaksi</UButton>
-          <UButton v-if="transaction?.status === 'ARBITRAGE'" icon="material-symbols:arrow-forward" color="primary" variant="outline" size="xs" @click="handleCancelArbitrage">Cancel Arbitrage</UButton>
+          <UButton v-if="transaction?.status === 'ARBITRAGE'" icon="material-symbols:arrow-forward" color="primary" variant="outline" size="xs" :loading="loadingCancelArbitrage" @click="handleCancelArbitrage">Cancel Arbitrage</UButton>
           <UButton v-if="transaction?.status !== 'COMPLETE'" icon="material-symbols:check" color="primary" variant="solid" size="xs" @click="isCompleteTxModal = true">Selesaikan Transaksi</UButton>
         </div> 
       </div>
@@ -451,7 +451,7 @@
           <p class="text-sm">{{ transaction?.tx_description ?? "Tidak ada alasan pembatalan" }}</p>
         </div>
         <div>
-          <UBadge class="text-sm" color="error">Dana dikembalikan kepada pembeli !</UBadge>
+          <UBadge class="text-sm" color="error">Dikembalikan sebesar yang dibayar untuk produk (setelah diskon voucher)</UBadge>
         </div>
       </div>
     </div>
@@ -861,7 +861,7 @@ const selectRating = ref<SelectItem[]>(
 
       useToast().add({
         title: 'Berhasil',
-        description: 'Pesanan berhasil direfund, dana akan dikembalikan ke pembeli',
+        description: 'Pesanan berhasil direfund, dikembalikan sebesar yang dibayar untuk produk (setelah diskon voucher)',
         color: 'success'
       })
 
@@ -869,6 +869,7 @@ const selectRating = ref<SelectItem[]>(
       await refreshTransaction()
 
     } catch (err: any) {
+      if (isStaleActionError(err)) refreshTransaction()
       useToast().add({
         title: 'Gagal',
         description: err.message || 'Gagal refund pesanan',
@@ -911,6 +912,7 @@ const selectRating = ref<SelectItem[]>(
       await refreshTransaction()
 
     } catch (err: any) {
+      if (isStaleActionError(err)) refreshTransaction()
       useToast().add({
         title: 'Gagal',
         description: err.message || 'Gagal teruskan pesanan',
@@ -940,6 +942,7 @@ const selectRating = ref<SelectItem[]>(
       await refreshTransaction()
 
     } catch (err: any) {
+      if (isStaleActionError(err)) refreshTransaction()
       useToast().add({
         title: 'Gagal',
         description: err.message || 'Gagal menyelesaikan pesanan',

@@ -54,7 +54,7 @@
               <UInput
                 v-model.number="form.max_discount_amount"
                 type="number"
-                min="0"
+                min="1"
                 placeholder="Opsional"
                 class="w-full"
                 :disabled="form.discount_type === 'NOMINAL'"
@@ -64,7 +64,10 @@
 
           <!-- Kuota -->
           <UFormField label="Kuota Pemakaian">
-            <UInput v-model.number="form.quota" type="number" min="1" step="1" placeholder="Kosongkan = tidak terbatas" class="w-full" />
+            <UInput v-model.number="form.quota" type="number" :min="Math.max(1, editingUsedCount)" step="1" placeholder="Kosongkan = tidak terbatas" class="w-full" />
+            <template v-if="editingCode && editingUsedCount > 0" #hint>
+              <span class="text-xs text-gray-400">Min. {{ editingUsedCount }} (sudah dipakai). Gunakan Suspend untuk menutup voucher.</span>
+            </template>
           </UFormField>
 
           <!-- Visibilitas -->
@@ -83,7 +86,7 @@
               <UInput v-model="form.start_date" type="datetime-local" class="w-full" />
             </UFormField>
             <UFormField label="Berlaku Sampai">
-              <UInput v-model="form.end_date" type="datetime-local" class="w-full" />
+              <UInput v-model="form.end_date" type="datetime-local" :min="form.start_date || undefined" class="w-full" />
             </UFormField>
           </div>
 
@@ -378,6 +381,7 @@ function formatPeriod(voucher: VoucherResponse): string {
 // ===== MODAL STATE =====
 const showModal = ref(false)
 const editingCode = ref<string | null>(null)
+const editingUsedCount = ref(0)
 const saving = ref(false)
 
 const form = reactive({
@@ -408,12 +412,14 @@ function resetForm() {
 
 function openCreateModal() {
   editingCode.value = null
+  editingUsedCount.value = 0
   resetForm()
   showModal.value = true
 }
 
 function openEditModal(voucher: VoucherResponse) {
   editingCode.value = voucher.code
+  editingUsedCount.value = voucher.used_count ?? 0
   form.code = voucher.code
   form.name = voucher.name ?? ''
   form.discount_type = voucher.discount_type
@@ -439,6 +445,30 @@ async function handleSave() {
   }
   if (!form.discount_value || Number(form.discount_value) <= 0) {
     toast.add({ title: 'Nilai diskon harus lebih dari 0', color: 'warning' })
+    return
+  }
+  if (form.quota !== '' && Number(form.quota) < 1) {
+    toast.add({ title: 'Kuota minimal 1 (kosongkan untuk tanpa batas)', color: 'warning' })
+    return
+  }
+  if (editingCode.value && form.quota !== '' && Number(form.quota) < editingUsedCount.value) {
+    toast.add({
+      title: `Kuota tidak boleh lebih kecil dari pemakaian saat ini (${editingUsedCount.value})`,
+      description: 'Gunakan Suspend untuk menutup voucher.',
+      color: 'warning',
+    })
+    return
+  }
+  if (form.max_discount_amount !== '' && form.discount_type === 'PERCENT' && Number(form.max_discount_amount) <= 0) {
+    toast.add({ title: 'Maks. diskon harus lebih dari 0', color: 'warning' })
+    return
+  }
+  if (form.min_transaction_amount !== '' && Number(form.min_transaction_amount) < 0) {
+    toast.add({ title: 'Min. transaksi tidak boleh negatif', color: 'warning' })
+    return
+  }
+  if (form.start_date && form.end_date && form.end_date <= form.start_date) {
+    toast.add({ title: 'Berlaku sampai harus setelah berlaku mulai', color: 'warning' })
     return
   }
   if (!editingCode.value && !form.code.trim()) {

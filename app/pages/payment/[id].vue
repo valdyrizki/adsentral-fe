@@ -569,6 +569,7 @@ async function handleCancel() {
     await refresh()
   } catch (err: any) {
     toast.add({ title: 'Gagal membatalkan', description: err.data?.message || err.message, color: 'error', icon: 'material-symbols:error-outline' })
+    if (isStaleActionError(err)) await refresh()
   } finally {
     cancelling.value = false
     close()

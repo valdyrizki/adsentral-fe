@@ -273,7 +273,7 @@
         </div>
 
         <div class="flex gap-4 justify-center">
-          <UButton icon="mdi:check-circle-outline" color="primary" variant="solid" size="md" @click="handleConfirmOrder">Terima Pesanan</UButton>
+          <UButton icon="mdi:check-circle-outline" color="primary" variant="solid" size="md" :loading="acceptingId === 'confirm'" @click="handleConfirmOrder">Terima Pesanan</UButton>
           <UButton
             v-if="transaction?.status === 'PAID'"
             icon="mdi:close-circle"
@@ -1038,7 +1038,9 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
   )
 
   const handleConfirmOrder = async () => {
+    if (acceptingId.value) return
     try {
+      acceptingId.value = 'confirm'
       await fetchConfirmTx(route.params.id as string)
       useToast().add({
         title: 'Berhasil',
@@ -1046,8 +1048,10 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
         color: 'success'
       })
       refreshTransaction()
-    } catch (err) {
+    } catch (err: any) {
+      if (isStaleActionError(err)) refreshTransaction()
       console.error('Failed to confirm order:', err)
+      useToast().add({ title: 'Gagal', description: err.message || 'Gagal menerima pesanan', color: 'error' })
     }finally {
       acceptingId.value = null //untuk fungsi loading button
     }
@@ -1073,6 +1077,7 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
       await refreshTransaction()
 
     } catch (err: any) {
+      if (isStaleActionError(err)) refreshTransaction()
       useToast().add({
         title: 'Gagal',
         description: err.message || 'Gagal menolak pesanan',
@@ -1100,6 +1105,7 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
       })
       await refreshTransaction()
     } catch (err: any) {
+      if (isStaleActionError(err)) refreshTransaction()
       toast.add({
         title: 'Gagal',
         description: err.message || 'Gagal batalkan permintaan pembatalan',
@@ -1121,6 +1127,7 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
       })
       await refreshTransaction()
     } catch (err: any) {
+      if (isStaleActionError(err)) refreshTransaction()
       toast.add({
         title: 'Gagal',
         description: err.message || 'Gagal menerima permintaan pembatalan',
@@ -1198,6 +1205,7 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
       })
       await refreshTransaction()
     } catch (err: any) {
+      if (isStaleActionError(err)) refreshTransaction()
       toast.add({
         title: 'Gagal',
         description: err.message || 'Gagal ajukan penangguhan',

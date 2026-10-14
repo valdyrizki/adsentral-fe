@@ -6,5 +6,6 @@ export interface DepositResponse {
   payment_id: string;  
   balance_id: string;  
   payment_method:string
+  unique_code?: number | null  // sudah termasuk di dalam amount
   created_at: Date;  
 }

@@ -41,9 +41,10 @@ export const usePaymentApi = () => {
 
   // Admin: confirm payment
   const fetchConfirmPayment = async (paymentId: string): Promise<void> => {
+    // Pesan BE (mis. 409 transaksi expired/dibatalkan) ditampilkan apa adanya.
     const res = await api<WebResponse<void>>(`/payment/confirm/${paymentId}`, {
       method: 'POST',
-    })
+    }).catch(rethrowApiError('Gagal konfirmasi payment'))
     if (res.status !== 'success') {
       throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal konfirmasi payment' })
     }
@@ -54,7 +55,7 @@ export const usePaymentApi = () => {
     const res = await api<WebResponse<void>>(`/payment/reject/${paymentId}`, {
       method: 'POST',
       body: { reason },
-    })
+    }).catch(rethrowApiError('Gagal menolak payment'))
     if (res.status !== 'success') {
       throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal menolak payment' })
     }
@@ -64,7 +65,7 @@ export const usePaymentApi = () => {
   const fetchCancelPayment = async (paymentId: string): Promise<void> => {
     const res = await api<WebResponse<void>>(`/payment/cancel/${paymentId}`, {
       method: 'POST',
-    })
+    }).catch(rethrowApiError('Gagal membatalkan payment'))
     if (res.status !== 'success') {
       throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal membatalkan payment' })
     }
@@ -100,7 +101,7 @@ export const usePaymentApi = () => {
   const cancelPayment = async (paymentId: string): Promise<void> => {
     const res = await api<WebResponse<void>>(`/balance/deposit/cancel/${paymentId}`, {
       method: 'POST',
-    })
+    }).catch(rethrowApiError('Gagal membatalkan payment'))
     if (res.status !== 'success') {
       throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal membatalkan payment' })
     }

@@ -240,8 +240,9 @@
         color: 'success'
       })
       refresh()
-    } catch (err) {
-      console.error('Failed to confirm order:', err)
+    } catch (err: any) {
+      useToast().add({ title: 'Gagal', description: err.message || 'Gagal menerima pesanan', color: 'error' })
+      if (isStaleActionError(err)) await refresh()
     }finally {
       acceptingId.value = null //untuk fungsi loading button
     }
@@ -273,6 +274,12 @@
         description: err.message || 'Gagal menolak pesanan',
         color: 'error'
       })
+      if (isStaleActionError(err)) {
+        isRejectingModal.value = false
+        isRejectingTxModal.value = false
+        selectedTxId.value = null
+        await refresh()
+      }
     } finally {
       rejectingId.value = null
     }
@@ -313,6 +320,12 @@
         description: err.message || 'Gagal menolak pesanan',
         color: 'error'
       })
+      if (isStaleActionError(err)) {
+        isRejectingModal.value = false
+        isRejectingTxModal.value = false
+        selectedTxId.value = null
+        await refresh()
+      }
     } finally {
       rejectingTxId.value = null
     }

@@ -175,6 +175,8 @@
                   variant="soft"
                   icon="i-heroicons-check-circle"
                   label="Konfirmasi"
+                  :loading="processingId === payment.id"
+                  :disabled="!!processingId"
                   @click="handleConfirm(payment.id)"
                   />
               </UTooltip>
@@ -188,6 +190,7 @@
                   variant="soft"
                   icon="i-heroicons-x-circle"
                   label="Tolak"
+                  :disabled="!!processingId"
                   @click="handleReject(payment)"
                 />
               </UTooltip>
@@ -320,6 +323,7 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
 
   // ===== CONFIRM =====
   const { confirm, close } = useConfirm()
+  const processingId = ref<string | null>(null) // cegah klik ganda selama request berjalan
 
   async function handleConfirm(paymentId: string) {
     
@@ -333,13 +337,16 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
     
     if (!yes) return
 
+    processingId.value = paymentId
     try {
       await fetchConfirmPayment(paymentId)
       toast.add({ title: 'Pembayaran dikonfirmasi', color: 'success', icon: 'i-heroicons-check-circle' })
       await refresh()
     } catch (err: any) {
       toast.add({ title: 'Gagal konfirmasi', description: err.statusMessage || err.message, color: 'error' })
+      if (isStaleActionError(err)) await refresh()
     } finally {
+      processingId.value = null
       close()
     }
   }
@@ -361,13 +368,16 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
 
     if (!yes) return
 
+    processingId.value = payment.id
     try {
       await fetchCancelPayment(payment.id)
       toast.add({ title: isDeposit ? 'Pembayaran dibatalkan' : 'Pembayaran ditolak', color: 'success', icon: 'i-heroicons-check-circle' })
       await refresh()
     } catch (err: any) {
       toast.add({ title: isDeposit ? 'Gagal membatalkan' : 'Gagal menolak', description: err.statusMessage || err.message, color: 'error' })
+      if (isStaleActionError(err)) await refresh()
     } finally {
+      processingId.value = null
       close()
     }
   }

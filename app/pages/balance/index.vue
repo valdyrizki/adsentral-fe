@@ -117,6 +117,10 @@
                       <div class="font-semibold text-green-700">
                         + {{ deposit.amount.toLocaleString('id-ID') }}
                       </div>
+                      <!-- amount sudah termasuk kode unik; jangan dijumlahkan lagi -->
+                      <span v-if="deposit.unique_code" class="text-xs text-gray-400">
+                        (Rp {{ (deposit.amount - deposit.unique_code).toLocaleString('id-ID') }} + kode unik {{ deposit.unique_code }})
+                      </span>
                     </div>
 
                     <div class="flex flex-row gap-1 items-center">

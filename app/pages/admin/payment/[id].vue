@@ -150,6 +150,8 @@
           <UButton
             color="success"
             icon="i-heroicons-check-circle"
+            :loading="processing"
+            :disabled="processing"
             @click="handleConfirm(payment.id)"
           >
             Konfirmasi Pembayaran
@@ -158,6 +160,7 @@
             color="error"
             variant="outline"
             icon="i-heroicons-x-circle"
+            :disabled="processing"
             @click="handleReject(payment)"
           >
             Tolak Pembayaran
@@ -358,6 +361,7 @@ function applyTxSearch() {
 
   // ===== CONFIRM =====
   const { confirm, close } = useConfirm()
+  const processing = ref(false) // cegah klik ganda selama request berjalan
 
   async function handleConfirm(paymentId: string) {
     
@@ -371,13 +375,16 @@ function applyTxSearch() {
     
     if (!yes) return
 
+    processing.value = true
     try {
       await fetchConfirmPayment(paymentId)
       toast.add({ title: 'Pembayaran dikonfirmasi', color: 'success', icon: 'i-heroicons-check-circle' })
       await refreshPayment()
     } catch (err: any) {
       toast.add({ title: 'Gagal konfirmasi', description: err.statusMessage || err.message, color: 'error' })
+      if (isStaleActionError(err)) await refreshPayment()
     } finally {
+      processing.value = false
       close()
     }
   }
@@ -399,13 +406,16 @@ function applyTxSearch() {
 
     if (!yes) return
 
+    processing.value = true
     try {
       await fetchCancelPayment(payment.id)
       toast.add({ title: isDeposit ? 'Pembayaran dibatalkan' : 'Pembayaran ditolak', color: 'success', icon: 'i-heroicons-check-circle' })
       await refreshPayment()
     } catch (err: any) {
       toast.add({ title: isDeposit ? 'Gagal membatalkan' : 'Gagal menolak', description: err.statusMessage || err.message, color: 'error' })
+      if (isStaleActionError(err)) await refreshPayment()
     } finally {
+      processing.value = false
       close()
     }
   }

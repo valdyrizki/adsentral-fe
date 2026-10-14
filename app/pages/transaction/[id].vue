@@ -443,7 +443,7 @@
               <p class="text-sm">{{ transaction?.tx_description ?? "Tidak ada alasan pembatalan" }}</p>
             </div>
             <div>
-              <UBadge class="text-sm" color="error">Dana dikembalikan kepada pembeli !</UBadge>
+              <UBadge class="text-sm" color="error">Dikembalikan sebesar yang dibayar untuk produk (setelah diskon voucher)</UBadge>
             </div>
           </div>
         </div>
@@ -1131,6 +1131,7 @@ const selectRating = ref<SelectItem[]>(
       })
       await refreshTransaction()
     } catch (err: any) {
+      if (isStaleActionError(err)) refreshTransaction()
       toast.add({
         title: 'Gagal',
         description: err.message || 'Gagal menolak orderan',
@@ -1153,6 +1154,7 @@ const selectRating = ref<SelectItem[]>(
       })
       await refreshTransaction()
     } catch (err: any) {
+      if (isStaleActionError(err)) refreshTransaction()
       toast.add({
         title: 'Gagal',
         description: err.message || 'Gagal ajukan pembatalan',
@@ -1175,6 +1177,7 @@ const selectRating = ref<SelectItem[]>(
       })
       await refreshTransaction()
     } catch (err: any) {
+      if (isStaleActionError(err)) refreshTransaction()
       toast.add({
         title: 'Gagal',
         description: err.message || 'Gagal batalkan permintaan pembatalan',
@@ -1197,10 +1200,11 @@ const selectRating = ref<SelectItem[]>(
       })
       isConfirmDoneModal.value = false
       refreshTransaction()
-    } catch (err) {
+    } catch (err: any) {
+      if (isStaleActionError(err)) refreshTransaction()
       toast.add({
         title: 'Gagal',
-        description: 'Pesanan gagal diselesaikan',
+        description: err.message || 'Pesanan gagal diselesaikan',
         color: 'error'
       })
       console.error('Failed to confirm order:', err)
@@ -1221,6 +1225,7 @@ const selectRating = ref<SelectItem[]>(
       })
       await refreshTransaction()
     } catch (err: any) {
+      if (isStaleActionError(err)) refreshTransaction()
       toast.add({
         title: 'Gagal',
         description: err.message || 'Gagal ajukan penangguhan',

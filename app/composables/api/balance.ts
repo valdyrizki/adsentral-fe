@@ -156,6 +156,12 @@ export const useBalanceApi = () => {
     const res = await api<WebResponse>('/seller/withdrawal', {
       method: 'POST',
       body: request,
+    }).catch((err: any) => {
+      // Pesan 400 dari BE memuat batas yang berlaku & ajakan verifikasi KTP; tampilkan apa adanya.
+      throw createError({
+        statusCode: apiErrorStatus(err) || 400,
+        statusMessage: apiErrorMessage(err, 'Gagal mengajukan penarikan dana'),
+      })
     })
 
     if (res.status !== 'success') {

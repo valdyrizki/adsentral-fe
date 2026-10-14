@@ -46,7 +46,7 @@ export const useFinanceApi = () => {
     const res = await api<WebResponse<FinanceCategoryResponse>>(`/admin/finance/category/${id}`, {
       method: 'PUT',
       body: payload,
-    })
+    }).catch(rethrowApiError('Gagal mengupdate kategori'))
     if (res.status !== 'success' || !res.data) {
       throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal mengupdate kategori' })
     }
@@ -56,7 +56,7 @@ export const useFinanceApi = () => {
   const toggleCategory = async (id: string): Promise<void> => {
     const res = await api<WebResponse<null>>(`/admin/finance/category/${id}/toggle`, {
       method: 'PATCH',
-    })
+    }).catch(rethrowApiError('Gagal mengubah status kategori'))
     if (res.status !== 'success') {
       throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal mengubah status kategori' })
     }
@@ -92,7 +92,7 @@ export const useFinanceApi = () => {
     if (params.year) query.year = params.year
     if (params.month) query.month = params.month
 
-    const res = await api<WebResponse<PageResponse<FinanceJournalResponse>>>('/admin/finance/journal', { query })
+    const res = await api<WebResponse<PageResponse<FinanceJournalResponse>>>('/admin/finance/journal', { query }).catch(rethrowApiError('Gagal memuat jurnal'))
     if (res.status !== 'success' || !res.data) {
       throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal memuat jurnal' })
     }
@@ -135,7 +135,7 @@ export const useFinanceApi = () => {
     const query: Record<string, unknown> = {}
     if (year) query.year = year
     if (month) query.month = month
-    const res = await api<WebResponse<FinanceSummaryResponse>>('/admin/finance/summary', { query })
+    const res = await api<WebResponse<FinanceSummaryResponse>>('/admin/finance/summary', { query }).catch(rethrowApiError('Gagal memuat summary'))
     if (res.status !== 'success' || !res.data) {
       throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal memuat summary' })
     }

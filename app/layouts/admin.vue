@@ -2,10 +2,16 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
+const failedJournalStore = useFailedJournalStore()
+const unprocessedPaymentStore = useUnprocessedPaymentStore()
 
 const route = useRoute()
 watch(() => route.path, () => {
   if (authStore.accessToken) notificationStore.loadUnreadCount()
+})
+onMounted(() => {
+  failedJournalStore.loadPendingCount()
+  unprocessedPaymentStore.loadPendingCount()
 })
 
 
@@ -47,6 +53,11 @@ const items = computed<NavigationMenuItem[][]>(() => [[
       { label: 'Riwayat Pembayaran', to: '/admin/payment' },
       { label: 'Metode Pembayaran', to: '/admin/payment-method' },
       { label: 'Payment Channel', to: '/admin/payment-channel' },
+      {
+        label: 'Pembayaran Tidak Terproses',
+        to: '/admin/payments/unprocessed',
+        ...(unprocessedPaymentStore.pendingCount > 0 && { badge: { label: String(unprocessedPaymentStore.pendingCount), color: 'error' as const } }),
+      },
     ]
   },
   {
@@ -70,6 +81,11 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     children: [
       { label: 'Dashboard Finance', to: '/admin/finance' },
       { label: 'Jurnal', to: '/admin/finance/journal' },
+      {
+        label: 'Jurnal Gagal',
+        to: '/admin/finance/failed-journals',
+        ...(failedJournalStore.pendingCount > 0 && { badge: { label: String(failedJournalStore.pendingCount), color: 'error' as const } }),
+      },
       { label: 'Kategori', to: '/admin/finance/category' },
     ]
   },

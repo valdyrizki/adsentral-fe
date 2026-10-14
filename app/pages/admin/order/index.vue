@@ -258,6 +258,7 @@ async function handleConfirmOrder(txId: string) {
     await refresh()
   } catch (err: any) {
     toast.add({ title: 'Gagal menerima pesanan', description: err.message, color: 'error' })
+    if (isStaleActionError(err)) await refresh()
   } finally {
     acceptingId.value = null
   }
@@ -287,6 +288,11 @@ async function handleReject(reason: string) {
   } catch (err: any) {
     rejectError.value = err.message || 'Gagal menolak pesanan'
     toast.add({ title: 'Gagal menolak pesanan', description: err.message, color: 'error' })
+    if (isStaleActionError(err)) {
+      isRejectingModal.value = false
+      selectedTxId.value = null
+      await refresh()
+    }
   } finally {
     rejectingId.value = null
   }

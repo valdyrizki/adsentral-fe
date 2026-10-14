@@ -91,7 +91,7 @@ export const useTransactionApi = () => {
   }
 
   const fetchConfirmTx = async (txId: string): Promise<void> => {
-    const res = await api<WebResponse<TransactionResponse>>(`/tx/confirm/${txId}`, { method: 'PATCH' })
+    const res = await api<WebResponse<TransactionResponse>>(`/tx/confirm/${txId}`, { method: 'PATCH' }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
   }
 
@@ -99,7 +99,7 @@ export const useTransactionApi = () => {
     const res = await api<WebResponse<TransactionResponse>>(`/tx/reject/${txId}`, {
       method: 'PATCH',
       body: { reason },
-    })
+    }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
   }
 
@@ -107,12 +107,12 @@ export const useTransactionApi = () => {
     const res = await api<WebResponse<TransactionResponse>>(`/tx/refund/${txId}`, {
       method: 'PATCH',
       body: { reason },
-    })
+    }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
   }
 
   const fetchAcceptOrder = async (txId: string): Promise<void> => {
-    const res = await api<WebResponse<TransactionResponse>>(`/tx/order/accept/${txId}`, { method: 'PATCH' })
+    const res = await api<WebResponse<TransactionResponse>>(`/tx/order/accept/${txId}`, { method: 'PATCH' }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
   }
 
@@ -120,7 +120,7 @@ export const useTransactionApi = () => {
     const res = await api<WebResponse<TransactionResponse>>(`/tx/order/reject/${txId}`, {
       method: 'PATCH',
       body: { reason },
-    })
+    }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
   }
 
@@ -128,17 +128,17 @@ export const useTransactionApi = () => {
     const res = await api<WebResponse<TransactionResponse>>(`/tx/cancel/request/${txId}`, {
       method: 'PATCH',
       body: { reason },
-    })
+    }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
   }
 
   const fetchRejectCancelRequest = async (txId: string): Promise<void> => {
-    const res = await api<WebResponse<TransactionResponse>>(`/tx/cancel/reject/${txId}`, { method: 'PATCH' })
+    const res = await api<WebResponse<TransactionResponse>>(`/tx/cancel/reject/${txId}`, { method: 'PATCH' }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
   }
 
   const fetchAcceptCancelRequest = async (txId: string): Promise<void> => {
-    const res = await api<WebResponse<TransactionResponse>>(`/tx/cancel/accept/${txId}`, { method: 'PATCH' })
+    const res = await api<WebResponse<TransactionResponse>>(`/tx/cancel/accept/${txId}`, { method: 'PATCH' }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
   }
 
@@ -146,12 +146,12 @@ export const useTransactionApi = () => {
     const res = await api<WebResponse<TransactionResponse>>(`/tx/arbitrage/${txId}`, {
       method: 'PATCH',
       body: { reason },
-    })
+    }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
   }
 
   const fetchCancelArbitrage = async (txId: string): Promise<void> => {
-    const res = await api<WebResponse<TransactionResponse>>(`/tx/cancel/arbitrage/${txId}`, { method: 'PATCH' })
+    const res = await api<WebResponse<TransactionResponse>>(`/tx/cancel/arbitrage/${txId}`, { method: 'PATCH' }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
   }
 
@@ -159,7 +159,7 @@ export const useTransactionApi = () => {
     const res = await api<WebResponse<TransactionResponse>>(`/tx/complete/${txId}`, {
       method: 'PATCH',
       body: { reason },
-    })
+    }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
   }
 

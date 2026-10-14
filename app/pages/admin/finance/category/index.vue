@@ -40,14 +40,16 @@
           </UFormField>
           <UFormField label="Auto By Sistem">
             <div class="flex items-center gap-3">
-              <USwitch v-model="form.is_auto" />
+              <USwitch v-model="form.is_auto" :disabled="lockedSystem" />
               <span class="text-sm text-gray-500">{{ form.is_auto ? 'Ya' : 'Tidak' }}</span>
+              <span v-if="lockedSystem" class="text-xs text-gray-400">Kategori sistem, tidak bisa diubah</span>
             </div>
           </UFormField>
           <UFormField v-if="isEdit" label="Status Aktif">
             <div class="flex items-center gap-3">
-              <USwitch v-model="form.is_active" />
+              <USwitch v-model="form.is_active" :disabled="lockedSystem" />
               <span class="text-sm text-gray-500">{{ form.is_active ? 'Aktif' : 'Nonaktif' }}</span>
+              <span v-if="lockedSystem" class="text-xs text-gray-400">Kategori sistem, tidak bisa diubah</span>
             </div>
           </UFormField>
         </div>
@@ -197,7 +199,8 @@
               />
               <USwitch
                 :model-value="cat.is_active"
-                :disabled="toggling === cat.id"
+                :disabled="toggling === cat.id || cat.is_auto"
+                :title="cat.is_auto ? 'Kategori sistem, tidak bisa dinonaktifkan' : undefined"
                 @update:model-value="handleToggle(cat)"
               />
             </div>
@@ -277,7 +280,7 @@ async function loadCategoryTotals() {
   try {
     categoryTotals.value = await fetchCategoryTotals()
   } catch (err: any) {
-    toast.add({ title: 'Gagal memuat nominal saldo kategori', description: err.statusMessage || err.message, color: 'error' })
+    toast.add({ title: 'Gagal memuat nominal saldo kategori', description: apiErrorMessage(err), color: 'error' })
   } finally {
     loadingTotals.value = false
   }
@@ -289,6 +292,7 @@ onMounted(loadCategoryTotals)
 const toggling = ref<string | null>(null)
 
 async function handleToggle(cat: FinanceCategoryResponse) {
+  if (cat.is_auto) return
   toggling.value = cat.id
   try {
     await toggleCategory(cat.id)
@@ -299,7 +303,7 @@ async function handleToggle(cat: FinanceCategoryResponse) {
     })
     await refresh()
   } catch (err: any) {
-    toast.add({ title: 'Gagal mengubah status', description: err.statusMessage || err.message, color: 'error' })
+    toast.add({ title: 'Gagal mengubah status', description: apiErrorMessage(err), color: 'error' })
   } finally {
     toggling.value = null
   }
@@ -308,6 +312,7 @@ async function handleToggle(cat: FinanceCategoryResponse) {
 // ===== ADD / EDIT =====
 const showAddModal = ref(false)
 const isEdit = ref(false)
+const lockedSystem = ref(false) // kategori otomatis: is_auto & is_active terkunci
 const saving = ref(false)
 
 const form = reactive({
@@ -333,6 +338,7 @@ function openAddModal() {
   form.notes = ''
   form.is_auto = false
   isEdit.value = false
+  lockedSystem.value = false
   showAddModal.value = true
 }
 
@@ -344,6 +350,7 @@ function openEditModal(cat: FinanceCategoryResponse) {
   form.notes = cat.notes ?? ''
   form.is_auto = cat.is_auto
   form.is_active = cat.is_active
+  lockedSystem.value = cat.is_auto
   isEdit.value = true
   showAddModal.value = true
 }
@@ -364,8 +371,9 @@ async function handleSave() {
         name: form.name.trim(),
         description: form.description.trim() || null,
         notes: form.notes.trim() || null,
-        is_auto: form.is_auto,
-        is_active: form.is_active,
+        // Kategori sistem: kirim nilai sebenarnya (auto tetap true, tidak boleh dinonaktifkan)
+        is_auto: lockedSystem.value ? true : form.is_auto,
+        is_active: lockedSystem.value ? true : form.is_active,
       })
       toast.add({ title: 'Kategori berhasil diupdate', color: 'success', icon: 'mdi:check-circle' })
     } else {
@@ -383,7 +391,7 @@ async function handleSave() {
     isEdit.value = false
     await refresh()
   } catch (err: any) {
-    toast.add({ title: 'Gagal menyimpan', description: err.statusMessage || err.message, color: 'error' })
+    toast.add({ title: 'Gagal menyimpan', description: apiErrorMessage(err), color: 'error' })
   } finally {
     saving.value = false
   }

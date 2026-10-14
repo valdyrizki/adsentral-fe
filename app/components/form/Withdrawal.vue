@@ -57,7 +57,7 @@
         :disabled="!bankAccount || hasPendingWithdrawal"
       />
       <template #hint>
-        <span class="text-xs text-gray-400">Min Rp 50.000 · Maks Rp 5.000.000</span>
+        <span class="text-xs text-gray-400">Min Rp 50.000</span>
       </template>
     </UFormField>
 
@@ -171,10 +171,11 @@ async function handleSubmit() {
     error.value = 'Jumlah penarikan minimal Rp 50.000.'
     return
   }
-  if (amount.value > 5000000) {
-    error.value = 'Jumlah penarikan maksimal Rp 5.000.000.'
+  if (amount.value <= wdFee.value) {
+    error.value = `Jumlah penarikan harus lebih besar dari biaya admin ${formatRp(wdFee.value)}.`
     return
   }
+  // Batas maksimal per penarikan ditentukan server (berbeda untuk akun terverifikasi KTP); BE yang menolak.
   if (amount.value > balanceStore.salesBalance) {
     error.value = 'Jumlah penarikan melebihi saldo tersedia.'
     return
@@ -191,7 +192,7 @@ async function handleSubmit() {
     })
     emit('withdrawal-success')
   } catch (err: any) {
-    error.value = err.statusMessage || 'Gagal mengajukan penarikan dana.'
+    error.value = apiErrorMessage(err, 'Gagal mengajukan penarikan dana.')
   } finally {
     loading.value = false
   }
