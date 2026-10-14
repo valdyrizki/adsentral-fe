@@ -129,13 +129,27 @@
                         {{ dayjs(deposit.created_at).format("YYYY-MM-DD HH:mm:ss") }}
                       </div>
                     </div>
+
+                    <div v-if="getPaymentDeadline(deposit, paymentNow, { allMethods: true }).label" class="flex flex-row gap-1 items-center">
+                      <UIcon name="mdi:clock-outline" class="size-4 text-gray-400" />
+                      <div class="text-sm text-amber-700">
+                        Bayar sebelum {{ getPaymentDeadline(deposit, paymentNow, { allMethods: true }).label }}
+                        <span
+                          v-if="getPaymentDeadline(deposit, paymentNow, { allMethods: true }).remaining"
+                          class="tabular-nums font-medium"
+                          :class="{ 'text-red-600': getPaymentDeadline(deposit, paymentNow, { allMethods: true }).overdue }"
+                        >
+                          ({{ getPaymentDeadline(deposit, paymentNow, { allMethods: true }).remaining }})
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 <div class="ml-auto flex-none">
                   <div class="flex flex-col gap-2 items-end">
                     <PaymentStatusBadge :status="deposit?.status" class="mb-2" />
-                    <UButton v-if="deposit.status === 'UNPAID'" icon="mdi:open-in-new" color="primary" variant="soft" size="xs" @click="addToCart">Lanjut Bayar</UButton>
+                    <UButton v-if="deposit.status === 'UNPAID'" icon="mdi:open-in-new" color="primary" variant="soft" size="xs" :to="`/payment/${deposit.payment_id}`">Lanjut Bayar</UButton>
                     <UButton v-if="deposit.status === 'UNPAID'" icon="material-symbols:cancel" color="error" variant="soft" size="xs" @click="() => cancelHandle(deposit)">Batalkan</UButton>
                   </div>
                 </div>
@@ -270,8 +284,10 @@ import type { BalanceLogResponse } from '~/types/balance/BalanceLogResponse'
 import type { PageResponse } from '~/types/PageResponse'
 import { walletSourceLabel, getBalanceLogBucket } from '~/utils/walletSource'
 
+  const paymentNow = usePaymentNow()
+
   // Reactive state
-  const error = ref<string | null | any >(null)
+  const error =ref<string | null | any >(null)
   const isDepositOpen = ref(false)
   const submittingDeposit = ref(false)
   const toast = useToast()
@@ -361,10 +377,6 @@ async function handleRefresh() {
 
   const handleDepositSuccess = () => {
     isDepositOpen.value = false
-  }
-
-  const addToCart = () => {
-    alert('Add to cart clicked!')
   }
 
 const formatRupiah = (val:any) => {

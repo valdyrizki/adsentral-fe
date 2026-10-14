@@ -255,10 +255,7 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
   const { fetchAllPayments, fetchConfirmPayment, fetchCancelPayment } = usePaymentApi()
 
   // Tick tiap detik untuk countdown batas bayar
-  const now = ref(Date.now())
-  let nowTimer: ReturnType<typeof setInterval> | null = null
-  onMounted(() => { nowTimer = setInterval(() => { now.value = Date.now() }, 1000) })
-  onBeforeUnmount(() => { if (nowTimer) clearInterval(nowTimer) })
+  const now = usePaymentNow()
 
   // ===== FILTER STATE =====
   const page = ref(0)

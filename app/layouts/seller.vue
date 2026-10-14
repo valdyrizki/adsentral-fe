@@ -6,6 +6,9 @@ const config = useRuntimeConfig()
 const notificationStore = useNotificationStore()
 const chatStore = useChatStore()
 
+const orderConfirmationStore = useSellerOrderConfirmationStore()
+usePendingCountPolling(() => orderConfirmationStore.loadPendingCount())
+
 const route = useRoute()
 watch(() => route.path, () => {
   if (authStore.accessToken) {
@@ -48,7 +51,9 @@ const items = computed<NavigationMenuItem[][]>(() => [[
   {
     label: 'Orders',
     icon: 'i-lucide-shopping-cart',
-    to: '/seller/order'
+    // ada pesanan menunggu -> langsung ke daftar terfilter PAID
+    to: orderConfirmationStore.pendingCount > 0 ? '/seller/order?status=PAID' : '/seller/order',
+    ...pendingCountBadge(orderConfirmationStore.pendingCount, `${orderConfirmationStore.pendingCount} pesanan menunggu konfirmasi Anda`),
   },
   {
     label: 'Saldo',

@@ -27,10 +27,15 @@ export const useTransactionApi = () => {
     }
   }
 
-  const fetchBuyerTransactions = async (page = 0, size = 10, keyword = '') => {
+  // status kosong / 'ALL' -> parameter status tidak dikirim
+  const statusQuery = (status?: string | null) => (status && status !== 'ALL' ? status : undefined)
+  // keyword kosong setelah trim -> parameter keyword tidak dikirim
+  const keywordQuery = (keyword?: string | null) => keyword?.trim() || undefined
+
+  const fetchBuyerTransactions = async (page = 0, size = 10, keyword = '', status = '') => {
     try {
       const res = await api<WebResponse<PageResponse<TransactionResponse>>>('/tx/buyer', {
-        query: { page, size, keyword },
+        query: { page, size, keyword: keywordQuery(keyword), status: statusQuery(status) },
       })
       if (res.status !== 'success' || !res.data) {
         throw createError({ statusCode: 400, statusMessage: res.message || 'Failed to fetch transactions' })
@@ -54,10 +59,10 @@ export const useTransactionApi = () => {
     return res.data
   }
 
-  const fetchTxSeller = async (page: number, size: number, keyword: string): Promise<PageResponse<TransactionResponse>> => {
+  const fetchTxSeller = async (page: number, size: number, keyword: string, status = ''): Promise<PageResponse<TransactionResponse>> => {
     try {
       const res = await api<WebResponse<PageResponse<TransactionResponse>>>('/tx/seller', {
-        query: { page, size, keyword },
+        query: { page, size, keyword: keywordQuery(keyword), status: statusQuery(status) },
       })
       if (!res.data) {
         throw createError({ statusCode: 400, statusMessage: 'Failed to fetch transactions' })
@@ -90,9 +95,21 @@ export const useTransactionApi = () => {
     }
   }
 
+  // Seller: jumlah pesanan PAID yang menunggu diterima/ditolak (badge sidebar)
+  const fetchSellerPendingConfirmationCount = async (): Promise<number> => {
+    const res = await api<WebResponse<number>>('/tx/seller/pending-confirmation-count')
+    return Number(res.data ?? 0)
+  }
+
+  // Aksi yang mengubah status PAID -> badge sidebar seller langsung diperbarui (no-op untuk non-seller)
+  const refreshSellerPendingCount = () => {
+    useSellerOrderConfirmationStore().loadPendingCount()
+  }
+
   const fetchConfirmTx = async (txId: string): Promise<void> => {
     const res = await api<WebResponse<TransactionResponse>>(`/tx/confirm/${txId}`, { method: 'PATCH' }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
+    refreshSellerPendingCount()
   }
 
   const fetchRejectTx = async (txId: string, reason: string): Promise<void> => {
@@ -101,6 +118,7 @@ export const useTransactionApi = () => {
       body: { reason },
     }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
+    refreshSellerPendingCount()
   }
 
   const fetchRefundTx = async (txId: string, reason: string): Promise<void> => {
@@ -140,6 +158,7 @@ export const useTransactionApi = () => {
   const fetchAcceptCancelRequest = async (txId: string): Promise<void> => {
     const res = await api<WebResponse<TransactionResponse>>(`/tx/cancel/accept/${txId}`, { method: 'PATCH' }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
+    refreshSellerPendingCount()
   }
 
   const fetchArbitrageRequest = async (txId: string, reason: string): Promise<void> => {
@@ -168,6 +187,7 @@ export const useTransactionApi = () => {
     fetchBuyerTransactions,
     fetchTransactionById,
     fetchTxSeller,
+    fetchSellerPendingConfirmationCount,
     fetchConfirmTx,
     fetchRejectTx,
     fetchRefundTx,

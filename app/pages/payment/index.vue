@@ -88,6 +88,16 @@
                   {{ payment.user?.full_name ?? payment.user?.username ?? '-' }}
                   · {{ dayjs(payment.created_at).format('DD MMM YYYY, HH:mm') }}
                 </p>
+                <p v-if="getPaymentDeadline(payment, paymentNow, { allMethods: true }).label" class="text-xs text-amber-700">
+                  Bayar sebelum {{ getPaymentDeadline(payment, paymentNow, { allMethods: true }).label }}
+                  <span
+                    v-if="getPaymentDeadline(payment, paymentNow, { allMethods: true }).remaining"
+                    class="tabular-nums font-medium"
+                    :class="{ 'text-red-600': getPaymentDeadline(payment, paymentNow, { allMethods: true }).overdue }"
+                  >
+                    ({{ getPaymentDeadline(payment, paymentNow, { allMethods: true }).remaining }})
+                  </span>
+                </p>
               </div>
 
               <!-- Amount & Status -->
@@ -157,6 +167,7 @@ definePageMeta({ layout: 'default' })
 useHead({ title: 'Riwayat Pembayaran — Adsentral' })
 
 const { fetchMyPayments } = usePaymentApi()
+const paymentNow = usePaymentNow()
 
 const breadcrumb = [
   { label: 'Home', icon: 'i-lucide-home', to: '/' },

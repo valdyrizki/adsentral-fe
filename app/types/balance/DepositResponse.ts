@@ -7,5 +7,6 @@ export interface DepositResponse {
   balance_id: string;  
   payment_method:string
   unique_code?: number | null  // sudah termasuk di dalam amount
-  created_at: Date;  
+  created_at: Date;
+  expired_at?: string | null  // null/absen -> created_at + 24 jam
 }

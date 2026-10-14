@@ -4,16 +4,26 @@
     <div class="flex gap-4 mt-2">
       <div>
         <div class="text-sm text-gray-500">Per Page</div>
-        <UInputMenu v-model="perPageValue" :items="perPageItems" @change="handleSearchEnter" />
+        <UInputMenu v-model="perPageValue" :items="perPageItems" />
       </div>
       <div>
         <div class="text-sm text-gray-500">Search</div>
         <UInput
           v-model="search"
           icon="mdi:magnify"
-          placeholder="Cari produk..."
-          @keyup.enter="handleSearchEnter"
+          placeholder="Cari ID transaksi"
+          clearable
+          @keyup.enter="applySearchNow"
         />
+      </div>
+      <div>
+        <div class="text-sm text-gray-500">Status</div>
+        <USelect v-model="filterStatus" :items="statusOptions" value-key="value" class="w-56" />
+      </div>
+      <div class="self-end">
+        <UButton icon="mdi:refresh" color="neutral" variant="outline" :loading="pending" @click="refresh()">
+          Refresh
+        </UButton>
       </div>
     </div>
   </UCard>
@@ -54,11 +64,14 @@
         </div>
         <div v-else-if="transactionPagination?.content?.length == 0">
           <UAlert
-              title="Anda belum mempunyai pesanan"
+              :title="emptyTitle"
               description=""
               icon="lucide:history"
               color="neutral"
             />
+            <UButton v-if="keyword" class="mt-3" size="xs" variant="outline" color="neutral" icon="i-lucide-x" @click="clearSearch">
+              Hapus pencarian
+            </UButton>
         </div>
         <div v-else>
           <div v-for="tx in transactionPagination?.content" :key="tx.id" class="border-b border-gray-200 p-2 m-2">
@@ -95,6 +108,13 @@
                       <UIcon name="mdi:calendar" class="size-5 text-gray-400" />
                       <div class="font-medium">
                         {{ dayjs(tx.created_at).format("YYYY-MM-DD HH:mm:ss")}}
+                      </div>
+                    </div>
+
+                    <div v-if="getTxConfirmCountdown(tx, paymentNow)" class="col-span-3 flex flex-row gap-1">
+                      <UIcon name="mdi:clock-alert-outline" class="size-5" :class="getTxConfirmCountdown(tx, paymentNow)!.expired ? 'text-red-500' : 'text-yellow-600'" />
+                      <div class="font-medium tabular-nums" :class="getTxConfirmCountdown(tx, paymentNow)!.expired ? 'text-red-600' : 'text-yellow-700'">
+                        {{ getTxConfirmCountdown(tx, paymentNow)!.text }}
                       </div>
                     </div>
 
@@ -193,12 +213,18 @@
   const page = ref(0)
   const perPageItems = [5, 10, 25, 50]
   const perPageValue = ref(5)
-  const keyword = ref('')
 
-  const search = ref('')
+  // Filter status + pencarian ID (disimpan di query string ?status=&keyword=)
+  const paymentNow = usePaymentNow()
+  const statusOptions = sellerTxStatusFilters
+  const { filterStatus, search, keyword, activeStatusLabel, applySearchNow, clearSearch } = useTxListFilters(statusOptions, page)
 
-  // 🔥 SEARCH DEBOUNCE
-  let searchTimeout: NodeJS.Timeout | null = null
+  const emptyTitle = computed(() => {
+    const parts: string[] = []
+    if (filterStatus.value !== 'ALL') parts.push(`status ${activeStatusLabel.value}`)
+    if (keyword.value) parts.push(`ID '${keyword.value}'`)
+    return parts.length ? `Tidak ada transaksi dengan ${parts.join(' dan ')}` : 'Anda belum mempunyai pesanan'
+  })
 
   // ✅ SSR SAFE FETCH NEW
   const { 
@@ -207,27 +233,20 @@
     error, 
     refresh } 
     = await useAsyncData<PageResponse<TransactionResponse>>(
-    'my-tx-seller', () => fetchTxSeller(page.value, perPageValue.value, search.value),
+    'my-tx-seller', () => fetchTxSeller(page.value, perPageValue.value, keyword.value, filterStatus.value),
     {
-      watch: [page, perPageValue, keyword],
+      watch: [page, perPageValue, keyword, filterStatus],
       server: false, // Hanya fetch di client
     }
   )
 
-  watch(search, () => {
-    if (searchTimeout) clearTimeout(searchTimeout)
-    
-    searchTimeout = setTimeout(() => {
-      page.value = 0
-      refresh()
-    }, 800)
+  // Status ditolak BE (400) -> kembali ke "Semua"
+  watch(error, (err) => {
+    if ((err as any)?.statusCode === 400 && filterStatus.value !== 'ALL') {
+      useToast().add({ title: 'Filter status tidak valid', description: (err as any).statusMessage || err.message, color: 'error' })
+      filterStatus.value = 'ALL'
+    }
   })
-
-  const handleSearchEnter = () => {
-    if (searchTimeout) clearTimeout(searchTimeout)
-    page.value = 0
-    refresh()
-  }
 
   const acceptingId = ref<string | null>(null) //untuk fungsi loading button
   const handleConfirmOrder = async (txId: string) => {

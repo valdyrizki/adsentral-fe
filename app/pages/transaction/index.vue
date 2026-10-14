@@ -16,7 +16,28 @@
 
         <div class="space-y-16 sm:space-y-24">
           <div class="bg-gray-100">
-            
+
+            <!-- HEADER + FILTER (selalu tampil agar filter tidak hilang saat hasil kosong) -->
+            <div class="flex flex-wrap justify-between items-center gap-3 p-4 sm:px-6 lg:px-8">
+              <h2 class="text-2xl font-bold tracking-tight text-gray-900">Riwayat Transaksi</h2>
+              <div class="flex flex-wrap items-center gap-2">
+                <UInput
+                  v-model="search"
+                  icon="i-heroicons-magnifying-glass"
+                  placeholder="Cari ID transaksi"
+                  class="w-56"
+                  clearable
+                  @keyup.enter="applySearchNow"
+                />
+                <USelect v-model="filterStatus" :items="statusOptions" value-key="value" class="w-56" />
+                <USelect v-model="perPageValue" :items="perPageItems" />
+                <UButton icon="mdi:refresh" color="neutral" variant="outline" :loading="loading" @click="refreshTransactionPagination()">
+                  Refresh
+                </UButton>
+              </div>
+            </div>
+            <USeparator />
+
             <!-- LOADING -->
             <div v-if="loading" class="p-6">
               <AppLoadingSkeleton/>
@@ -35,22 +56,18 @@
             <!-- EMPTY -->
             <div v-else-if="transactionPagination?.content.length === 0" class="p-6">
               <UAlert
-                title="Belum ada transaksi"
-                description="Transaksi anda akan muncul di sini"
+                :title="emptyTitle"
+                :description="keyword || filterStatus !== 'ALL' ? 'Coba ubah atau hapus filter dan pencarian' : 'Transaksi anda akan muncul di sini'"
                 icon="lucide:history"
                 color="neutral"
               />
+              <UButton v-if="keyword" class="mt-3" size="xs" variant="outline" color="neutral" icon="i-lucide-x" @click="clearSearch">
+                Hapus pencarian
+              </UButton>
             </div>
 
              <!-- DATA -->
             <div v-else>
-              <div class="flex justify-between items-center p-4 sm:px-6 lg:px-8">
-                <h2 class="text-2xl font-bold tracking-tight text-gray-900">Riwayat Saldo</h2>
-                <div>
-                  <USelect v-model="perPageValue" :items="perPageItems" />
-                </div>
-              </div>
-              <USeparator />
               <div v-for="transaction in transactionPagination?.content" :key="transaction.id" class="flex border-b border-gray-200 px-4 py-6 sm:px-6 lg:px-8">
                 <div class="flex flex-row gap-4 w-full">
                   <div class="flex-none">
@@ -96,6 +113,13 @@
                           <UIcon name="mdi:calendar" class="size-5 text-gray-400" />
                           <div class="font-medium">
                             {{ dayjs(transaction.created_at).format("YYYY-MM-DD HH:mm:ss")}}
+                          </div>
+                        </div>
+
+                        <div v-if="getTxConfirmCountdown(transaction, paymentNow)" class="flex flex-row gap-1">
+                          <UIcon name="mdi:clock-alert-outline" class="size-5" :class="getTxConfirmCountdown(transaction, paymentNow)!.expired ? 'text-red-500' : 'text-blue-500'" />
+                          <div class="font-medium tabular-nums" :class="getTxConfirmCountdown(transaction, paymentNow)!.expired ? 'text-red-600' : 'text-blue-600'">
+                            {{ getTxConfirmCountdown(transaction, paymentNow)!.text }}
                           </div>
                         </div>
                       </div>
@@ -172,20 +196,40 @@ const breadcrumb = [
   const perPageValue = ref<number>(10)
   const perPageItems = ref<number[]>([5, 10, 25, 50, 100])
 
+  // Filter status + pencarian ID (disimpan di query string ?status=&keyword=)
+  const paymentNow = usePaymentNow()
+  const statusOptions = buyerTxStatusFilters
+  const { filterStatus, search, keyword, activeStatusLabel, applySearchNow, clearSearch } = useTxListFilters(statusOptions, page)
+
   // ✅ SSR SAFE FETCH NEW
-  const { 
-    data: transactionPagination, 
-    pending:loading, 
-    error:errorTransactionPagination, 
-    refresh:refreshTransactionPagination } 
+  const {
+    data: transactionPagination,
+    pending:loading,
+    error:errorTransactionPagination,
+    refresh:refreshTransactionPagination }
     = await useAsyncData<PageResponse<TransactionResponse>>(
     `transaction-page-${perPageValue.value}-${page.value}`,
-    () => fetchBuyerTransactions(page.value, perPageValue.value),
+    () => fetchBuyerTransactions(page.value, perPageValue.value, keyword.value, filterStatus.value),
     {
-      watch: [page, perPageValue], // Refetch saat page atau perPageValue berubah
+      watch: [page, perPageValue, filterStatus, keyword], // Refetch saat page, perPageValue, status atau keyword berubah
       server: false, // Hanya fetch di client
     }
   )
+
+  const emptyTitle = computed(() => {
+    const parts: string[] = []
+    if (filterStatus.value !== 'ALL') parts.push(`status ${activeStatusLabel.value}`)
+    if (keyword.value) parts.push(`ID '${keyword.value}'`)
+    return parts.length ? `Tidak ada transaksi dengan ${parts.join(' dan ')}` : 'Belum ada transaksi'
+  })
+
+  // Status ditolak BE (400) -> kembali ke "Semua"
+  watch(errorTransactionPagination, (err) => {
+    if ((err as any)?.statusCode === 400 && filterStatus.value !== 'ALL') {
+      useToast().add({ title: 'Filter status tidak valid', description: (err as any).statusMessage || err.message, color: 'error' })
+      filterStatus.value = 'ALL'
+    }
+  })
 
 
   const addToCart = () => {

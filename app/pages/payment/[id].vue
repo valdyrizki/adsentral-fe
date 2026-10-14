@@ -154,7 +154,16 @@
 
                 <div v-if="getPaymentDeadline(payment).label">
                   <p class="text-xs text-gray-400 mb-1">Bayar sebelum</p>
-                  <p class="text-sm font-medium text-amber-700">{{ getPaymentDeadline(payment).label }}</p>
+                  <p class="text-sm font-medium text-amber-700">
+                    {{ getPaymentDeadline(payment, paymentNow, { allMethods: true }).label }}
+                    <span
+                      v-if="getPaymentDeadline(payment, paymentNow, { allMethods: true }).remaining"
+                      class="tabular-nums"
+                      :class="{ 'text-red-600': getPaymentDeadline(payment, paymentNow, { allMethods: true }).overdue }"
+                    >
+                      ({{ getPaymentDeadline(payment, paymentNow, { allMethods: true }).remaining }})
+                    </span>
+                  </p>
                 </div>
 
                 <div v-if="payment.paid_at">
@@ -476,6 +485,7 @@ definePageMeta({ layout: 'default' })
 const route = useRoute()
 const toast = useToast()
 const { fetchPaymentById, fetchTxByPaymentId, cancelPayment } = usePaymentApi()
+const paymentNow = usePaymentNow()
 const { confirm, close } = useConfirm()
 const { fetchPublicSystemSettingByGroup } = useSystemSettingApi()
 const systemSettingStore = useSystemSettingStore()
