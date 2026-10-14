@@ -24,5 +24,6 @@ export interface PaymentResponse {
   user: UserResponse | null
   paid_at: string | null
   created_at: string
+  expired_at: string | null
   updated_at: string | null
 }

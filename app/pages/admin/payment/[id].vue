@@ -292,6 +292,7 @@ definePageMeta({ layout: 'admin', label: 'Detail Pembayaran' })
 
 const route = useRoute()
 const toast = useToast()
+const paymentConfirmationStore = usePaymentConfirmationStore()
 const { fetchPaymentById, fetchTxByPaymentId, fetchConfirmPayment, fetchCancelPayment } = usePaymentApi()
 
 const paymentId = computed(() => route.params.id as string)
@@ -379,6 +380,7 @@ function applyTxSearch() {
     try {
       await fetchConfirmPayment(paymentId)
       toast.add({ title: 'Pembayaran dikonfirmasi', color: 'success', icon: 'i-heroicons-check-circle' })
+      paymentConfirmationStore.loadPendingCount()
       await refreshPayment()
     } catch (err: any) {
       toast.add({ title: 'Gagal konfirmasi', description: err.statusMessage || err.message, color: 'error' })
@@ -410,6 +412,7 @@ function applyTxSearch() {
     try {
       await fetchCancelPayment(payment.id)
       toast.add({ title: isDeposit ? 'Pembayaran dibatalkan' : 'Pembayaran ditolak', color: 'success', icon: 'i-heroicons-check-circle' })
+      paymentConfirmationStore.loadPendingCount()
       await refreshPayment()
     } catch (err: any) {
       toast.add({ title: isDeposit ? 'Gagal membatalkan' : 'Gagal menolak', description: err.statusMessage || err.message, color: 'error' })

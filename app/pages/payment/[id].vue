@@ -152,6 +152,11 @@
                   <p class="text-sm text-gray-700">{{ dayjs(payment.created_at).format('DD MMM YYYY, HH:mm') }}</p>
                 </div>
 
+                <div v-if="getPaymentDeadline(payment).label">
+                  <p class="text-xs text-gray-400 mb-1">Bayar sebelum</p>
+                  <p class="text-sm font-medium text-amber-700">{{ getPaymentDeadline(payment).label }}</p>
+                </div>
+
                 <div v-if="payment.paid_at">
                   <p class="text-xs text-gray-400 mb-1">Tanggal Dibayar</p>
                   <p class="text-sm font-medium text-green-700">{{ dayjs(payment.paid_at).format('DD MMM YYYY, HH:mm') }}</p>

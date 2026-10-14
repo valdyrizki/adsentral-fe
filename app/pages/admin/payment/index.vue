@@ -136,6 +136,16 @@
                 <p v-if="payment.unique_code" class="text-xs font-mono text-amber-600">
                   Kode Unik: +{{ payment.unique_code }}
                 </p>
+                <p class="text-xs text-gray-500">
+                  Batas Bayar: {{ getPaymentDeadline(payment, now).label ?? '-' }}
+                  <span
+                    v-if="getPaymentDeadline(payment, now).remaining"
+                    class="tabular-nums"
+                    :class="getPaymentDeadline(payment, now).overdue ? 'text-red-600 font-medium' : 'text-amber-600'"
+                  >
+                    ({{ getPaymentDeadline(payment, now).remaining }})
+                  </span>
+                </p>
               </div>
             </div>
           </NuxtLink>
@@ -241,7 +251,14 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
   definePageMeta({ layout: 'admin', label: 'Manajemen Pembayaran' })
 
     const toast = useToast()
+  const paymentConfirmationStore = usePaymentConfirmationStore()
   const { fetchAllPayments, fetchConfirmPayment, fetchCancelPayment } = usePaymentApi()
+
+  // Tick tiap detik untuk countdown batas bayar
+  const now = ref(Date.now())
+  let nowTimer: ReturnType<typeof setInterval> | null = null
+  onMounted(() => { nowTimer = setInterval(() => { now.value = Date.now() }, 1000) })
+  onBeforeUnmount(() => { if (nowTimer) clearInterval(nowTimer) })
 
   // ===== FILTER STATE =====
   const page = ref(0)
@@ -341,6 +358,7 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
     try {
       await fetchConfirmPayment(paymentId)
       toast.add({ title: 'Pembayaran dikonfirmasi', color: 'success', icon: 'i-heroicons-check-circle' })
+      paymentConfirmationStore.loadPendingCount()
       await refresh()
     } catch (err: any) {
       toast.add({ title: 'Gagal konfirmasi', description: err.statusMessage || err.message, color: 'error' })
@@ -372,6 +390,7 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
     try {
       await fetchCancelPayment(payment.id)
       toast.add({ title: isDeposit ? 'Pembayaran dibatalkan' : 'Pembayaran ditolak', color: 'success', icon: 'i-heroicons-check-circle' })
+      paymentConfirmationStore.loadPendingCount()
       await refresh()
     } catch (err: any) {
       toast.add({ title: isDeposit ? 'Gagal membatalkan' : 'Gagal menolak', description: err.statusMessage || err.message, color: 'error' })

@@ -5,13 +5,53 @@ const notificationStore = useNotificationStore()
 const failedJournalStore = useFailedJournalStore()
 const unprocessedPaymentStore = useUnprocessedPaymentStore()
 
+const paymentConfirmationStore = usePaymentConfirmationStore()
+
 const route = useRoute()
 watch(() => route.path, () => {
   if (authStore.accessToken) notificationStore.loadUnreadCount()
 })
+
+const PAYMENT_POLL_MS = 45_000
+let paymentPollTimer: ReturnType<typeof setInterval> | null = null
+
+const stopPaymentPolling = () => {
+  if (paymentPollTimer) clearInterval(paymentPollTimer)
+  paymentPollTimer = null
+}
+const startPaymentPolling = () => {
+  stopPaymentPolling()
+  paymentConfirmationStore.loadPendingCount()
+  paymentPollTimer = setInterval(() => paymentConfirmationStore.loadPendingCount(), PAYMENT_POLL_MS)
+}
+const onVisibilityChange = () => {
+  if (document.visibilityState === 'visible') startPaymentPolling()
+  else stopPaymentPolling()
+}
+
 onMounted(() => {
   failedJournalStore.loadPendingCount()
   unprocessedPaymentStore.loadPendingCount()
+  if (document.visibilityState === 'visible') startPaymentPolling()
+  document.addEventListener('visibilitychange', onVisibilityChange)
+})
+onBeforeUnmount(() => {
+  stopPaymentPolling()
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+})
+
+const paymentConfirmationBadge = computed(() => {
+  const n = paymentConfirmationStore.pendingCount
+  if (!(n > 0)) return {}
+  const text = `${n} pembayaran transfer menunggu konfirmasi`
+  return {
+    badge: {
+      label: n > 99 ? '99+' : String(n),
+      color: 'error' as const,
+      title: text,
+      'aria-label': text,
+    },
+  }
 })
 
 
@@ -49,8 +89,9 @@ const items = computed<NavigationMenuItem[][]>(() => [[
   {
     label: 'Pembayaran',
     icon: 'i-heroicons-credit-card',
+    ...paymentConfirmationBadge.value,
     children: [
-      { label: 'Riwayat Pembayaran', to: '/admin/payment' },
+      { label: 'Riwayat Pembayaran', to: '/admin/payment', ...paymentConfirmationBadge.value },
       { label: 'Metode Pembayaran', to: '/admin/payment-method' },
       { label: 'Payment Channel', to: '/admin/payment-channel' },
       {

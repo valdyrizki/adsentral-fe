@@ -71,6 +71,12 @@ export const usePaymentApi = () => {
     }
   }
 
+  // Admin: jumlah payment MANUAL_BANK berstatus UNPAID (badge sidebar)
+  const fetchPendingConfirmationCount = async (): Promise<number> => {
+    const res = await api<WebResponse<number>>('/admin/payments/pending-confirmation-count')
+    return Number(res.data ?? 0)
+  }
+
   // Admin: get single payment by id
   const fetchPaymentById = async (paymentId: string): Promise<PaymentResponse> => {
     const res = await api<WebResponse<PaymentResponse>>(`/payment/${paymentId}`)
@@ -120,5 +126,5 @@ export const usePaymentApi = () => {
     }
   }
 
-  return { fetchMyPayments, fetchAllPayments, fetchConfirmPayment, fetchRejectPayment, fetchCancelPayment, fetchPaymentById, fetchTxByPaymentId, cancelPayment, uploadPaymentProof }
+  return { fetchMyPayments, fetchAllPayments, fetchConfirmPayment, fetchRejectPayment, fetchCancelPayment, fetchPendingConfirmationCount, fetchPaymentById, fetchTxByPaymentId, cancelPayment, uploadPaymentProof }
 }
