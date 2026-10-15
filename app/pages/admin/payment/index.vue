@@ -251,7 +251,7 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
   definePageMeta({ layout: 'admin', label: 'Manajemen Pembayaran' })
 
     const toast = useToast()
-  const paymentConfirmationStore = usePaymentConfirmationStore()
+  const alertsStore = useAlertsStore()
   const { fetchAllPayments, fetchConfirmPayment, fetchCancelPayment } = usePaymentApi()
 
   // Tick tiap detik untuk countdown batas bayar
@@ -355,7 +355,7 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
     try {
       await fetchConfirmPayment(paymentId)
       toast.add({ title: 'Pembayaran dikonfirmasi', color: 'success', icon: 'i-heroicons-check-circle' })
-      paymentConfirmationStore.loadPendingCount()
+      alertsStore.refresh()
       await refresh()
     } catch (err: any) {
       toast.add({ title: 'Gagal konfirmasi', description: err.statusMessage || err.message, color: 'error' })
@@ -387,7 +387,7 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
     try {
       await fetchCancelPayment(payment.id)
       toast.add({ title: isDeposit ? 'Pembayaran dibatalkan' : 'Pembayaran ditolak', color: 'success', icon: 'i-heroicons-check-circle' })
-      paymentConfirmationStore.loadPendingCount()
+      alertsStore.refresh()
       await refresh()
     } catch (err: any) {
       toast.add({ title: isDeposit ? 'Gagal membatalkan' : 'Gagal menolak', description: err.statusMessage || err.message, color: 'error' })

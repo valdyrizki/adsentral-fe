@@ -59,11 +59,6 @@ export const useFailedJournalApi = () => {
     }
   }
 
-  const fetchPendingCount = async (): Promise<number> => {
-    const res = await api<WebResponse<number>>('/admin/finance/failed-journals/pending-count')
-    return Number(res.data ?? 0)
-  }
-
   const retryFailedJournal = async (id: number): Promise<FailedJournalResponse> => {
     try {
       const res = await api<WebResponse<any>>(`/admin/finance/failed-journals/${id}/retry`, { method: 'POST' })
@@ -85,5 +80,5 @@ export const useFailedJournalApi = () => {
     }
   }
 
-  return { fetchFailedJournals, fetchPendingCount, retryFailedJournal, dismissFailedJournal }
+  return { fetchFailedJournals, retryFailedJournal, dismissFailedJournal }
 }

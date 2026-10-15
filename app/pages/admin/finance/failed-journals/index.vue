@@ -248,7 +248,7 @@ import type { PageResponse } from '~/types/PageResponse'
 definePageMeta({ layout: 'admin', label: 'Jurnal Gagal' })
 
 const toast = useToast()
-const failedJournalStore = useFailedJournalStore()
+const alertsStore = useAlertsStore()
 const { fetchFailedJournals, retryFailedJournal, dismissFailedJournal } = useFailedJournalApi()
 
 // ===== HELPERS =====
@@ -297,7 +297,7 @@ const { data, pending, error, refresh } = useAsyncData<PageResponse<FailedJourna
 )
 
 async function reload() {
-  await Promise.all([refresh(), failedJournalStore.loadPendingCount()])
+  await Promise.all([refresh(), alertsStore.refresh()])
 }
 
 // ===== DETAIL =====

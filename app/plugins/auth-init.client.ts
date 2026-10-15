@@ -5,8 +5,6 @@ import { useSystemSettingApi } from "~/composables/api/system-setting"
 export default defineNuxtPlugin(async () => {
   const authStore = useAuthStore()
   const balanceStore = useBalanceStore()
-  const notificationStore = useNotificationStore()
-  const chatStore = useChatStore()
   const config = useRuntimeConfig()
   const { fetchPublicSystemSetting } = useSystemSettingApi()
 
@@ -41,11 +39,7 @@ export default defineNuxtPlugin(async () => {
 
     await authStore.loadUserProfile()
     await balanceStore.loadBalance()
-
-    await notificationStore.loadUnreadCount().catch(() => {})
-
-    // Fetch chat unread count paling akhir, setelah semua proses fetching lain selesai
-    chatStore.loadUnreadCount().catch(() => {})
+    // Angka badge dimuat oleh useAlertsPolling di layout (bereaksi saat token & profil siap)
   } catch (err: any) {
     // Refresh gagal = user belum login atau refresh token expired
     // Diam saja — user akan lihat halaman dengan UI "Daftar/Masuk"

@@ -334,6 +334,7 @@ export const useProductsApi = () => {
       if (!res || res.status !== 'success') {
         throw createError({ statusCode: 400, statusMessage: res?.message || 'Activate Failed' })
       }
+      useAlertsStore().refresh() // badge produk menunggu review turun
       return res.data
     } catch (err: any) {
       throw createError({
@@ -349,6 +350,7 @@ export const useProductsApi = () => {
       if (!res || res.status !== 'success') {
         throw createError({ statusCode: 400, statusMessage: res?.message || 'Reject Failed' })
       }
+      useAlertsStore().refresh() // badge produk menunggu review turun
       return res.data
     } catch (err: any) {
       throw createError({

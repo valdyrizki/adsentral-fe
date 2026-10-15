@@ -95,21 +95,15 @@ export const useTransactionApi = () => {
     }
   }
 
-  // Seller: jumlah pesanan PAID yang menunggu diterima/ditolak (badge sidebar)
-  const fetchSellerPendingConfirmationCount = async (): Promise<number> => {
-    const res = await api<WebResponse<number>>('/tx/seller/pending-confirmation-count')
-    return Number(res.data ?? 0)
-  }
-
-  // Aksi yang mengubah status PAID -> badge sidebar seller langsung diperbarui (no-op untuk non-seller)
-  const refreshSellerPendingCount = () => {
-    useSellerOrderConfirmationStore().loadPendingCount()
+  // Aksi yang mengubah status PAID -> badge alerts langsung diperbarui
+  const refreshAlerts = () => {
+    useAlertsStore().refresh()
   }
 
   const fetchConfirmTx = async (txId: string): Promise<void> => {
     const res = await api<WebResponse<TransactionResponse>>(`/tx/confirm/${txId}`, { method: 'PATCH' }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
-    refreshSellerPendingCount()
+    refreshAlerts()
   }
 
   const fetchRejectTx = async (txId: string, reason: string): Promise<void> => {
@@ -118,7 +112,7 @@ export const useTransactionApi = () => {
       body: { reason },
     }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
-    refreshSellerPendingCount()
+    refreshAlerts()
   }
 
   const fetchRefundTx = async (txId: string, reason: string): Promise<void> => {
@@ -158,7 +152,7 @@ export const useTransactionApi = () => {
   const fetchAcceptCancelRequest = async (txId: string): Promise<void> => {
     const res = await api<WebResponse<TransactionResponse>>(`/tx/cancel/accept/${txId}`, { method: 'PATCH' }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
-    refreshSellerPendingCount()
+    refreshAlerts()
   }
 
   const fetchArbitrageRequest = async (txId: string, reason: string): Promise<void> => {
@@ -187,7 +181,6 @@ export const useTransactionApi = () => {
     fetchBuyerTransactions,
     fetchTransactionById,
     fetchTxSeller,
-    fetchSellerPendingConfirmationCount,
     fetchConfirmTx,
     fetchRejectTx,
     fetchRefundTx,

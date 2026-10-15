@@ -56,11 +56,6 @@ export const useUnprocessedPaymentApi = () => {
     }
   }
 
-  const fetchUnprocessedPendingCount = async (): Promise<number> => {
-    const res = await api<WebResponse<number>>('/admin/payments/unprocessed/pending-count')
-    return Number(res.data ?? 0)
-  }
-
   const resolveUnprocessedPayment = async (id: number, note: string): Promise<UnprocessedPaymentResponse> => {
     try {
       const res = await api<WebResponse<any>>(`/admin/payments/unprocessed/${id}/resolve`, {
@@ -73,5 +68,5 @@ export const useUnprocessedPaymentApi = () => {
     }
   }
 
-  return { fetchUnprocessedPayments, fetchUnprocessedPendingCount, resolveUnprocessedPayment }
+  return { fetchUnprocessedPayments, resolveUnprocessedPayment }
 }

@@ -3,19 +3,13 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 const merchantStore = useMerchantStore()
 const authStore = useAuthStore()
 const config = useRuntimeConfig()
-const notificationStore = useNotificationStore()
-const chatStore = useChatStore()
 
-const orderConfirmationStore = useSellerOrderConfirmationStore()
-usePendingCountPolling(() => orderConfirmationStore.loadPendingCount())
-
-const route = useRoute()
-watch(() => route.path, () => {
-  if (authStore.accessToken) {
-    notificationStore.loadUnreadCount()
-    chatStore.loadUnreadCount()
-  }
-})
+const alertsStore = useAlertsStore()
+// Satu request GET /seller/alerts per interval untuk semua badge seller
+useAlertsPolling('seller')
+const alerts = computed(() => alertsStore.seller)
+// > 0 (bukan null) -> ada pesanan menunggu konfirmasi
+const hasPendingOrders = computed(() => (alerts.value?.pending_confirmation ?? 0) > 0)
 
 const systemSettingStore = useSystemSettingStore()
 
@@ -36,7 +30,7 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     label: 'Chat',
     icon: 'mdi:chat',
     to: '/seller/chat',
-    ...(chatStore.unreadCount > 0 && { badge: String(chatStore.unreadCount) }),
+    ...countBadge(alerts.value?.unread_chats),
   },
   {
     label: 'Products',
@@ -52,8 +46,8 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     label: 'Orders',
     icon: 'i-lucide-shopping-cart',
     // ada pesanan menunggu -> langsung ke daftar terfilter PAID
-    to: orderConfirmationStore.pendingCount > 0 ? '/seller/order?status=PAID' : '/seller/order',
-    ...pendingCountBadge(orderConfirmationStore.pendingCount, `${orderConfirmationStore.pendingCount} pesanan menunggu konfirmasi Anda`),
+    to: hasPendingOrders.value ? '/seller/order?status=PAID' : '/seller/order',
+    ...pendingCountBadge(alerts.value?.pending_confirmation, `${alerts.value?.pending_confirmation} pesanan menunggu konfirmasi Anda`),
   },
   {
     label: 'Saldo',
@@ -94,7 +88,7 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     label: 'Notifikasi',
     icon: 'i-heroicons-bell',
     to: '/seller/notification',
-    ...(notificationStore.unreadCount > 0 && { badge: String(notificationStore.unreadCount) }),
+    ...countBadge(alerts.value?.unread_notifications),
   },
   // {
   //   label: 'Settings',

@@ -10,10 +10,19 @@
       </dd>
       <AppCopyButton v-if="f.value" :value="f.value" :label="`Salin ${f.label}`" />
     </div>
+    <!-- File lampiran akun -->
+    <div v-if="file" class="grid grid-cols-[7.5rem_1fr_auto] sm:grid-cols-[9rem_1fr_auto] items-center gap-2 px-3 py-1.5">
+      <dt class="text-xs text-gray-500">File</dt>
+      <dd class="min-w-0">
+        <AppFileDownloadButton :file="file" :color="fileColor" />
+      </dd>
+    </div>
   </dl>
 </template>
 
 <script lang="ts" setup>
-// Daftar "Label: nilai" detail akun, dengan tombol salin per field
-defineProps<{ fields: { label: string; value: string }[] }>()
+import type { FileManagementResponse } from '~/types/file-management/FileManagementResponse'
+
+// Daftar "Label: nilai" detail akun, dengan tombol salin per field (+ baris File bila ada)
+defineProps<{ fields: { label: string; value: string }[]; file?: FileManagementResponse | null; fileColor?: 'primary' | 'warning' | 'neutral' }>()
 </script>

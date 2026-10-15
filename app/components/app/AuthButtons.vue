@@ -13,10 +13,10 @@
     <!-- Always visible -->
     <div flex class="flex gap-2">
         <template v-if="authStore.accessToken">
-          <UChip :text="notificationStore.unreadCount || 0" color="error" size="3xl">
+          <UChip :text="notificationBadge ?? undefined" :show="!!notificationBadge" color="error" size="3xl">
             <UButton to="/notification" color="neutral" variant="subtle" icon="mdi:bell-outline" />
           </UChip>
-          <UChip :text="chatStore.unreadCount || 0" color="error" size="3xl">
+          <UChip :text="chatBadge ?? undefined" :show="!!chatBadge" color="error" size="3xl">
             <UButton to="/chat" color="neutral" variant="subtle" icon="mdi:email-outline" />
           </UChip>
         </template>
@@ -68,16 +68,14 @@
 import type { DropdownMenuItem } from '@nuxt/ui'
 
 const authStore = useAuthStore()
-const notificationStore = useNotificationStore()
-const chatStore = useChatStore()
+const alertsStore = useAlertsStore()
 
-const route = useRoute()
-watch(() => route.path, () => {
-  if (authStore.accessToken) {
-    notificationStore.loadUnreadCount()
-    chatStore.loadUnreadCount()
-  }
-})
+// Data dari GET /alerts (di-poll oleh layout default). Admin tidak memanggil /alerts,
+// jadi untuk admin pakai data /admin/alerts terakhir yang dimuat layout admin.
+const notificationBadge = computed(() => formatBadgeCount(
+  authStore.isAnyAdmin ? alertsStore.admin?.unread_notifications : alertsStore.buyer?.unread_notifications,
+))
+const chatBadge = computed(() => formatBadgeCount(authStore.isAnyAdmin ? null : alertsStore.buyer?.unread_chats))
 const toast = useToast()
 
 const isLoginOpen = ref(false)

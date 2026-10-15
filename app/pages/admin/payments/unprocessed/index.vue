@@ -229,7 +229,7 @@ import type { PageResponse } from '~/types/PageResponse'
 definePageMeta({ layout: 'admin', label: 'Pembayaran Tidak Terproses' })
 
 const toast = useToast()
-const unprocessedStore = useUnprocessedPaymentStore()
+const alertsStore = useAlertsStore()
 const { fetchUnprocessedPayments, resolveUnprocessedPayment } = useUnprocessedPaymentApi()
 
 // ===== HELPERS =====
@@ -272,7 +272,7 @@ const { data, pending, error, refresh } = useAsyncData<PageResponse<UnprocessedP
 )
 
 async function reload() {
-  await Promise.all([refresh(), unprocessedStore.loadPendingCount()])
+  await Promise.all([refresh(), alertsStore.refresh()])
 }
 
 // ===== DETAIL =====

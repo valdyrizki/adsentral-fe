@@ -398,7 +398,7 @@ import { useDebounceFn } from '@vueuse/core'
 
   //store
   const authStore  = useAuthStore()
-  const chatStore = useChatStore()
+  const alertsStore = useAlertsStore()
   const systemSettingStore = useSystemSettingStore()
 
   const chatWarning = computed(() =>
@@ -464,7 +464,7 @@ const { data: conversations, pending: pendingConversation, refresh: refreshConve
       loadingChat.value = false
 
       await refreshConversations() // Refresh conversations untuk update last_message dan last_message_at
-      chatStore.loadUnreadCount({ force: true }) // Sync badge chat di topbar
+      alertsStore.refresh() // Sync badge chat di topbar
       await nextTick()
       scrollToBottom()
     } catch (err) {

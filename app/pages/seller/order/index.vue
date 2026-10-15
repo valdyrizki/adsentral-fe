@@ -21,12 +21,74 @@
         <USelect v-model="filterStatus" :items="statusOptions" value-key="value" class="w-56" />
       </div>
       <div class="self-end">
-        <UButton icon="mdi:refresh" color="neutral" variant="outline" :loading="pending" @click="refresh()">
+        <UButton icon="mdi:refresh" color="neutral" variant="outline" :loading="pending || orderSummaryPending" @click="refreshAll()">
           Refresh
         </UButton>
       </div>
     </div>
   </UCard>
+
+  <!-- Tab ringkasan pesanan (GET /seller/orders/summary) -->
+  <ClientOnly>
+    <UCard class="mt-6">
+      <UAlert
+        v-if="orderSummaryError"
+        title="Gagal memuat ringkasan pesanan"
+        :description="apiErrorMessage(orderSummaryError)"
+        icon="mdi:alert-circle"
+        color="error"
+        variant="subtle"
+        class="mb-3"
+        :actions="apiErrorStatus(orderSummaryError) === 403 ? [] : [{ label: 'Coba lagi', icon: 'mdi:refresh', color: 'error', variant: 'outline', onClick: () => refreshOrderSummary() }]"
+      />
+      <div class="flex flex-wrap gap-2">
+        <UButton
+          :color="filterStatus === 'ALL' ? 'primary' : 'neutral'"
+          :variant="filterStatus === 'ALL' ? 'solid' : 'outline'"
+          size="sm"
+          @click="filterStatus = 'ALL'"
+        >
+          Semua
+        </UButton>
+        <UButton
+          v-for="tab in sellerOrderSummaryItems"
+          :key="tab.key"
+          :color="isSummaryTabActive(tab) ? 'primary' : 'neutral'"
+          :variant="isSummaryTabActive(tab) ? 'solid' : 'outline'"
+          size="sm"
+          :icon="tab.icon"
+          :to="tab.status ? undefined : tab.to"
+          @click="tab.status && selectSummaryTab(tab)"
+        >
+          {{ tab.label }}
+          <USkeleton v-if="orderSummaryPending" class="h-4 w-5 rounded-full" />
+          <UBadge
+            v-else-if="orderSummary"
+            :color="isSummaryTabActive(tab) ? 'neutral' : 'primary'"
+            variant="soft"
+            size="sm"
+          >
+            {{ orderSummary[tab.key] }}
+          </UBadge>
+        </UButton>
+      </div>
+
+      <!-- Pesanan Aktif = gabungan 3 status; BE hanya menerima satu status per request -->
+      <div v-if="isActiveGroup" class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+        <span class="text-xs text-gray-500">Pesanan Aktif:</span>
+        <UButton
+          v-for="opt in activeSubFilters"
+          :key="opt.value"
+          size="xs"
+          :color="filterStatus === opt.value ? 'primary' : 'neutral'"
+          :variant="filterStatus === opt.value ? 'soft' : 'ghost'"
+          @click="filterStatus = opt.value"
+        >
+          {{ opt.label }}
+        </UButton>
+      </div>
+    </UCard>
+  </ClientOnly>
 
   <!-- Chart example -->
   <ClientOnly>
@@ -193,6 +255,8 @@
   import TransactionStatusBadge from '~/components/app/TransactionStatusBadge.vue';
   import RejectTxModal from '~/components/form/RejectTxModal.vue';
   import { useTransactionApi } from '~/composables/api/transaction'
+  import { useSellerSummaryApi } from '~/composables/api/seller-summary'
+  import type { SellerOrderSummaryItem } from '~/utils/sellerOrderSummary'
   import type { PageResponse } from '~/types/PageResponse';
   import type { TransactionResponse } from '~/types/TransactionResponse';
 
@@ -218,6 +282,31 @@
   const paymentNow = usePaymentNow()
   const statusOptions = sellerTxStatusFilters
   const { filterStatus, search, keyword, activeStatusLabel, applySearchNow, clearSearch } = useTxListFilters(statusOptions, page)
+
+  // ===== RINGKASAN (angka tab; sekali muat + muat ulang setelah aksi, tanpa polling) =====
+  const { fetchOrderSummary } = useSellerSummaryApi()
+  const {
+    data: orderSummary,
+    pending: orderSummaryPending,
+    error: orderSummaryError,
+    refresh: refreshOrderSummary,
+  } = useAsyncData('seller-order-summary', fetchOrderSummary, { server: false })
+
+  const isActiveGroup = computed(() => (ACTIVE_ORDER_STATUSES as readonly string[]).includes(filterStatus.value))
+  const activeSubFilters = ACTIVE_ORDER_STATUSES.map(v => ({
+    value: v,
+    label: statusOptions.find(o => o.value === v)?.label ?? v,
+  }))
+  const isSummaryTabActive = (tab: SellerOrderSummaryItem) =>
+    tab.key === 'active' ? isActiveGroup.value : !!tab.status && tab.status === filterStatus.value
+  const selectSummaryTab = (tab: SellerOrderSummaryItem) => {
+    // Pesanan Aktif: tetap di sub-filter yang sedang dipilih
+    if (tab.key === 'active' && isActiveGroup.value) return
+    if (tab.status) filterStatus.value = tab.status
+  }
+
+  // Muat ulang daftar + angka tab
+  const refreshAll = () => Promise.all([refresh(), refreshOrderSummary()])
 
   const emptyTitle = computed(() => {
     const parts: string[] = []
@@ -258,10 +347,10 @@
         description: 'Pesanan berhasil diterima',
         color: 'success'
       })
-      refresh()
+      refreshAll()
     } catch (err: any) {
       useToast().add({ title: 'Gagal', description: err.message || 'Gagal menerima pesanan', color: 'error' })
-      if (isStaleActionError(err)) await refresh()
+      if (isStaleActionError(err)) await refreshAll()
     }finally {
       acceptingId.value = null //untuk fungsi loading button
     }
@@ -285,7 +374,7 @@
       isRejectingModal.value = false
       selectedTxId.value = null
 
-      await refresh()
+      await refreshAll()
 
     } catch (err: any) {
       useToast().add({
@@ -297,7 +386,7 @@
         isRejectingModal.value = false
         isRejectingTxModal.value = false
         selectedTxId.value = null
-        await refresh()
+        await refreshAll()
       }
     } finally {
       rejectingId.value = null
@@ -331,7 +420,7 @@
       isRejectingTxModal.value = false
       selectedTxId.value = null
 
-      await refresh()
+      await refreshAll()
 
     } catch (err: any) {
       useToast().add({
@@ -343,7 +432,7 @@
         isRejectingModal.value = false
         isRejectingTxModal.value = false
         selectedTxId.value = null
-        await refresh()
+        await refreshAll()
       }
     } finally {
       rejectingTxId.value = null

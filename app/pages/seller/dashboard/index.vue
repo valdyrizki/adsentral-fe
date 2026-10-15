@@ -41,41 +41,68 @@
       </div>
     </div>
 
-    <!-- Stats Cards -->
+    <!-- Ringkasan: Keuangan, Pesanan, Produk (masing-masing endpoint sendiri, dimuat paralel) -->
     <ClientOnly>
       <template #fallback>
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <UCard v-for="i in 4" :key="i" class="shadow-sm">
-            <div class="flex items-start justify-between">
-              <div class="space-y-2 flex-1">
-                <USkeleton class="h-3 w-24 rounded" />
-                <USkeleton class="h-7 w-28 rounded" />
-                <USkeleton class="h-3 w-20 rounded" />
-              </div>
-              <USkeleton class="w-10 h-10 rounded-xl flex-shrink-0" />
+        <div class="space-y-6">
+          <UCard v-for="i in 3" :key="i" class="shadow-sm">
+            <template #header><USkeleton class="h-5 w-40 rounded" /></template>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <USkeleton v-for="j in 3" :key="j" class="h-20 rounded-xl" />
             </div>
           </UCard>
         </div>
       </template>
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <UCard
-          v-for="stat in statsCards"
-          :key="stat.label"
-          class="shadow-sm"
+      <div class="space-y-6">
+        <SellerSummaryCard
+          title="Ringkasan Keuangan"
+          icon="i-heroicons-banknotes"
+          :pending="financePending"
+          :error="financeError"
+          grid-class="grid-cols-1 sm:grid-cols-3"
+          @retry="refreshFinance()"
         >
-          <div class="flex items-start justify-between">
-            <div>
-              <p class="text-xs text-gray-400 mb-1">{{ stat.label }}</p>
-              <USkeleton v-if="pending" class="h-7 w-28 rounded mb-1" />
-              <p v-else class="text-xl font-bold text-gray-800">{{ stat.value }}</p>
-              <USkeleton v-if="pending" class="h-3 w-20 rounded mt-0.5" />
-              <p v-else-if="stat.sub" class="text-xs text-gray-400 mt-0.5">{{ stat.sub }}</p>
-            </div>
-            <div :class="`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${stat.bgColor}`">
-              <UIcon :name="stat.icon" :class="`text-xl ${stat.iconColor}`" />
-            </div>
-          </div>
-        </UCard>
+          <SellerSummaryTile
+            v-for="item in financeItems"
+            :key="item.label"
+            v-bind="item"
+          />
+        </SellerSummaryCard>
+
+        <SellerSummaryCard
+          title="Ringkasan Pesanan"
+          icon="i-lucide-package"
+          :pending="orderSummaryPending"
+          :error="orderSummaryError"
+          grid-class="grid-cols-2 lg:grid-cols-3"
+          :skeleton-count="6"
+          @retry="refreshOrderSummary()"
+        >
+          <SellerSummaryTile
+            v-for="item in sellerOrderSummaryItems"
+            :key="item.key"
+            :label="item.label"
+            :value="orderSummary?.[item.key] ?? 0"
+            :icon="item.icon"
+            :color="item.color"
+            :bg-color="item.bgColor"
+            :to="item.to"
+          />
+        </SellerSummaryCard>
+
+        <SellerSummaryCard
+          title="Ringkasan Produk"
+          icon="i-lucide-box"
+          :pending="productSummaryPending"
+          :error="productSummaryError"
+          @retry="refreshProductSummary()"
+        >
+          <SellerSummaryTile
+            v-for="item in productItems"
+            :key="item.label"
+            v-bind="item"
+          />
+        </SellerSummaryCard>
       </div>
     </ClientOnly>
 
@@ -263,37 +290,26 @@
     <!-- Chart & Status Summary -->
     <ClientOnly>
       <template #fallback>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <UCard class="lg:col-span-2 shadow-sm">
+        <div class="grid grid-cols-1 gap-6">
+          <UCard class="shadow-sm">
             <template #header>
               <div class="flex items-center justify-between">
                 <p class="font-semibold text-gray-800">Grafik Pendapatan</p>
-                <span class="text-xs text-gray-400">6 bulan terakhir</span>
+                <span class="text-xs text-gray-400">6 bulan terakhir · dari 20 pesanan terbaru</span>
               </div>
             </template>
             <USkeleton class="h-64 w-full rounded-lg" />
           </UCard>
-          <UCard class="shadow-sm">
-            <template #header>
-              <p class="font-semibold text-gray-800">Status Pesanan</p>
-            </template>
-            <div class="space-y-3">
-              <div v-for="i in 6" :key="i" class="flex items-center justify-between">
-                <USkeleton class="h-4 w-32 rounded" />
-                <USkeleton class="h-5 w-8 rounded-full" />
-              </div>
-            </div>
-          </UCard>
         </div>
       </template>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 gap-6">
 
         <!-- Sales Chart -->
-        <UCard class="lg:col-span-2 shadow-sm">
+        <UCard class="shadow-sm">
           <template #header>
             <div class="flex items-center justify-between">
               <p class="font-semibold text-gray-800">Grafik Pendapatan</p>
-              <span class="text-xs text-gray-400">6 bulan terakhir</span>
+              <span class="text-xs text-gray-400">6 bulan terakhir · dari 20 pesanan terbaru</span>
             </div>
           </template>
           <div class="h-64">
@@ -313,27 +329,6 @@
                 }
               }"
             />
-          </div>
-        </UCard>
-
-        <!-- Status Breakdown -->
-        <UCard class="shadow-sm">
-          <template #header>
-            <p class="font-semibold text-gray-800">Status Pesanan</p>
-          </template>
-          <div class="space-y-3">
-            <div
-              v-for="s in statusBreakdown"
-              :key="s.label"
-              class="flex items-center justify-between"
-            >
-              <div class="flex items-center gap-2">
-                <span :class="`w-2 h-2 rounded-full ${s.dotColor}`" />
-                <span class="text-sm text-gray-600">{{ s.label }}</span>
-              </div>
-              <USkeleton v-if="pending" class="h-5 w-8 rounded-full" />
-              <UBadge v-else :color="s.color" variant="soft" size="sm">{{ s.count }}</UBadge>
-            </div>
           </div>
         </UCard>
 
@@ -431,6 +426,7 @@ import dayjs from 'dayjs'
 import TransactionStatusBadge from '~/components/app/TransactionStatusBadge.vue'
 import { useTransactionApi } from '~/composables/api/transaction'
 import { usePenaltyApi } from '~/composables/api/penalty'
+import { useSellerSummaryApi } from '~/composables/api/seller-summary'
 import type { MyPenaltyStat } from '~/composables/api/penalty'
 import type { PageResponse } from '~/types/PageResponse'
 import type { TransactionResponse } from '~/types/TransactionResponse'
@@ -443,6 +439,41 @@ const balanceStore = useBalanceStore()
 const user = computed(() => authStore.user?.username ?? '-')
 const { fetchTxSeller } = useTransactionApi()
 const { fetchMyPenaltyStat } = usePenaltyApi()
+const { fetchOrderSummary, fetchProductSummary, fetchFinanceSummary } = useSellerSummaryApi()
+
+// ===== RINGKASAN (paralel, tidak di-await, tanpa polling) =====
+const {
+  data: financeSummary,
+  pending: financePending,
+  error: financeError,
+  refresh: refreshFinance,
+} = useAsyncData('seller-dashboard-finance-summary', fetchFinanceSummary, { server: false })
+
+const {
+  data: orderSummary,
+  pending: orderSummaryPending,
+  error: orderSummaryError,
+  refresh: refreshOrderSummary,
+} = useAsyncData('seller-dashboard-order-summary', fetchOrderSummary, { server: false })
+
+const {
+  data: productSummary,
+  pending: productSummaryPending,
+  error: productSummaryError,
+  refresh: refreshProductSummary,
+} = useAsyncData('seller-dashboard-product-summary', fetchProductSummary, { server: false })
+
+const financeItems = computed(() => [
+  { label: 'Transaksi Hari Ini', value: formatRupiah(financeSummary.value?.today_transaction_amount), icon: 'i-heroicons-sun', color: 'text-sky-500', bgColor: 'bg-sky-50' },
+  { label: 'Seluruh Pendapatan Bersih', value: formatRupiah(financeSummary.value?.total_income), icon: 'i-heroicons-banknotes', color: 'text-green-500', bgColor: 'bg-green-50' },
+  { label: 'Pendapatan yang sudah ditarik', value: formatRupiah(financeSummary.value?.withdrawn), icon: 'mdi:cash-check', color: 'text-teal-500', bgColor: 'bg-teal-50', to: '/seller/balance' },
+])
+
+const productItems = computed(() => [
+  { label: 'Produk Aktif', value: productSummary.value?.active ?? 0, icon: 'i-heroicons-check-circle', color: 'text-green-500', bgColor: 'bg-green-50', to: '/seller/product' },
+  { label: 'Produk sedang direview', value: productSummary.value?.in_review ?? 0, icon: 'i-heroicons-clock', color: 'text-blue-500', bgColor: 'bg-blue-50', to: '/seller/product' },
+  { label: 'Produk diblokir', value: productSummary.value?.blocked ?? 0, icon: 'i-heroicons-no-symbol', color: 'text-red-500', bgColor: 'bg-red-50', to: '/seller/product' },
+])
 
 const { data: penaltyStat } = await useAsyncData<MyPenaltyStat | null>(
   'seller-dashboard-penalty',
@@ -470,6 +501,7 @@ const isWithdrawalOpen = ref(false)
 function handleWithdrawalSuccess() {
   isWithdrawalOpen.value = false
   balanceStore.loadBalance({ force: true })
+  refreshFinance()
 }
 
 function formatRp(val: number) {
@@ -488,68 +520,6 @@ const {
 )
 
 const recentOrders = computed(() => txData.value?.content?.slice(0, 8) ?? [])
-
-// ===== STATS =====
-const statsCards = computed(() => {
-  const list = txData.value?.content ?? []
-  const totalElements = txData.value?.total_elements ?? 0
-
-  const pendapatan = list
-    .filter(t => ['DONE', 'COMPLETE'].includes(t.status))
-    .reduce((sum, t) => sum + t.total_price, 0)
-
-  const pendingCount = list.filter(t => t.status === 'PAID').length
-  const diproses = list.filter(t => t.status === 'IN_PROGRESS').length
-
-  return [
-    {
-      label: 'Total Pendapatan',
-      value: 'Rp ' + pendapatan.toLocaleString('id-ID'),
-      sub: 'Dari transaksi selesai',
-      icon: 'i-heroicons-banknotes',
-      bgColor: 'bg-green-50',
-      iconColor: 'text-green-500',
-    },
-    {
-      label: 'Total Pesanan',
-      value: totalElements.toString(),
-      sub: 'Semua waktu',
-      icon: 'i-lucide-package',
-      bgColor: 'bg-blue-50',
-      iconColor: 'text-blue-500',
-    },
-    {
-      label: 'Menunggu Konfirmasi',
-      value: pendingCount.toString(),
-      sub: 'Perlu tindakan',
-      icon: 'i-heroicons-clock',
-      bgColor: 'bg-yellow-50',
-      iconColor: 'text-yellow-500',
-    },
-    {
-      label: 'Sedang Diproses',
-      value: diproses.toString(),
-      sub: 'In progress',
-      icon: 'i-heroicons-arrow-path',
-      bgColor: 'bg-purple-50',
-      iconColor: 'text-purple-500',
-    },
-  ]
-})
-
-// ===== STATUS BREAKDOWN =====
-const statusBreakdown = computed(() => {
-  const list = txData.value?.content ?? []
-  const count = (status: string) => list.filter(t => t.status === status).length
-  return [
-    { label: 'Menunggu Bayar', count: count('UNPAID'), color: 'warning' as const, dotColor: 'bg-yellow-400' },
-    { label: 'Menunggu Konfirmasi', count: count('PAID'), color: 'info' as const, dotColor: 'bg-blue-400' },
-    { label: 'Diproses', count: count('IN_PROGRESS'), color: 'primary' as const, dotColor: 'bg-primary' },
-    { label: 'Dikirim', count: count('DELIVERED'), color: 'primary' as const, dotColor: 'bg-teal-400' },
-    { label: 'Selesai', count: count('DONE') + count('COMPLETE'), color: 'success' as const, dotColor: 'bg-green-400' },
-    { label: 'Dibatalkan', count: count('CANCELLED') + count('REJECTED'), color: 'error' as const, dotColor: 'bg-red-400' },
-  ]
-})
 
 // ===== CHART — group DONE/COMPLETE by month (last 6 months) =====
 const chartData = computed(() => {

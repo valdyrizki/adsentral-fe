@@ -1,26 +1,16 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 const authStore = useAuthStore()
-const notificationStore = useNotificationStore()
-const failedJournalStore = useFailedJournalStore()
-const unprocessedPaymentStore = useUnprocessedPaymentStore()
-
-const paymentConfirmationStore = usePaymentConfirmationStore()
-
-const route = useRoute()
-watch(() => route.path, () => {
-  if (authStore.accessToken) notificationStore.loadUnreadCount()
-})
-
-usePendingCountPolling(() => paymentConfirmationStore.loadPendingCount())
-
-onMounted(() => {
-  failedJournalStore.loadPendingCount()
-  unprocessedPaymentStore.loadPendingCount()
-})
+const alertsStore = useAlertsStore()
+// Satu request GET /admin/alerts per interval untuk semua badge admin
+useAlertsPolling('admin')
+const alerts = computed(() => alertsStore.admin)
 
 const paymentConfirmationBadge = computed(() =>
-  pendingCountBadge(paymentConfirmationStore.pendingCount, `${paymentConfirmationStore.pendingCount} pembayaran transfer menunggu konfirmasi`),
+  pendingCountBadge(alerts.value?.pending_payment_confirmation, `${alerts.value?.pending_payment_confirmation} pembayaran transfer menunggu konfirmasi`),
+)
+const productsInReviewBadge = computed(() =>
+  pendingCountBadge(alerts.value?.products_in_review, `${alerts.value?.products_in_review} produk menunggu review`),
 )
 
 
@@ -38,9 +28,10 @@ const items = computed<NavigationMenuItem[][]>(() => [[
   {
     label: 'Products',
     icon: 'i-lucide-package',
+    ...productsInReviewBadge.value,
     children: [
       { label: 'Semua Produk', to: '/admin/product' },
-      { label: 'Review Produk', to: '/admin/product/review' },
+      { label: 'Review Produk', to: '/admin/product/review', ...productsInReviewBadge.value },
       { label: 'Kategori Produk', to: '/admin/category' },
       { label: 'Tipe Akun', to: '/admin/account-type' },
     ]
@@ -66,7 +57,7 @@ const items = computed<NavigationMenuItem[][]>(() => [[
       {
         label: 'Pembayaran Tidak Terproses',
         to: '/admin/payments/unprocessed',
-        ...(unprocessedPaymentStore.pendingCount > 0 && { badge: { label: String(unprocessedPaymentStore.pendingCount), color: 'error' as const } }),
+        ...pendingCountBadge(alerts.value?.unprocessed_payments, `${alerts.value?.unprocessed_payments} pembayaran tidak terproses`),
       },
     ]
   },
@@ -94,7 +85,7 @@ const items = computed<NavigationMenuItem[][]>(() => [[
       {
         label: 'Jurnal Gagal',
         to: '/admin/finance/failed-journals',
-        ...(failedJournalStore.pendingCount > 0 && { badge: { label: String(failedJournalStore.pendingCount), color: 'error' as const } }),
+        ...pendingCountBadge(alerts.value?.failed_journals, `${alerts.value?.failed_journals} jurnal gagal`),
       },
       { label: 'Kategori', to: '/admin/finance/category' },
     ]
@@ -111,7 +102,7 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     label: 'Notifikasi',
     icon: 'i-heroicons-bell',
     to: '/admin/notification',
-    ...(notificationStore.unreadCount > 0 && { badge: String(notificationStore.unreadCount) }),
+    ...countBadge(alerts.value?.unread_notifications),
   },
   // {
   //   label: 'Customers',

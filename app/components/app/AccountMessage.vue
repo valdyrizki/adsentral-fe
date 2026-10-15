@@ -12,7 +12,7 @@
         </span>
         <AppCopyButton :value="parsed.items[0]!.raw" label="Salin semua" show-label />
       </div>
-      <AppAccountFields :fields="parsed.items[0]!.fields" />
+      <AppAccountFields :fields="parsed.items[0]!.fields" :file="file" :file-color="fileColor" />
     </div>
 
     <!-- Lebih dari 1 akun: tombol per item, detail di popup -->
@@ -32,6 +32,12 @@
       </UButton>
     </div>
 
+    <!-- File berlaku untuk semua item -->
+    <div v-if="parsed.items.length > 1 && file" class="flex items-center gap-2 text-sm min-w-0">
+      <span class="text-xs text-gray-500 shrink-0">File :</span>
+      <AppFileDownloadButton :file="file" :color="fileColor" />
+    </div>
+
     <p v-for="(line, i) in parsed.outro" :key="`o${i}`" class="text-sm text-gray-600 whitespace-pre-wrap break-words">{{ line }}</p>
 
     <UModal v-if="parsed.items.length > 1" v-model:open="detailOpen" :title="selected?.title ?? title" :description="selected?.summary || undefined">
@@ -41,7 +47,7 @@
             <AppCopyButton :value="selected.raw" label="Salin semua" show-label size="sm" />
           </div>
           <div class="rounded-lg border border-gray-200">
-            <AppAccountFields :fields="selected.fields" />
+            <AppAccountFields :fields="selected.fields" :file="file" :file-color="fileColor" />
           </div>
         </div>
       </template>
@@ -49,13 +55,21 @@
   </div>
 
   <!-- Pesan biasa -->
-  <div v-else class="flex items-start gap-1">
-    <span class="flex-1 min-w-0 text-gray-600 whitespace-pre-wrap break-words">{{ message || fallback }}</span>
-    <AppCopyButton v-if="message && copyable" :value="message" />
+  <div v-else class="w-full text-left space-y-2">
+    <div class="flex items-start gap-1">
+      <span class="flex-1 min-w-0 text-gray-600 whitespace-pre-wrap break-words">{{ message || fallback }}</span>
+      <AppCopyButton v-if="message && copyable" :value="message" />
+    </div>
+    <div v-if="file" class="flex items-center gap-2 text-sm min-w-0">
+      <span class="text-xs text-gray-500 shrink-0">File :</span>
+      <AppFileDownloadButton :file="file" :color="fileColor" />
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import type { FileManagementResponse } from '~/types/file-management/FileManagementResponse'
+
 const props = withDefaults(defineProps<{
   message: string | null | undefined
   // Teks bila pesan kosong (mis. "Download filenya dibawah ini ya")
@@ -64,7 +78,10 @@ const props = withDefaults(defineProps<{
   title?: string
   // Tombol salin untuk pesan biasa (non detail akun)
   copyable?: boolean
-}>(), { fallback: '', title: 'Detail Akun', copyable: true })
+  // File lampiran → baris "File : [download nama.format]"
+  file?: FileManagementResponse | null
+  fileColor?: 'primary' | 'warning' | 'neutral'
+}>(), { fallback: '', title: 'Detail Akun', copyable: true, file: null, fileColor: 'primary' })
 
 interface AccountField { label: string; value: string }
 interface AccountItem { title: string; summary: string; fields: AccountField[]; raw: string }

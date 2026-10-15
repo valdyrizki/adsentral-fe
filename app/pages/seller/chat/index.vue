@@ -370,7 +370,7 @@ definePageMeta({
    })
   
   const toast = useToast()
-  const chatStore = useChatStore()
+  const alertsStore = useAlertsStore()
   const systemSettingStore = useSystemSettingStore()
 
   const chatWarning = computed(() =>
@@ -434,7 +434,7 @@ definePageMeta({
       loadingChat.value = false
 
       await refreshConversations() // Refresh conversations untuk update last_message dan last_message_at
-      chatStore.loadUnreadCount({ force: true }) // Sync badge chat di sidebar
+      alertsStore.refresh() // Sync badge chat di sidebar
       await nextTick()
       scrollToBottom()
     } catch (err) {

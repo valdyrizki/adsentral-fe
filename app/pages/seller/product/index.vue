@@ -16,11 +16,28 @@
         <UButton to="/seller/product/create" icon="uiw:plus" color="primary">
           Buat Produk
         </UButton>
-        <UButton icon="mdi:refresh" color="neutral" variant="outline" :loading="loading" @click="refresh()">
+        <UButton icon="mdi:refresh" color="neutral" variant="outline" :loading="loading || productSummaryPending" @click="refresh(); refreshProductSummary()">
           Refresh
         </UButton>
       </div>
     </UCard>
+
+    <!-- Ringkasan produk (GET /seller/products/summary) -->
+    <ClientOnly>
+      <SellerSummaryCard
+        title="Ringkasan Produk"
+        icon="i-lucide-box"
+        :pending="productSummaryPending"
+        :error="productSummaryError"
+        @retry="refreshProductSummary()"
+      >
+        <SellerSummaryTile
+          v-for="item in productSummaryItems"
+          :key="item.label"
+          v-bind="item"
+        />
+      </SellerSummaryCard>
+    </ClientOnly>
 
     <!-- List -->
     <ClientOnly>
@@ -219,6 +236,7 @@
 <script lang="ts" setup>
 import dayjs from 'dayjs'
 import { useProductsApi } from '~/composables/api/product'
+import { useSellerSummaryApi } from '~/composables/api/seller-summary'
 import type { PageResponse } from '~/types/PageResponse'
 import type { ProductResponse } from '~/types/product/ProductResponse'
 
@@ -227,6 +245,21 @@ definePageMeta({ layout: 'seller', label: 'Products' })
 const toast = useToast()
 const systemSettingStore = useSystemSettingStore()
 const { fetchMyProduct, deactivateProduct, activateProduct } = useProductsApi()
+
+// ===== RINGKASAN (sekali muat + muat ulang setelah aksi, tanpa polling) =====
+const { fetchProductSummary } = useSellerSummaryApi()
+const {
+  data: productSummary,
+  pending: productSummaryPending,
+  error: productSummaryError,
+  refresh: refreshProductSummary,
+} = useAsyncData('seller-product-summary', fetchProductSummary, { server: false })
+
+const productSummaryItems = computed(() => [
+  { label: 'Produk Aktif', value: productSummary.value?.active ?? 0, icon: 'i-heroicons-check-circle', color: 'text-green-500', bgColor: 'bg-green-50' },
+  { label: 'Produk sedang direview', value: productSummary.value?.in_review ?? 0, icon: 'i-heroicons-clock', color: 'text-blue-500', bgColor: 'bg-blue-50' },
+  { label: 'Produk diblokir', value: productSummary.value?.blocked ?? 0, icon: 'i-heroicons-no-symbol', color: 'text-red-500', bgColor: 'bg-red-50' },
+])
 
 // ===== FILTER STATE =====
 const page = ref(0)
@@ -325,7 +358,7 @@ async function deactivateHandler(id: number) {
   loadingId.value = id
   try {
     await deactivateProduct(id)
-    await refresh()
+    await Promise.all([refresh(), refreshProductSummary()])
     toast.add({ title: 'Berhasil ✅', description: 'Produk telah ditangguhkan.', color: 'success' })
   } catch (err: any) {
     toast.add({ title: 'Gagal ❌', description: err.statusMessage || err.message, color: 'error' })
@@ -338,7 +371,7 @@ async function activateHandler(id: number) {
   loadingId.value = id
   try {
     await activateProduct(id)
-    await refresh()
+    await Promise.all([refresh(), refreshProductSummary()])
     toast.add({ title: 'Berhasil ✅', description: 'Produk telah diaktifkan.', color: 'success' })
   } catch (err: any) {
     toast.add({ title: 'Gagal ❌', description: err.statusMessage || err.message, color: 'error' })

@@ -1,3 +1,8 @@
+<script setup lang="ts">
+// Satu request GET /alerts per interval untuk badge sisi pembeli (header)
+useAlertsPolling('buyer')
+</script>
+
 <template>
   <div class="min-h-screen bg-white flex flex-col">
     <AppHeader/>

@@ -151,7 +151,7 @@ import type { NotificationResponse, NotificationType } from '~/types/notificatio
 definePageMeta({ layout: 'admin', label: 'Notifikasi' })
 
 const toast = useToast()
-const notificationStore = useNotificationStore()
+const alertsStore = useAlertsStore()
 const { fetchAdminNotifications, markAsRead, markAllAsRead } = useNotificationApi()
 
 const showCreateModal = ref(false)
@@ -187,7 +187,7 @@ async function handleRead(notif: NotificationResponse) {
     await markAsRead(notif.id)
     notif.read_at = new Date().toISOString()
     if (wasUnread) {
-      notificationStore.unreadCount = Math.max(0, notificationStore.unreadCount - 1)
+      alertsStore.refresh()
     }
   } catch {
     toast.add({ title: 'Gagal menandai notifikasi', color: 'error' })
@@ -202,7 +202,7 @@ async function handleReadAll() {
     await markAllAsRead()
     const now = new Date().toISOString()
     data.value?.content?.forEach(n => { n.read_at = now })
-    notificationStore.unreadCount = 0
+    alertsStore.refresh()
     toast.add({ title: 'Semua notifikasi ditandai dibaca', color: 'success' })
   } catch {
     toast.add({ title: 'Gagal menandai semua notifikasi', color: 'error' })

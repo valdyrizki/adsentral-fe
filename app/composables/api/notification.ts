@@ -84,36 +84,6 @@ export const useNotificationApi = () => {
     return res.data
   }
 
-  const fetchUnreadCount = async (): Promise<number> => {
-    try {
-      const res = await api<WebResponse<number>>('/notification/unread-count')
-      if (res.status !== 'success' || res.data === undefined) return 0
-      return res.data
-    } catch {
-      return 0
-    }
-  }
-
-  const fetchAdminUnreadCount = async (): Promise<number> => {
-    try {
-      const res = await api<WebResponse<number>>('/admin/notification/unread-count')
-      if (res.status !== 'success' || res.data === undefined) return 0
-      return res.data
-    } catch {
-      return 0
-    }
-  }
-
-  const fetchSellerUnreadCount = async (): Promise<number> => {
-    try {
-      const res = await api<WebResponse<number>>('/seller/notification/unread-count')
-      if (res.status !== 'success' || res.data === undefined) return 0
-      return res.data
-    } catch {
-      return 0
-    }
-  }
-
   const createNotification = async (payload: {
     user_ids: number[]
     title: string
@@ -150,5 +120,5 @@ export const useNotificationApi = () => {
     }
   }
 
-  return { fetchNotifications, fetchAdminNotifications, fetchSellerNotifications, fetchUnreadCount, fetchAdminUnreadCount, fetchSellerUnreadCount, markAsRead, markAllAsRead, createNotification, broadcastNotification }
+  return { fetchNotifications, fetchAdminNotifications, fetchSellerNotifications, markAsRead, markAllAsRead, createNotification, broadcastNotification }
 }
