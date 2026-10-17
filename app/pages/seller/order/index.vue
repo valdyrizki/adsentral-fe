@@ -61,7 +61,18 @@
           @click="tab.status && selectSummaryTab(tab)"
         >
           {{ tab.label }}
-          <USkeleton v-if="orderSummaryPending" class="h-4 w-5 rounded-full" />
+          <!-- Butuh tindakan seller (alerts, ikut polling): badge merah + tooltip -->
+          <UBadge
+            v-if="tabAlert(tab.key)"
+            :color="tabAlert(tab.key)!.color"
+            variant="solid"
+            size="sm"
+            :title="tabAlert(tab.key)!.tooltip"
+            :aria-label="tabAlert(tab.key)!.tooltip"
+          >
+            {{ tabAlert(tab.key)!.label }}
+          </UBadge>
+          <USkeleton v-else-if="orderSummaryPending" class="h-4 w-5 rounded-full" />
           <UBadge
             v-else-if="orderSummary"
             :color="isSummaryTabActive(tab) ? 'neutral' : 'primary'"
@@ -85,6 +96,16 @@
           @click="filterStatus = opt.value"
         >
           {{ opt.label }}
+          <UBadge
+            v-if="opt.value === 'REJECT' && rejectedAlert"
+            color="error"
+            variant="solid"
+            size="sm"
+            :title="rejectedAlert.tooltip"
+            :aria-label="rejectedAlert.tooltip"
+          >
+            {{ rejectedAlert.label }}
+          </UBadge>
         </UButton>
       </div>
     </UCard>
@@ -304,6 +325,19 @@
     if (tab.key === 'active' && isActiveGroup.value) return
     if (tab.status) filterStatus.value = tab.status
   }
+
+  // Badge alerts seller (data polling layout, tanpa request baru); null/0 -> tidak tampil
+  const alertsStore = useAlertsStore()
+  const alertBadge = (count: number | null | undefined, text: string, color: 'error' | 'info' = 'error') => {
+    const label = formatBadgeCount(count)
+    return label ? { label, tooltip: `${count} ${text}`, color } : null
+  }
+  const cancelAlert = computed(() => alertBadge(alertsStore.seller?.cancel_requests, 'permintaan pembatalan menunggu respons Anda'))
+  const rejectedAlert = computed(() => alertBadge(alertsStore.seller?.rejected_orders, 'pesanan ditolak pembeli, perlu diperbaiki'))
+  // Arbitrase = informasi (keputusan di admin) -> warna netral/info, tidak masuk badge total sidebar
+  const arbitrageAlert = computed(() => alertBadge(alertsStore.seller?.arbitrage_orders, 'pesanan sedang ditinjau admin', 'info'))
+  const tabAlert = (key: SellerOrderSummaryItem['key']) =>
+    key === 'cancel_request' ? cancelAlert.value : key === 'arbitrage' ? arbitrageAlert.value : null
 
   // Muat ulang daftar + angka tab
   const refreshAll = () => Promise.all([refresh(), refreshOrderSummary()])

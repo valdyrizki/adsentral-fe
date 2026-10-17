@@ -197,6 +197,7 @@ const perPageValue = ref(10)
 const perPageItems = [5, 10, 25, 50]
 const search = ref('')
 const debouncedSearch = ref('')
+const route = useRoute()
 const filterStatus = ref('')
 
 const statusOptions = [
@@ -209,6 +210,20 @@ const statusOptions = [
   { label: 'Ditolak', value: 'REJECTED' },
   { label: 'Arbitrage', value: 'ARBITRAGE' },
 ]
+
+// ?status=ARBITRAGE (mis. dari badge sidebar) -> pilih filter yang sudah ada
+const statusFromQuery = (q: unknown) => {
+  const v = Array.isArray(q) ? q[0] : q
+  return typeof v === 'string' && statusOptions.some(o => o.value === v) ? v : ''
+}
+filterStatus.value = statusFromQuery(route.query.status)
+watch(() => route.query.status, (q) => {
+  const v = statusFromQuery(q)
+  if (v && v !== filterStatus.value) {
+    page.value = 0
+    filterStatus.value = v
+  }
+})
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 

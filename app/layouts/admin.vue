@@ -44,7 +44,9 @@ const items = computed<NavigationMenuItem[][]>(() => [[
   {
     label: 'Orders',
     icon: 'i-lucide-shopping-cart',
-    to: '/admin/order'
+    // ada arbitrase menunggu -> langsung ke daftar terfilter ARBITRAGE
+    to: (alerts.value?.arbitrage_pending ?? 0) > 0 ? '/admin/order?status=ARBITRAGE' : '/admin/order',
+    ...pendingCountBadge(alerts.value?.arbitrage_pending, `${alerts.value?.arbitrage_pending} transaksi menunggu keputusan arbitrase`),
   },
   {
     label: 'Pembayaran',
@@ -172,7 +174,7 @@ const items = computed<NavigationMenuItem[][]>(() => [[
 
         <UNavigationMenu
           :collapsed="collapsed"
-          :items="items[0]"
+          :items="withCollapsedChips(items[0]!, collapsed)"
           orientation="vertical"
           class="mt-4"
         />

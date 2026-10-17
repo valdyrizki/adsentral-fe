@@ -95,9 +95,10 @@ export const useTransactionApi = () => {
     }
   }
 
-  // Aksi yang mengubah status PAID -> badge alerts langsung diperbarui
+  // Aksi yang mengubah status PAID / REJECT / CANCEL_REQUEST -> badge alerts & ringkasan order diperbarui
   const refreshAlerts = () => {
     useAlertsStore().refresh()
+    refreshNuxtData(['seller-dashboard-order-summary', 'seller-order-summary'])
   }
 
   const fetchConfirmTx = async (txId: string): Promise<void> => {
@@ -121,6 +122,7 @@ export const useTransactionApi = () => {
       body: { reason },
     }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
+    refreshAlerts()
   }
 
   const fetchAcceptOrder = async (txId: string): Promise<void> => {
@@ -147,6 +149,7 @@ export const useTransactionApi = () => {
   const fetchRejectCancelRequest = async (txId: string): Promise<void> => {
     const res = await api<WebResponse<TransactionResponse>>(`/tx/cancel/reject/${txId}`, { method: 'PATCH' }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
+    refreshAlerts()
   }
 
   const fetchAcceptCancelRequest = async (txId: string): Promise<void> => {
@@ -161,11 +164,13 @@ export const useTransactionApi = () => {
       body: { reason },
     }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
+    refreshAlerts()
   }
 
   const fetchCancelArbitrage = async (txId: string): Promise<void> => {
     const res = await api<WebResponse<TransactionResponse>>(`/tx/cancel/arbitrage/${txId}`, { method: 'PATCH' }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
+    refreshAlerts()
   }
 
   const fetchCompleteTx = async (txId: string, reason: string): Promise<void> => {
@@ -174,6 +179,7 @@ export const useTransactionApi = () => {
       body: { reason },
     }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
+    refreshAlerts()
   }
 
   return {

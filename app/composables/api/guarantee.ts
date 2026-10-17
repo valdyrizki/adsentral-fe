@@ -67,6 +67,12 @@ export const useGuaranteeApi = () => {
     return res.data
   }
 
+  // Aksi garansi mengubah jumlah klaim yang menunggu seller → badge alerts & ringkasan order dimuat ulang
+  const refreshGuaranteeCounts = () => {
+    useAlertsStore().refresh()
+    refreshNuxtData(['seller-dashboard-order-summary', 'seller-order-summary'])
+  }
+
   const fetchReviewGuarantee = async (
     guaranteeId: string,
     accept: boolean,
@@ -79,6 +85,7 @@ export const useGuaranteeApi = () => {
     if (res.status !== 'success' || !res.data) {
       throw createError({ statusCode: 400, statusMessage: res.message || (accept ? 'Gagal menerima klaim garansi' : 'Gagal menolak klaim garansi') })
     }
+    refreshGuaranteeCounts()
     return res.data
   }
 
@@ -93,6 +100,7 @@ export const useGuaranteeApi = () => {
         statusMessage: res.message || 'Gagal mengirim garansi via stok',
       })
     }
+    refreshGuaranteeCounts()
     return res.data
   }
 
@@ -104,6 +112,7 @@ export const useGuaranteeApi = () => {
     if (res.status !== 'success' || !res.data) {
       throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal mengirim akun garansi' })
     }
+    refreshGuaranteeCounts()
     return res.data
   }
 

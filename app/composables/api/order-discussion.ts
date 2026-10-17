@@ -36,6 +36,11 @@ export const useOrderDiscussionApi = () => {
           statusMessage: res?.message || 'Create Discussion failed',
         })
       }
+      // Pengiriman pesanan (termasuk kirim ulang pesanan REJECT) -> badge alerts & ringkasan order
+      if (formData.get('discussionType') !== 'MESSAGE') {
+        useAlertsStore().refresh()
+        refreshNuxtData(['seller-dashboard-order-summary', 'seller-order-summary'])
+      }
       return res.data
     } catch (err: any) {
       console.log(err)

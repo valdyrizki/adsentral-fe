@@ -8,8 +8,28 @@ const alertsStore = useAlertsStore()
 // Satu request GET /seller/alerts per interval untuk semua badge seller
 useAlertsPolling('seller')
 const alerts = computed(() => alertsStore.seller)
-// > 0 (bukan null) -> ada pesanan menunggu konfirmasi
-const hasPendingOrders = computed(() => (alerts.value?.pending_confirmation ?? 0) > 0)
+// Badge Orders = menunggu konfirmasi + ditolak pembeli + permintaan pembatalan (yang bukan null)
+const orderAlertCount = computed(() => sumKnownCounts(
+  alerts.value?.pending_confirmation,
+  alerts.value?.rejected_orders,
+  alerts.value?.cancel_requests,
+))
+const orderAlertTooltip = computed(() => ([
+  [alerts.value?.pending_confirmation, 'pesanan menunggu konfirmasi Anda'],
+  [alerts.value?.rejected_orders, 'pesanan ditolak pembeli, perlu diperbaiki'],
+  [alerts.value?.cancel_requests, 'permintaan pembatalan menunggu respons Anda'],
+] as const)
+  .filter(([n]) => typeof n === 'number' && n > 0)
+  .map(([n, text]) => `${n} ${text}`)
+  .join(', '))
+// Klik Orders -> daftar terfilter status pertama yang butuh tindakan
+const ordersLink = computed(() => {
+  const a = alerts.value
+  if ((a?.pending_confirmation ?? 0) > 0) return '/seller/order?status=PAID'
+  if ((a?.cancel_requests ?? 0) > 0) return '/seller/order?status=CANCEL_REQUEST'
+  if ((a?.rejected_orders ?? 0) > 0) return '/seller/order?status=REJECT'
+  return '/seller/order'
+})
 
 const systemSettingStore = useSystemSettingStore()
 
@@ -45,9 +65,8 @@ const items = computed<NavigationMenuItem[][]>(() => [[
   {
     label: 'Orders',
     icon: 'i-lucide-shopping-cart',
-    // ada pesanan menunggu -> langsung ke daftar terfilter PAID
-    to: hasPendingOrders.value ? '/seller/order?status=PAID' : '/seller/order',
-    ...pendingCountBadge(alerts.value?.pending_confirmation, `${alerts.value?.pending_confirmation} pesanan menunggu konfirmasi Anda`),
+    to: ordersLink.value,
+    ...pendingCountBadge(orderAlertCount.value, orderAlertTooltip.value),
   },
   {
     label: 'Saldo',
@@ -72,7 +91,8 @@ const items = computed<NavigationMenuItem[][]>(() => [[
   {
     label: 'Garansi',
     icon: 'material-symbols:shield',
-    to: '/seller/guarantee'
+    to: '/seller/guarantee',
+    ...pendingCountBadge(alerts.value?.guarantee_requests, `${alerts.value?.guarantee_requests} klaim garansi menunggu tindakan Anda`),
   },
   {
     label: 'Penalty',
@@ -148,7 +168,7 @@ const items = computed<NavigationMenuItem[][]>(() => [[
       <template #default="{ collapsed }">
         <UNavigationMenu
           :collapsed="collapsed"
-          :items="items[0]"
+          :items="withCollapsedChips(items[0]!, collapsed)"
           orientation="vertical"
           class="mt-4"
         />

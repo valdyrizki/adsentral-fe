@@ -7,12 +7,22 @@ export interface AdminAlertsResponse {
   unprocessed_payments: number | null
   failed_journals: number | null
   products_in_review: number | null
+  // Transaksi ARBITRAGE menunggu keputusan admin
+  arbitrage_pending: number | null
 }
 
 export interface SellerAlertsResponse {
   unread_notifications: number | null
   pending_confirmation: number | null
   unread_chats: number | null
+  // Klaim garansi IN_REVIEW + IN_PROGRESS (= guarantee_request di /seller/orders/summary)
+  guarantee_requests: number | null
+  // Transaksi REJECT (ditolak pembeli, seller perlu perbaiki; auto-refund 24 jam)
+  rejected_orders: number | null
+  // Transaksi CANCEL_REQUEST (seller perlu terima/tolak; auto-refund 24 jam)
+  cancel_requests: number | null
+  // Transaksi ARBITRAGE milik seller (informasi; keputusan di admin)
+  arbitrage_orders: number | null
 }
 
 export interface BuyerAlertsResponse {
