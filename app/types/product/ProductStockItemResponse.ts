@@ -8,10 +8,10 @@ export interface ProductStockItemResponse {
   file_url: string | null
   file_size: number | null
   file_type: string | null
-  // ACTIVE | SENT | RETURNED | DELETED
+  // ACTIVE | SENT | RETURNED | RESTOCKED | DELETED
   status: string
   created_at: string
-  // Terisi untuk item SENT/RETURNED yang terkirim lewat pesanan (null untuk kiriman garansi)
+  // Terisi untuk item SENT/RETURNED/RESTOCKED yang terkirim lewat pesanan (null untuk kiriman garansi)
   transaction_id: string | null
 
   // Data akun (semua nullable). Di endpoint admin, field sensitif sudah di-mask "********" oleh BE.

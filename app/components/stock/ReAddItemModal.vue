@@ -7,9 +7,9 @@
           color="warning"
           variant="subtle"
           title="Pastikan akun sudah aman"
-          description="Detail akun ini sudah pernah dilihat buyer. Isi password, password email, 2FA, dan cookie yang baru sebelum menyimpan."
+          description="Detail akun ini sudah pernah dikirim ke buyer. Data lama sudah terisi; ganti password, password email, 2FA, dan cookie bila perlu sebelum menyimpan."
         />
-        <!-- Form tambah stok, terisi dari item lama (field rahasia kosong). Konfirmasi duplikat ditangani form. -->
+        <!-- Form tambah stok, terisi apa adanya dari item lama. Konfirmasi duplikat ditangani form. -->
         <StockItemForm :product-id="item.product_id" :prefill="item" @added="onAdded" />
       </div>
     </template>

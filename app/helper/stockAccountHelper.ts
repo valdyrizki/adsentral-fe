@@ -320,6 +320,12 @@ export const STOCK_STATUS_META: Record<string, { label: string; color: StockStat
     color: 'warning',
     hint: 'Transaksi dibatalkan/direfund setelah akun terkirim. Item tidak kembali ke stok. Tambahkan ulang secara manual jika akun sudah aman.',
   },
+  // Item RETURNED yang akunnya sudah ditambah ulang sebagai item baru (otomatis oleh BE)
+  RESTOCKED: {
+    label: 'Ditambah Ulang',
+    color: 'neutral',
+    hint: 'Transaksi sebelumnya direfund. Akun ini sudah ditambahkan ulang ke stok sebagai item baru.',
+  },
   DELETED: { label: 'Dihapus', color: 'error' },
 }
 

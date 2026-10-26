@@ -71,7 +71,9 @@ const items = computed<NavigationMenuItem[][]>(() => [[
   {
     label: 'Penarikan Dana',
     icon: 'mdi:cash-minus',
-    to: '/admin/withdrawal'
+    // ada penarikan menunggu -> langsung ke daftar terfilter PENDING
+    to: (alerts.value?.pending_withdrawals ?? 0) > 0 ? '/admin/withdrawal?status=PENDING' : '/admin/withdrawal',
+    ...pendingCountBadge(alerts.value?.pending_withdrawals, `${alerts.value?.pending_withdrawals} permintaan penarikan menunggu diproses`),
   },
   {
     label: 'Verifikasi Akun',

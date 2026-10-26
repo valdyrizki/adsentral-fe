@@ -92,6 +92,7 @@
             <UBadge color="success" variant="soft">Aktif: {{ countActive }}</UBadge>
             <UBadge color="info" variant="soft">Terkirim: {{ countSent }}</UBadge>
             <UBadge v-if="countReturned" color="warning" variant="soft">Dikembalikan: {{ countReturned }}</UBadge>
+            <UBadge v-if="countRestocked" color="neutral" variant="soft">Ditambah Ulang: {{ countRestocked }}</UBadge>
             <NuxtLink to="/seller/stock/add">
               <UButton icon="i-lucide-plus" color="primary" size="sm">
                 Tambah Stok
@@ -368,6 +369,7 @@ const {
 const countActive = computed(() => stockData.value?.content.filter(i => i.status === 'ACTIVE').length ?? 0)
 const countSent = computed(() => stockData.value?.content.filter(i => i.status === 'SENT').length ?? 0)
 const countReturned = computed(() => stockData.value?.content.filter(i => i.status === 'RETURNED').length ?? 0)
+const countRestocked = computed(() => stockData.value?.content.filter(i => i.status === 'RESTOCKED').length ?? 0)
 
 function handleFilter() {
   if (debounceTimer) clearTimeout(debounceTimer)

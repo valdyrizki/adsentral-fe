@@ -5,21 +5,21 @@
       <NuxtLayout :name="layoutName" :key="layoutName">
         <NuxtPage />
       </NuxtLayout>
+
+      <!-- Di dalam UApp agar ter-portal bersama modal lain dan tampil di atas modal yang sedang terbuka -->
+      <ConfirmDialog
+        v-model="confirmState.isOpen"
+        :title="confirmState.title"
+        :message="confirmState.message"
+        :confirm-text="confirmState.confirmText"
+        :cancel-text="confirmState.cancelText"
+        :confirm-color="confirmState.confirmColor"
+        :loading="confirmState.loading"
+        @confirm="onConfirm"
+        @cancel="onCancel"
+      />
     </UApp>
   </div>
-
-  <ConfirmDialog
-    v-model="confirmState.isOpen"
-    :title="confirmState.title"
-    :message="confirmState.message"
-    :confirm-text="confirmState.confirmText"
-    :cancel-text="confirmState.cancelText"
-    :confirm-color="confirmState.confirmColor"
-    :loading="confirmState.loading"
-    @confirm="onConfirm"
-    @cancel="onCancel"
-  />
-  
 </template>
 
 <script setup lang="ts">

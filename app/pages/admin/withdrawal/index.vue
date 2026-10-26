@@ -364,6 +364,21 @@ const statusOptions = [
   { label: 'Dibatalkan', value: 'CANCELLED' },
 ]
 
+// ?status=PENDING (mis. dari badge sidebar) -> pilih filter yang sudah ada
+const route = useRoute()
+const statusFromQuery = (q: unknown) => {
+  const v = Array.isArray(q) ? q[0] : q
+  return typeof v === 'string' && statusOptions.some(o => o.value === v) ? v : ''
+}
+filterStatus.value = statusFromQuery(route.query.status) || 'ALL'
+watch(() => route.query.status, (q) => {
+  const v = statusFromQuery(q)
+  if (v && v !== filterStatus.value) {
+    page.value = 0
+    filterStatus.value = v
+  }
+})
+
 // ===== FETCH =====
 const {
   data: withdrawals,

@@ -9,6 +9,8 @@ export interface AdminAlertsResponse {
   products_in_review: number | null
   // Transaksi ARBITRAGE menunggu keputusan admin
   arbitrage_pending: number | null
+  // Withdrawal seller berstatus PENDING (menunggu admin transfer/tolak)
+  pending_withdrawals: number | null
 }
 
 export interface SellerAlertsResponse {

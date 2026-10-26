@@ -1,6 +1,7 @@
 <!-- app/components/app/ConfirmDialog.vue -->
 <template>
-  <UModal v-model:open="isOpen" :title="title">
+  <!-- z-index lebih tinggi: dialog global dipasang paling awal, tanpa ini tertutup modal yang sedang terbuka -->
+  <UModal v-model:open="isOpen" :title="title" :ui="{ overlay: 'z-[100]', content: 'z-[100]' }">
     <template #body>
       <p class="text-gray-700 mb-4">{{ message }}</p>
       <div class="flex justify-end gap-2">

@@ -9,6 +9,9 @@ import type { WithdrawalSumResponse } from '~/types/balance/WithdrawalSumRespons
 export const useAdminWithdrawalApi = () => {
   const api = useApi()
 
+  // Badge sidebar "Penarikan Dana" (pending_withdrawals) langsung turun setelah diproses
+  const refreshAlerts = () => useAlertsStore().refresh()
+
   const fetchSellerTransactionSum = async (
     sellerId: number,
     status?: string
@@ -117,6 +120,7 @@ export const useAdminWithdrawalApi = () => {
         statusMessage: res.message || 'Gagal menyetujui penarikan',
       })
     }
+    refreshAlerts()
   }
 
   const rejectWithdrawal = async (id: string, adminNotes: string): Promise<void> => {
@@ -131,6 +135,7 @@ export const useAdminWithdrawalApi = () => {
         statusMessage: res.message || 'Gagal menolak penarikan',
       })
     }
+    refreshAlerts()
   }
 
   return { fetchSellerTransactionSum, fetchSellerDepositSum, fetchSellerWithdrawalSum, fetchWithdrawalDetail, fetchAllWithdrawals, approveWithdrawal, rejectWithdrawal }

@@ -10,7 +10,7 @@
 <script lang="ts" setup>
 import { STOCK_STATUS_META } from '~/helper/stockAccountHelper'
 
-// Badge status item stok (ACTIVE / SENT / RETURNED / DELETED); RETURNED punya tooltip penjelasan
+// Badge status item stok (ACTIVE / SENT / RETURNED / RESTOCKED / DELETED); RETURNED & RESTOCKED punya tooltip penjelasan
 const props = withDefaults(defineProps<{ status: string; size?: 'xs' | 'sm' | 'md' }>(), { size: 'sm' })
 
 const meta = computed(() => STOCK_STATUS_META[props.status] ?? { label: props.status, color: 'neutral' as const })

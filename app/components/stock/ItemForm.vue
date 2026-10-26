@@ -138,7 +138,6 @@ import {
   fileTypeLabel,
   formatFileSize,
   hasAccountData,
-  SENSITIVE_ACCOUNT_FIELDS,
   stockItemToAccountForm,
   uidFromFileName,
 } from '~/helper/stockAccountHelper'
@@ -147,7 +146,7 @@ import type { StockAccountForm } from '~/types/product/ProductStockItemRequest'
 import type { StockErrorData } from '~/types/product/StockBulkCheck'
 
 // Tanpa `item` = mode tambah (butuh productId). Dengan `item` = mode edit (PATCH /stock/{id}).
-// `prefill` (mode tambah): isi awal dari item lain, mis. tambah ulang item RETURNED; field rahasia dikosongkan.
+// `prefill` (mode tambah): isi awal dari item lain apa adanya, mis. tambah ulang item RETURNED.
 const props = defineProps<{
   productId?: number
   item?: ProductStockItemResponse | null
@@ -197,8 +196,6 @@ function loadItem(item: ProductStockItemResponse | null | undefined) {
     const source = props.prefill
     form.description = source?.description ?? ''
     account.value = source ? stockItemToAccountForm(source) : emptyStockAccountForm()
-    // Data rahasia lama sudah dilihat buyer → seller wajib mengisi yang baru
-    for (const k of SENSITIVE_ACCOUNT_FIELDS) account.value[k] = ''
     return
   }
   form.description = item.description ?? ''
@@ -244,7 +241,7 @@ function errorMessage(err: any): string {
  */
 async function sendWithDuplicateConfirm<T>(
   send: (allowDuplicate: boolean) => Promise<T>,
-  action: string,
+  action: { question: string; confirmText: string },
 ): Promise<{ result: T } | null> {
   try {
     return { result: await send(false) }
@@ -253,9 +250,9 @@ async function sendWithDuplicateConfirm<T>(
     if (err.statusCode !== 409 || data?.code !== 'ACCOUNT_DUPLICATE_SENT') throw err
     const ok = await confirm({
       title: 'Akun pernah terjual',
-      message: `Akun ini sudah pernah terjual${productSuffix(data)}. Tetap ${action}?`,
-      confirmText: `Ya, tetap ${action}`,
-      cancelText: 'Tidak',
+      message: `Akun ini sudah pernah dikirim ke pembeli${productSuffix(data)}. Pastikan akun sudah aman, misalnya password sudah diganti, sebelum dijual lagi. ${action.question}`,
+      confirmText: action.confirmText,
+      cancelText: 'Batal',
       confirmColor: 'warning',
     })
     if (!ok) return null
@@ -285,9 +282,9 @@ async function handleAdd() {
       ...(withAccount ? account.value : {}),
       account_type_id: withAccount ? account.value.account_type_id : null,
       allow_duplicate: allowDuplicate,
-    }), 'tambahkan')
+    }), { question: 'Tetap tambahkan ke stok?', confirmText: 'Ya, tambahkan' })
     if (!sent) return
-    toast.add({ title: 'Stok Ditambahkan ✅', description: 'Berhasil ditambahkan ke stok produk.', color: 'success' })
+    toast.add({ title: 'Stock item berhasil ditambahkan', color: 'success' })
     // Kosongkan form untuk input berikutnya, tapi tipe akun tetap (biasanya seller menambah tipe yang sama berulang)
     const keepTypeId = account.value.account_type_id
     loadItem(null)
@@ -331,7 +328,7 @@ async function handleSave() {
     // Kirim ulang tetap hanya field yang berubah, ditambah allowDuplicate
     const sent = await sendWithDuplicateConfirm(
       allowDuplicate => updateProductStockItem(item.id, allowDuplicate ? { ...patch, allow_duplicate: true } : patch),
-      'simpan',
+      { question: 'Tetap simpan perubahan?', confirmText: 'Ya, simpan' },
     )
     if (!sent) return
     const updated = sent.result
