@@ -6,6 +6,19 @@ isi kolom "Perbaikan", dan tambahkan tes regresi bila memungkinkan.
 
 Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) · `SELESAI`
 
+## Progres
+
+- **Sudah dites (135 tes):** login & guard rute, checkout, pembayaran buyer/admin, pesanan seller, transaksi buyer,
+  garansi, withdrawal, pesanan admin (arbitrase/refund/selesaikan paksa), penalty, deposit & transfer saldo.
+- **Belum dites (area pendukung):** chat, produk & stok seller, verifikasi seller, rekening bank, voucher, notifikasi,
+  keuangan admin (`/admin/finance`), kategori/tipe akun, payment channel/method admin, system settings.
+- **Rencana perbaikan:** dikerjakan setelah tes selesai. Mulai dari **F-20 + F-26** (pakai `rethrowApiError` di
+  composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
+  Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
+- **Keamanan:** file `editor` dulu berisi data akun (UID, password, 2FA, email) dan masih ada di riwayat git.
+  Sudah dikosongkan; akun terkait perlu ganti password/2FA, dan riwayat bisa dibersihkan dengan `git filter-repo`
+  bila disepakati.
+
 ## Ringkasan
 
 | ID | Area | Judul | Prioritas | Status |
