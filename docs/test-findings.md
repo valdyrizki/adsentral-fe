@@ -29,7 +29,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-17 | Transaksi buyer | Form "Edit Penilaian" tidak terisi penilaian sebelumnya | Sedang | TERBUKA |
 | F-18 | Transaksi buyer | Filter status buyer tidak punya `REJECT`, `REJECTED`, `CANCEL_REQUEST` | Rendah | PERLU KONFIRMASI |
 | F-19 | Garansi buyer | `/guarantee` tidak dilindungi login (tidak ada di `authRequiredRoutes`) | Sedang | TERBUKA |
-| F-20 | Garansi, withdrawal & penalty | Pesan error BE hilang (toast `[POST] "/backend/...": 409 Conflict` / "Conflict") & 409 tidak memuat ulang | Sedang | TERBUKA |
+| F-20 | Garansi, withdrawal, penalty & deposit | Pesan error BE hilang (toast `[POST] "/backend/...": 409 Conflict` / "Conflict") & 409 tidak memuat ulang | Sedang | TERBUKA |
 | F-21 | Garansi | Label/warna status garansi diduplikasi di 5 tempat dengan teks berbeda | Rendah | TERBUKA |
 | F-22 | Withdrawal (admin) | Rumus "Potensi Anomali" menghitung saldo belanja (deposit) sebagai saldo yang bisa ditarik | Sedang | PERLU KONFIRMASI |
 | F-23 | Withdrawal | `WD_FEE` diam-diam jatuh ke Rp 2.500 bila setting gagal dimuat; kartu statistik admin hanya dari halaman aktif | Sedang | PERLU KONFIRMASI |
@@ -42,6 +42,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-30 | Manage penalty (admin) | Filter "Semua" mengirim `status=ALL`; status `WARNING` tampil "Normal" (hijau) | Sedang | TERBUKA |
 | F-31 | Manage penalty (admin) | Poin & status di header slideover detail user tidak diperbarui setelah penalty dibatalkan; error detail tidak ditangani | Rendah | TERBUKA |
 | F-32 | Penalty | Halaman `/admin/penalty-user` yatim (tanpa menu, duplikat `/admin/penalty`); statistik penalty user dihitung per halaman; rule target `BUYER` bisa dikenakan ke seller | Rendah | PERLU KONFIRMASI |
+| F-33 | Deposit | Metode default `'QRIS'` bukan id metode mana pun → tombol "Deposit" nonaktif tanpa penjelasan | Rendah | TERBUKA |
+| F-34 | Deposit | Riwayat deposit gagal dimuat tampil "Belum ada riwayat deposit"; ref `error` tidak pernah diisi | Sedang | TERBUKA |
 
 ---
 
@@ -307,10 +309,17 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
   `createPenaltyRule`, `updatePenaltyRule`, `fetchTogglePenaltyRule`) tidak memakai `rethrowApiError`, dan halaman
   menampilkan `err.statusMessage`. Contoh: membuat rule dengan ID yang sudah dipakai (409 "Rule ID sudah dipakai")
   hanya menampilkan "Gagal membuat rule — Conflict".
+- **Deposit & transfer saldo juga terkena:** `fetchDepositBalance`, `fetchDepositCancel`, `fetchBalanceTransfer`
+  (`balance.ts`) tidak memakai `rethrowApiError`.
+  - Deposit ditolak BE (mis. "Masih ada deposit yang belum dibayar") hanya menampilkan "Deposit Gagal — Bad Request".
+  - Batalkan deposit yang ternyata sudah dibayar (409) menampilkan teks generik "Lakukan refresh, lalu coba lagi"
+    tanpa pesan BE, dan riwayat tidak dimuat ulang sehingga tombol "Batalkan" dan "Lanjut Bayar" tetap tampil.
+  - Transfer saldo ditolak BE menampilkan "Bad Request" di form.
 - **Tes:** `guarantee.spec.ts` → "klaim ditolak BE: pesan BE tampil di toast" dan "terima klaim basi (409): pesan BE
   tampil & data dimuat ulang"; `withdrawal.spec.ts` → "batalkan penarikan basi (409): pesan BE tampil & riwayat dimuat
   ulang" dan "tandai selesai basi (409): pesan BE tampil"; `penalty.spec.ts` → "tambah rule dengan ID duplikat (409)
-  menampilkan pesan BE". Semuanya ditandai `test.fail()`.
+  menampilkan pesan BE"; `balance.spec.ts` → "deposit ditolak BE (400)...", "batalkan deposit yang sudah dibayar
+  (409)...", dan "transfer ditolak BE (400)...". Semuanya ditandai `test.fail()`.
 
 ## F-21 — Label status garansi diduplikasi
 
@@ -499,4 +508,34 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
   - Penalty yang dibatalkan admin: apakah masih dikembalikan BE di `/user/penalty`? Jika ya, FE tidak membedakannya
     dari yang aktif atau kedaluwarsa.
 - **Perlu dikonfirmasi:** Hapus `/admin/penalty-user`? Apakah rule harus dibatasi sesuai role user?
+
+## F-33 — Form deposit: metode default tidak valid
+
+- **Lokasi:** `app/components/form/Deposit.vue` → `selectedPayment = ref('QRIS')`
+- **Status:** TERBUKA
+- **Gejala:** `QRIS` adalah kode **channel** milik metode `TRIPAY`, bukan id metode. Saat form dibuka, tidak ada metode
+  yang tampil terpilih, dan tombol "Deposit" nonaktif tanpa pesan apa pun. Pesan "Pilih metode pembayaran" di
+  `validate()` tidak pernah muncul karena tombol sudah nonaktif lebih dulu. Watcher auto-pilih channel di
+  `PaymentMethodSelector` juga tidak berjalan.
+- **Usulan:** Default `selectedPayment` ke `null` dan tampilkan petunjuk "Pilih metode pembayaran". Alternatifnya,
+  pilih otomatis metode pertama hasil filter setelah `fetchPaymentMethod`. Jika maksudnya QRIS sebagai default, set
+  `selectedPayment = 'TRIPAY'` dan `selectedChannel = 'QRIS'`.
+- **Ringan:**
+  - `fetchPaymentMethod` memakai `$fetch` mentah, bukan `useApi`.
+  - Biaya channel dihitung di FE (`fee_flat + fee_percent`). Pastikan sama dengan total dari BE, seperti F-05.
+- **Tes:** `balance.spec.ts` → "deposit tanpa metode terpilih..." (`test.fail`).
+
+## F-34 — Riwayat deposit gagal dimuat tampil sebagai kosong
+
+- **Lokasi:** `app/pages/balance/index.vue`
+- **Status:** TERBUKA
+- **Gejala:**
+  - Template mengecek `error`, yaitu `ref(null)` lokal yang tidak pernah diisi. `errorDepositHistory` dari
+    `useAsyncData` tidak dipakai. Jika `/balance/deposit/history` gagal (500, timeout), halaman menampilkan
+    "Belum ada riwayat deposit", seolah user belum pernah top up. Mutasi saldo juga tidak punya state error.
+  - Ringan: `UPagination` riwayat deposit selalu tampil walau hanya 1 halaman (tidak ada cek `total_pages > 1`,
+    beda dengan mutasi saldo). `handleDepositSuccess` tidak dipakai. Ada `v-else="balanceLoading"` yang keliru
+    (tidak berpengaruh). `fetchDepositCancel` masih punya `console.log(res)`.
+- **Usulan:** Pakai `errorDepositHistory` dengan `apiErrorMessage`, dan tambahkan state error untuk mutasi saldo.
+- **Tes:** `balance.spec.ts` → "riwayat deposit gagal dimuat..." (`test.fail`).
 
