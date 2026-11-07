@@ -2,6 +2,15 @@
 
 Panduan untuk Claude Code saat bekerja di repo ini.
 
+## Prinsip kerja
+
+Prinsip ini mengutamakan ketelitian daripada kecepatan. Untuk tugas sepele, pakai pertimbangan.
+
+1. **Pikirkan dulu.** Nyatakan asumsi. Bila permintaan punya beberapa tafsir dengan hasil berbeda, atau ada yang belum jelas, tanyakan, jangan memilih diam-diam. Bila ada cara yang lebih sederhana, katakan dan bantah bila perlu.
+2. **Utamakan kesederhanaan.** Tulis kode paling sedikit yang menyelesaikan masalah: tanpa fitur, konfigurasi, atau abstraksi sekali pakai yang tidak diminta, dan tanpa penanganan error untuk skenario yang mustahil. Penanganan `isStaleActionError` dan pencegahan klik ganda pada aksi pesanan atau uang bukan berlebihan.
+3. **Ubah seperlunya.** Setiap baris yang berubah harus bisa ditelusuri ke permintaan. Jangan merapikan atau me-refactor kode di sekitarnya, dan ikuti gaya yang ada. Kode mati di luar tugas cukup dilaporkan; hapus hanya import, variabel, atau fungsi yang menjadi tidak terpakai karena perubahan sendiri.
+4. **Kerja dengan target yang bisa diverifikasi.** Ubah tugas menjadi kriteria sukses: "tambah validasi" → tulis tes E2E input tidak valid lalu buat lulus; "refactor" → `npm run build` dan tes E2E terkait lulus sebelum dan sesudah. Untuk tugas beberapa langkah, tulis rencana singkat `langkah → cara verifikasi`.
+
 ## Commands
 
 ```bash
@@ -26,6 +35,28 @@ Belum ada lint/unit test. Verifikasi perubahan dengan `npm run build` (cek error
 - Bug/potensi masalah yang ditemukan saat menulis tes dicatat di `docs/test-findings.md` (diperbaiki setelah semua tes selesai).
 - Spec yang ada: `auth.spec.ts` (login, guard rute), `checkout.spec.ts` (saldo, transfer manual, payment gateway + fee, voucher, sinkron keranjang, error BE), `payment.spec.ts` (detail pembayaran buyer, konfirmasi/tolak admin), `seller-order.spec.ts` (terima/tolak, kirim orderan, pengajuan batal), `transaction.spec.ts` (daftar & filter transaksi buyer, selesaikan/tolak pesanan, tangguhkan, ajukan & tarik pembatalan, penilaian). `guarantee.spec.ts` (klaim garansi buyer, daftar/detail klaim, terima/tolak/kirim garansi seller). `withdrawal.spec.ts` (tarik dana & batal oleh seller, tandai selesai/tolak & detail anomali oleh admin). `admin-order.spec.ts` (daftar pesanan admin, cancel arbitrage, refund, selesaikan paksa, diskusi admin). `penalty.spec.ts` (CRUD & toggle penalty rule, kenakan/batalkan penalty & detail user oleh admin, riwayat & banner penalty buyer/seller). `balance.spec.ts` (riwayat & buat/batal deposit buyer, mutasi saldo, transfer saldo jualan ke belanja). Data payment & transaksi: `support/payment.ts` (`makePayment`, `makeTx`).
 - Bug yang sudah diketahui tapi belum diperbaiki: tandai tesnya dengan `test.fail()` + rujukan ID temuan, lalu hapus anotasinya setelah diperbaiki. Pastikan dulu (jalankan tanpa anotasi) bahwa tes gagal karena bugnya, bukan karena selector.
+
+## Review kritis sebelum melapor selesai
+
+Wajib untuk perubahan yang menyentuh uang (checkout, saldo, withdrawal), status, hak akses, kontrak API, atau data sensitif. Review diff sendiri dengan tujuan mencari alasan terkuat perubahan ini belum layak rilis. Anggap bisa gagal sampai ada bukti sebaliknya; kode yang hanya benar di jalur sukses adalah kelemahan nyata.
+
+Periksa berurutan:
+
+- **Hak akses:** `role-guard`, daftar rute di `auth-redirect`, menu per peran. Guard FE hanya mengatur tampilan; jangan mengandalkannya sebagai pengaman data.
+- **Uang dan data:** nominal, fee, atau voucher yang berbeda dari perhitungan BE; kredensial atau token yang tersimpan, tercatat di log, atau ikut terkirim ke klien lewat SSR.
+- **Kegagalan sebagian:** klik ganda atau retry pada mutasi, respons error setelah aksi sebagian berhasil, refresh token yang gagal, state yang tidak dimuat ulang setelah aksi.
+- **Konkurensi:** status basi saat BE sudah berubah (403/409 lewat `isStaleActionError`), respons lama menimpa yang baru, polling badge, stok keranjang yang berubah sebelum checkout.
+- **Kondisi tepi:** data kosong, null, loading, timeout, BE gangguan, dan hasil SSR yang berbeda dari klien (hydration).
+- **Kontrak dan versi:** `types/` dan `composables/api/` sesuai `openapi.yaml`; status baru belum punya label di `*StatusBadge`; mock E2E lulus padahal berbeda dari BE asli; kompatibilitas dengan BE yang sedang berjalan.
+- **Keamanan tampilan:** HTML dari user wajib lewat `isomorphic-dompurify` sebelum dirender.
+- **Keterlacakan:** error yang tertelan tanpa toast atau pesan yang jelas bagi user.
+
+Aturan temuan:
+
+- Laporkan hanya yang material, tanpa komentar gaya atau penamaan.
+- Tiap temuan memuat `file:baris`, apa yang bisa salah, kenapa jalur itu rentan, dampaknya, dan perbaikan konkret.
+- Dasarkan pada kode atau output tool. Tandai bila hanya inferensi, dan cek `docs/domain-glossary.md` serta dokumen BE terkait sebelum menyebut perilaku janggal sebagai bug.
+- Satu temuan kuat lebih baik daripada banyak temuan lemah. Bila tidak ada temuan, katakan aman.
 
 ## Environment
 
