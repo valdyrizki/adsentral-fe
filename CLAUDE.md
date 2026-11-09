@@ -2,6 +2,15 @@
 
 Panduan untuk Claude Code saat bekerja di repo ini.
 
+## Prinsip kerja
+
+Prinsip ini mengutamakan ketelitian daripada kecepatan. Untuk tugas sepele, pakai pertimbangan.
+
+1. **Pikirkan dulu.** Nyatakan asumsi. Bila permintaan punya beberapa tafsir dengan hasil berbeda, atau ada yang belum jelas, tanyakan, jangan memilih diam-diam. Bila ada cara yang lebih sederhana, katakan dan bantah bila perlu.
+2. **Utamakan kesederhanaan.** Tulis kode paling sedikit yang menyelesaikan masalah: tanpa fitur, konfigurasi, atau abstraksi sekali pakai yang tidak diminta, dan tanpa penanganan error untuk skenario yang mustahil. Penanganan `isStaleActionError` dan pencegahan klik ganda pada aksi pesanan atau uang bukan berlebihan.
+3. **Ubah seperlunya.** Setiap baris yang berubah harus bisa ditelusuri ke permintaan. Jangan merapikan atau me-refactor kode di sekitarnya, dan ikuti gaya yang ada. Kode mati di luar tugas cukup dilaporkan; hapus hanya import, variabel, atau fungsi yang menjadi tidak terpakai karena perubahan sendiri.
+4. **Kerja dengan target yang bisa diverifikasi.** Ubah tugas menjadi kriteria sukses: "tambah validasi" → tulis tes E2E input tidak valid lalu buat lulus; "refactor" → `npm run build` dan tes E2E terkait lulus sebelum dan sesudah. Untuk tugas beberapa langkah, tulis rencana singkat `langkah → cara verifikasi`.
+
 ## Commands
 
 ```bash
@@ -29,6 +38,28 @@ Belum ada lint/unit test. Verifikasi perubahan dengan `npm run build` (cek error
   Cara cepat: salin spec ke `tests/e2e/tmp-verify.spec.ts` dengan `sed 's/^  test\.fail(/  test(/'` (atau hapus baris `test.fail()`), jalankan dengan `-g "F-"`, cek pesan gagalnya, lalu hapus file sementara itu.
 - Tes `test.fail` yang mengecek "sesuatu TIDAK muncul" rawan lolos palsu (`toHaveCount(0)` langsung lolos sebelum elemen sempat muncul). Tunggu dulu (`waitForTimeout`) baru hitung.
 - Jika Playwright gagal start dengan "Another Nuxt dev server is already running" padahal tidak ada server (lock basi, PID sudah dipakai proses lain), jalankan dengan `NUXT_IGNORE_LOCK=1 npx playwright test`.
+
+## Review kritis sebelum melapor selesai
+
+Wajib untuk perubahan yang menyentuh uang (checkout, saldo, withdrawal), status, hak akses, kontrak API, atau data sensitif. Review diff sendiri dengan tujuan mencari alasan terkuat perubahan ini belum layak rilis. Anggap bisa gagal sampai ada bukti sebaliknya; kode yang hanya benar di jalur sukses adalah kelemahan nyata.
+
+Periksa berurutan:
+
+- **Hak akses:** `role-guard`, daftar rute di `auth-redirect`, menu per peran. Guard FE hanya mengatur tampilan; jangan mengandalkannya sebagai pengaman data.
+- **Uang dan data:** nominal, fee, atau voucher yang berbeda dari perhitungan BE; kredensial atau token yang tersimpan, tercatat di log, atau ikut terkirim ke klien lewat SSR.
+- **Kegagalan sebagian:** klik ganda atau retry pada mutasi, respons error setelah aksi sebagian berhasil, refresh token yang gagal, state yang tidak dimuat ulang setelah aksi.
+- **Konkurensi:** status basi saat BE sudah berubah (403/409 lewat `isStaleActionError`), respons lama menimpa yang baru, polling badge, stok keranjang yang berubah sebelum checkout.
+- **Kondisi tepi:** data kosong, null, loading, timeout, BE gangguan, dan hasil SSR yang berbeda dari klien (hydration).
+- **Kontrak dan versi:** `types/` dan `composables/api/` sesuai `openapi.yaml`; status baru belum punya label di `*StatusBadge`; mock E2E lulus padahal berbeda dari BE asli; kompatibilitas dengan BE yang sedang berjalan.
+- **Keamanan tampilan:** HTML dari user wajib lewat `isomorphic-dompurify` sebelum dirender.
+- **Keterlacakan:** error yang tertelan tanpa toast atau pesan yang jelas bagi user.
+
+Aturan temuan:
+
+- Laporkan hanya yang material, tanpa komentar gaya atau penamaan.
+- Tiap temuan memuat `file:baris`, apa yang bisa salah, kenapa jalur itu rentan, dampaknya, dan perbaikan konkret.
+- Dasarkan pada kode atau output tool. Tandai bila hanya inferensi, dan cek `docs/domain-glossary.md` serta dokumen BE terkait sebelum menyebut perilaku janggal sebagai bug.
+- Satu temuan kuat lebih baik daripada banyak temuan lemah. Bila tidak ada temuan, katakan aman.
 
 ## Environment
 
