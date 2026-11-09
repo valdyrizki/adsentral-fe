@@ -21,35 +21,35 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 
 ## Ringkasan
 
-| # | Modul | Spec | Status | Prioritas sisa |
-|---|---|---|---|---|
-| 1 | Auth: login & guard rute | `auth.spec.ts` | Sebagian | P1 (register, logout, refresh token) |
-| 2 | Profil buyer | — | ⬜ | P2 |
-| 3 | Katalog publik (beranda, kategori, produk, merchant, pencarian) | — | ⬜ | P2 |
-| 4 | Keranjang & checkout | `checkout.spec.ts` | ✅ | — |
-| 5 | Pembayaran buyer | `payment.spec.ts` | Sebagian | P2 (daftar `/payment`) |
-| 6 | Transaksi buyer | `transaction.spec.ts` | 🐞 | — |
-| 7 | Garansi (buyer & seller) | `guarantee.spec.ts` | 🐞 | — |
-| 8 | Saldo, deposit & transfer | `balance.spec.ts` | 🐞 | — |
-| 9 | Penalty (buyer, seller, admin) | `penalty.spec.ts` | 🐞 | P3 (`/admin/penalty-user`) |
-| 10 | Pesanan seller | `seller-order.spec.ts` | 🐞 | — |
-| 11 | Penarikan dana & rekening bank seller | `withdrawal.spec.ts` | Sebagian | P1 (rekening bank) |
-| 12 | Produk seller | — | ⬜ | P1 |
-| 13 | Stok seller | — | ⬜ | P1 |
-| 14 | Verifikasi seller & daftar merchant | — | ⬜ | P1 |
-| 15 | Dashboard & profil toko seller | — | ⬜ | P3 |
-| 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | 🐞 | P3 (dashboard admin) |
-| 17 | Pembayaran admin | `payment.spec.ts` | Sebagian | P1 (unprocessed payment) |
-| 18 | Penarikan dana admin | `withdrawal.spec.ts` | 🐞 | — |
-| 19 | Produk & stok admin (review, suspend) | — | ⬜ | P1 |
-| 20 | Verifikasi seller (admin) | — | ⬜ | P1 |
-| 21 | Master data admin (kategori, tipe akun, voucher, metode/channel bayar) | — | ⬜ | P2 |
-| 22 | Keuangan admin (ringkasan, jurnal, kategori, failed journal) | — | ⬜ | P2 |
-| 23 | System settings | — | ⬜ | P2 |
-| 24 | Chat (buyer, seller, admin) | — | ⬜ | P2 |
-| 25 | Notifikasi (buyer, seller, admin, broadcast) | — | ⬜ | P2 |
-| 26 | Badge/alerts sidebar & header | — (tersirat di beberapa tes) | Sebagian | P3 |
-| 27 | Halaman statis | — | ➖ | P3 (smoke test) |
+| # | Modul | Spec | Status | Prioritas sisa | Catatan |
+|---|---|---|---|---|---|
+| 1 | Auth: login & guard rute | `auth.spec.ts` | Sebagian | P1 (register, logout, refresh token) | F-01 (kredensial bocor ke URL) sudah diperbaiki. F-02 hydration mismatch `/login` belum dites. `/guarantee` lolos tanpa login (F-19). |
+| 2 | Profil buyer | — | ⬜ | P2 | Halaman sederhana: tampil profil + `updateProfile`. |
+| 3 | Katalog publik (beranda, kategori, produk, merchant, pencarian) | — | ⬜ | P2 | Halaman SSR; data publik juga lewat mock BE SSR (`mock-backend.mjs`), bukan hanya `mockApi`. Detail produk adalah pintu masuk keranjang. |
+| 4 | Keranjang & checkout | `checkout.spec.ts` | ✅ | — | Cek saldo memakai nilai lama (F-03) dan mengabaikan biaya aplikasi (F-04, perlu konfirmasi). Belum: ubah qty/hapus item, multi-merchant. |
+| 5 | Pembayaran buyer | `payment.spec.ts` | Sebagian | P2 (daftar `/payment`) | Nominal transfer ≠ Total Tagihan (F-05, prioritas tinggi, perlu konfirmasi). Deposit `PAID` tanpa keterangan (F-08). |
+| 6 | Transaksi buyer | `transaction.spec.ts` | 🐞 | — | Tombol daftar memanggil `alert()` placeholder (F-16, tinggi). Edit penilaian kosong (F-17). Countdown `expired_at` null (F-11). Filter status kurang (F-18). |
+| 7 | Garansi (buyer & seller) | `guarantee.spec.ts` | 🐞 | — | Pesan error BE hilang & 409 tidak reload (F-20). `/guarantee` tanpa guard (F-19). Label status diduplikasi di 5 tempat (F-21). |
+| 8 | Saldo, deposit & transfer | `balance.spec.ts` | 🐞 | — | Metode default `'QRIS'` tidak valid (F-33). Riwayat gagal tampil "kosong" (F-34). Error BE hilang (F-20). |
+| 9 | Penalty (buyer, seller, admin) | `penalty.spec.ts` | 🐞 | P3 (`/admin/penalty-user`) | Normalisasi ID & form edit basi (F-29). `status=ALL` & WARNING tampil "Normal" (F-30). Slideover basi (F-31). Halaman yatim & rule BUYER bisa ke seller (F-32). |
+| 10 | Pesanan seller | `seller-order.spec.ts` | 🐞 | — | "Batalkan" PAID memanggil `addToCart` (F-09, tinggi). `alert()` pesan kosong (F-10). Belum: seller ajukan arbitrase, kirim via file/stok. |
+| 11 | Penarikan dana & rekening bank seller | `withdrawal.spec.ts` | Sebagian | P1 (rekening bank) | `WD_FEE` diam-diam jatuh ke Rp 2.500 (F-23). Batal basi 409 (F-20). Halaman `/seller/bank-account` belum dites. |
+| 12 | Produk seller | — | ⬜ | P1 | Upload gambar perlu file fixture (maks 5 MB, JPG/PNG, ≤1500×1500). Form memakai rich text TipTap & setting publik. |
+| 13 | Stok seller | — | ⬜ | P1 | Bulk akun/file memakai alur cek `dryRun` lalu simpan; cek duplikat di `useStockDuplicateCheck`. |
+| 14 | Verifikasi seller & daftar merchant | — | ⬜ | P1 | `registerMerchant` & verifikasi dikirim sebagai FormData (upload dokumen). |
+| 15 | Dashboard & profil toko seller | — | ⬜ | P3 | Riwayat penalty di dashboard sudah tercakup `penalty.spec.ts`. |
+| 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | 🐞 | P3 (dashboard admin) | Refund 400 menutup modal (F-24). Tombol muncul di status final (F-25). GET membuang pesan BE (F-26). `alert()` diskusi (F-27). Filter & teks Cancel Arbitrage (F-28). |
+| 17 | Pembayaran admin | `payment.spec.ts` | Sebagian | P1 (unprocessed payment) | "Tolak" memanggil `/payment/cancel` (F-06, perlu konfirmasi). Filter `status=ALL` (F-07). |
+| 18 | Penarikan dana admin | `withdrawal.spec.ts` | 🐞 | — | Rumus "Potensi Anomali" ikut menghitung saldo deposit (F-22). Statistik hanya halaman aktif (F-23). |
+| 19 | Produk & stok admin (review, suspend) | — | ⬜ | P1 | Halaman create/edit admin memakai ulang form produk seller; tes setelah modul 12. |
+| 20 | Verifikasi seller (admin) | — | ⬜ | P1 | Termasuk edit user terverifikasi (`editVerifiedUser`). |
+| 21 | Master data admin (kategori, tipe akun, voucher, metode/channel bayar) | — | ⬜ | P2 | Pola CRUD serupa; cocok satu spec per halaman. Sinkron Tripay memanggil gateway lewat BE. |
+| 22 | Keuangan admin (ringkasan, jurnal, kategori, failed journal) | — | ⬜ | P2 | Total per kategori diagregasi di FE (loop semua halaman jurnal, abaikan void) — perlu dicek kebenarannya. |
+| 23 | System settings | — | ⬜ | P2 | Setting publik dipakai checkout & withdrawal (biaya aplikasi, `WD_FEE`); salah ubah berdampak luas. |
+| 24 | Chat (buyer, seller, admin) | — | ⬜ | P2 | Admin memakai endpoint percakapan seller. |
+| 25 | Notifikasi (buyer, seller, admin, broadcast) | — | ⬜ | P2 | Kirim ke user memakai pencarian `/admin/users` (sama dengan modal penalty). |
+| 26 | Badge/alerts sidebar & header | — (tersirat di beberapa tes) | Sebagian | P3 | Refresh badge setelah aksi sudah dicek di payment & withdrawal. Polling 45 detik & field `null` belum. |
+| 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
 Total saat ini: **135 tes** di 10 spec, semuanya lolos (termasuk 27 tes `test.fail` untuk bug yang sudah diketahui).
 

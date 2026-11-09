@@ -6,59 +6,56 @@ isi kolom "Perbaikan", dan tambahkan tes regresi bila memungkinkan.
 
 Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) · `SELESAI`
 
-## Progres
+## Rencana & catatan
 
-Daftar lengkap modul/fungsi yang harus dites beserta statusnya: **`docs/test-progress.md`**.
-
-- **Sudah dites (135 tes):** login & guard rute, checkout, pembayaran buyer/admin, pesanan seller, transaksi buyer,
-  garansi, withdrawal, pesanan admin (arbitrase/refund/selesaikan paksa), penalty, deposit & transfer saldo.
-- **Belum dites (area pendukung):** chat, produk & stok seller, verifikasi seller, rekening bank, voucher, notifikasi,
-  keuangan admin (`/admin/finance`), kategori/tipe akun, payment channel/method admin, system settings.
+- **Cakupan tes** (modul yang sudah/belum dites, prioritas): lihat **`docs/test-progress.md`**. Dokumen ini hanya berisi bug.
 - **Rencana perbaikan:** dikerjakan setelah tes selesai. Mulai dari **F-20 + F-26** (pakai `rethrowApiError` di
   composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
   Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
+- **Setelah memperbaiki temuan:** ubah statusnya di sini menjadi `SELESAI`, hapus `test.fail` di spec, dan ubah 🐞 → ✅
+  di `docs/test-progress.md`.
 - **Keamanan:** file `editor` dulu berisi data akun (UID, password, 2FA, email) dan masih ada di riwayat git.
   Sudah dikosongkan; akun terkait perlu ganti password/2FA, dan riwayat bisa dibersihkan dengan `git filter-repo`
   bila disepakati.
 
 ## Ringkasan
 
-| ID | Area | Judul | Prioritas | Status |
-|---|---|---|---|---|
-| F-01 | Login | Kredensial bocor ke URL jika form ter-submit sebelum hidrasi | Tinggi | SELESAI |
-| F-02 | Login | Hydration mismatch di halaman `/login` | Rendah | TERBUKA |
-| F-03 | Keranjang | `depositBalance` tidak reaktif, pengecekan saldo bisa memakai nilai lama | Sedang | TERBUKA |
-| F-04 | Keranjang | Pengecekan saldo mengabaikan biaya aplikasi | Sedang | PERLU KONFIRMASI |
-| F-05 | Pembayaran (buyer) | Nominal transfer di info rekening/WhatsApp ≠ Total Tagihan | Tinggi | PERLU KONFIRMASI |
-| F-06 | Pembayaran (admin) | "Tolak" memanggil `/payment/cancel`, bukan `/payment/reject` | Sedang | PERLU KONFIRMASI |
-| F-07 | Pembayaran (admin) | Filter "Semua Status" mengirim `status=ALL` ke BE | Sedang | TERBUKA |
-| F-08 | Pembayaran (buyer) | Deposit berstatus `PAID` tidak menampilkan keterangan apa pun | Rendah | PERLU KONFIRMASI |
-| F-09 | Pesanan seller | Tombol "Batalkan" (PAID) memanggil placeholder `addToCart` | Tinggi | TERBUKA |
-| F-10 | Pesanan seller | Validasi pesan kosong memakai `window.alert()` | Rendah | TERBUKA |
-| F-11 | Pesanan seller & transaksi buyer | Countdown UNPAID/PAID langsung "habis" bila `expired_at`/`paid_at` null | Sedang | TERBUKA |
-| F-12 | Pesanan seller | Aksi permanen tanpa dialog konfirmasi (terima pesanan, terima pembatalan) | Sedang | PERLU KONFIRMASI |
-| F-13 | Pesanan seller | Tolak 409 di halaman detail tidak menutup modal (daftar menutup) | Rendah | TERBUKA |
-| F-14 | Pesanan seller | Tombol "Kirim Orderan" tetap muncul di DELIVERED/DONE/ARBITRAGE | Rendah | PERLU KONFIRMASI |
-| F-15 | Pesanan seller | Kode mati di daftar pesanan (`handleReject`, tombol produk ACTIVE/INACTIVE) | Rendah | TERBUKA |
-| F-16 | Transaksi buyer | Tombol "Batalkan", "Beli Lagi", "Tangguhkan" (daftar) memanggil placeholder `alert()` | Tinggi | TERBUKA |
-| F-17 | Transaksi buyer | Form "Edit Penilaian" tidak terisi penilaian sebelumnya | Sedang | TERBUKA |
-| F-18 | Transaksi buyer | Filter status buyer tidak punya `REJECT`, `REJECTED`, `CANCEL_REQUEST` | Rendah | PERLU KONFIRMASI |
-| F-19 | Garansi buyer | `/guarantee` tidak dilindungi login (tidak ada di `authRequiredRoutes`) | Sedang | TERBUKA |
-| F-20 | Garansi, withdrawal, penalty & deposit | Pesan error BE hilang (toast `[POST] "/backend/...": 409 Conflict` / "Conflict") & 409 tidak memuat ulang | Sedang | TERBUKA |
-| F-21 | Garansi | Label/warna status garansi diduplikasi di 5 tempat dengan teks berbeda | Rendah | TERBUKA |
-| F-22 | Withdrawal (admin) | Rumus "Potensi Anomali" menghitung saldo belanja (deposit) sebagai saldo yang bisa ditarik | Sedang | PERLU KONFIRMASI |
-| F-23 | Withdrawal | `WD_FEE` diam-diam jatuh ke Rp 2.500 bila setting gagal dimuat; kartu statistik admin hanya dari halaman aktif | Sedang | PERLU KONFIRMASI |
-| F-24 | Pesanan admin | Refund/Selesaikan gagal (400) menutup modal, alasan yang diketik hilang | Sedang | TERBUKA |
-| F-25 | Pesanan admin | Tombol "Refund Transaksi"/"Selesaikan Transaksi" muncul di status final (REFUNDED, CANCELLED, REJECTED, EXPIRED) dan UNPAID | Sedang | PERLU KONFIRMASI |
-| F-26 | API layer | Banyak composable GET membuang pesan BE (`err.message` → `[GET] "/backend/...": 400 Bad Request`); `fetchCreateOrderDiscussion` bisa crash di `err.response._data` | Sedang | TERBUKA |
-| F-27 | Pesanan admin | Validasi pesan diskusi kosong memakai `window.alert()` (sama dengan F-10) | Rendah | TERBUKA |
-| F-28 | Pesanan admin | Filter status admin tidak lengkap; teks konfirmasi "Cancel Arbitrage" tidak formal & tujuan statusnya belum jelas | Rendah | PERLU KONFIRMASI |
-| F-29 | Penalty rule (admin) | Normalisasi Rule ID (kapital + underscore) tidak jalan; form edit menyimpan perubahan yang dibatalkan | Sedang | TERBUKA |
-| F-30 | Manage penalty (admin) | Filter "Semua" mengirim `status=ALL`; status `WARNING` tampil "Normal" (hijau) | Sedang | TERBUKA |
-| F-31 | Manage penalty (admin) | Poin & status di header slideover detail user tidak diperbarui setelah penalty dibatalkan; error detail tidak ditangani | Rendah | TERBUKA |
-| F-32 | Penalty | Halaman `/admin/penalty-user` yatim (tanpa menu, duplikat `/admin/penalty`); statistik penalty user dihitung per halaman; rule target `BUYER` bisa dikenakan ke seller | Rendah | PERLU KONFIRMASI |
-| F-33 | Deposit | Metode default `'QRIS'` bukan id metode mana pun → tombol "Deposit" nonaktif tanpa penjelasan | Rendah | TERBUKA |
-| F-34 | Deposit | Riwayat deposit gagal dimuat tampil "Belum ada riwayat deposit"; ref `error` tidak pernah diisi | Sedang | TERBUKA |
+| ID | Area | Judul | Prioritas | Status | Catatan |
+|---|---|---|---|---|---|
+| F-01 | Login | Kredensial bocor ke URL jika form ter-submit sebelum hidrasi | Tinggi | SELESAI | Sudah diperbaiki: `@submit.prevent` + `method="post"`. Tes regresi di `auth.spec.ts`. |
+| F-02 | Login | Hydration mismatch di halaman `/login` | Rendah | TERBUKA | Belum ada tes. Dugaan: `definePageMeta()` dipanggil di komponen, bukan halaman. |
+| F-03 | Keranjang | `depositBalance` tidak reaktif, pengecekan saldo bisa memakai nilai lama | Sedang | TERBUKA | Fix: pakai `balanceStore.depositBalance` langsung di computed. Tes perlu ditambahkan. |
+| F-04 | Keranjang | Pengecekan saldo mengabaikan biaya aplikasi | Sedang | PERLU KONFIRMASI | Tanya BE: untuk SALDO, apakah biaya aplikasi ikut dipotong & voucher mengurangi potongan? Jika ya, bandingkan dengan `orderTotal`. |
+| F-05 | Pembayaran (buyer) | Nominal transfer di info rekening/WhatsApp ≠ Total Tagihan | Tinggi | PERLU KONFIRMASI | Hampir pasti harus `total_amount` (agar kode unik ikut ditransfer). Konfirmasi lalu ubah di instruksi transfer & link WA. |
+| F-06 | Pembayaran (admin) | "Tolak" memanggil `/payment/cancel`, bukan `/payment/reject` | Sedang | PERLU KONFIRMASI | Tanya: "Tolak" seharusnya `/payment/reject` + alasan? Tes lama mengunci perilaku `cancel`, ubah saat diperbaiki. `uploadPaymentProof` juga tidak dipakai. |
+| F-07 | Pembayaran (admin) | Filter "Semua Status" mengirim `status=ALL` ke BE | Sedang | TERBUKA | Fix satu baris: kirim kosong bila `ALL`. Ditandai `test.fail` di `payment.spec.ts`. |
+| F-08 | Pembayaran (buyer) | Deposit berstatus `PAID` tidak menampilkan keterangan apa pun | Rendah | PERLU KONFIRMASI | Tanya: status apa saja yang mungkin untuk deposit, dan apakah `DONE` masih dipakai BE? |
+| F-09 | Pesanan seller | Tombol "Batalkan" (PAID) memanggil placeholder `addToCart` | Tinggi | TERBUKA | Hapus tombol (sudah ada "Tolak Pesanan"). Ditandai `test.fail` di `seller-order.spec.ts`. |
+| F-10 | Pesanan seller | Validasi pesan kosong memakai `window.alert()` | Rendah | TERBUKA | Ganti dengan toast / nonaktifkan tombol kirim. Ditandai `test.fail`. Sama dengan F-27. |
+| F-11 | Pesanan seller & transaksi buyer | Countdown UNPAID/PAID langsung "habis" bila `expired_at`/`paid_at` null | Sedang | TERBUKA | Fix: pakai `getPaymentExpiry` & `getTxConfirmCountdown`. Ditandai `test.fail` di seller-order & transaction. |
+| F-12 | Pesanan seller | Aksi permanen tanpa dialog konfirmasi (terima pesanan, terima pembatalan) | Sedang | PERLU KONFIRMASI | Tanya: perlu `useConfirm()`? Sekalian perjelas label "Setujui/Tolak Pembatalan" yang mudah tertukar. |
+| F-13 | Pesanan seller | Tolak 409 di halaman detail tidak menutup modal (daftar menutup) | Rendah | TERBUKA | Fix: tutup modal saat `isStaleActionError`, samakan dengan halaman daftar. |
+| F-14 | Pesanan seller | Tombol "Kirim Orderan" tetap muncul di DELIVERED/DONE/ARBITRAGE | Rendah | PERLU KONFIRMASI | Tanya: di status mana seller boleh kirim ulang orderan? (`REJECT` kemungkinan perlu.) |
+| F-15 | Pesanan seller | Kode mati di daftar pesanan (`handleReject`, tombol produk ACTIVE/INACTIVE) | Rendah | TERBUKA | Bersih-bersih: hapus `handleReject`, tombol status produk & `console.log`. |
+| F-16 | Transaksi buyer | Tombol "Batalkan", "Beli Lagi", "Tangguhkan" (daftar) memanggil placeholder `alert()` | Tinggi | TERBUKA | Prioritas tinggi: tombol tampil ke buyer tapi tidak berfungsi. Ditandai `test.fail` di `transaction.spec.ts`. |
+| F-17 | Transaksi buyer | Form "Edit Penilaian" tidak terisi penilaian sebelumnya | Sedang | TERBUKA | Fix: isi form dari review lama lewat `watch`. Ditandai `test.fail`. |
+| F-18 | Transaksi buyer | Filter status buyer tidak punya `REJECT`, `REJECTED`, `CANCEL_REQUEST` | Rendah | PERLU KONFIRMASI | Tanya: sengaja disembunyikan? Apakah `/tx/buyer` menerima ketiga status itu? |
+| F-19 | Garansi buyer | `/guarantee` tidak dilindungi login (tidak ada di `authRequiredRoutes`) | Sedang | TERBUKA | Fix satu baris: tambah `/guarantee` ke `authRequiredRoutes`. Ditandai `test.fail`. |
+| F-20 | Garansi, withdrawal, penalty & deposit | Pesan error BE hilang (toast `[POST] "/backend/...": 409 Conflict` / "Conflict") & 409 tidak memuat ulang | Sedang | TERBUKA | **Diperbaiki pertama** bersama F-26: `rethrowApiError` di composable + reload saat 409. Menutup banyak `test.fail` sekaligus. |
+| F-21 | Garansi | Label/warna status garansi diduplikasi di 5 tempat dengan teks berbeda | Rendah | TERBUKA | Buat `GuaranteeStatusBadge.vue` lalu pakai ulang di 5 tempat. |
+| F-22 | Withdrawal (admin) | Rumus "Potensi Anomali" menghitung saldo belanja (deposit) sebagai saldo yang bisa ditarik | Sedang | PERLU KONFIRMASI | Tanya BE rumus yang benar; opsi lebih sederhana: pakai `sales_balance` + `sales_held` dari BE. |
+| F-23 | Withdrawal | `WD_FEE` diam-diam jatuh ke Rp 2.500 bila setting gagal dimuat; kartu statistik admin hanya dari halaman aktif | Sedang | PERLU KONFIRMASI | Tanya: siapa sumber kebenaran `admin_fee` (FE/BE)? Ada endpoint ringkasan statistik withdrawal? |
+| F-24 | Pesanan admin | Refund/Selesaikan gagal (400) menutup modal, alasan yang diketik hilang | Sedang | TERBUKA | Fix: tutup modal hanya saat sukses atau `isStaleActionError`. Ditandai `test.fail`. |
+| F-25 | Pesanan admin | Tombol "Refund Transaksi"/"Selesaikan Transaksi" muncul di status final (REFUNDED, CANCELLED, REJECTED, EXPIRED) dan UNPAID | Sedang | PERLU KONFIRMASI | Tanya: status apa saja yang boleh di-refund/diselesaikan paksa? Risiko refund ganda bila BE tidak menolak. |
+| F-26 | API layer | Banyak composable GET membuang pesan BE (`err.message` → `[GET] "/backend/...": 400 Bad Request`); `fetchCreateOrderDiscussion` bisa crash di `err.response._data` | Sedang | TERBUKA | **Diperbaiki pertama** bersama F-20: ganti `catch` di composable GET dengan `rethrowApiError`. |
+| F-27 | Pesanan admin | Validasi pesan diskusi kosong memakai `window.alert()` (sama dengan F-10) | Rendah | TERBUKA | Sama dengan F-10; perbaiki bersamaan. Ditandai `test.fail`. |
+| F-28 | Pesanan admin | Filter status admin tidak lengkap; teks konfirmasi "Cancel Arbitrage" tidak formal & tujuan statusnya belum jelas | Rendah | PERLU KONFIRMASI | Tanya: status tujuan `PATCH /tx/cancel/arbitrage` & opsi filter yang dibutuhkan admin. Teks "lhooo" perlu diganti. |
+| F-29 | Penalty rule (admin) | Normalisasi Rule ID (kapital + underscore) tidak jalan; form edit menyimpan perubahan yang dibatalkan | Sedang | TERBUKA | Fix: normalisasi lewat `watch` + validasi regex; reset form saat modal dibuka. Ditandai `test.fail`. |
+| F-30 | Manage penalty (admin) | Filter "Semua" mengirim `status=ALL`; status `WARNING` tampil "Normal" (hijau) | Sedang | TERBUKA | Fix: kirim kosong bila `ALL` & tambah label WARNING. Ditandai `test.fail`. |
+| F-31 | Manage penalty (admin) | Poin & status di header slideover detail user tidak diperbarui setelah penalty dibatalkan; error detail tidak ditangani | Rendah | TERBUKA | Fix: ambil ulang data user setelah `penalty-cancelled`. Ditandai `test.fail`. |
+| F-32 | Penalty | Halaman `/admin/penalty-user` yatim (tanpa menu, duplikat `/admin/penalty`); statistik penalty user dihitung per halaman; rule target `BUYER` bisa dikenakan ke seller | Rendah | PERLU KONFIRMASI | Tanya: hapus `/admin/penalty-user`? Rule dibatasi sesuai role user? Kartu poin sebaiknya pakai `/user/penalty/stat`. |
+| F-33 | Deposit | Metode default `'QRIS'` bukan id metode mana pun → tombol "Deposit" nonaktif tanpa penjelasan | Rendah | TERBUKA | Fix: default `null` + petunjuk "Pilih metode pembayaran". Ditandai `test.fail`. |
+| F-34 | Deposit | Riwayat deposit gagal dimuat tampil "Belum ada riwayat deposit"; ref `error` tidak pernah diisi | Sedang | TERBUKA | Fix: tampilkan `errorDepositHistory` dengan `apiErrorMessage`. Ditandai `test.fail`. |
 
 ---
 
