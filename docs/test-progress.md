@@ -51,7 +51,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 26 | Badge/alerts sidebar & header | — (tersirat di beberapa tes) | Sebagian | P3 | Refresh badge setelah aksi sudah dicek di payment & withdrawal. Polling 45 detik & field `null` belum. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **135 tes** di 10 spec, semuanya lolos (termasuk 27 tes `test.fail` untuk bug yang sudah diketahui).
+Total saat ini: **143 tes** di 11 spec (termasuk `security.spec.ts`), dengan 27 tes `test.fail` untuk bug yang sudah diketahui.
 
 ---
 
