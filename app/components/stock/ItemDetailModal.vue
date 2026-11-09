@@ -34,10 +34,9 @@
         <div v-if="item.file_name" class="space-y-1">
           <p class="text-xs font-medium text-gray-500">File</p>
           <a
-            :href="item.file_url ? getImageUrl(item.file_url) : undefined"
-            :download="item.file_name"
-            target="_blank"
+            href="#"
             class="text-sm text-blue-500 hover:underline flex items-center gap-1 w-fit max-w-full break-all"
+            @click.prevent="openSignedFile(item.file_url, item.file_name ?? undefined)"
           >
             <UIcon name="i-lucide-download" class="size-4 flex-none" />
             {{ item.file_name }}
@@ -141,6 +140,9 @@ const emit = defineEmits<{
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
+
+// URL file stok presigned (1 jam); halaman stok menyediakan sumber refresh-nya
+const openSignedFile = useSignedFileOpener()
 
 const revealed = reactive<Partial<Record<keyof StockAccountFields, boolean>>>({})
 

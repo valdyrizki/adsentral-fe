@@ -28,12 +28,7 @@ const fileName = computed(() => {
   return `${name}.${ext}`
 })
 
-function download() {
-  const link = document.createElement('a')
-  link.href = getImageUrl(props.file.url)
-  link.download = fileName.value
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
+// URL file pengiriman/garansi presigned (1 jam); halaman induk menyediakan sumber refresh-nya
+const openSignedFile = useSignedFileOpener()
+const download = () => openSignedFile(props.file.url, fileName.value)
 </script>

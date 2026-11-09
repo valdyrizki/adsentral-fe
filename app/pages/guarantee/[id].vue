@@ -130,7 +130,7 @@
           <div class="flex flex-col gap-2">
             <p class="font-medium text-sm text-gray-700">File Akun Garansi</p>
             <p class="text-xs text-gray-400">Simpan file ini dengan aman. Ini adalah akun garansi yang dikirimkan seller.</p>
-            <UButton icon="mdi:download" color="primary" variant="soft" size="sm" class="w-fit" @click="downloadFile(getImageUrl(guarantee.file_url))">
+            <UButton icon="mdi:download" color="primary" variant="soft" size="sm" class="w-fit" @click="openSignedFile(guarantee.file_url, guarantee.file_ori_name ?? undefined)">
               {{ guarantee.file_ori_name || 'Unduh File Garansi' }}
             </UButton>
           </div>
@@ -216,13 +216,6 @@ const statusColor = (status: GuaranteeStatus) => ({
   DONE: 'success' as const,
 })[status] ?? 'warning' as const
 
-function downloadFile(fileUrl: string | undefined) {
-  if (!fileUrl) return
-  const link = document.createElement('a')
-  link.href = fileUrl
-  link.download = ''
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
+// File garansi presigned (kedaluwarsa 1 jam): dimuat ulang otomatis sebelum dibuka bila basi
+const openSignedFile = provideSignedFileSource(refresh, () => guarantee.value)
 </script>

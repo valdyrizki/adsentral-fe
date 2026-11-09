@@ -30,8 +30,30 @@
                 >Lupa kata sandi?</a>
                 <span v-else class="text-sm font-medium text-gray-400">Lupa kata sandi?</span>
             </div>
-            <UButton type="submit" size="lg" class="w-full flex justify-center items-center" :loading="loading">
-                Masuk
+            <!-- 429 RATE_LIMITED / 403 ACCOUNT_LOCKED: tombol dikunci selama hitung mundur dari BE -->
+            <UAlert
+              v-if="blockMessage"
+              color="error"
+              variant="soft"
+              icon="mdi:lock-clock"
+              :title="blockMessage"
+              data-testid="login-block-alert"
+            >
+              <template v-if="blockCode === 'ACCOUNT_LOCKED'" #description>
+                Kunci terbuka otomatis, atau
+                <a
+                  v-if="forgotPasswordUrl"
+                  :href="forgotPasswordUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="font-semibold underline"
+                >reset lewat Lupa kata sandi</a>
+                <span v-else class="font-semibold">gunakan Lupa kata sandi</span>
+                untuk membukanya sekarang.
+              </template>
+            </UAlert>
+            <UButton type="submit" size="lg" class="w-full flex justify-center items-center" :loading="loading" :disabled="cooldownActive">
+                {{ cooldownActive ? `Coba lagi dalam ${cooldownLabel}` : 'Masuk' }}
             </UButton>
 
             <p class="text-sm font-light text-gray-500 dark:text-gray-400">
@@ -74,7 +96,18 @@ import { useAuthApi } from "~/composables/api/auth";
   const authStore  = useAuthStore()
   const balanceStore = useBalanceStore()
 
+  // Penolakan berkode dari BE: RATE_LIMITED (batas request per IP) & ACCOUNT_LOCKED (password salah berulang).
+  // Keduanya sementara; tombol aktif lagi saat hitung mundur `retryAfterSeconds` habis. Jangan auto-retry.
+  const blockCode = ref<string | null>(null)
+  const blockMessage = ref<string | null>(null)
+  const { active: cooldownActive, label: cooldownLabel, start: startCooldown } = useCooldown()
+  watch(cooldownActive, (active) => {
+    if (!active) blockCode.value = blockMessage.value = null
+  })
+
   const loginHandler = async(): Promise<void> =>{
+    if (cooldownActive.value) return
+
     //validation
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!re.test(email.value)) {
@@ -125,6 +158,13 @@ import { useAuthApi } from "~/composables/api/auth";
         // simpan token di cookie / localStorage / useState
       } catch (err) {
         console.error('Login gagal:', err)
+        const code = apiErrorDetail(err)?.code
+        if (code === 'RATE_LIMITED' || code === 'ACCOUNT_LOCKED') {
+          blockCode.value = code
+          blockMessage.value = apiErrorMessage(err)
+          startCooldown(apiErrorRetryAfter(err))
+          return
+        }
         toast.add({
         title: "Login Gagal ❌",
         description: "Periksa kembali email dan password Anda, pastikan sudah benar.",

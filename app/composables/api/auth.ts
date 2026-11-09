@@ -37,9 +37,11 @@ export const useAuthApi = () => {
       return res.data
     } catch (err:any) {
       console.error('Failed login', err)
+      // Teruskan body BE: 429 RATE_LIMITED / 403 ACCOUNT_LOCKED dibedakan dari data.code
       throw createError({
-        statusCode: err.statusCode || 500,
-        statusMessage: err.message || 'Failed login',
+        statusCode: apiErrorStatus(err) || 500,
+        statusMessage: apiErrorMessage(err, 'Failed login'),
+        data: err.data,
       })
     } finally {
       authStore.setLoading(false)

@@ -125,6 +125,9 @@ async function handleApprove(id: string) {
 | Rich text | `components/form/RichTextEditor.vue` (TipTap, di-import eksplisit); render HTML dengan DOMPurify |
 | Kartu ringkasan seller | `SellerSummaryCard`, `SellerSummaryTile` |
 | URL gambar/file dari BE | `getImageUrl(url)` (`utils/imageUrl.ts`) — path relatif digabung dengan `backendUrl` |
+| Buka file privat (presigned 1 jam: file pesanan, garansi, stok, produk AUTO) | Halaman: `const openSignedFile = provideSignedFileSource(refresh, () => data)`; komponen turunan: `useSignedFileOpener()`. Jangan pakai `<a :href>`/`NuxtLink` langsung ke URL ini |
+| Hitung mundur form yang ditolak BE (rate limit / akun terkunci) | `useCooldown()` → `{ active, label, start(detik) }` |
+| Kode error BE (`RATE_LIMITED`, `ACCOUNT_LOCKED`, …) | `apiErrorDetail(err)?.code`, `apiErrorRetryAfter(err)` |
 | Validasi upload gambar | `helper/imageHelper.ts` (JPG/PNG, ≤ 5 MB, ≤ 1500×1500) |
 | Format rupiah | `formatRupiah()` (`utils/sellerOrderSummary.ts`) atau `toLocaleString('id-ID')` |
 | Countdown batas waktu | `utils/paymentDeadline.ts` (`formatCountdown`, `getPaymentDeadline`), `utils/txConfirmDeadline.ts`, `usePaymentNow()` untuk `now` reaktif |
@@ -132,6 +135,25 @@ async function handleApprove(id: string) {
 | Pesan/status error API | `apiErrorMessage`, `apiErrorStatus`, `isStaleActionError`, `rethrowApiError` (`utils/apiError.ts`) |
 
 Komponen di-auto-import dengan prefix folder: `components/app/X.vue` → `<AppX>`, `components/form/X.vue` → `<FormX>`, `components/stock/X.vue` → `<StockX>`, `components/u/X.vue` → `<UX>` (hati-hati: prefix `U` sama dengan Nuxt UI). Sebagian file lama meng-import komponen secara eksplisit (`import X from '~/components/...'`) dan memakai nama tanpa prefix — keduanya valid; ikuti gaya file yang sedang diedit.
+
+## Pola error berkode (rate limit / kunci sementara)
+
+Contoh acuan: `components/form/Login.vue`.
+
+```ts
+const blockMessage = ref<string | null>(null)
+const { active: cooldownActive, label: cooldownLabel, start: startCooldown } = useCooldown()
+watch(cooldownActive, (active) => { if (!active) blockMessage.value = null })
+
+// di catch:
+if (apiErrorDetail(err)?.code === 'RATE_LIMITED') {
+  blockMessage.value = apiErrorMessage(err)        // pesan BE sudah siap tampil
+  startCooldown(apiErrorRetryAfter(err))
+  return                                           // jangan auto-retry
+}
+```
+
+Tombol kirim: `:disabled="cooldownActive"` dengan label `Coba lagi dalam {{ cooldownLabel }}`. Pesan ditampilkan sebagai `UAlert` di dalam form. Bedakan dari `data.code`, bukan teks pesan; 403 tanpa `code` tetap ditangani seperti biasa.
 
 ## Tanggal, waktu & SSR
 

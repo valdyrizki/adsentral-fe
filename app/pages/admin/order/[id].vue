@@ -159,7 +159,7 @@
         </div>
         <p v-if="guarantee.seller_description" class="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{{ guarantee.seller_description }}</p>
         <div v-if="guarantee.file_url" class="mt-2">
-          <UButton icon="mdi:download" color="primary" variant="soft" size="sm" @click="downloadFile(getImageUrl(guarantee.file_url))">
+          <UButton icon="mdi:download" color="primary" variant="soft" size="sm" @click="openSignedFile(guarantee.file_url, guarantee.file_ori_name ?? undefined)">
             {{ guarantee.file_ori_name }}
           </UButton>
         </div>
@@ -551,11 +551,11 @@
                   <!-- <div><UBadge>Badge</UBadge></div> -->
                   <div class="text-gray-600 whitespace-pre-wrap break-words">{{ orderDiscussion.message }}</div>
                   <div v-if="orderDiscussion.file" class="flex flex-row items-center gap-1"> <!-- File yang sudah diupload, klik untuk download -->
-                    <NuxtLink v-if="isImage(orderDiscussion.file.format)" :to="getImageUrl(orderDiscussion.file.url)">
+                    <a v-if="isImage(orderDiscussion.file.format)" href="#" @click.prevent="openSignedFile(orderDiscussion.file.url, orderDiscussion.file.ori_name)">
                       <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />
-                    </NuxtLink>
+                    </a>
                     <div v-else>
-                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" :title="orderDiscussion.file?.ori_name" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.discussion_type !== DiscussionType.MESSAGE ? 'DOWNLOAD ALL ITEM' : orderDiscussion.file?.ori_name }}</UButton>
+                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" :title="orderDiscussion.file?.ori_name" @click="openSignedFile(orderDiscussion.file?.url, orderDiscussion.file?.ori_name)">{{ orderDiscussion.discussion_type !== DiscussionType.MESSAGE ? 'DOWNLOAD ALL ITEM' : orderDiscussion.file?.ori_name }}</UButton>
                     </div>
                   </div>
                 </div>
@@ -594,7 +594,7 @@
                       <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />
                     </div>
                     <div v-else>
-                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" :title="orderDiscussion.file?.ori_name" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.discussion_type !== DiscussionType.MESSAGE ? 'DOWNLOAD ALL ITEM' : orderDiscussion.file?.ori_name }}</UButton>
+                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" :title="orderDiscussion.file?.ori_name" @click="openSignedFile(orderDiscussion.file?.url, orderDiscussion.file?.ori_name)">{{ orderDiscussion.discussion_type !== DiscussionType.MESSAGE ? 'DOWNLOAD ALL ITEM' : orderDiscussion.file?.ori_name }}</UButton>
                     </div>
                   </div>
                 </div>
@@ -634,7 +634,7 @@
                       <NuxtImg :src="getImageUrl(orderDiscussion.file.url)" width="100" height="100" />
                     </div>
                     <div v-else>
-                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" :title="orderDiscussion.file?.ori_name" @click="downloadFile(getImageUrl(orderDiscussion.file?.url))">{{ orderDiscussion.discussion_type !== DiscussionType.MESSAGE ? 'DOWNLOAD ALL ITEM' : orderDiscussion.file?.ori_name }}</UButton>
+                      <UButton icon="mdi:download" color="primary" variant="soft" size="xs" :title="orderDiscussion.file?.ori_name" @click="openSignedFile(orderDiscussion.file?.url, orderDiscussion.file?.ori_name)">{{ orderDiscussion.discussion_type !== DiscussionType.MESSAGE ? 'DOWNLOAD ALL ITEM' : orderDiscussion.file?.ori_name }}</UButton>
                     </div>
                   </div>
                 </div>
@@ -981,25 +981,6 @@ const selectRating = ref<SelectItem[]>(
     }
   }
 
-const downloadFile = (fileUrl: string | undefined) => {
-  if (!fileUrl) {
-    toast.add({
-      title: "Gagal",
-      description: "File tidak tersedia untuk diunduh",
-      color: "error",
-      icon: "material-symbols:error-outline"
-    })
-    return
-  }
-
-  // Buat link sementara untuk mengunduh file
-  const link = document.createElement('a')
-  link.href = fileUrl
-  link.download = '' // Nama file bisa diatur jika diperlukan
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
 
 const isImage = (format?: string) => {
   if (!format) return false
@@ -1258,6 +1239,12 @@ const isImage = (format?: string) => {
     `guarantee-admin-${route.params.id}`,
     () => fetchGuaranteeByTransaction(route.params.id as string),
     { default: () => null, server: false }
+  )
+
+  // URL file pengiriman & garansi presigned (kedaluwarsa 1 jam): dimuat ulang otomatis sebelum dibuka bila basi
+  const openSignedFile = provideSignedFileSource(
+    () => Promise.all([refreshOrderDiscussion(), refreshFileOrders(), refreshGuarantee()]),
+    () => [orderDiscussions.value, fileOrders.value, guarantee.value],
   )
 
 

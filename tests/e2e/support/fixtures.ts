@@ -20,6 +20,12 @@ export const fail = (status: number, message: string): MockResponse => ({
   body: { status: 'error', message },
 })
 
+/** Error berkode BE (RATE_LIMITED, ACCOUNT_LOCKED, ...): key di `data` camelCase */
+export const failCode = (status: number, message: string, data: Record<string, unknown>): MockResponse => ({
+  status,
+  body: { status: 'error', message, errors: message, data },
+})
+
 export const emptyPage = (size = 20) => ({
   page: 0,
   size,

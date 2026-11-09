@@ -150,11 +150,9 @@
             </div>
             <a
               v-if="item.file_name"
-              :href="item.file_url ? getImageUrl(item.file_url) : undefined"
-              :download="item.file_name"
-              target="_blank"
+              href="#"
               class="text-xs text-blue-500 hover:underline truncate flex items-center gap-1 w-fit max-w-full"
-              @click.stop
+              @click.prevent.stop="openSignedFile(item.file_url, item.file_name)"
             >
               <UIcon name="i-lucide-download" class="size-3 flex-none" />
               {{ item.file_name }}
@@ -268,6 +266,9 @@ const {
   () => getAdminAllStockItems(page.value, perPageValue.value, { ...appliedFilters }),
   { server: false }
 )
+
+// URL file stok presigned (kedaluwarsa 1 jam); modal detail juga memakai sumber ini
+const openSignedFile = provideSignedFileSource(refresh, () => stockData.value)
 
 const countActive = computed(() => stockData.value?.content.filter(i => i.status === 'ACTIVE').length ?? 0)
 const countSent = computed(() => stockData.value?.content.filter(i => i.status === 'SENT').length ?? 0)

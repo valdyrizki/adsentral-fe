@@ -24,8 +24,9 @@ export const useUserApi = () => {
     } catch (err: any) {
       console.log(err.data)
       throw createError({
-        statusCode: err.statusCode || 500,
-        statusMessage: err.data.message || 'Register User failed, server error',
+        statusCode: apiErrorStatus(err) || 500,
+        statusMessage: apiErrorMessage(err, 'Register User failed, server error'),
+        data: err.data, // 429 RATE_LIMITED dibaca dari data.code
       })
     }
   }
@@ -49,8 +50,9 @@ export const useUserApi = () => {
     } catch (err: any) {
       console.log(err)
       throw createError({
-        statusCode: err.statusCode || 500,
-        statusMessage: err.statusMessage || 'Update User failed, server error',
+        statusCode: apiErrorStatus(err) || 500,
+        statusMessage: apiErrorMessage(err, 'Update User failed, server error'),
+        data: err.data, // 403 ACCOUNT_LOCKED (password lama salah berulang) dibaca dari data.code
       })
     }
   }

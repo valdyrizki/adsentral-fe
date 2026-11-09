@@ -290,7 +290,7 @@
                   <div v-if="product?.auto_config?.file_url" class="mb-2 flex items-center gap-2 text-sm text-gray-600">
                     <UIcon name="i-lucide-file" class="size-4 text-blue-500" />
                     <span>File saat ini tersimpan</span>
-                    <a :href="getImageUrl(product.auto_config_file_url)" target="_blank" class="text-blue-500 hover:underline">Lihat</a>
+                    <a href="#" class="text-blue-500 hover:underline" @click.prevent="openSignedFile(product.auto_config.file_url, product.auto_config.file_name)">Lihat</a>
                   </div>
                   <UFileUpload
                     id="auto_config_file"
@@ -750,6 +750,13 @@ const validateProduct = (): boolean => {
   },
   { server: false }
 )
+
+// File lampiran produk AUTO presigned (1 jam). Refresh hanya memperbarui auto_config
+// supaya isian form yang sedang diedit tidak tertimpa.
+const openSignedFile = provideSignedFileSource(async () => {
+  const res = await fetchMyProductById(route.params.id as string)
+  if (product.value) product.value = { ...product.value, auto_config: res.auto_config }
+}, () => product.value?.auto_config)
 
   const handleSubmit = async () =>{
     console.log(productRequest);

@@ -243,10 +243,14 @@ import type { UserResponse } from '~/types/UserResponse';
     
   } catch (err: any) {
     errors.value.push(err.statusMessage || 'Failed to update profile')
+    // 403 ACCOUNT_LOCKED: password lama salah berulang → kunci sementara dari BE. Cukup tampilkan
+    // pesannya; sesi tetap aktif (bukan 401, jadi useApi tidak me-logout).
+    const locked = apiErrorDetail(err)?.code === 'ACCOUNT_LOCKED'
     toast.add({
-      title: "Gagal Simpan User ❌",
+      title: locked ? "Ganti Password Dikunci Sementara" : "Gagal Simpan User ❌",
       description: errors.value.join(", "),
-      color: "error"
+      color: "error",
+      ...(locked ? { icon: "mdi:lock-clock", duration: 10000 } : {}),
     })
   } finally {
     loading.value = false

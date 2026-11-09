@@ -184,6 +184,14 @@ Sumber mutasi saldo (`WalletSource`, label di `utils/walletSource.ts`): `DEPOSIT
 - **Unprocessed payment**: `PENDING` → `RESOLVED`. Alasan: `PAYMENT_EXPIRED`, `PAYMENT_CANCELLED`, `TX_LAPSED`.
 - **Failed journal**: `PENDING` → `RESOLVED` / `DISMISSED`, dengan `retry_count`.
 
+## Keamanan akun (BE)
+
+- **Rate limit per IP** (semua request dihitung, termasuk yang berhasil): login 20/5 menit, register 10/jam, reset password 5/15 menit, konfirmasi reset & konfirmasi email 10/15 menit. Respons 429 `RATE_LIMITED` + `retryAfterSeconds`.
+- **Kunci akun sementara** (`ACCOUNT_LOCKED`): setelah password salah 5 kali (percobaan ke-5 masih 400 biasa). 15 menit, lalu 30 menit, 1 jam, dst. bila terulang, maksimal 24 jam. Password benar pun ditolak selama terkunci. Login sukses atau reset password membuka kunci. Berlaku juga untuk password lama saat ganti password di profil. Tidak ada lagi kunci permanen / "hubungi admin".
+- **Kode verifikasi email terkunci** (`VERIFICATION_LOCKED`): setelah kode salah 5 kali, 15 menit. Tidak memengaruhi login.
+- **File privat**: file hasil pesanan, garansi, stok, dan lampiran produk AUTO disimpan di bucket privat; URL-nya presigned dan kedaluwarsa 1 jam. Buyer pada transaksi yang sudah direfund menerima `null` untuk file pengiriman.
+- **CORS** API production hanya untuk `https://adsentral.com` dan `https://www.adsentral.com`. Development lokal memakai BE lokal/staging. Rate limit dihitung per IP klien, jadi proxy `/backend` meneruskan `X-Forwarded-For`.
+
 ## System setting (key yang dipakai FE)
 
 `TRX_FEE` (fee transaksi, persen), `WD_FEE` (biaya withdrawal), `FEE_APP`, `WA_NUMBER` (kontak CS), `CHAT_WARNING` (peringatan di chat), `OPERATIONAL_HOURS_WEEKDAY` / `OPERATIONAL_HOURS_WEEKEND`. Dimuat publik oleh `plugins/auth-init.client.ts`.

@@ -31,8 +31,17 @@
         <UInput type="password" v-model="confirmPassword" id="confirmPassword" placeholder="Ulangi kata sandi Anda" class="block" size="lg"/>
       </div>
 
-      <UButton :loading="loading" type="submit" size="lg" class="w-full flex justify-center items-center" @click="handleRegister">
-        Daftar
+      <!-- 429 RATE_LIMITED: tombol dikunci selama hitung mundur dari BE -->
+      <UAlert
+        v-if="rateLimitMessage"
+        color="error"
+        variant="soft"
+        icon="mdi:lock-clock"
+        :title="rateLimitMessage"
+        data-testid="register-block-alert"
+      />
+      <UButton :loading="loading" :disabled="cooldownActive" type="submit" size="lg" class="w-full flex justify-center items-center" @click="handleRegister">
+        {{ cooldownActive ? `Coba lagi dalam ${cooldownLabel}` : 'Daftar' }}
       </UButton>
 
       <p class="text-sm font-light text-gray-500 dark:text-gray-400">
@@ -71,7 +80,15 @@ const loading = ref<boolean>(false)
 
 const emit = defineEmits(["register-success"])
 
+// BE membatasi register per IP (429 RATE_LIMITED); tunggu `retryAfterSeconds`, jangan auto-retry
+const rateLimitMessage = ref<string | null>(null)
+const { active: cooldownActive, label: cooldownLabel, start: startCooldown } = useCooldown()
+watch(cooldownActive, (active) => {
+  if (!active) rateLimitMessage.value = null
+})
+
 const handleRegister = async () => {
+  if (cooldownActive.value) return
 
   console.log(registerRequest);
   
@@ -116,6 +133,11 @@ const handleRegister = async () => {
 
   } catch (e:any) {
     console.log(e)
+    if (apiErrorDetail(e)?.code === 'RATE_LIMITED') {
+      rateLimitMessage.value = apiErrorMessage(e)
+      startCooldown(apiErrorRetryAfter(e))
+      return
+    }
     toast.add({
       title: "Gagal Register ❌",
       description: e.message || 'Failed to register',

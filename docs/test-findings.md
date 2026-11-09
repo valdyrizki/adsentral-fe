@@ -8,6 +8,8 @@ Status: `TERBUKA` Â· `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) Â
 
 ## Progres
 
+Daftar lengkap modul/fungsi yang harus dites beserta statusnya: **`docs/test-progress.md`**.
+
 - **Sudah dites (135 tes):** login & guard rute, checkout, pembayaran buyer/admin, pesanan seller, transaksi buyer,
   garansi, withdrawal, pesanan admin (arbitrase/refund/selesaikan paksa), penalty, deposit & transfer saldo.
 - **Belum dites (area pendukung):** chat, produk & stok seller, verifikasi seller, rekening bank, voucher, notifikasi,

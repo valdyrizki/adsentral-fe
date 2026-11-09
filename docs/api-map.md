@@ -9,6 +9,9 @@ Catatan umum:
 - "Dipakai di" relatif ke `app/`. `—` = belum dipakai di UI.
 - Nama fungsi bisa sama di dua composable (mis. `fetchCategories`, `fetchBalance`, `createCategory`) — periksa composable yang di-import.
 
+- **Error berkode:** sebagian error membawa `data.code` (key di dalam `data` camelCase): `RATE_LIMITED` (429), `ACCOUNT_LOCKED` / `VERIFICATION_LOCKED` (403), dengan `retryAfterSeconds` (dan `lockedUntil`, WIB tanpa offset). Bedakan dengan `apiErrorDetail(err)?.code`, hitung mundur dari `apiErrorRetryAfter(err)` (`utils/apiError.ts`), jangan auto-retry. Composable yang membungkus error dengan `createError` wajib meneruskan `data: err.data`.
+- **URL file presigned (1 jam):** `file.url` di diskusi & file pesanan, `file_url` di garansi, item stok seller, dan `auto_config` produk adalah presigned URL R2 yang kedaluwarsa 1 jam (lalu 403 XML). Buka hanya lewat `useSignedFileOpener()` / `provideSignedFileSource()` (`composables/useSignedFile.ts`); jangan simpan di storage awet atau buat tombol salin URL. Gambar produk, avatar, dan lampiran chat tetap URL publik.
+
 Saat menambah/mengubah endpoint, perbarui tabel terkait di file ini.
 
 ---
@@ -19,7 +22,7 @@ Saat menambah/mengubah endpoint, perbarui tabel terkait di file ini.
 
 | Fungsi | Endpoint | Dipakai di |
 |---|---|---|
-| `fetchLogin` | POST `/user/login` | `components/form/Login.vue`, `stores/auth.ts` |
+| `fetchLogin` | POST `/user/login` (429 `RATE_LIMITED` 20/5 menit per IP; 403 `ACCOUNT_LOCKED`) | `components/form/Login.vue`, `stores/auth.ts` |
 
 `stores/auth.ts` juga memanggil langsung: POST `/user/refresh`, POST `/user/logout` (lihat juga `plugins/auth-init.client.ts`).
 
@@ -27,9 +30,11 @@ Saat menambah/mengubah endpoint, perbarui tabel terkait di file ini.
 
 | Fungsi | Endpoint | Dipakai di |
 |---|---|---|
-| `registerUser` | POST `/user/register` | `components/form/Register.vue` |
+| `registerUser` | POST `/user/register` (429 `RATE_LIMITED` 10/jam per IP) | `components/form/Register.vue` |
 | `fetchMe` | `/user/profile` | `stores/auth.ts`, `pages/profile` |
-| `updateProfile` | PATCH `/user/profile` | `pages/profile` |
+| `updateProfile` | PATCH `/user/profile` (ganti password: 403 `ACCOUNT_LOCKED` bila password lama salah berulang; jangan logout) | `pages/profile` |
+
+Endpoint BE yang belum punya form di FE: POST `/user/password/reset` (5/15 menit), `/user/password/confirm` (10/15 menit), `/user/email/confirm` (10/15 menit, 403 `VERIFICATION_LOCKED`). Saat dibuat, tangani error berkode yang sama dengan pola di `Login.vue`.
 
 ## Alerts (badge)
 

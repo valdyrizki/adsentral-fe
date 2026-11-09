@@ -213,7 +213,7 @@
                 <div v-if="product.auto_config.file_url" class="flex items-center gap-2 text-sm text-gray-600 p-2 border rounded-md bg-gray-50">
                   <UIcon name="i-lucide-file" class="size-4 text-blue-500" />
                   <span>{{ product.auto_config.file_name || 'File tersimpan' }}</span>
-                  <a :href="getImageUrl(product.auto_config.file_url)" target="_blank" class="text-blue-500 hover:underline ml-auto">Lihat</a>
+                  <a href="#" class="text-blue-500 hover:underline ml-auto" @click.prevent="openSignedFile(product.auto_config.file_url, product.auto_config.file_name)">Lihat</a>
                 </div>
                 <div v-else class="p-2 border rounded-md bg-gray-50 text-sm text-gray-400">Tidak ada file</div>
               </div>
@@ -298,6 +298,7 @@ const {
   data: product,
   pending: productLoading,
   error: productError,
+  refresh: refreshProduct,
 } = await useAsyncData<ProductResponse | null>(
   `admin-view-product-${route.params.id}`,
   async () => {
@@ -309,6 +310,9 @@ const {
   },
   { server: false }
 )
+
+// File lampiran produk AUTO presigned (1 jam): dimuat ulang otomatis sebelum dibuka bila basi
+const openSignedFile = provideSignedFileSource(refreshProduct, () => product.value?.auto_config)
 
 // ===== TRX_FEE (biaya admin transaksi, untuk estimasi pendapatan diterima) =====
 const { fetchPublicSystemSetting } = useSystemSettingApi()
