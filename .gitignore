@@ -28,3 +28,6 @@ logs
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Catatan pribadi (berisi data akun, jangan di-commit)
+/editor
