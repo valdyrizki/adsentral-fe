@@ -37,16 +37,14 @@ test.describe('Login: rate limit & kunci akun', () => {
   })
 
   test('403 ACCOUNT_LOCKED: pesan, hitung mundur, dan link lupa kata sandi', async ({ page, mockApi }) => {
-    mockApi
-      .on('GET', '/system/settings/public', ok([{ id: 1, key: 'WA_NUMBER', value: '6281234567890', group: 'CONTACT', is_public: true }]))
-      .on('POST', '/user/login', accountLocked(900))
+    mockApi.on('POST', '/user/login', accountLocked(900))
 
     await gotoHydrated(page, '/login')
     await submitLogin(page)
 
     const alert = page.getByRole('main').getByTestId('login-block-alert')
     await expect(alert).toContainText(LOCKED_MSG)
-    await expect(alert.getByRole('link', { name: 'reset lewat Lupa kata sandi' })).toHaveAttribute('href', /wa\.me\/6281234567890/)
+    await expect(alert.getByRole('link', { name: 'reset lewat Lupa kata sandi' })).toHaveAttribute('href', '/forgot-password')
     await expect(page.getByRole('main').getByRole('button', { name: /Coba lagi dalam 1[45]:\d\d/ })).toBeDisabled()
     // Bukan toast "Login Gagal" generik
     await expect(page.getByText('Login Gagal')).toHaveCount(0)

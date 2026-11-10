@@ -70,5 +70,23 @@ export const useUserApi = () => {
       return res.data
     }
 
-  return { registerUser, updateProfile, fetchMe }
+  // Lupa password. BE selalu menjawab 200 untuk permintaan kode (email terdaftar atau tidak),
+  // jadi jangan menyimpulkan apa pun dari jawabannya. Error dilempar apa adanya: pemanggil
+  // membaca status, `message`, dan `data.code` (RATE_LIMITED) dengan helper apiError.
+  const requestPasswordReset = async (email: string): Promise<void> => {
+    await api<WebResponse>('/user/password/reset', { method: 'POST', body: { email } })
+  }
+
+  // Kode benar → password baru (tampilkan sekali). Kode salah/kedaluwarsa/dipakai → 400 satu pesan;
+  // 5 kali salah → 429 tanpa data.code; batas per IP → 429 RATE_LIMITED.
+  const confirmPasswordReset = async (email: string, code: string): Promise<string> => {
+    const res = await api<WebResponse<{ password: string }>>('/user/password/confirm', {
+      method: 'POST',
+      body: { email, code },
+    })
+    if (res.status !== 'success' || !res.data?.password) throw new Error(res.message || 'Gagal reset password')
+    return res.data.password
+  }
+
+  return { registerUser, updateProfile, fetchMe, requestPasswordReset, confirmPasswordReset }
 }

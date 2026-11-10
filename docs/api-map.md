@@ -35,8 +35,10 @@ Saat menambah/mengubah endpoint, perbarui tabel terkait di file ini.
 | `registerUser` | POST `/user/register` (429 `RATE_LIMITED` 10/jam per IP) | `components/form/Register.vue` |
 | `fetchMe` | `/user/profile` | `stores/auth.ts`, `pages/profile` |
 | `updateProfile` | PATCH `/user/profile` (ganti password: 403 `ACCOUNT_LOCKED` bila password lama salah berulang; jangan logout) | `pages/profile` |
+| `requestPasswordReset` | POST `/user/password/reset` (selalu 200; 429 `RATE_LIMITED` 5/15 menit) | `pages/forgot-password` |
+| `confirmPasswordReset` | POST `/user/password/confirm` → `data.password` (400 satu pesan; 429 tanpa kode = 5 kali salah; 429 `RATE_LIMITED` 10/15 menit) | `pages/forgot-password` |
 
-Endpoint BE yang belum punya form di FE: POST `/user/password/reset` (5/15 menit), `/user/password/confirm` (10/15 menit), `/user/email/confirm` (10/15 menit, 403 `VERIFICATION_LOCKED`). Saat dibuat, tangani error berkode yang sama dengan pola di `Login.vue`.
+Endpoint BE yang belum punya form di FE: POST `/user/email/confirm` (10/15 menit, 403 `VERIFICATION_LOCKED`). Saat dibuat, tangani error berkode yang sama dengan pola di `Login.vue`.
 
 ## Alerts (badge)
 

@@ -21,14 +21,7 @@
                         <label for="remember" class="text-gray-500 dark:text-gray-300">Ingat saya</label>
                     </div>
                 </div>
-                <a
-                  v-if="forgotPasswordUrl"
-                  :href="forgotPasswordUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="text-sm font-medium text-green-600 hover:underline"
-                >Lupa kata sandi?</a>
-                <span v-else class="text-sm font-medium text-gray-400">Lupa kata sandi?</span>
+                <NuxtLink to="/forgot-password" class="text-sm font-medium text-green-600 hover:underline">Lupa kata sandi?</NuxtLink>
             </div>
             <!-- 429 RATE_LIMITED / 403 ACCOUNT_LOCKED: tombol dikunci selama hitung mundur dari BE -->
             <UAlert
@@ -41,14 +34,7 @@
             >
               <template v-if="blockCode === 'ACCOUNT_LOCKED'" #description>
                 Kunci terbuka otomatis, atau
-                <a
-                  v-if="forgotPasswordUrl"
-                  :href="forgotPasswordUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="font-semibold underline"
-                >reset lewat Lupa kata sandi</a>
-                <span v-else class="font-semibold">gunakan Lupa kata sandi</span>
+                <NuxtLink to="/forgot-password" class="font-semibold underline">reset lewat Lupa kata sandi</NuxtLink>
                 untuk membukanya sekarang.
               </template>
             </UAlert>
@@ -76,15 +62,6 @@ import { useAuthApi } from "~/composables/api/auth";
   const email = ref<string>('');
   const password = ref<string>('');
 
-  const systemSettingStore = useSystemSettingStore()
-  const forgotPasswordUrl = computed(() => {
-    const number = systemSettingStore.systemSettings.find(s => s.key === 'WA_NUMBER')?.value
-    if (!number) return null
-    const msg = email.value.trim()
-      ? `Halo Adsentral, saya lupa password untuk akun dengan email: ${email.value.trim()}`
-      : `Halo Adsentral, saya lupa password dan membutuhkan bantuan untuk reset akun saya.`
-    return `https://wa.me/${number.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`
-  })
   const loading = ref<boolean>(false)
 
   const { fetchLogin } = useAuthApi()
