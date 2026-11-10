@@ -20,7 +20,10 @@ export default defineEventHandler(async (event) => {
   // BE membatasi endpoint auth per IP klien. Semua request browser lewat proxy ini, jadi tanpa
   // X-Forwarded-For BE melihat IP server FE dan semua user berbagi satu kuota. Tambahkan IP peer
   // (reverse proxy / browser) ke rantai X-Forwarded-For yang sudah ada.
-  const peerIp = event.node.req.socket.remoteAddress
+  // Socket dual-stack melaporkan IPv4 sebagai "::ffff:172.18.0.3"; kirim bentuk IPv4 biasa seperti entri Caddy.
+  // Syarat BE: proxy ini harus memanggil BE lewat jaringan Docker internal (NUXT_BACKEND_INTERNAL_URL),
+  // bukan domain publik; lewat domain publik IP klien hilang dan semua user berbagi satu kuota.
+  const peerIp = event.node.req.socket.remoteAddress?.replace(/^::ffff:/, '')
   const incomingXff = event.node.req.headers['x-forwarded-for']
   const forwardedFor = [incomingXff, peerIp].flat().filter(Boolean).join(', ')
 

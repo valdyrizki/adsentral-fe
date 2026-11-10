@@ -24,7 +24,9 @@ Saat menambah/mengubah endpoint, perbarui tabel terkait di file ini.
 |---|---|---|
 | `fetchLogin` | POST `/user/login` (429 `RATE_LIMITED` 20/5 menit per IP; 403 `ACCOUNT_LOCKED`) | `components/form/Login.vue`, `stores/auth.ts` |
 
-`stores/auth.ts` juga memanggil langsung: POST `/user/refresh`, POST `/user/logout` (lihat juga `plugins/auth-init.client.ts`).
+`stores/auth.ts` juga memanggil langsung: POST `/user/refresh` (dipakai juga oleh `plugins/auth-init.client.ts`; single-flight + Web Locks antar-tab karena refresh token dirotasi), POST `/user/logout`.
+
+`GET /user/validate-token` **tidak dipakai** FE: sesi dipulihkan lewat `/user/refresh`, dan token tidak sah ditangani dari 401 endpoint biasa di `useApi`.
 
 **`user.ts` → `useUserApi`** · types: `UserResponse`, `UserRequest`, `RegisterRequest`
 

@@ -101,6 +101,10 @@ const handleRegister = async () => {
   if (registerRequest.email && !/\S+@\S+\.\S+/.test(registerRequest.email)) {
     errors.value.push("Email is not valid")
   }
+  const passwordError = registerRequest.password ? newPasswordError(registerRequest.password) : null
+  if (passwordError) {
+    errors.value.push(passwordError)
+  }
   if (registerRequest.password !== confirmPassword.value) {
     errors.value.push("Password and Confirm Password do not match")
   }

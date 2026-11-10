@@ -132,6 +132,8 @@ export const useAuthStore = defineStore('authStore', {
      * Refresh access token via cookie HttpOnly yang auto dikirim browser.
      * Single-flight: kalau ada refresh lain jalan, reuse promise-nya
      * supaya 1 sesi cuma 1 request /refresh.
+     * Refresh token dirotasi BE tiap dipakai, jadi antar-tab juga diantrekan lewat Web Locks:
+     * tab berikutnya baru refresh setelah cookie hasil rotasi tab sebelumnya tersimpan.
      */
     async refresh(): Promise<string> {
       if (refreshPromise) {
@@ -142,7 +144,7 @@ export const useAuthStore = defineStore('authStore', {
 
       refreshPromise = (async () => {
         try {
-          const response = await $fetch<{
+          const post = () => $fetch<{
             status: string
             data: { access_token: string }
           }>('/user/refresh', {
@@ -150,6 +152,9 @@ export const useAuthStore = defineStore('authStore', {
             credentials: 'include',
             baseURL: config.public.apiBase,
           })
+          const response = import.meta.client && navigator.locks
+            ? await navigator.locks.request('adsentral-refresh-token', post)
+            : await post()
 
           const newToken = response.data.access_token
           this.setAccessToken(newToken)

@@ -33,7 +33,7 @@ Belum ada lint/unit test. Verifikasi perubahan dengan `npm run build` (cek error
 - Scope selector ke `getByRole('main')` (header punya tombol serupa). Teks toast muncul ganda (live region), jadi pakai `.first()`.
 - Keranjang (`cart`, persist) disimpan di cookie. Isi lewat `seedCart(context, items)` dari `support/cart.ts`, beserta `makeProduct`, `makeBalance`, `PAYMENT_METHODS`.
 - Bug/potensi masalah yang ditemukan saat menulis tes dicatat di `docs/test-findings.md` (diperbaiki setelah semua tes selesai).
-- Spec yang ada: `auth.spec.ts` (login, guard rute), `checkout.spec.ts` (saldo, transfer manual, payment gateway + fee, voucher, sinkron keranjang, error BE), `payment.spec.ts` (detail pembayaran buyer, konfirmasi/tolak admin), `seller-order.spec.ts` (terima/tolak, kirim orderan, pengajuan batal), `transaction.spec.ts` (daftar & filter transaksi buyer, selesaikan/tolak pesanan, tangguhkan, ajukan & tarik pembatalan, penilaian). `guarantee.spec.ts` (klaim garansi buyer, daftar/detail klaim, terima/tolak/kirim garansi seller). `withdrawal.spec.ts` (tarik dana & batal oleh seller, tandai selesai/tolak & detail anomali oleh admin). `admin-order.spec.ts` (daftar pesanan admin, cancel arbitrage, refund, selesaikan paksa, diskusi admin). `penalty.spec.ts` (CRUD & toggle penalty rule, kenakan/batalkan penalty & detail user oleh admin, riwayat & banner penalty buyer/seller). `balance.spec.ts` (riwayat & buat/batal deposit buyer, mutasi saldo, transfer saldo jualan ke belanja). `security.spec.ts` (rate limit & kunci akun di login/register/profil, URL file presigned 1 jam). Data payment & transaksi: `support/payment.ts` (`makePayment`, `makeTx`). Error berkode BE: `failCode(status, message, { code, retryAfterSeconds })`.
+- Spec yang ada: `auth.spec.ts` (login, guard rute), `checkout.spec.ts` (saldo, transfer manual, payment gateway + fee, voucher, sinkron keranjang, error BE), `payment.spec.ts` (detail pembayaran buyer, konfirmasi/tolak admin), `seller-order.spec.ts` (terima/tolak, kirim orderan, pengajuan batal), `transaction.spec.ts` (daftar & filter transaksi buyer, selesaikan/tolak pesanan, tangguhkan, ajukan & tarik pembatalan, penilaian). `guarantee.spec.ts` (klaim garansi buyer, daftar/detail klaim, terima/tolak/kirim garansi seller). `withdrawal.spec.ts` (tarik dana & batal oleh seller, tandai selesai/tolak & detail anomali oleh admin). `admin-order.spec.ts` (daftar pesanan admin, cancel arbitrage, refund, selesaikan paksa, diskusi admin). `penalty.spec.ts` (CRUD & toggle penalty rule, kenakan/batalkan penalty & detail user oleh admin, riwayat & banner penalty buyer/seller). `balance.spec.ts` (riwayat & buat/batal deposit buyer, mutasi saldo, transfer saldo jualan ke belanja). `security.spec.ts` (rate limit & kunci akun di login/register/profil, batas password 72 byte, URL file presigned 1 jam). `session.spec.ts` (refresh token & retry, 401 serentak, antrean refresh antar-tab, refresh gagal 400/401/403, ganti password tetap login). Data payment & transaksi: `support/payment.ts` (`makePayment`, `makeTx`). Error berkode BE: `failCode(status, message, { code, retryAfterSeconds })`.
 - Bug yang sudah diketahui tapi belum diperbaiki: tandai tesnya dengan `test.fail()` + rujukan ID temuan, lalu hapus anotasinya setelah diperbaiki. Pastikan dulu (jalankan tanpa anotasi) bahwa tes gagal karena bugnya, bukan karena selector.
   Cara cepat: salin spec ke `tests/e2e/tmp-verify.spec.ts` dengan `sed 's/^  test\.fail(/  test(/'` (atau hapus baris `test.fail()`), jalankan dengan `-g "F-"`, cek pesan gagalnya, lalu hapus file sementara itu.
 - Tes `test.fail` yang mengecek "sesuatu TIDAK muncul" rawan lolos palsu (`toHaveCount(0)` langsung lolos sebelum elemen sempat muncul). Tunggu dulu (`waitForTimeout`) baru hitung.
@@ -68,10 +68,10 @@ File `.env` (tidak di-commit):
 ```
 NUXT_PUBLIC_API_BASE=/backend            # default; semua request FE lewat proxy /backend
 NUXT_PUBLIC_BACKEND_URL=http://<host>:8080   # target devProxy (/backend → <url>/api) & URL file/gambar
-NUXT_BACKEND_INTERNAL_URL=http://adsentral-be-dev:8080  # target proxy server di Docker
+NUXT_BACKEND_INTERNAL_URL=http://adsentral-be-dev:8080  # target proxy server di Docker; WAJIB URL jaringan Docker internal, bukan domain publik
 ```
 
-Proxy `/backend/* → <BE>/api/*` ada dua: `nitro.devProxy` (dev, dengan cookie rewrite ke localhost) dan `server/middleware/proxy.ts` (runtime/Docker, memakai `runtimeConfig.backendInternalUrl`). Deploy lewat `Dockerfile` + `docker-compose.yml` (network eksternal `proxy`).
+Proxy `/backend/* → <BE>/api/*` ada dua: `nitro.devProxy` (dev, dengan cookie rewrite ke localhost) dan `server/middleware/proxy.ts` (runtime/Docker, memakai `runtimeConfig.backendInternalUrl`). Proxy runtime meneruskan `X-Forwarded-For` (rantai masuk + IP peer); BE memakainya untuk rate limit per IP dan hanya mempercayainya dari alamat internal, jadi lewat domain publik semua user berbagi satu kuota. Deploy lewat `Dockerfile` + `docker-compose.yml` (network eksternal `proxy`).
 
 ## Arsitektur
 
@@ -86,7 +86,7 @@ Nuxt 4 (Vue 3, SSR) + Nuxt UI 4 + Pinia. Frontend marketplace akun digital denga
 - `stores/` — `auth`, `alerts`, `balance`, `cart`, `category`, `merchant` (legacy), `payment-method`, `system-setting`.
 - `types/` — interface request/response, dikelompokkan per domain (`types/<domain>/XxxResponse.ts`). Wrapper standar: `WebResponse<T>` dan `PageResponse<T>`.
 - `components/app/` — komponen layout & shared (Header, Sidebar, `ConfirmDialog`, `TransactionStatusBadge`, `PaymentStatusBadge`, `CopyButton`, `LoadingSkeleton`, …). `components/form/` — modal/form (penalty, refund, reject, arbitrase, garansi, withdrawal, `RichTextEditor` berbasis TipTap). `components/stock/` — input & status stok akun. `components/seller/`, `components/verification/`, `components/bank-account/`, `components/u/` (`InputCurrency`, `PaymentMethodSelector`).
-- `utils/` (auto-import) — `apiError.ts`, `pendingCountBadge.ts`, `txStatusFilter.ts`, `paymentDeadline.ts`, `txConfirmDeadline.ts`, `walletSource.ts`, `imageUrl.ts`, `slug.ts`, `sellerOrderSummary.ts`.
+- `utils/` (auto-import) — `apiError.ts`, `pendingCountBadge.ts`, `txStatusFilter.ts`, `paymentDeadline.ts`, `txConfirmDeadline.ts`, `walletSource.ts`, `imageUrl.ts`, `slug.ts`, `sellerOrderSummary.ts`, `password.ts` (validasi password baru: 8 karakter–72 byte).
 - `helper/` — `imageHelper.ts` (validasi gambar: maks 5 MB, JPG/PNG, maks 1500×1500), `stockAccountHelper.ts`, `stringHelper.ts`.
 - `plugins/auth-init.client.ts` — restore sesi saat load (lihat Autentikasi).
 
@@ -95,7 +95,7 @@ Nuxt 4 (Vue 3, SSR) + Nuxt UI 4 + Pinia. Frontend marketplace akun digital denga
 `composables/api/useApi.ts` membuat instance `$fetch` dengan:
 - `baseURL` = `runtimeConfig.public.apiBase` (`/backend`), `credentials: 'include'`
 - header **`X-API-TOKEN`** berisi access token dari auth store (bukan `Authorization: Bearer`)
-- 401 `TOKEN_EXPIRED` → `authStore.refresh()` (single-flight) lalu retry sekali; 401 lain atau refresh gagal → `clearAuth()` + redirect `/login` (kecuali di halaman publik)
+- 401 `TOKEN_EXPIRED` → `authStore.refresh()` (single-flight dalam tab, Web Locks antar-tab) lalu retry sekali dan hasil retry dikembalikan ke pemanggil; 401 lain atau refresh gagal → `clearAuth()` + toast "Sesi berakhir" + redirect `/login` (kecuali di halaman publik). Jangan pindahkan logika ini ke hook `onResponseError`: nilai baliknya diabaikan ofetch.
 
 Pola composable domain (contoh nyata: `voucher.ts`):
 

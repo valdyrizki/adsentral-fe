@@ -1,4 +1,4 @@
-import { test, expect, ok, failCode, gotoHydrated } from './support/fixtures'
+import { test, expect, ok, fail, failCode, gotoHydrated } from './support/fixtures'
 import { makeProduct } from './support/cart'
 import { makeTx } from './support/payment'
 
@@ -99,6 +99,94 @@ test.describe('Profil: ganti password terkunci', () => {
     await expect(page.getByText(LOCKED_MSG).first()).toBeVisible()
     await page.waitForTimeout(1000)
     await expect(page).toHaveURL(/\/profile$/)
+  })
+})
+
+// ===== Password baru maks 72 byte UTF-8 (EP02-16) =====
+
+const PASSWORD_BYTES_MSG = 'Password maksimal 72 karakter (huruf non-Latin dan emoji dihitung lebih dari satu)'
+const BE_PASSWORD_BYTES_MSG = 'Password maksimal 72 byte (huruf non-Latin dan emoji dihitung lebih dari satu)'
+
+async function submitRegister(page: import('@playwright/test').Page, password: string) {
+  await page.locator('#fullname').fill('Tes Daftar')
+  await page.locator('#email').fill('daftar@test.local')
+  await page.locator('#username').fill('tesdaftar')
+  await page.locator('#password').fill(password)
+  await page.locator('#confirmPassword').fill(password)
+  await page.getByRole('main').getByRole('button', { name: 'Daftar' }).click()
+}
+
+async function submitPasswordChange(page: import('@playwright/test').Page, next: string) {
+  const passwords = page.getByRole('main').locator('input[type="password"]')
+  await passwords.nth(0).fill(next)
+  await passwords.nth(1).fill(next)
+  await passwords.nth(2).fill('passwordLama1')
+  await page.getByRole('main').getByRole('button', { name: 'Save' }).click()
+}
+
+test.describe('Password baru maks 72 byte', () => {
+  test('register 73 karakter ASCII: ditolak di klien, tidak dikirim ke BE', async ({ page, mockApi }) => {
+    let calls = 0
+    mockApi.on('POST', '/user/register', () => { calls++; return ok(null) })
+
+    await gotoHydrated(page, '/register')
+    await submitRegister(page, 'a'.repeat(73))
+
+    await expect(page.getByText(PASSWORD_BYTES_MSG).first()).toBeVisible()
+    await page.waitForTimeout(500)
+    expect(calls).toBe(0)
+  })
+
+  test('register 36 huruf é (tepat 72 byte): dikirim utuh dan berhasil', async ({ page, mockApi }) => {
+    const password = 'é'.repeat(36)
+    let sent: unknown
+    mockApi.on('POST', '/user/register', (route) => {
+      sent = route.request().postDataJSON().password
+      return ok(null)
+    })
+
+    await gotoHydrated(page, '/register')
+    await submitRegister(page, password)
+
+    await expect(page.getByText('Register Berhasil').first()).toBeVisible()
+    expect(sent).toBe(password)
+  })
+
+  test('ganti password ke 40 huruf é (80 byte): ditolak di klien, profil tidak dikirim', async ({ page, mockApi }) => {
+    let calls = 0
+    mockApi.asRole('BUYER').on('PATCH', '/user/profile', () => { calls++; return ok(null) })
+
+    await gotoHydrated(page, '/profile')
+    await submitPasswordChange(page, 'é'.repeat(40))
+
+    await expect(page.getByText(PASSWORD_BYTES_MSG).first()).toBeVisible()
+    await page.waitForTimeout(500)
+    expect(calls).toBe(0)
+  })
+
+  test('validasi klien terlewat: pesan 400 dari BE tetap tampil', async ({ page, mockApi }) => {
+    mockApi.asRole('BUYER').on('PATCH', '/user/profile', fail(400, BE_PASSWORD_BYTES_MSG))
+
+    await gotoHydrated(page, '/profile')
+    await submitPasswordChange(page, 'passwordBaru1')
+
+    await expect(page.getByText(BE_PASSWORD_BYTES_MSG).first()).toBeVisible()
+    await expect(page).toHaveURL(/\/profile$/)
+  })
+
+  test('login tidak dibatasi: password 100 karakter tetap dikirim', async ({ page, mockApi }) => {
+    let sent = ''
+    mockApi.on('POST', '/user/login', (route) => {
+      sent = route.request().postDataJSON().password
+      return fail(401, 'Email atau password salah')
+    })
+
+    await gotoHydrated(page, '/login')
+    await page.locator('#email').fill('buyer@test.local')
+    await page.locator('#password').fill('a'.repeat(100))
+    await page.getByRole('main').getByRole('button', { name: 'Masuk' }).click()
+
+    await expect.poll(() => sent.length).toBe(100)
   })
 })
 

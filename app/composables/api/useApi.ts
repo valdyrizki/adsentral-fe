@@ -1,26 +1,29 @@
 // composables/useApi.ts
 
-import type { FetchOptions } from 'ofetch';
-
 /**
  * Composable untuk HTTP client dengan auto auth handling.
- * 
+ *
  * Fitur:
  * - Auto attach access token ke header X-API-TOKEN
  * - Auto include credentials (cookie refresh token)
  * - Auto refresh token saat access token expired (401 TOKEN_EXPIRED)
  * - Single-flight pattern: refresh hanya 1x meskipun banyak request paralel kena 401
- * - Auto retry request asli setelah refresh sukses
+ * - Auto retry request asli setelah refresh sukses (hasil retry dikembalikan ke pemanggil)
  * - Auto logout & redirect ke /login kalau refresh gagal
- * 
+ *
  * Penggunaan:
  *   const api = useApi();
  *   const result = await api<WebResponse<UserProfile>>('/api/user/profile');
  */
+
+// Beberapa request yang gagal bersamaan cukup memunculkan satu pesan "sesi berakhir"
+let lastSessionEndedToastAt = 0
+
 export const useApi = () => {
   const authStore = useAuthStore();
   const config = useRuntimeConfig();
   const router = useRouter();
+  const toast = useToast();
 
   const apiFetch = $fetch.create({
     baseURL: config.public.apiBase as string,
@@ -38,106 +41,72 @@ export const useApi = () => {
         options.headers = headers;
       }
     },
-
-    /**
-     * Interceptor saat response error.
-     * Handle 401 dengan strategi refresh-then-retry.
-     */
-    async onResponseError({ response, request, options }) {
-      // Kita hanya handle 401, error lain (400, 403, 500, dll) biarkan lewat
-      console.log(response.status);
-      
-      if (response.status !== 401) {
-        return;
-      }
-
-      // Ekstrak error code dari response body
-      // BE kita kirim { status, message } dengan message = "TOKEN_EXPIRED" dll
-      const errorCode = (response._data as { message?: string })?.message;
-
-      // Ambil URL request untuk check khusus
-      const requestUrl = 
-        typeof request === 'string' 
-          ? request 
-          : (request as Request).url;
-
-      // ============================================================
-      // CASE 1: Endpoint /refresh sendiri yang kena 401.
-      // Ini artinya refresh token pun sudah invalid/expired.
-      // Jangan retry (bisa bikin infinite loop) — langsung logout.
-      // ============================================================
-      if (requestUrl.includes('/user/refresh')) {
-          console.warn(`Refresh failed: ${errorCode} → forcing logout`);
-  
-          // Untuk debugging, bedakan log per kasus
-          if (errorCode === 'REFRESH_TOKEN_EXPIRED') {
-            console.info('Refresh token expired (30 hari). Normal — user perlu login ulang.');
-          } else if (errorCode === 'REFRESH_TOKEN_INVALID_SIGNATURE') {
-            console.error('⚠️ Refresh token signature invalid. Mungkin tampered atau bug di BE.');
-          } else if (errorCode === 'USER_NOT_FOUND' || errorCode === 'SESSION_NOT_FOUND') {
-            console.error('⚠️ Anomali: refresh token valid tapi user/session hilang.');
-          }
-        
-        await handleAuthFailure();
-        return;
-      }
-
-      // ============================================================
-      // CASE 2: Request ini sudah pernah di-retry sebelumnya.
-      // Artinya: kita sudah refresh token, retry, tapi masih kena 401.
-      // Menyerah — logout.
-      // ============================================================
-      if ((options as ExtendedFetchOptions)._retried) {
-        console.log("MASUK CASE 2");
-        await handleAuthFailure();
-        return;
-      }
-
-      // ============================================================
-      // CASE 3: TOKEN_EXPIRED — case yang paling umum.
-      // Refresh token, lalu retry request asli.
-      // ============================================================
-      if (errorCode === 'TOKEN_EXPIRED') {
-        console.log("MASUK CASE 3");
-        try {
-          // Panggil refresh. Kalau ada refresh lain yang sedang jalan,
-          // method ini akan reuse promise yang sama (single-flight).
-          const newAccessToken = await authStore.refresh();
-
-          // Tandai request ini sudah di-retry supaya tidak loop
-          (options as ExtendedFetchOptions)._retried = true;
-
-          // Update headers dengan token baru
-          const headers = new Headers(options.headers as HeadersInit | undefined);
-          headers.set('X-API-TOKEN', newAccessToken);
-          options.headers = headers;
-
-          // Retry request asli dengan token baru
-          // Return hasilnya supaya caller dapat data yang benar
-          return await $fetch(request as string, options as any);
-        } catch (refreshError) {
-          // Refresh gagal = refresh token invalid/expired
-          await handleAuthFailure();
-        }
-        return;
-      }
-
-      // ============================================================
-      // CASE 4: Error 401 jenis lain.
-      // Misal: TOKEN_INVALID_SIGNATURE, TOKEN_MALFORMED, USER_SUSPENDED,
-      //        USER_INACTIVE, TOKEN_MISSING, dll.
-      // Semua ini butuh user re-login, tidak bisa di-resolve dengan refresh.
-      // ============================================================
-      await handleAuthFailure();
-    },
   });
+
+  /**
+   * Bungkus apiFetch dengan strategi refresh-then-retry untuk 401.
+   * Tidak memakai hook onResponseError: nilai balik hook diabaikan ofetch, jadi hasil retry
+   * di sana terbuang dan pemanggil tetap menerima error 401 walau aksinya sudah sukses.
+   */
+  const api = async <T = any>(request: string, options: Parameters<typeof apiFetch>[1] = {}): Promise<T> => {
+    const sentToken = authStore.accessToken;
+    try {
+      return await apiFetch<T>(request, options);
+    } catch (err: any) {
+      // Kita hanya handle 401, error lain (400, 403, 500, dll) biarkan lewat
+      if (apiErrorStatus(err) !== 401) throw err;
+
+      // BE kita kirim { status, message } dengan message = "TOKEN_EXPIRED" dll
+      const errorCode = (err.data as { message?: string } | undefined)?.message;
+
+      // ============================================================
+      // Error 401 selain TOKEN_EXPIRED (TOKEN_INVALID_SIGNATURE, TOKEN_MALFORMED, TOKEN_MISSING, dll)
+      // tidak bisa di-resolve dengan refresh → user perlu login ulang.
+      // ============================================================
+      if (errorCode !== 'TOKEN_EXPIRED') {
+        await handleAuthFailure(!!sentToken);
+        throw err;
+      }
+
+      // ============================================================
+      // TOKEN_EXPIRED — case yang paling umum. Refresh token, lalu retry request asli sekali.
+      // Bila request lain sudah me-refresh (token di store sudah berganti), langsung retry:
+      // refresh token dirotasi tiap dipakai, refresh ganda membuat salah satunya gagal.
+      // ============================================================
+      if (!authStore.accessToken || authStore.accessToken === sentToken) {
+        try {
+          // Kalau ada refresh lain yang sedang jalan, method ini reuse promise yang sama (single-flight)
+          await authStore.refresh();
+        } catch {
+          // Refresh gagal (400 sesi tidak dikenal, 401 refresh token tidak sah, 403 user disuspend)
+          await handleAuthFailure(true);
+          throw err;
+        }
+      }
+
+      try {
+        // onRequest memasang token baru dari store
+        return await apiFetch<T>(request, options);
+      } catch (retryErr: any) {
+        // Sudah refresh & retry, masih 401 → menyerah, logout
+        if (apiErrorStatus(retryErr) === 401) await handleAuthFailure(true);
+        throw retryErr;
+      }
+    }
+  };
 
   /**
    * Helper: clear auth state & redirect ke halaman login.
    * Dipanggil saat semua upaya auto-recovery gagal.
+   * `hadSession` = request dikirim dengan access token (bukan pengunjung) → beri tahu user.
    */
-  async function handleAuthFailure(): Promise<void> {
+  async function handleAuthFailure(hadSession: boolean): Promise<void> {
     authStore.clearAuth();
+
+    if (hadSession && Date.now() - lastSessionEndedToastAt > 3000) {
+      lastSessionEndedToastAt = Date.now()
+      toast.add({ title: 'Sesi berakhir, silakan login kembali', color: 'warning', icon: 'mdi:logout' })
+    }
 
     // Hanya redirect kalau bukan sedang di halaman public
     // (menghindari redirect loop kalau sudah di /login)
@@ -146,18 +115,8 @@ export const useApi = () => {
     const currentPath = router.currentRoute.value.path
     const isPublic = publicRoutes.some(r => currentPath === r || currentPath.startsWith(r + '/'))
     if (!isPublic) {
-      // runWithContext diperlukan karena fungsi ini dipanggil dari dalam
-      // async interceptor ofetch yang sudah di luar Vue/Nuxt setup context
       await navigateTo('/login');}
   }
 
-  return apiFetch;
-};
-
-/**
- * Helper type untuk menandai request yang sudah di-retry.
- * Extends FetchOptions dengan flag internal _retried.
- */
-type ExtendedFetchOptions = FetchOptions & {
-  _retried?: boolean;
+  return api;
 };

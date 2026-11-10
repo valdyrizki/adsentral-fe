@@ -23,7 +23,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 
 | # | Modul | Spec | Status | Prioritas sisa | Catatan |
 |---|---|---|---|---|---|
-| 1 | Auth: login & guard rute | `auth.spec.ts` | Sebagian | P1 (register, logout, refresh token) | F-01 (kredensial bocor ke URL) sudah diperbaiki. F-02 hydration mismatch `/login` belum dites. `/guarantee` lolos tanpa login (F-19). |
+| 1 | Auth: login & guard rute | `auth.spec.ts`, `session.spec.ts` | Sebagian | P1 (register, logout) | F-01 (kredensial bocor ke URL) sudah diperbaiki. F-02 hydration mismatch `/login` belum dites. `/guarantee` lolos tanpa login (F-19). |
 | 2 | Profil buyer | — | ⬜ | P2 | Halaman sederhana: tampil profil + `updateProfile`. |
 | 3 | Katalog publik (beranda, kategori, produk, merchant, pencarian) | — | ⬜ | P2 | Halaman SSR; data publik juga lewat mock BE SSR (`mock-backend.mjs`), bukan hanya `mockApi`. Detail produk adalah pintu masuk keranjang. |
 | 4 | Keranjang & checkout | `checkout.spec.ts` | ✅ | — | Cek saldo memakai nilai lama (F-03) dan mengabaikan biaya aplikasi (F-04, perlu konfirmasi). Belum: ubah qty/hapus item, multi-merchant. |
@@ -51,7 +51,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 26 | Badge/alerts sidebar & header | — (tersirat di beberapa tes) | Sebagian | P3 | Refresh badge setelah aksi sudah dicek di payment & withdrawal. Polling 45 detik & field `null` belum. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **143 tes** di 11 spec (termasuk `security.spec.ts`), dengan 27 tes `test.fail` untuk bug yang sudah diketahui.
+Total saat ini: **155 tes** di 12 spec (termasuk `security.spec.ts` & `session.spec.ts`), dengan 27 tes `test.fail` untuk bug yang sudah diketahui.
 
 ---
 
@@ -70,13 +70,15 @@ Total saat ini: **143 tes** di 11 spec (termasuk `security.spec.ts`), dengan 27 
 | Hydration mismatch di `/login` | 🐞 | F-02 (dicatat, belum ada tes) |
 | Register (`registerUser`): validasi, body, error email terpakai | ⬜ P1 | |
 | Logout (`/user/logout`): sesi dibersihkan, redirect | ⬜ P1 | |
-| Refresh token: 401 `TOKEN_EXPIRED` → refresh → retry sekali | ⬜ P1 | Logika di `useApi.ts` |
-| Refresh gagal → `clearAuth()` + redirect `/login` | ⬜ P1 | Sebagian tersirat di tes `/penalty` |
+| Refresh token: 401 `TOKEN_EXPIRED` → refresh → retry sekali, hasil retry sampai ke pemanggil | ✅ | `session.spec.ts` |
+| 401 serentak → satu refresh; dua tab → refresh diantrekan (Web Locks) | ✅ | `session.spec.ts` |
+| Refresh gagal (400/401/403) → `clearAuth()`, redirect `/login` + pesan "Sesi berakhir", tanpa loop | ✅ | `session.spec.ts` |
 | Forgot password (rute di-guard, halaman belum ada) | ➖ | |
 | Login 429 `RATE_LIMITED`: pesan, tombol dikunci + hitung mundur, tanpa auto-retry | ✅ | `security.spec.ts` |
 | Login 403 `ACCOUNT_LOCKED`: pesan, hitung mundur, link lupa kata sandi | ✅ | `security.spec.ts` |
 | Tombol login aktif lagi setelah hitung mundur habis | ✅ | `security.spec.ts` |
 | Register 429 `RATE_LIMITED` | ✅ | `security.spec.ts` |
+| Password baru maks 72 byte: register 73 karakter & ganti password 80 byte ditolak di klien, 72 byte `é` dikirim utuh, pesan 400 BE tetap tampil, login tidak dibatasi | ✅ | `security.spec.ts` |
 
 ## 2. Profil buyer — `pages/profile`
 
@@ -85,6 +87,7 @@ Total saat ini: **143 tes** di 11 spec (termasuk `security.spec.ts`), dengan 27 
 | Profil tampil (`fetchMe`) | ⬜ P2 |
 | Ubah profil (`updateProfile`): validasi, body, error BE | ⬜ P2 |
 | Ganti password 403 `ACCOUNT_LOCKED`: pesan tampil, tidak logout (`security.spec.ts`) | ✅ |
+| Ganti password sukses: tetap login, pesan perangkat lain dikeluarkan, isian dikosongkan (`session.spec.ts`) | ✅ |
 
 ## 3. Katalog publik
 

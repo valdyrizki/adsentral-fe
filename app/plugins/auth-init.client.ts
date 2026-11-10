@@ -5,7 +5,6 @@ import { useSystemSettingApi } from "~/composables/api/system-setting"
 export default defineNuxtPlugin(async () => {
   const authStore = useAuthStore()
   const balanceStore = useBalanceStore()
-  const config = useRuntimeConfig()
   const { fetchPublicSystemSetting } = useSystemSettingApi()
 
   try{
@@ -24,18 +23,9 @@ export default defineNuxtPlugin(async () => {
   }
 
   try {
-    // 1. Panggil /refresh — browser auto-attach cookie refreshToken (HttpOnly)
-    const response = await $fetch<{
-      status: string
-      data: { access_token: string }
-    }>('/user/refresh', {
-      method: 'POST',
-      credentials: 'include',
-      baseURL: config.public.apiBase as string,
-    })
-
-    const newAccessToken = response.data.access_token
-    authStore.setAccessToken(newAccessToken)
+    // 1. Panggil /refresh — browser auto-attach cookie refreshToken (HttpOnly).
+    // Lewat authStore.refresh supaya ikut single-flight & antrean antar-tab (refresh token dirotasi).
+    await authStore.refresh()
 
     await authStore.loadUserProfile()
     await balanceStore.loadBalance()

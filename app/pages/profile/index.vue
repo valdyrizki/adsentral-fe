@@ -188,8 +188,9 @@ import type { UserResponse } from '~/types/UserResponse';
 
   // ✅ Validasi password
   if (userRequest.new_password) {
-    if (userRequest.new_password.length < 8) {
-      errors.value.push("Password must be at least 8 characters")
+    const passwordError = newPasswordError(userRequest.new_password)
+    if (passwordError) {
+      errors.value.push(passwordError)
     }
     if (userRequest.new_password !== confirm_password.value) {
       errors.value.push("Password and Confirm Password do not match")
@@ -235,11 +236,19 @@ import type { UserResponse } from '~/types/UserResponse';
     if (userRequest.avatar) formData.append("avatar", userRequest.avatar as File)
 
     const data = await updateProfile(formData)
+    // Ganti password: BE mengakhiri sesi perangkat lain, perangkat ini tetap login (jangan logout)
+    const passwordChanged = !!userRequest.new_password
     toast.add({
       title: "Berhasil Simpan User ✅",
-      description: "Profil Anda telah diperbarui.",
+      description: passwordChanged ? "Password diubah. Perangkat lain telah dikeluarkan." : "Profil Anda telah diperbarui.",
       color: "success"
     })
+    if (passwordChanged) {
+      // Kosongkan supaya simpan berikutnya tidak mengirim ulang password lama (dihitung salah oleh BE)
+      userRequest.new_password = ''
+      userRequest.old_password = ''
+      confirm_password.value = ''
+    }
     
   } catch (err: any) {
     errors.value.push(err.statusMessage || 'Failed to update profile')
