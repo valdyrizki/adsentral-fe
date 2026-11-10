@@ -282,3 +282,42 @@ test.describe('File presigned: garansi', () => {
     expect(opened).toHaveLength(0)
   })
 })
+
+// ===== Validasi isi file upload (EP02-13) =====
+
+const TINY_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64')
+
+test.describe('Foto verifikasi seller: hanya JPG/PNG/WEBP', () => {
+  test('input foto membatasi format; 400 FILE_MUST_BE_IMAGE tampil sebagai pesan yang jelas', async ({ page, mockApi }) => {
+    let calls = 0
+    mockApi
+      .asRole('SELLER')
+      .on('GET', '/seller/verification/status', ok({ status: 'UNVERIFIED', total_attempts: 0, total_rejected: 0, latest_request: null, verified_data: null }))
+      .on('POST', '/seller/verification', () => { calls++; return fail(400, 'FILE_MUST_BE_IMAGE') })
+
+    await gotoHydrated(page, '/seller/verification')
+    const main = page.getByRole('main')
+    await main.getByRole('button', { name: 'Mulai Verifikasi' }).click()
+
+    const fileInputs = main.locator('input[type="file"]')
+    await expect(fileInputs).toHaveCount(3)
+    for (let i = 0; i < 3; i++) await expect(fileInputs.nth(i)).toHaveAttribute('accept', 'image/jpeg,image/png,image/webp')
+
+    await main.getByPlaceholder('16 digit NIK').fill('3171234567890001')
+    await main.getByPlaceholder('Nama lengkap sesuai KTP').fill('Tes Seller')
+    await main.getByPlaceholder('Contoh: Jakarta', { exact: true }).fill('Jakarta')
+    await main.locator('input[type="date"]').fill('1990-01-01')
+    await main.getByRole('combobox').filter({ hasText: 'Pilih jenis kelamin' }).click()
+    await page.getByRole('option', { name: 'Laki-laki' }).click()
+    await main.getByPlaceholder('Alamat sesuai KTP').fill('Jl. Tes 1')
+    await main.getByPlaceholder('Contoh: Jakarta Selatan').fill('Jakarta Selatan')
+    await main.getByPlaceholder('Contoh: DKI Jakarta').fill('DKI Jakarta')
+    for (let i = 0; i < 3; i++) {
+      await fileInputs.nth(i).setInputFiles({ name: `foto-${i}.png`, mimeType: 'image/png', buffer: TINY_PNG })
+    }
+    await main.getByRole('button', { name: /Kirim/ }).click()
+
+    await expect(main.getByText('Foto harus berformat JPG, PNG, atau WEBP.')).toBeVisible()
+    expect(calls).toBe(1)
+  })
+})

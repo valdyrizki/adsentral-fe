@@ -290,7 +290,7 @@
                   <div v-if="product?.auto_config?.file_url" class="mb-2 flex items-center gap-2 text-sm text-gray-600">
                     <UIcon name="i-lucide-file" class="size-4 text-blue-500" />
                     <span>File saat ini tersimpan</span>
-                    <a href="#" class="text-blue-500 hover:underline" @click.prevent="openSignedFile(product.auto_config.file_url, product.auto_config.file_name)">Lihat</a>
+                    <a href="#" class="text-blue-500 hover:underline" @click.prevent="openSignedFile(product.auto_config.file_url, product.auto_config.file_name)">Unduh</a>
                   </div>
                   <UFileUpload
                     id="auto_config_file"

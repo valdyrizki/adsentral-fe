@@ -155,7 +155,8 @@
                   <UFileUpload
                     v-model="form.ktpPhoto"
                     label="Foto KTP"
-                    description="JPG/PNG, max 5MB"
+                    description="JPG/PNG/WEBP, max 5MB"
+                    :accept="PHOTO_ACCEPT"
                     class="w-full min-h-40"
                     @change="() => validatePhoto('ktpPhoto')"
                   />
@@ -166,7 +167,8 @@
                   <UFileUpload
                     v-model="form.selfieKtpPhoto"
                     label="Selfie Pegang KTP"
-                    description="JPG/PNG, max 5MB"
+                    description="JPG/PNG/WEBP, max 5MB"
+                    :accept="PHOTO_ACCEPT"
                     class="w-full min-h-40"
                     @change="() => validatePhoto('selfieKtpPhoto')"
                   />
@@ -177,7 +179,8 @@
                   <UFileUpload
                     v-model="form.selfieNotePhoto"
                     label="Selfie Pegang Kertas"
-                    description="JPG/PNG, max 5MB"
+                    description="JPG/PNG/WEBP, max 5MB"
+                    :accept="PHOTO_ACCEPT"
                     class="w-full min-h-40"
                     @change="() => validatePhoto('selfieNotePhoto')"
                   />
@@ -327,6 +330,10 @@ const {
 
 // ===== FORM =====
 const showForm = ref(false)
+// Bukan image/*: BE menolak HEIC/SVG/GIF (dicek dari isi file). Dengan daftar ini iOS Safari
+// otomatis mengonversi foto kamera/galeri (HEIC) ke JPEG.
+const PHOTO_ACCEPT = 'image/jpeg,image/png,image/webp'
+
 const submitting = ref(false)
 const submitError = ref<string | null>(null)
 const form = reactive<VerificationSubmitForm>(createEmptyVerificationForm())
@@ -408,7 +415,10 @@ async function handleSubmit() {
     showForm.value = false
     await refresh()
   } catch (err: any) {
-    submitError.value = err.statusMessage || 'Gagal mengirim pengajuan verifikasi.'
+    const message = apiErrorMessage(err, 'Gagal mengirim pengajuan verifikasi.')
+    submitError.value = message === 'FILE_MUST_BE_IMAGE' || apiErrorDetail(err)?.code === 'FILE_MUST_BE_IMAGE'
+      ? 'Foto harus berformat JPG, PNG, atau WEBP.'
+      : message
   } finally {
     submitting.value = false
   }

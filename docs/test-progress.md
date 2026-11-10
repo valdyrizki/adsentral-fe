@@ -51,7 +51,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 26 | Badge/alerts sidebar & header | — (tersirat di beberapa tes) | Sebagian | P3 | Refresh badge setelah aksi sudah dicek di payment & withdrawal. Polling 45 detik & field `null` belum. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **155 tes** di 12 spec (termasuk `security.spec.ts` & `session.spec.ts`), dengan 27 tes `test.fail` untuk bug yang sudah diketahui.
+Total saat ini: **156 tes** di 12 spec (termasuk `security.spec.ts` & `session.spec.ts`), dengan 27 tes `test.fail` untuk bug yang sudah diketahui.
 
 ---
 
@@ -79,6 +79,7 @@ Total saat ini: **155 tes** di 12 spec (termasuk `security.spec.ts` & `session.s
 | Tombol login aktif lagi setelah hitung mundur habis | ✅ | `security.spec.ts` |
 | Register 429 `RATE_LIMITED` | ✅ | `security.spec.ts` |
 | Password baru maks 72 byte: register 73 karakter & ganti password 80 byte ditolak di klien, 72 byte `é` dikirim utuh, pesan 400 BE tetap tampil, login tidak dibatasi | ✅ | `security.spec.ts` |
+| Foto verifikasi seller: `accept` JPG/PNG/WEBP, 400 `FILE_MUST_BE_IMAGE` tampil sebagai "Foto harus berformat JPG, PNG, atau WEBP." | ✅ | `security.spec.ts` |
 
 ## 2. Profil buyer — `pages/profile`
 

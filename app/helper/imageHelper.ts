@@ -1,13 +1,13 @@
 const MAX_SIZE = 5 * 1024 * 1024 // 5MB
 const MAX_WIDTH = 1500
 const MAX_HEIGHT = 1500
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg']
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']
 
 export const validateImage = (file: File): Promise<void> => {
   return new Promise((resolve, reject) => {
     // 1. type
     if (!ALLOWED_TYPES.includes(file.type)) {
-      reject('Format gambar harus JPG / JPEG / PNG')
+      reject('Format gambar harus JPG / JPEG / PNG / WEBP')
       return
     }
 
