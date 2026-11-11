@@ -103,6 +103,11 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     ]
   },
   {
+    label: 'Pengguna',
+    icon: 'i-lucide-users',
+    to: '/admin/users'
+  },
+  {
     label: 'Notifikasi',
     icon: 'i-heroicons-bell',
     to: '/admin/notification',

@@ -49,9 +49,10 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 24 | Chat (buyer, seller, admin) | — | ⬜ | P2 | Admin memakai endpoint percakapan seller. |
 | 25 | Notifikasi (buyer, seller, admin, broadcast) | — | ⬜ | P2 | Kirim ke user memakai pencarian `/admin/users` (sama dengan modal penalty). |
 | 26 | Badge/alerts sidebar & header | — (tersirat di beberapa tes) | Sebagian | P3 | Refresh badge setelah aksi sudah dicek di payment & withdrawal. Polling 45 detik & field `null` belum. |
+| 28 | Pengguna admin: daftar & buka kunci login | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk `locked_until` di masa depan; alasan ≥ 5 karakter; `LOGIN_NOT_LOCKED` menutup modal & memuat ulang. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **164 tes** di 13 spec (termasuk `security.spec.ts`, `session.spec.ts` & `forgot-password.spec.ts`), dengan 27 tes `test.fail` untuk bug yang sudah diketahui.
+Total saat ini: **168 tes** di 14 spec (termasuk `security.spec.ts`, `session.spec.ts`, `forgot-password.spec.ts` & `admin-user.spec.ts`), dengan 27 tes `test.fail` untuk bug yang sudah diketahui.
 
 ---
 

@@ -38,6 +38,13 @@ Saat menambah/mengubah endpoint, perbarui tabel terkait di file ini.
 | `requestPasswordReset` | POST `/user/password/reset` (selalu 200; 429 `RATE_LIMITED` 5/15 menit) | `pages/forgot-password` |
 | `confirmPasswordReset` | POST `/user/password/confirm` → `data.password` (400 satu pesan; 429 tanpa kode = 5 kali salah; 429 `RATE_LIMITED` 10/15 menit) | `pages/forgot-password` |
 
+**`admin-user.ts` → `useAdminUserApi`** · types: `user/AdminUserResponse`
+
+| Fungsi | Endpoint | Dipakai di |
+|---|---|---|
+| `fetchUsers` | `/admin/users` (memuat `locked_until`) | `pages/admin/users` |
+| `unlockLogin` | PATCH `/admin/users/{id}/unlock-login` body `{ notes }` 5–500 karakter (400 `LOGIN_NOT_LOCKED` bila sudah tidak terkunci → tutup modal & muat ulang) | `pages/admin/users` |
+
 Endpoint BE yang belum punya form di FE: POST `/user/email/confirm` (10/15 menit, 403 `VERIFICATION_LOCKED`). Saat dibuat, tangani error berkode yang sama dengan pola di `Login.vue`.
 
 ## Alerts (badge)
@@ -322,7 +329,7 @@ Filter list: hanya **satu** nilai `status` per request (`'ALL'` = tanpa paramete
 | `applyPenalty` | POST `/admin/penalty` | `components/form/ApplyPenaltyModal.vue` |
 | `cancelPenalty` | DELETE `/admin/penalty/{penaltyId}` | `PenaltyUserDetailSlideover` |
 | `fetchPenalty` | `/admin/penalty` | — |
-| `searchUsers` | `/admin/users` (pencarian user umum) | `ApplyPenaltyModal`, `CreateNotificationModal` |
+| `searchUsers` | `/admin/users` (pencarian user umum; daftar lengkap ada di `useAdminUserApi.fetchUsers`) | `ApplyPenaltyModal`, `CreateNotificationModal` |
 
 **`penalty-rule.ts` → `usePenaltyRuleApi`**
 
