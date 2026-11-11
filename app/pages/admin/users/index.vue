@@ -34,6 +34,51 @@
       </template>
     </UModal>
 
+    <!-- Modal kode reset password (super admin, EP03-07) -->
+    <UModal
+      v-if="showResetCode"
+      v-model:open="showResetCode"
+      title="Kode Reset Password"
+      :description="resetTarget?.email ?? ''"
+    >
+      <template #body>
+        <div v-if="resetCode" class="space-y-3">
+          <p class="text-sm text-gray-600">Sampaikan kode ini hanya ke pemilik akun yang sudah diverifikasi.</p>
+          <div class="flex items-center justify-center gap-3 py-2">
+            <span data-testid="reset-code" class="font-mono text-3xl font-bold tracking-widest">{{ resetCode.code }}</span>
+            <UButton icon="mdi:content-copy" color="neutral" variant="ghost" aria-label="Salin kode" @click="copyResetCode" />
+          </div>
+          <p class="text-xs text-gray-500">
+            Berlaku s/d {{ formatDate(resetCode.expires_at) }} · sisa {{ resetCode.remaining_attempts }} percobaan
+          </p>
+        </div>
+        <div v-else class="space-y-3">
+          <p class="text-sm text-gray-600">
+            Pastikan pemilik akun sudah diverifikasi (email terdaftar + transaksi terakhir) dan sudah mengisi form lupa password.
+            Alasan dicatat di audit.
+          </p>
+          <UAlert v-if="noActiveCode" color="warning" icon="mdi:information" :description="noActiveCode" />
+          <UFormField label="Alasan" required :error="resetFormError || undefined">
+            <UTextarea
+              v-model="resetNotes"
+              :rows="3"
+              :maxlength="500"
+              placeholder="Mis. pemilik terverifikasi via WA, transaksi terakhir cocok"
+              class="w-full"
+            />
+          </UFormField>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2 w-full">
+          <UButton color="neutral" variant="outline" :disabled="loadingCode" @click="showResetCode = false">Tutup</UButton>
+          <UButton v-if="!resetCode" color="primary" icon="mdi:key" :loading="loadingCode" @click="handleViewResetCode">
+            Lihat Kode
+          </UButton>
+        </div>
+      </template>
+    </UModal>
+
     <!-- Filter -->
     <UCard class="shadow-sm">
       <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
@@ -88,7 +133,17 @@
                 </UBadge>
               </div>
             </div>
-            <div class="sm:ml-auto flex-shrink-0">
+            <div class="sm:ml-auto flex-shrink-0 flex gap-2">
+              <UButton
+                v-if="authStore.isSuperAdmin"
+                size="sm"
+                color="neutral"
+                variant="outline"
+                icon="mdi:key"
+                @click="openResetCode(user)"
+              >
+                Kode Reset
+              </UButton>
               <UButton
                 v-if="isLocked(user)"
                 size="sm"
@@ -122,12 +177,14 @@
 import dayjs from 'dayjs'
 import { useAdminUserApi } from '~/composables/api/admin-user'
 import type { AdminUserResponse } from '~/types/user/AdminUserResponse'
+import type { ResetCodeResponse } from '~/types/user/ResetCodeResponse'
 import type { PageResponse } from '~/types/PageResponse'
 
 definePageMeta({ layout: 'admin', label: 'Pengguna' })
 
 const toast = useToast()
-const { fetchUsers, unlockLogin } = useAdminUserApi()
+const authStore = useAuthStore()
+const { fetchUsers, unlockLogin, viewResetCode } = useAdminUserApi()
 
 // ===== FILTER & PAGINATION =====
 const page = ref(0)
@@ -200,6 +257,64 @@ async function handleUnlock() {
     toast.add({ title: 'Gagal membuka kunci', description: formError.value, color: 'error' })
   } finally {
     saving.value = false
+  }
+}
+
+// ===== KODE RESET PASSWORD (super admin) =====
+const showResetCode = ref(false)
+const resetTarget = ref<AdminUserResponse | null>(null)
+const resetNotes = ref('')
+const resetFormError = ref('')
+const noActiveCode = ref('')
+const resetCode = ref<ResetCodeResponse | null>(null)
+const loadingCode = ref(false)
+
+function openResetCode(user: AdminUserResponse) {
+  clearResetCode()
+  resetTarget.value = user
+  showResetCode.value = true
+}
+
+// kode tidak disimpan lebih lama dari modal terbuka
+watch(showResetCode, (open) => { if (!open) clearResetCode() })
+
+function clearResetCode() {
+  resetCode.value = null
+  resetNotes.value = ''
+  resetFormError.value = ''
+  noActiveCode.value = ''
+}
+
+async function handleViewResetCode() {
+  if (!resetTarget.value || loadingCode.value) return
+  const reason = resetNotes.value.trim()
+  if (reason.length < 5) {
+    resetFormError.value = 'Alasan minimal 5 karakter'
+    return
+  }
+  loadingCode.value = true
+  resetFormError.value = ''
+  noActiveCode.value = ''
+  try {
+    resetCode.value = await viewResetCode(resetTarget.value.id, reason)
+  } catch (err: any) {
+    if (apiErrorDetail(err)?.code === 'NO_ACTIVE_RESET_CODE') {
+      noActiveCode.value = 'Tidak ada kode reset aktif. Minta pelanggan mengisi form lupa password dulu, lalu coba lagi.'
+      return
+    }
+    resetFormError.value = apiErrorMessage(err, 'Gagal mengambil kode reset')
+  } finally {
+    loadingCode.value = false
+  }
+}
+
+async function copyResetCode() {
+  if (!resetCode.value) return
+  try {
+    await navigator.clipboard.writeText(resetCode.value.code)
+    toast.add({ title: 'Kode disalin', color: 'success', icon: 'mdi:check-circle' })
+  } catch {
+    toast.add({ title: 'Gagal menyalin kode', color: 'error' })
   }
 }
 </script>

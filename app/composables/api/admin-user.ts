@@ -1,6 +1,7 @@
 import type { WebResponse } from '~/types/WebResponse'
 import type { PageResponse } from '~/types/PageResponse'
 import type { AdminUserResponse } from '~/types/user/AdminUserResponse'
+import type { ResetCodeResponse } from '~/types/user/ResetCodeResponse'
 import { useApi } from './useApi'
 
 export const useAdminUserApi = () => {
@@ -23,5 +24,18 @@ export const useAdminUserApi = () => {
     if (res.status !== 'success') throw new Error(res.message)
   }
 
-  return { fetchUsers, unlockLogin }
+  /**
+   * Kode reset password aktif user (alur lupa password via WA). Hanya super admin; alasan 5–500 karakter, tercatat di audit BE.
+   * 404 `NO_ACTIVE_RESET_CODE` bila tidak ada kode yang masih bisa dipakai.
+   */
+  const viewResetCode = async (userId: number, notes: string) => {
+    const res = await api<WebResponse<ResetCodeResponse>>(`/admin/users/${userId}/reset-code`, {
+      method: 'POST',
+      body: { notes },
+    })
+    if (res.status !== 'success') throw new Error(res.message)
+    return res.data!
+  }
+
+  return { fetchUsers, unlockLogin, viewResetCode }
 }

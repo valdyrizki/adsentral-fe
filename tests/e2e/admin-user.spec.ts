@@ -109,3 +109,63 @@ test.describe('Admin: daftar pengguna & buka kunci login (EP03-03)', () => {
     await expect(dialog.getByText('Server sedang gangguan')).toBeVisible()
   })
 })
+
+test.describe('Super admin: kode reset password (EP03-07)', () => {
+  test('admin biasa tidak melihat tombol Kode Reset', async ({ page, mockApi }) => {
+    mockApi.asRole('ADMIN')
+    mockApi.on('GET', '/admin/users', ok(page1([makeAdminUser(8)])))
+
+    await gotoHydrated(page, '/admin/users')
+
+    await expect(main(page).getByText('user8@test.local', { exact: false })).toBeVisible()
+    await expect(main(page).getByRole('button', { name: 'Kode Reset' })).toHaveCount(0)
+  })
+
+  test('super admin melihat kode setelah mengisi alasan; kode hilang saat modal ditutup', async ({ page, mockApi }) => {
+    mockApi.asRole('SUPER_ADMIN')
+    let sentBody: unknown = null
+    mockApi.on('GET', '/admin/users', ok(page1([makeAdminUser(9)])))
+    mockApi.on('POST', '/admin/users/9/reset-code', (route) => {
+      sentBody = route.request().postDataJSON()
+      return ok({ code: '482913', created_at: minutesFromNow(-5), expires_at: minutesFromNow(600), remaining_attempts: 3 })
+    })
+
+    await gotoHydrated(page, '/admin/users')
+    await main(page).getByRole('button', { name: 'Kode Reset' }).click()
+
+    const dialog = page.getByRole('dialog')
+    await dialog.getByRole('textbox').fill('ok')
+    await dialog.getByRole('button', { name: 'Lihat Kode' }).click()
+    await expect(dialog.getByText('Alasan minimal 5 karakter')).toBeVisible()
+    expect(sentBody).toBeNull()
+
+    await dialog.getByRole('textbox').fill('  Pemilik terverifikasi via WA  ')
+    await dialog.getByRole('button', { name: 'Lihat Kode' }).click()
+
+    await expect(dialog.getByTestId('reset-code')).toHaveText('482913')
+    await expect(dialog.getByText(/sisa 3 percobaan/)).toBeVisible()
+    expect(sentBody).toEqual({ notes: 'Pemilik terverifikasi via WA' })
+
+    await dialog.getByRole('button', { name: 'Tutup' }).click()
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    await main(page).getByRole('button', { name: 'Kode Reset' }).click()
+    await expect(page.getByRole('dialog').getByTestId('reset-code')).toHaveCount(0)
+    await expect(page.getByRole('dialog').getByRole('textbox')).toHaveValue('')
+  })
+
+  test('NO_ACTIVE_RESET_CODE: modal tetap terbuka dengan petunjuk', async ({ page, mockApi }) => {
+    mockApi.asRole('SUPER_ADMIN')
+    mockApi.on('GET', '/admin/users', ok(page1([makeAdminUser(10)])))
+    mockApi.on('POST', '/admin/users/10/reset-code',
+      failCode(404, 'Tidak ada kode reset aktif untuk user ini', { code: 'NO_ACTIVE_RESET_CODE' }))
+
+    await gotoHydrated(page, '/admin/users')
+    await main(page).getByRole('button', { name: 'Kode Reset' }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByRole('textbox').fill('Pemilik minta kode')
+    await dialog.getByRole('button', { name: 'Lihat Kode' }).click()
+
+    await expect(dialog.getByText(/Minta pelanggan mengisi form lupa password/)).toBeVisible()
+    await expect(dialog.getByTestId('reset-code')).toHaveCount(0)
+  })
+})
