@@ -142,7 +142,7 @@ Stok (produk `STOCKING`):
 | Fungsi | Endpoint | Dipakai di |
 |---|---|---|
 | `registerMerchant` | POST `/merchant/create` | `pages/merchant/create` |
-| `updateMerchant` | PATCH `/merchant/update` | `pages/seller/profile` |
+| `updateMerchant` | PATCH `/merchant/update` multipart; field libur `isHoliday` (camelCase, opsional), respons `is_holiday` (sebelum EP03-06 BE membaca/mengirim `holiday`, toggle libur tidak tersimpan) | `pages/seller/profile` |
 | `fetchMerchantById` | `/merchant/get/{id}` | `pages/merchant/[id].vue`, `pages/product/[id].vue` |
 | `fetchMyMerchant` | `/merchant/my` | `stores/merchant.ts` |
 
