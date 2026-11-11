@@ -86,9 +86,10 @@
         <div class="flex sm:flex-col gap-2 items-end">
           <UBadge icon="mdi:receipt-text" size="lg" class="font-medium text-white">#{{ transaction?.id }}</UBadge>
           <UButton icon="material-symbols:refresh" variant="outline" size="xs" @click="refreshHandler">Refresh</UButton>
-          <UButton v-if="transaction?.status !== 'COMPLETE'" icon="material-symbols:cancel" color="error" variant="outline" size="xs" @click="isRefundingTxModal = true">Refund Transaksi</UButton>
+          <!-- refund/selesaikan paksa hanya untuk memutus arbitrase (T-02) -->
+          <UButton v-if="transaction?.status === 'ARBITRAGE'" icon="material-symbols:cancel" color="error" variant="outline" size="xs" @click="isRefundingTxModal = true">Refund Transaksi</UButton>
           <UButton v-if="transaction?.status === 'ARBITRAGE'" icon="material-symbols:arrow-forward" color="primary" variant="outline" size="xs" :loading="loadingCancelArbitrage" @click="handleCancelArbitrage">Cancel Arbitrage</UButton>
-          <UButton v-if="transaction?.status !== 'COMPLETE'" icon="material-symbols:check" color="primary" variant="solid" size="xs" @click="isCompleteTxModal = true">Selesaikan Transaksi</UButton>
+          <UButton v-if="transaction?.status === 'ARBITRAGE'" icon="material-symbols:check" color="primary" variant="solid" size="xs" @click="isCompleteTxModal = true">Selesaikan Transaksi</UButton>
         </div> 
       </div>
     </div>
@@ -725,7 +726,7 @@ import RefundTxModal from '~/components/form/RefundTxModal.vue'
   import type { TransactionResponse } from '~/types/TransactionResponse'
 
   // Ambil API function
-  const { fetchTransactionById, fetchCompleteTx, fetchCancelArbitrage, fetchRefundTx, fetchRejectCancelRequest, fetchAcceptCancelRequest } = useTransactionApi()
+  const { fetchTransactionById, fetchCompleteTx, fetchCancelArbitrage, fetchRefundTx } = useTransactionApi()
   const { fetchCreateOrderDiscussion, fetchOrderDiscussionByTxId, fetchFileOrderByTxId } = useOrderDiscussionApi()
   const { fetchCreateReview,fetchReviewByTransaction,fetchUpdateReview } = useReviewApi()
   const { fetchGuaranteeByTransaction } = useGuaranteeApi()

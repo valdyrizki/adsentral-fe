@@ -46,7 +46,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-22 | Withdrawal (admin) | Rumus "Potensi Anomali" menghitung saldo belanja (deposit) sebagai saldo yang bisa ditarik | Sedang | PERLU KONFIRMASI | Tanya BE rumus yang benar; opsi lebih sederhana: pakai `sales_balance` + `sales_held` dari BE. |
 | F-23 | Withdrawal | `WD_FEE` diam-diam jatuh ke Rp 2.500 bila setting gagal dimuat; kartu statistik admin hanya dari halaman aktif | Sedang | PERLU KONFIRMASI | Tanya: siapa sumber kebenaran `admin_fee` (FE/BE)? Ada endpoint ringkasan statistik withdrawal? |
 | F-24 | Pesanan admin | Refund/Selesaikan gagal (400) menutup modal, alasan yang diketik hilang | Sedang | TERBUKA | Fix: tutup modal hanya saat sukses atau `isStaleActionError`. Ditandai `test.fail`. |
-| F-25 | Pesanan admin | Tombol "Refund Transaksi"/"Selesaikan Transaksi" muncul di status final (REFUNDED, CANCELLED, REJECTED, EXPIRED) dan UNPAID | Sedang | PERLU KONFIRMASI | Tanya: status apa saja yang boleh di-refund/diselesaikan paksa? Risiko refund ganda bila BE tidak menolak. |
+| F-25 | Pesanan admin | Tombol "Refund Transaksi"/"Selesaikan Transaksi" muncul di status final (REFUNDED, CANCELLED, REJECTED, EXPIRED) dan UNPAID | Sedang | SELESAI | Tombol hanya saat `ARBITRAGE`; BE menolak status lain (EP04-02). |
 | F-26 | API layer | Banyak composable GET membuang pesan BE (`err.message` → `[GET] "/backend/...": 400 Bad Request`); `fetchCreateOrderDiscussion` bisa crash di `err.response._data` | Sedang | TERBUKA | **Diperbaiki pertama** bersama F-20: ganti `catch` di composable GET dengan `rethrowApiError`. |
 | F-27 | Pesanan admin | Validasi pesan diskusi kosong memakai `window.alert()` (sama dengan F-10) | Rendah | TERBUKA | Sama dengan F-10; perbaiki bersamaan. Ditandai `test.fail`. |
 | F-28 | Pesanan admin | Filter status admin tidak lengkap; teks konfirmasi "Cancel Arbitrage" tidak formal & tujuan statusnya belum jelas | Rendah | PERLU KONFIRMASI | Tanya: status tujuan `PATCH /tx/cancel/arbitrage` & opsi filter yang dibutuhkan admin. Teks "lhooo" perlu diganti. |
@@ -396,7 +396,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-25 — Tombol Refund/Selesaikan muncul di status final
 
 - **Lokasi:** `app/pages/admin/order/[id].vue` → tombol "Refund Transaksi" & "Selesaikan Transaksi" (`v-if="status !== 'COMPLETE'"`)
-- **Status:** PERLU KONFIRMASI
+- **Status:** SELESAI (2026-11-11, EP04-02): keputusan pemilik, refund/selesaikan paksa hanya untuk `ARBITRAGE`. Tombol kini `v-if="status === 'ARBITRAGE'"` dan BE menolak status lain dengan 403.
 - **Gejala:** Tombol hanya disembunyikan untuk `COMPLETE`. Transaksi yang sudah `REFUNDED`, `CANCELLED`, `REJECTED`,
   atau `EXPIRED` tetap menampilkan "Refund Transaksi" dan "Selesaikan Transaksi", begitu juga `UNPAID` (belum ada uang
   yang bisa direfund). Jika BE tidak menolak, transaksi bisa direfund dua kali atau "diselesaikan" setelah direfund.
@@ -404,7 +404,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
   status yang uangnya masih di escrow.
 - **Perlu dikonfirmasi:** Status apa saja yang boleh di-refund dan diselesaikan paksa oleh admin? Setelah itu perbarui
   `v-if` dan glossary.
-- **Tes:** `admin-order.spec.ts` → "status final (REFUNDED) tidak menampilkan tombol..." (`test.fail`).
+- **Tes:** `admin-order.spec.ts` → "status final (REFUNDED) tidak menampilkan tombol..." dan "di luar ARBITRAGE tidak ada tombol..." (lulus).
 
 ## F-26 — Composable GET membuang pesan error BE
 

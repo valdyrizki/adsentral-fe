@@ -146,6 +146,14 @@ export const useTransactionApi = () => {
     if (res.status !== 'success') throw new Error(res.message)
   }
 
+  /** Buyer menarik pengajuan pembatalannya sendiri (CANCEL_REQUEST → IN_PROGRESS). */
+  const fetchWithdrawCancelRequest = async (txId: string): Promise<void> => {
+    const res = await api<WebResponse<string>>(`/tx/cancel/withdraw/${txId}`, { method: 'PATCH' }).catch(rethrowApiError('Aksi gagal diproses'))
+    if (res.status !== 'success') throw new Error(res.message)
+    refreshAlerts()
+  }
+
+  /** Hanya seller pemilik transaksi (T-01). */
   const fetchRejectCancelRequest = async (txId: string): Promise<void> => {
     const res = await api<WebResponse<TransactionResponse>>(`/tx/cancel/reject/${txId}`, { method: 'PATCH' }).catch(rethrowApiError('Aksi gagal diproses'))
     if (res.status !== 'success') throw new Error(res.message)
@@ -194,6 +202,7 @@ export const useTransactionApi = () => {
     fetchRejectOrder,
     fetchCancelTxRequest,
     fetchRejectCancelRequest,
+    fetchWithdrawCancelRequest,
     fetchAcceptCancelRequest,
     fetchArbitrageRequest,
     fetchAllTx,

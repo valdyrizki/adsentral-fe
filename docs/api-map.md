@@ -163,11 +163,12 @@ Stok (produk `STOCKING`):
 | `fetchRejectOrder` | PATCH `/tx/order/reject/{txId}` | buyer | `pages/transaction/[id].vue` |
 | `fetchCancelTxRequest` | PATCH `/tx/cancel/request/{txId}` | buyer | `pages/transaction/[id].vue` |
 | `fetchAcceptCancelRequest` | PATCH `/tx/cancel/accept/{txId}` | seller | `pages/seller/order/[id].vue` |
-| `fetchRejectCancelRequest` | PATCH `/tx/cancel/reject/{txId}` | seller/buyer | `pages/seller/order/[id].vue`, `pages/transaction/[id].vue` |
+| `fetchRejectCancelRequest` | PATCH `/tx/cancel/reject/{txId}` | seller pemilik (T-01) | `pages/seller/order/[id].vue` |
+| `fetchWithdrawCancelRequest` | PATCH `/tx/cancel/withdraw/{txId}` | buyer menarik pengajuan batalnya | `pages/transaction/[id].vue` |
 | `fetchArbitrageRequest` | PATCH `/tx/arbitrage/{txId}` | buyer/seller | `pages/transaction/[id].vue`, `pages/seller/order/[id].vue` |
 | `fetchCancelArbitrage` | PATCH `/tx/cancel/arbitrage/{txId}` | admin | `pages/admin/order/[id].vue` |
-| `fetchRefundTx` | PATCH `/tx/refund/{txId}` | admin | `pages/admin/order/[id].vue` |
-| `fetchCompleteTx` | PATCH `/tx/complete/{txId}` | admin | `pages/admin/order/[id].vue` |
+| `fetchRefundTx` | PATCH `/tx/refund/{txId}` | admin, hanya `ARBITRAGE` (T-02) | `pages/admin/order/[id].vue` |
+| `fetchCompleteTx` | PATCH `/tx/complete/{txId}` | admin, hanya `ARBITRAGE` (T-02) | `pages/admin/order/[id].vue` |
 
 Filter list: hanya **satu** nilai `status` per request (`'ALL'` = tanpa parameter); opsi di `utils/txStatusFilter.ts`, state filter di `composables/useTxListFilters.ts`. Aksi mutasi memanggil `useAlertsStore().refresh()`.
 

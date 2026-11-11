@@ -100,6 +100,16 @@ test.describe('Arbitrase & refund admin', () => {
     }
   })
 
+  test('di luar ARBITRAGE tidak ada tombol refund/selesaikan paksa (T-02)', async ({ page, mockApi }) => {
+    mockAdminDetail(mockApi, () => makeTx('TX-1', 'PAY-TX-1', { status: 'IN_PROGRESS', paid_at: hoursAgo(3), confirmed_at: hoursAgo(2) }))
+
+    await gotoHydrated(page, '/admin/order/TX-1')
+    await expect(main(page).getByRole('button', { name: 'Refresh' })).toBeVisible()
+    for (const name of ['Refund Transaksi', 'Cancel Arbitrage', 'Selesaikan Transaksi']) {
+      await expect(main(page).getByRole('button', { name })).toHaveCount(0)
+    }
+  })
+
   test('cancel arbitrage: "Tidak" tanpa API, "Ya, Teruskan" memanggil API & memuat ulang', async ({ page, mockApi }) => {
     let tx = arbitrageTx('TX-1')
     const { alertFetches } = mockAdminDetail(mockApi, () => tx)
@@ -208,7 +218,7 @@ test.describe('Arbitrase & refund admin', () => {
     await expect(dialog.getByRole('textbox')).toHaveValue('Akun terbukti bermasalah')
   })
 
-  test.fail('status final (REFUNDED) tidak menampilkan tombol Refund/Selesaikan (F-25)', async ({ page, mockApi }) => {
+  test('status final (REFUNDED) tidak menampilkan tombol Refund/Selesaikan (F-25)', async ({ page, mockApi }) => {
     mockAdminDetail(mockApi, () => arbitrageTx('TX-1', { status: 'REFUNDED' }))
 
     await gotoHydrated(page, '/admin/order/TX-1')

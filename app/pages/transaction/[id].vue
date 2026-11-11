@@ -890,7 +890,7 @@ import type { ReviewResponse } from '~/types/review/ReviewResponse'
 import type { TransactionResponse } from '~/types/TransactionResponse'
 
 // Ambil API function
-const { fetchTransactionById, fetchAcceptOrder, fetchRejectOrder, fetchCancelTxRequest, fetchRejectCancelRequest, fetchArbitrageRequest } = useTransactionApi()
+const { fetchTransactionById, fetchAcceptOrder, fetchRejectOrder, fetchCancelTxRequest, fetchWithdrawCancelRequest, fetchArbitrageRequest } = useTransactionApi()
 const { fetchCreateOrderDiscussion, fetchOrderDiscussionByTxId, fetchFileOrderByTxId } = useOrderDiscussionApi()
 const { fetchCreateReview,fetchReviewByTransaction,fetchUpdateReview } = useReviewApi()
 const { fetchCreateGuarantee, fetchGuaranteeByTransaction } = useGuaranteeApi()
@@ -1152,7 +1152,7 @@ const selectRating = ref<SelectItem[]>(
   const handleRejectCancelRequest = async () => {
     try {
       isSubmitting.value = true
-      await fetchRejectCancelRequest(route.params.id as string)
+      await fetchWithdrawCancelRequest(route.params.id as string)
       toast.add({
         title: 'Berhasil',
         description: 'Permintaan pembatalan berhasil dibatalkan, transaksi akan dilanjutkan seperti semula',

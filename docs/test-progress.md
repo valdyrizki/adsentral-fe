@@ -38,7 +38,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 13 | Stok seller | — | ⬜ | P1 | Bulk akun/file memakai alur cek `dryRun` lalu simpan; cek duplikat di `useStockDuplicateCheck`. |
 | 14 | Verifikasi seller & daftar merchant | — | ⬜ | P1 | `registerMerchant` & verifikasi dikirim sebagai FormData (upload dokumen). |
 | 15 | Dashboard & profil toko seller | — | ⬜ | P3 | Riwayat penalty di dashboard sudah tercakup `penalty.spec.ts`. |
-| 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | 🐞 | P3 (dashboard admin) | Refund 400 menutup modal (F-24). Tombol muncul di status final (F-25). GET membuang pesan BE (F-26). `alert()` diskusi (F-27). Filter & teks Cancel Arbitrage (F-28). |
+| 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | 🐞 | P3 (dashboard admin) | Refund 400 menutup modal (F-24). GET membuang pesan BE (F-26). `alert()` diskusi (F-27). Filter & teks Cancel Arbitrage (F-28). |
 | 17 | Pembayaran admin | `payment.spec.ts` | Sebagian | P1 (unprocessed payment) | "Tolak" memanggil `/payment/cancel` (F-06, perlu konfirmasi). Filter `status=ALL` (F-07). |
 | 18 | Penarikan dana admin | `withdrawal.spec.ts` | 🐞 | — | Rumus "Potensi Anomali" ikut menghitung saldo deposit (F-22). Statistik hanya halaman aktif (F-23). |
 | 19 | Produk & stok admin (review, suspend) | — | ⬜ | P1 | Halaman create/edit admin memakai ulang form produk seller; tes setelah modul 12. |
@@ -53,7 +53,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 29 | Super admin: kode reset password | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk super admin; alasan ≥ 5 karakter dikirim ter-trim; kode tampil lalu hilang saat modal ditutup; `NO_ACTIVE_RESET_CODE` memberi petunjuk di modal. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **171 tes** di 14 spec (termasuk `security.spec.ts`, `session.spec.ts`, `forgot-password.spec.ts` & `admin-user.spec.ts`), dengan 27 tes `test.fail` untuk bug yang sudah diketahui.
+Total saat ini: **172 tes** di 14 spec (termasuk `security.spec.ts`, `session.spec.ts`, `forgot-password.spec.ts` & `admin-user.spec.ts`), dengan 26 tes `test.fail` untuk bug yang sudah diketahui.
 
 ---
 
@@ -262,7 +262,7 @@ Total saat ini: **171 tes** di 14 spec (termasuk `security.spec.ts`, `session.sp
 | Error daftar | 🐞 | F-26 |
 | Cancel arbitrage, refund, selesaikan paksa, refund 409 | ✅ | |
 | Refund 400 | 🐞 | F-24 |
-| Tombol di status final | 🐞 | F-25 |
+| Tombol refund/selesaikan hanya saat `ARBITRAGE` | ✅ | F-25 selesai (EP04-02) |
 | Diskusi admin: kirim pesan / pesan kosong | ✅ / 🐞 | F-27 |
 | `/admin/dashboard`: statistik & ringkasan | ⬜ P3 | |
 

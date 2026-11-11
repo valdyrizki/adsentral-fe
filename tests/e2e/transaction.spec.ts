@@ -241,7 +241,7 @@ test.describe('Detail transaksi buyer', () => {
       return ok(tx)
     })
     let withdrawn = 0
-    mockApi.on('PATCH', '/tx/cancel/reject/TX-1', () => {
+    mockApi.on('PATCH', '/tx/cancel/withdraw/TX-1', () => {
       withdrawn++
       tx = { ...tx, status: 'IN_PROGRESS' }
       return ok(tx)

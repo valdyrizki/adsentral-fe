@@ -77,11 +77,12 @@ UNPAID ──bayar──▶ PAID ──seller terima──▶ IN_PROGRESS ──
 | Tolak pesanan (hasil kiriman) | Buyer | `DELIVERED` | `/tx/order/reject/{id}` · `fetchRejectOrder` |
 | Ajukan pembatalan | Buyer | `IN_PROGRESS` | `/tx/cancel/request/{id}` · `fetchCancelTxRequest` |
 | Terima pembatalan | Seller | `CANCEL_REQUEST` | `/tx/cancel/accept/{id}` · `fetchAcceptCancelRequest` |
-| Tolak / tarik pembatalan | Seller atau buyer | `CANCEL_REQUEST` | `/tx/cancel/reject/{id}` · `fetchRejectCancelRequest` |
+| Tolak pembatalan | Seller | `CANCEL_REQUEST` | `/tx/cancel/reject/{id}` · `fetchRejectCancelRequest` |
+| Tarik pengajuan pembatalan | Buyer | `CANCEL_REQUEST` | `/tx/cancel/withdraw/{id}` · `fetchWithdrawCancelRequest` |
 | Ajukan penangguhan (arbitrase) | Buyer (`DELIVERED`/`DONE`), seller (`REJECT`) | lihat kiri | `/tx/arbitrage/{id}` · `fetchArbitrageRequest` |
 | Batalkan arbitrase / lanjutkan transaksi | Admin | `ARBITRAGE` | `/tx/cancel/arbitrage/{id}` · `fetchCancelArbitrage` ⚠️ perlu konfirmasi status tujuannya |
-| Refund | Admin | selain `COMPLETE` | `/tx/refund/{id}` · `fetchRefundTx` |
-| Selesaikan paksa | Admin | selain `COMPLETE` | `/tx/complete/{id}` · `fetchCompleteTx` |
+| Refund | Admin | hanya `ARBITRAGE` | `/tx/refund/{id}` · `fetchRefundTx` |
+| Selesaikan paksa | Admin | hanya `ARBITRAGE` | `/tx/complete/{id}` · `fetchCompleteTx` |
 
 Respons 403/409 pada aksi di atas = status sudah berubah di BE → tampilkan pesan BE dan muat ulang (`isStaleActionError`).
 
