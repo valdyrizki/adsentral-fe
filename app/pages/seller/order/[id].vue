@@ -1673,7 +1673,8 @@ const isImage = (format?: string) => {
   const showSendOrderButton = computed(() => {
     if (!transaction.value) return false
     const status = transaction.value.status
-    return status === 'IN_PROGRESS' || status === 'DELIVERED' || status === 'REJECT' || status === 'ARBITRAGE' || status === 'DONE'  // hanya tampilkan tombol "Kirim Orderan" jika belum pernah kirim file order sebelumnya
+    // sama dengan whitelist BE deliverOrder (EP04-03): PAID boleh kirim langsung, REJECT kirim ulang, ARBITRAGE bukti tambahan
+    return status === 'PAID' || status === 'IN_PROGRESS' || status === 'REJECT' || status === 'ARBITRAGE'
   })
 
 

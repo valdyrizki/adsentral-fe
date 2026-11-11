@@ -219,6 +219,21 @@ test.describe('Detail pesanan seller', () => {
     await expect(main(page).getByText('Menunggu Konfirmasi Pembeli')).toBeVisible()
   })
 
+  // EP04-03 (T-03): BE menolak kirim dari status lain dengan 403
+  for (const [status, visible] of [
+    ['PAID', true], ['IN_PROGRESS', true], ['REJECT', true], ['ARBITRAGE', true],
+    ['DELIVERED', false], ['DONE', false], ['CANCEL_REQUEST', false],
+  ] as const) {
+    test(`tombol "Kirim Orderan" ${visible ? 'tampil' : 'tidak tampil'} pada ${status}`, async ({ page, mockApi }) => {
+      const tx = makeTx('TX-1', 'PAY-1', { status, paid_at: hoursAgo(3), confirmed_at: hoursAgo(2), delivered_at: hoursAgo(1) })
+      mockSellerDetail(mockApi, () => tx)
+
+      await gotoHydrated(page, '/seller/order/TX-1')
+      await expect(main(page).getByRole('button', { name: 'Kirim Pesan' })).toBeVisible()
+      await expect(main(page).getByRole('button', { name: 'Kirim Orderan' })).toHaveCount(visible ? 1 : 0)
+    })
+  }
+
   test('kirim pesan biasa tidak mengubah status', async ({ page, mockApi }) => {
     const tx = makeTx('TX-1', 'PAY-1', { status: 'IN_PROGRESS', confirmed_at: hoursAgo(1) })
     mockSellerDetail(mockApi, () => tx)

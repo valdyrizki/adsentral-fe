@@ -177,7 +177,7 @@ Filter list: hanya **satu** nilai `status` per request (`'ALL'` = tanpa paramete
 | Fungsi | Endpoint | Dipakai di |
 |---|---|---|
 | `fetchOrderDiscussionByTxId` | `/order/discussion/transaction/{txId}` | detail order buyer/seller/admin |
-| `fetchCreateOrderDiscussion` | POST `/order/discussion/create` (tipe `MESSAGE`/`ORDER_DELIVERY`) | idem |
+| `fetchCreateOrderDiscussion` | POST `/order/discussion/create` (tipe `MESSAGE`/`ORDER_DELIVERY`; `ORDER_DELIVERY` hanya dari `PAID`/`IN_PROGRESS`/`REJECT`/`ARBITRAGE`, lainnya 403) | idem |
 | `fetchFileOrderByTxId` | `/order/file/transaction/{txId}` | idem |
 
 **`seller-summary.ts` → `useSellerSummaryApi`** · types: `types/seller-summary/*`

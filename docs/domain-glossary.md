@@ -72,7 +72,7 @@ UNPAID ──bayar──▶ PAID ──seller terima──▶ IN_PROGRESS ──
 |---|---|---|---|
 | Konfirmasi/terima pesanan | Seller (admin juga bisa) | `PAID` | `PATCH /tx/confirm/{id}` · `fetchConfirmTx` |
 | Tolak pesanan | Seller (admin juga bisa) | `PAID` | `/tx/reject/{id}` · `fetchRejectTx` |
-| Kirim pesanan | Seller | `IN_PROGRESS` | diskusi tipe `ORDER_DELIVERY` |
+| Kirim pesanan | Seller | `PAID` (langsung, sekaligus konfirmasi), `IN_PROGRESS`, `REJECT` (kirim ulang), `ARBITRAGE` (status tetap) | diskusi tipe `ORDER_DELIVERY`; status lain 403 |
 | Terima pesanan | Buyer | `DELIVERED` | `/tx/order/accept/{id}` · `fetchAcceptOrder` |
 | Tolak pesanan (hasil kiriman) | Buyer | `DELIVERED` | `/tx/order/reject/{id}` · `fetchRejectOrder` |
 | Ajukan pembatalan | Buyer | `IN_PROGRESS` | `/tx/cancel/request/{id}` · `fetchCancelTxRequest` |
