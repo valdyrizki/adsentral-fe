@@ -95,7 +95,7 @@ Respons 403/409 pada aksi di atas = status sudah berubah di BE → tampilkan pes
 | `IN_PROGRESS` | `delivery_days` produk | hanya peringatan "Estimasi Pengiriman Terlewat" ⚠️ perlu konfirmasi ada tindakan otomatis |
 | `DELIVERED` | `delivered_at` + 24 jam | otomatis `DONE` |
 | `REJECT` | `rejected_at` + 24 jam | auto-refund |
-| `CANCEL_REQUEST` | `updated_at` + 24 jam | auto-refund / batal |
+| `CANCEL_REQUEST` | `cancel_requested_at` + 24 jam (kosong → `updated_at`) | auto-refund / batal |
 | `DONE` | `done_at` + 24 jam | `COMPLETE`, dana cair |
 
 Helper: `utils/paymentDeadline.ts`, `utils/txConfirmDeadline.ts`.

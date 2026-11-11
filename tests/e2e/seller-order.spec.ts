@@ -234,6 +234,19 @@ test.describe('Detail pesanan seller', () => {
     })
   }
 
+  test('countdown pengajuan batal dihitung dari cancel_requested_at, bukan updated_at (EP04-04)', async ({ page, mockApi }) => {
+    const tx = makeTx('TX-1', 'PAY-1', {
+      status: 'CANCEL_REQUEST', confirmed_at: hoursAgo(30),
+      cancel_requested_at: hoursAgo(23), updated_at: new Date().toISOString(),
+    })
+    mockSellerDetail(mockApi, () => tx)
+
+    await gotoHydrated(page, '/seller/order/TX-1')
+    await expect(main(page).getByText('Batas Waktu Pembatalan Otomatis')).toBeVisible()
+    // sisa ±1 jam (00:59:xx), bukan 23 jam lebih dari updated_at
+    await expect(main(page).getByText(/^00:59:\d{2}$/)).toBeVisible()
+  })
+
   test('kirim pesan biasa tidak mengubah status', async ({ page, mockApi }) => {
     const tx = makeTx('TX-1', 'PAY-1', { status: 'IN_PROGRESS', confirmed_at: hoursAgo(1) })
     mockSellerDetail(mockApi, () => tx)

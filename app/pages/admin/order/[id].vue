@@ -1199,13 +1199,15 @@ const isImage = (format?: string) => {
     { immediate: true }
   )
 
-  // ===== COUNTDOWN CANCEL REQUEST (updated_at + 24 jam) =====
+  // ===== COUNTDOWN CANCEL REQUEST (cancel_requested_at + 24 jam) =====
   const cancelRequestSeconds = ref(0)
   let cancelRequestTimer: ReturnType<typeof setInterval> | null = null
 
   const updateCancelRequestCountdown = () => {
-    if (!transaction.value?.updated_at) return
-    cancelRequestSeconds.value = Math.max(0, dayjs(transaction.value.updated_at).add(24, 'hour').diff(dayjs(), 'second'))
+    // dasar timer BE: cancel_requested_at; pengajuan lama (sebelum kolom ada) memakai updated_at (EP04-04)
+    const requestedAt = transaction.value?.cancel_requested_at ?? transaction.value?.updated_at
+    if (!requestedAt) return
+    cancelRequestSeconds.value = Math.max(0, dayjs(requestedAt).add(24, 'hour').diff(dayjs(), 'second'))
   }
 
   const cancelRequestCountdownDisplay = computed(() => {

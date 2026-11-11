@@ -53,7 +53,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 29 | Super admin: kode reset password | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk super admin; alasan ≥ 5 karakter dikirim ter-trim; kode tampil lalu hilang saat modal ditutup; `NO_ACTIVE_RESET_CODE` memberi petunjuk di modal. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **179 tes** di 14 spec (termasuk `security.spec.ts`, `session.spec.ts`, `forgot-password.spec.ts` & `admin-user.spec.ts`), dengan 26 tes `test.fail` untuk bug yang sudah diketahui.
+Total saat ini: **180 tes** di 14 spec (termasuk `security.spec.ts`, `session.spec.ts`, `forgot-password.spec.ts` & `admin-user.spec.ts`), dengan 26 tes `test.fail` untuk bug yang sudah diketahui.
 
 ---
 
@@ -205,6 +205,7 @@ Total saat ini: **179 tes** di 14 spec (termasuk `security.spec.ts`, `session.sp
 | Tombol "Kirim Orderan" per status (PAID/IN_PROGRESS/REJECT/ARBITRAGE saja) | ✅ | EP04-03 |
 | Pesan kosong | 🐞 | F-10 |
 | Terima / tolak pengajuan batal | ✅ | F-12 dicatat |
+| Countdown pengajuan batal dari `cancel_requested_at` | ✅ | EP04-04 |
 | Tombol "Batalkan" PAID | 🐞 | F-09 |
 | Countdown UNPAID tanpa `expired_at` | 🐞 | F-11 |
 | Seller ajukan arbitrase (`fetchArbitrageRequest`) | ⬜ P2 | |
