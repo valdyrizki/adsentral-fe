@@ -26,7 +26,8 @@
                 <p class="text-xs text-white/70 mt-1">Hasil top up, hanya bisa dipakai belanja</p>
               </div>
               <div class="flex justify-center mt-4">
-                <UButton size="xl" label="Deposit" icon="mdi:cash-plus" color="neutral" variant="outline" @click="isDepositOpen = true" />
+                <!-- akun admin tidak top up (EP04-09) -->
+                <UButton v-if="!authStore.isAnyAdmin" size="xl" label="Deposit" icon="mdi:cash-plus" color="neutral" variant="outline" @click="isDepositOpen = true" />
                 <UModal v-model:open="isDepositOpen" title="Deposit">
                   <template #body>
                     <FormDeposit

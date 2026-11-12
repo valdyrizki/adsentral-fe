@@ -20,7 +20,8 @@
             <UButton to="/chat" color="neutral" variant="subtle" icon="mdi:email-outline" />
           </UChip>
         </template>
-        <UChip :text="totalItems" color="error" size="3xl">
+        <!-- akun admin tidak berbelanja (EP04-09) -->
+        <UChip v-if="!authStore.isAnyAdmin" :text="totalItems" color="error" size="3xl">
           <UButton to="/cart" color="neutral" variant="soft" icon="mdi:cart-outline" />
         </UChip>
       </div>
@@ -102,11 +103,12 @@ const itemsProfile = computed<DropdownMenuItem[][]>(() => {
   return [
     [
       { label: 'Account Info', icon: 'mdi:user', to: '/profile' },
-      {
+      // akun admin tidak top up / berbelanja (EP04-09)
+      ...(authStore.isAnyAdmin ? [] : [{
         label: 'Saldo Belanja : ' + `Rp ${balanceStore.depositBalance.toLocaleString('id-ID')}`,
         icon: 'i-lucide-credit-card',
         to: '/balance'
-      },
+      }]),
       { label: 'Order History', icon: 'i-lucide-package', to: '/transaction' },
       { label: 'Klaim Garansi', icon: 'material-symbols:shield', to: '/guarantee' },
       { label: 'Riwayat Pembayaran', icon: 'i-heroicons-credit-card', to: '/payment' },

@@ -52,6 +52,22 @@ test.describe('Checkout keranjang', () => {
     expect(JSON.parse(decodeURIComponent(cartCookie!.value)).items).toEqual([])
   })
 
+  test('akun admin tidak bisa checkout & tidak melihat ikon keranjang (EP04-09)', async ({ page, context, mockApi }) => {
+    const product = makeProduct(1, { sell_price: 15000 })
+    await seedCart(context, [{ product, quantity: 1, note: '' }])
+    mockApi
+      .asRole('ADMIN')
+      .on('GET', '/payment/methods', ok(PAYMENT_METHODS))
+      .on('GET', '/voucher/public', ok([]))
+      .on('POST', '/products/ids', ok([product]))
+
+    await gotoHydrated(page, '/cart')
+    await expect(page.getByText('Produk Tes 1')).toBeVisible()
+    await expect(page.getByText('Akun admin tidak bisa checkout. Gunakan akun pembeli untuk berbelanja.')).toBeVisible()
+    await expect(page.getByRole('main').getByRole('button', { name: 'Akun Admin Tidak Bisa Checkout' })).toBeDisabled()
+    await expect(page.locator('header a[href="/cart"]')).toHaveCount(0)
+  })
+
   test('saldo tidak cukup menonaktifkan tombol checkout', async ({ page, context, mockApi }) => {
     const product = makeProduct(1, { sell_price: 50000 })
     await seedCart(context, [{ product, quantity: 1 }])

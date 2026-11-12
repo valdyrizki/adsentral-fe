@@ -245,11 +245,15 @@
               </div>
             </div>
 
+            <p v-if="authStore.isAnyAdmin" class="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
+              Akun admin tidak bisa checkout. Gunakan akun pembeli untuk berbelanja.
+            </p>
             <UButton
               size="xl"
               class="w-full justify-center mt-4"
               :label="
                 loading ? 'Please Wait'
+                : authStore.isAnyAdmin ? 'Akun Admin Tidak Bisa Checkout'
                 : hasUnavailableItems ? 'Ada Produk Tidak Tersedia'
                 : !cartStore.payment_method ? 'Pilih Metode Pembayaran'
                 : isSaldoInsufficient ? 'Saldo Tidak Cukup'
@@ -259,7 +263,7 @@
               variant="solid"
               @click="checkout"
               :loading="loading"
-              :disabled="!cartStore.payment_method || isSaldoInsufficient || loading || hasUnavailableItems || syncing"
+              :disabled="authStore.isAnyAdmin || !cartStore.payment_method || isSaldoInsufficient || loading || hasUnavailableItems || syncing"
             />
             </ClientOnly>
           </div>
@@ -355,6 +359,7 @@ const { depositBalance } = useBalanceStore()
 
 //store
 const cartStore = useCartStore()
+const authStore = useAuthStore()
 const balanceStore = useBalanceStore()
 
 const toast = useToast()

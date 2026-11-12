@@ -152,7 +152,7 @@ Stok (produk `STOCKING`):
 
 | Fungsi | Endpoint | Aktor | Dipakai di |
 |---|---|---|---|
-| `createTransaction` | POST `/tx/create` | buyer | `stores/cart.ts` (checkout) |
+| `createTransaction` | POST `/tx/create` | buyer/seller; admin 403 (EP04-09) | `stores/cart.ts` (checkout) |
 | `fetchBuyerTransactions` | `/tx/buyer` | buyer | `pages/transaction` |
 | `fetchTransactionById` | `/tx/get/{txId}` | semua | detail order buyer/seller/admin |
 | `fetchTxSeller` | `/tx/seller` | seller | `pages/seller/order`, `pages/seller/dashboard` |
@@ -266,7 +266,7 @@ Filter list: hanya **satu** nilai `status` per request (`'ALL'` = tanpa paramete
 |---|---|---|
 | `fetchBalance` | `/balance` (+ rincian `sales_held_escrow` / `sales_held_withdrawal`, EP04-07) | `stores/balance.ts`, `pages/balance`, `pages/seller/balance`, `pages/seller/dashboard` |
 | `fetchBalanceLog` | `/balance/log` | `pages/balance`, `pages/seller/balance` |
-| `fetchDepositBalance` | POST `/balance/deposit` | `pages/balance` |
+| `fetchDepositBalance` | POST `/balance/deposit` (admin 403, EP04-09) | `pages/balance` |
 | `fetchDepositHistory` | `/balance/deposit/history` | `pages/balance` |
 | `fetchDepositCancel` | POST `/balance/deposit/cancel/{id}` | `pages/balance` |
 | `fetchBalanceTransfer` | POST `/balance/transfer` (saldo jualan → belanja) | `components/form/BalanceTransfer.vue` |
