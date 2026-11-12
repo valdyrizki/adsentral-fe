@@ -255,6 +255,8 @@ const { fetchFailedJournals, retryFailedJournal, dismissFailedJournal } = useFai
 const categoryLabels: Record<string, string> = {
   WITHDRAWAL_FEE: 'Fee penarikan',
   PAYMENT_GATEWAY_FEE_INCOME: 'Fee gateway',
+  PAYMENT_GATEWAY_FEE_EXPENSE: 'Beban gateway',
+  VOUCHER_DISCOUNT: 'Subsidi voucher',
   APPLICATION_FEE: 'Fee aplikasi',
   TRANSACTION_FEE: 'Fee transaksi',
 }
