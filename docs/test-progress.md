@@ -49,12 +49,12 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 24 | Chat (buyer, seller, admin) | — | ⬜ | P2 | Admin memakai endpoint percakapan seller. |
 | 25 | Notifikasi (buyer, seller, admin, broadcast) | — | ⬜ | P2 | Kirim ke user memakai pencarian `/admin/users` (sama dengan modal penalty). |
 | 26 | Badge/alerts sidebar & header | — (tersirat di beberapa tes) | Sebagian | P3 | Refresh badge setelah aksi sudah dicek di payment & withdrawal. Polling 45 detik & field `null` belum. |
-| 28 | Pengguna admin: daftar & buka kunci login | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk `locked_until` di masa depan; alasan ≥ 5 karakter; `LOGIN_NOT_LOCKED` menutup modal & memuat ulang. |
+| 28 | Pengguna admin: daftar & buka kunci login | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk `locked_until` di masa depan; alasan ≥ 5 karakter; `LOGIN_NOT_LOCKED` menutup modal & memuat ulang; akun ADMIN/SUPER_ADMIN hanya bisa dibuka super admin; 403 BE tampil di modal. |
 | 29 | Super admin: kode reset password | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk super admin; alasan ≥ 5 karakter dikirim ter-trim; kode tampil lalu hilang saat modal ditutup; `NO_ACTIVE_RESET_CODE` memberi petunjuk di modal. |
-| 30 | Super admin: pencairan refund tunai | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk super admin; nominal & catatan wajib; konfirmasi sebelum potong; body `{ amount, notes }`; sisa saldo tampil; error BE tampil di modal (EP04-16). |
+| 30 | Super admin: pencairan refund tunai | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk super admin; nominal & catatan wajib; konfirmasi sebelum potong; body `{ amount, notes }`; sisa saldo tampil; error BE tampil di modal (EP04-16); klik ganda hanya satu request; 409 `DUPLICATE_PAYOUT` tampil sebagai peringatan. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **185 tes** di 14 spec (termasuk `security.spec.ts`, `session.spec.ts`, `forgot-password.spec.ts` & `admin-user.spec.ts`), dengan 26 tes `test.fail` untuk bug yang sudah diketahui.
+Total saat ini: **189 tes** di 14 spec (termasuk `security.spec.ts`, `session.spec.ts`, `forgot-password.spec.ts` & `admin-user.spec.ts`), dengan 26 tes `test.fail` untuk bug yang sudah diketahui.
 
 ---
 

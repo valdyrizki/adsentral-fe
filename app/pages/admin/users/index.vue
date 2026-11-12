@@ -87,7 +87,10 @@
       :description="payoutTarget?.email ?? ''"
     >
       <template #body>
-        <div v-if="payoutResult" class="space-y-2">
+        <div v-if="payoutDuplicate" class="space-y-2">
+          <UAlert color="warning" icon="mdi:information" title="Pencairan sudah tercatat" :description="payoutDuplicate" />
+        </div>
+        <div v-else-if="payoutResult" class="space-y-2">
           <UAlert color="success" icon="mdi:check-circle" :description="`Saldo belanja dipotong ${formatRupiah(payoutDone)}. Lanjutkan transfer manual.`" />
           <p class="text-sm text-gray-600">Sisa saldo belanja: <span class="font-semibold">{{ formatRupiah(payoutResult.deposit_balance) }}</span></p>
         </div>
@@ -113,7 +116,14 @@
       <template #footer>
         <div class="flex justify-end gap-2 w-full">
           <UButton color="neutral" variant="outline" :disabled="payingOut" @click="showPayout = false">Tutup</UButton>
-          <UButton v-if="!payoutResult" color="primary" icon="mdi:bank-transfer-out" :loading="payingOut" @click="handlePayout">
+          <UButton
+            v-if="!payoutResult && !payoutDuplicate"
+            color="primary"
+            icon="mdi:bank-transfer-out"
+            :loading="payingOut"
+            :disabled="payingOut"
+            @click="handlePayout"
+          >
             Potong Saldo
           </UButton>
         </div>
@@ -196,7 +206,7 @@
                 Cairkan Refund
               </UButton>
               <UButton
-                v-if="isLocked(user)"
+                v-if="canUnlock(user)"
                 size="sm"
                 color="primary"
                 variant="outline"
@@ -265,6 +275,9 @@ const users = computed(() => data.value?.content ?? [])
 
 // ===== HELPERS =====
 const isLocked = (u: AdminUserResponse) => !!u.locked_until && dayjs(u.locked_until).isAfter(dayjs())
+// Kunci akun ADMIN/SUPER_ADMIN hanya bisa dibuka super admin (BE menjawab 403 untuk admin biasa)
+const canUnlock = (u: AdminUserResponse) =>
+  isLocked(u) && (authStore.isSuperAdmin || (u.role !== 'ADMIN' && u.role !== 'SUPER_ADMIN'))
 const formatDate = (v: string | null | undefined) => (v ? dayjs(v).format('DD MMM YYYY, HH:mm') : '-')
 const statusColor = (s: AdminUserResponse['status']) =>
   s === 'ACTIVE' ? 'success' : s === 'SUSPEND' ? 'error' : 'warning'
@@ -378,6 +391,7 @@ const payoutNotes = ref('')
 const payoutFormError = ref('')
 const payoutResult = ref<BalanceResponse | null>(null)
 const payoutDone = ref(0)
+const payoutDuplicate = ref('')
 const payingOut = ref(false)
 
 function openPayout(user: AdminUserResponse) {
@@ -386,6 +400,7 @@ function openPayout(user: AdminUserResponse) {
   payoutNotes.value = ''
   payoutFormError.value = ''
   payoutResult.value = null
+  payoutDuplicate.value = ''
   showPayout.value = true
 }
 
@@ -414,6 +429,11 @@ async function handlePayout() {
     payoutResult.value = await payoutRefund(payoutTarget.value.id, payoutAmount.value, notes)
     payoutDone.value = payoutAmount.value
   } catch (err: any) {
+    if (apiErrorDetail(err)?.code === 'DUPLICATE_PAYOUT') {
+      // pencairan yang sama sudah tercatat (mis. klik ulang setelah timeout); saldo tidak dipotong lagi
+      payoutDuplicate.value = apiErrorMessage(err)
+      return
+    }
     payoutFormError.value = apiErrorMessage(err, 'Gagal memotong saldo')
   } finally {
     payingOut.value = false
