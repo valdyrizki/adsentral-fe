@@ -85,6 +85,7 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     icon: 'mdi:chart-finance',
     children: [
       { label: 'Dashboard Finance', to: '/admin/finance' },
+      { label: 'Metrik Bulanan', to: '/admin/finance/metrics' },
       { label: 'Jurnal', to: '/admin/finance/journal' },
       {
         label: 'Jurnal Gagal',

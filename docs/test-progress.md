@@ -319,6 +319,7 @@ Total saat ini: **185 tes** di 14 spec (termasuk `security.spec.ts`, `session.sp
 | Skenario | Status |
 |---|---|
 | Ringkasan & saldo (`fetchSummary`, `fetchBalance`) | ⬜ P2 |
+| Metrik bulanan (`fetchMonthlyMetrics`): kartu + perubahan, rincian & rasio, ganti rentang, error BE | ✅ `admin-metrics.spec.ts` |
 | Kategori: tambah, edit, toggle, total per kategori | ⬜ P2 |
 | Jurnal: daftar, tambah, void | ⬜ P2 |
 | Failed journal: daftar, retry, dismiss | ⬜ P2 |

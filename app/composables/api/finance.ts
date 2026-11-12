@@ -6,6 +6,7 @@ import type { FinanceCategoryResponse } from '~/types/finance/FinanceCategoryRes
 import type { FinanceJournalRequest } from '~/types/finance/FinanceJournalRequest'
 import type { FinanceJournalResponse } from '~/types/finance/FinanceJournalResponse'
 import type { FinanceSummaryResponse } from '~/types/finance/FinanceSummaryResponse'
+import type { AdminMonthlyMetricResponse } from '~/types/finance/AdminMonthlyMetricResponse'
 
 export const useFinanceApi = () => {
   const api = useApi()
@@ -150,6 +151,18 @@ export const useFinanceApi = () => {
     return res.data
   }
 
+  // ===== METRIK BULANAN (EP05-04) =====
+
+  /** `months` bulan terakhir (berakhir di bulan berjalan WIB), urut dari yang terlama. */
+  const fetchMonthlyMetrics = async (months = 6): Promise<AdminMonthlyMetricResponse[]> => {
+    const res = await api<WebResponse<AdminMonthlyMetricResponse[]>>('/admin/metrics/monthly', { query: { months } })
+      .catch(rethrowApiError('Gagal memuat metrik bulanan'))
+    if (res.status !== 'success' || !res.data) {
+      throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal memuat metrik bulanan' })
+    }
+    return res.data
+  }
+
   return {
     createCategory,
     updateCategory,
@@ -161,5 +174,6 @@ export const useFinanceApi = () => {
     voidJournal,
     fetchSummary,
     fetchBalance,
+    fetchMonthlyMetrics,
   }
 }

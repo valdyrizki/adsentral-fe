@@ -302,6 +302,7 @@ Filter list: hanya **satu** nilai `status` per request (`'ALL'` = tanpa paramete
 |---|---|---|
 | `fetchSummary` | `/admin/finance/summary` | `pages/admin/finance` |
 | `fetchBalance` | `/admin/finance/balance` | `pages/admin/finance` |
+| `fetchMonthlyMetrics` | `/admin/metrics/monthly?months=` | `pages/admin/finance/metrics` (EP05-04) |
 | `fetchCategories` | `/admin/finance/category` | `pages/admin/finance/category`, `.../journal` |
 | `createCategory` | POST `/admin/finance/category` | `pages/admin/finance/category` |
 | `updateCategory` | PUT `/admin/finance/category/{id}` | idem |
