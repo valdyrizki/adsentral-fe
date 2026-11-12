@@ -79,6 +79,47 @@
       </template>
     </UModal>
 
+    <!-- Modal pencairan refund tunai (super admin, EP04-16, SOP S2b) -->
+    <UModal
+      v-if="showPayout"
+      v-model:open="showPayout"
+      title="Cairkan Refund ke Rekening"
+      :description="payoutTarget?.email ?? ''"
+    >
+      <template #body>
+        <div v-if="payoutResult" class="space-y-2">
+          <UAlert color="success" icon="mdi:check-circle" :description="`Saldo belanja dipotong ${formatRupiah(payoutDone)}. Lanjutkan transfer manual.`" />
+          <p class="text-sm text-gray-600">Sisa saldo belanja: <span class="font-semibold">{{ formatRupiah(payoutResult.deposit_balance) }}</span></p>
+        </div>
+        <div v-else class="space-y-3">
+          <p class="text-sm text-gray-600">
+            Hanya untuk dana <b>refund</b> yang belum dibelanjakan (cek riwayat saldo pembeli), rekening atas nama pembeli.
+            Saldo belanja dipotong sekarang; transfer dilakukan manual setelahnya. Catatan dicatat di riwayat saldo dan audit.
+          </p>
+          <UFormField label="Nominal" required>
+            <UInputCurrency v-model="payoutAmount" placeholder="Rp 0" />
+          </UFormField>
+          <UFormField label="Catatan" required :error="payoutFormError || undefined">
+            <UTextarea
+              v-model="payoutNotes"
+              :rows="3"
+              :maxlength="500"
+              placeholder="Mis. refund TX... ke BCA 123... a.n. ..."
+              class="w-full"
+            />
+          </UFormField>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2 w-full">
+          <UButton color="neutral" variant="outline" :disabled="payingOut" @click="showPayout = false">Tutup</UButton>
+          <UButton v-if="!payoutResult" color="primary" icon="mdi:bank-transfer-out" :loading="payingOut" @click="handlePayout">
+            Potong Saldo
+          </UButton>
+        </div>
+      </template>
+    </UModal>
+
     <!-- Filter -->
     <UCard class="shadow-sm">
       <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
@@ -145,6 +186,16 @@
                 Kode Reset
               </UButton>
               <UButton
+                v-if="authStore.isSuperAdmin"
+                size="sm"
+                color="neutral"
+                variant="outline"
+                icon="mdi:bank-transfer-out"
+                @click="openPayout(user)"
+              >
+                Cairkan Refund
+              </UButton>
+              <UButton
                 v-if="isLocked(user)"
                 size="sm"
                 color="primary"
@@ -178,13 +229,14 @@ import dayjs from 'dayjs'
 import { useAdminUserApi } from '~/composables/api/admin-user'
 import type { AdminUserResponse } from '~/types/user/AdminUserResponse'
 import type { ResetCodeResponse } from '~/types/user/ResetCodeResponse'
+import type { BalanceResponse } from '~/types/balance/BalanceResponse'
 import type { PageResponse } from '~/types/PageResponse'
 
 definePageMeta({ layout: 'admin', label: 'Pengguna' })
 
 const toast = useToast()
 const authStore = useAuthStore()
-const { fetchUsers, unlockLogin, viewResetCode } = useAdminUserApi()
+const { fetchUsers, unlockLogin, viewResetCode, payoutRefund } = useAdminUserApi()
 
 // ===== FILTER & PAGINATION =====
 const page = ref(0)
@@ -315,6 +367,57 @@ async function copyResetCode() {
     toast.add({ title: 'Kode disalin', color: 'success', icon: 'mdi:check-circle' })
   } catch {
     toast.add({ title: 'Gagal menyalin kode', color: 'error' })
+  }
+}
+
+// ===== PENCAIRAN REFUND TUNAI (super admin, EP04-16) =====
+const showPayout = ref(false)
+const payoutTarget = ref<AdminUserResponse | null>(null)
+const payoutAmount = ref(0)
+const payoutNotes = ref('')
+const payoutFormError = ref('')
+const payoutResult = ref<BalanceResponse | null>(null)
+const payoutDone = ref(0)
+const payingOut = ref(false)
+
+function openPayout(user: AdminUserResponse) {
+  payoutTarget.value = user
+  payoutAmount.value = 0
+  payoutNotes.value = ''
+  payoutFormError.value = ''
+  payoutResult.value = null
+  showPayout.value = true
+}
+
+async function handlePayout() {
+  if (!payoutTarget.value || payingOut.value) return
+  const notes = payoutNotes.value.trim()
+  if (!payoutAmount.value || payoutAmount.value <= 0) {
+    payoutFormError.value = 'Nominal wajib diisi'
+    return
+  }
+  if (notes.length < 5) {
+    payoutFormError.value = 'Catatan minimal 5 karakter'
+    return
+  }
+  const confirmDialog = useConfirm()
+  const confirmed = await confirmDialog.confirm({
+    title: 'Potong saldo belanja?',
+    message: `Saldo belanja ${payoutTarget.value.email} dipotong ${formatRupiah(payoutAmount.value)}. Tindakan ini tidak bisa dibatalkan dari sistem.`,
+    confirmText: 'Ya, Potong',
+    confirmColor: 'error',
+  })
+  if (!confirmed) return
+  payingOut.value = true
+  payoutFormError.value = ''
+  try {
+    payoutResult.value = await payoutRefund(payoutTarget.value.id, payoutAmount.value, notes)
+    payoutDone.value = payoutAmount.value
+  } catch (err: any) {
+    payoutFormError.value = apiErrorMessage(err, 'Gagal memotong saldo')
+  } finally {
+    payingOut.value = false
+    confirmDialog.close()
   }
 }
 </script>

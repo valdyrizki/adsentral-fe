@@ -2,6 +2,7 @@ import type { WebResponse } from '~/types/WebResponse'
 import type { PageResponse } from '~/types/PageResponse'
 import type { AdminUserResponse } from '~/types/user/AdminUserResponse'
 import type { ResetCodeResponse } from '~/types/user/ResetCodeResponse'
+import type { BalanceResponse } from '~/types/balance/BalanceResponse'
 import { useApi } from './useApi'
 
 export const useAdminUserApi = () => {
@@ -37,5 +38,15 @@ export const useAdminUserApi = () => {
     return res.data!
   }
 
-  return { fetchUsers, unlockLogin, viewResetCode }
+  // Pencairan refund tunai (super admin, EP04-16): saldo belanja dipotong sebelum transfer manual
+  const payoutRefund = async (userId: number, amount: number, notes: string) => {
+    const res = await api<WebResponse<BalanceResponse>>(`/admin/balance/${userId}/refund-payout`, {
+      method: 'POST',
+      body: { amount, notes },
+    })
+    if (res.status !== 'success') throw new Error(res.message)
+    return res.data!
+  }
+
+  return { fetchUsers, unlockLogin, viewResetCode, payoutRefund }
 }

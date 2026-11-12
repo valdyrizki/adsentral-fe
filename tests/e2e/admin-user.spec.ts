@@ -110,7 +110,7 @@ test.describe('Admin: daftar pengguna & buka kunci login (EP03-03)', () => {
   })
 })
 
-test.describe('Super admin: kode reset password (EP03-07)', () => {
+test.describe('Super admin: kode reset password (EP03-07) & pencairan refund (EP04-16)', () => {
   test('admin biasa tidak melihat tombol Kode Reset', async ({ page, mockApi }) => {
     mockApi.asRole('ADMIN')
     mockApi.on('GET', '/admin/users', ok(page1([makeAdminUser(8)])))
@@ -119,6 +119,7 @@ test.describe('Super admin: kode reset password (EP03-07)', () => {
 
     await expect(main(page).getByText('user8@test.local', { exact: false })).toBeVisible()
     await expect(main(page).getByRole('button', { name: 'Kode Reset' })).toHaveCount(0)
+    await expect(main(page).getByRole('button', { name: 'Cairkan Refund' })).toHaveCount(0)
   })
 
   test('super admin melihat kode setelah mengisi alasan; kode hilang saat modal ditutup', async ({ page, mockApi }) => {
@@ -167,5 +168,48 @@ test.describe('Super admin: kode reset password (EP03-07)', () => {
 
     await expect(dialog.getByText(/Minta pelanggan mengisi form lupa password/)).toBeVisible()
     await expect(dialog.getByTestId('reset-code')).toHaveCount(0)
+  })
+
+  test('super admin mencairkan refund: konfirmasi, body nominal & catatan, sisa saldo tampil (EP04-16)', async ({ page, mockApi }) => {
+    mockApi.asRole('SUPER_ADMIN')
+    let sentBody: unknown = null
+    mockApi.on('GET', '/admin/users', ok(page1([makeAdminUser(11)])))
+    mockApi.on('POST', '/admin/balance/11/refund-payout', (route) => {
+      sentBody = route.request().postDataJSON()
+      return ok({ deposit_balance: 70000, sales_balance: 0, deposit_held: 0, sales_held: 0 })
+    })
+
+    await gotoHydrated(page, '/admin/users')
+    await main(page).getByRole('button', { name: 'Cairkan Refund' }).click()
+
+    const dialog = page.getByRole('dialog', { name: 'Cairkan Refund ke Rekening' })
+    await dialog.getByRole('button', { name: 'Potong Saldo' }).click()
+    await expect(dialog.getByText('Nominal wajib diisi')).toBeVisible()
+
+    await dialog.getByPlaceholder('Rp 0').fill('30000')
+    await dialog.getByPlaceholder(/refund TX/).fill('Refund TX123 ke BCA 123 a.n. Budi')
+    await dialog.getByRole('button', { name: 'Potong Saldo' }).click()
+    await page.getByRole('button', { name: 'Ya, Potong' }).click()
+
+    await expect(dialog.getByText(/Lanjutkan transfer manual/)).toBeVisible()
+    await expect(dialog.getByText(/Rp\s?70\.000/)).toBeVisible()
+    expect(sentBody).toEqual({ amount: 30000, notes: 'Refund TX123 ke BCA 123 a.n. Budi' })
+  })
+
+  test('pencairan ditolak BE (saldo kurang): pesan BE tampil di modal', async ({ page, mockApi }) => {
+    mockApi.asRole('SUPER_ADMIN')
+    mockApi.on('GET', '/admin/users', ok(page1([makeAdminUser(12)])))
+    mockApi.on('POST', '/admin/balance/12/refund-payout', fail(400, 'Saldo tidak mencukupi, tersisa: 20000'))
+
+    await gotoHydrated(page, '/admin/users')
+    await main(page).getByRole('button', { name: 'Cairkan Refund' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Cairkan Refund ke Rekening' })
+    await dialog.getByPlaceholder('Rp 0').fill('30000')
+    await dialog.getByPlaceholder(/refund TX/).fill('Refund TX123')
+    await dialog.getByRole('button', { name: 'Potong Saldo' }).click()
+    await page.getByRole('button', { name: 'Ya, Potong' }).click()
+
+    await expect(dialog.getByText('Saldo tidak mencukupi, tersisa: 20000')).toBeVisible()
+    await expect(dialog.getByRole('button', { name: 'Potong Saldo' })).toBeVisible()
   })
 })
