@@ -264,7 +264,7 @@ Filter list: hanya **satu** nilai `status` per request (`'ALL'` = tanpa paramete
 
 | Fungsi | Endpoint | Dipakai di |
 |---|---|---|
-| `fetchBalance` | `/balance` | `stores/balance.ts`, `pages/balance`, `pages/seller/balance` |
+| `fetchBalance` | `/balance` (+ rincian `sales_held_escrow` / `sales_held_withdrawal`, EP04-07) | `stores/balance.ts`, `pages/balance`, `pages/seller/balance`, `pages/seller/dashboard` |
 | `fetchBalanceLog` | `/balance/log` | `pages/balance`, `pages/seller/balance` |
 | `fetchDepositBalance` | POST `/balance/deposit` | `pages/balance` |
 | `fetchDepositHistory` | `/balance/deposit/history` | `pages/balance` |

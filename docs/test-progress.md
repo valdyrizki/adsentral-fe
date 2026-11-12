@@ -53,7 +53,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 29 | Super admin: kode reset password | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk super admin; alasan ≥ 5 karakter dikirim ter-trim; kode tampil lalu hilang saat modal ditutup; `NO_ACTIVE_RESET_CODE` memberi petunjuk di modal. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **180 tes** di 14 spec (termasuk `security.spec.ts`, `session.spec.ts`, `forgot-password.spec.ts` & `admin-user.spec.ts`), dengan 26 tes `test.fail` untuk bug yang sudah diketahui.
+Total saat ini: **182 tes** di 14 spec (termasuk `security.spec.ts`, `session.spec.ts`, `forgot-password.spec.ts` & `admin-user.spec.ts`), dengan 26 tes `test.fail` untuk bug yang sudah diketahui.
 
 ---
 
@@ -216,6 +216,7 @@ Total saat ini: **180 tes** di 14 spec (termasuk `security.spec.ts`, `session.sp
 | Skenario | Status | Catatan |
 |---|---|---|
 | Kartu saldo & riwayat penarikan | ✅ | |
+| Rincian dana tertahan (escrow / penarikan) + fallback BE lama | ✅ | EP04-07 |
 | Ajukan penarikan: validasi, biaya, body; ditolak BE | ✅ | F-23 dicatat |
 | Belum ada rekening → form nonaktif | ✅ | |
 | Batalkan penarikan / batal basi (409) | ✅ / 🐞 | F-20 |

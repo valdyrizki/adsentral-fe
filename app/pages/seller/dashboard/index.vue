@@ -270,7 +270,10 @@
             </div>
             <USkeleton v-if="balanceLoading" class="h-8 w-36 rounded-lg bg-amber-200 mb-1" />
             <p v-else class="text-2xl font-bold text-amber-700">{{ formatRp(balanceStore.salesHeld) }}</p>
-            <p class="text-xs text-amber-500 mt-1">Escrow belum cair / penarikan diproses</p>
+            <p v-if="balanceStore.salesHeldEscrow !== null && balanceStore.salesHeldWithdrawal !== null" class="text-xs text-amber-600 mt-1">
+              Escrow pesanan {{ formatRp(balanceStore.salesHeldEscrow) }} · Penarikan diproses {{ formatRp(balanceStore.salesHeldWithdrawal) }}
+            </p>
+            <p v-else class="text-xs text-amber-500 mt-1">Escrow belum cair / penarikan diproses</p>
             <div class="mt-3 flex items-center gap-1 text-xs text-amber-600">
               <UIcon name="i-heroicons-information-circle" class="text-sm" />
               Dana akan cair otomatis saat pesanan selesai

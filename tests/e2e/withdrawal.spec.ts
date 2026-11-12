@@ -96,6 +96,23 @@ test.describe('Penarikan dana seller', () => {
     await expect(items.nth(2).getByText('Nama rekening tidak sesuai')).toBeVisible()
   })
 
+  test('dana tertahan dirinci: escrow pesanan & penarikan diproses (EP04-07)', async ({ page, mockApi }) => {
+    mockSellerBalance(mockApi, {
+      getBalance: () => balance(750000, { sales_held: 150000, sales_held_escrow: 90000, sales_held_withdrawal: 60000 }),
+    })
+
+    await gotoHydrated(page, '/seller/balance')
+    await expect(main(page).getByText('Rp 150.000').first()).toBeVisible()
+    await expect(main(page).getByText(/Escrow pesanan Rp\s?90\.000 · Penarikan diproses Rp\s?60\.000/)).toBeVisible()
+  })
+
+  test('BE lama tanpa rincian: dana tertahan tetap tampil dengan keterangan umum', async ({ page, mockApi }) => {
+    mockSellerBalance(mockApi, { getBalance: () => balance(750000, { sales_held: 100000 }) })
+
+    await gotoHydrated(page, '/seller/balance')
+    await expect(main(page).getByText('Escrow belum cair / penarikan diproses')).toBeVisible()
+  })
+
   test('ajukan penarikan: validasi, biaya admin & body request', async ({ page, mockApi }) => {
     let history: Wd[] = []
     let sales = 500000

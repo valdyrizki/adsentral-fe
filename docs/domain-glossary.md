@@ -24,7 +24,7 @@ Istilah bisnis, status, dan aturan Adsentral sebagaimana terlihat dari FE. Statu
 | **Deposit / Top Up** | Isi saldo belanja (`payment_type: DEPOSIT`). |
 | **Saldo Belanja** (`deposit_balance`) | Saldo untuk membeli. |
 | **Saldo Jualan** (`sales_balance`) | Hasil penjualan seller yang sudah cair; bisa ditarik (withdrawal) atau ditransfer ke saldo belanja. |
-| **Dana Tertahan** (`deposit_held` / `sales_held`) | Dana yang sedang dikunci (escrow penjualan, withdrawal yang diproses). |
+| **Dana Tertahan** (`deposit_held` / `sales_held`) | Dana yang sedang dikunci (escrow penjualan, withdrawal yang diproses). `sales_held` dirinci BE: `sales_held_escrow` (pesanan belum cair) + `sales_held_withdrawal` (withdrawal `PENDING`) (EP04-07); keduanya bisa kosong pada BE lama. |
 | **Escrow** | Uang buyer ditahan sebagai `sales_held` seller sampai transaksi `COMPLETE`, baru cair ke `sales_balance`. |
 | **Kliring dana** | Jeda 24 jam setelah `DONE` sebelum transaksi menjadi `COMPLETE` dan dana cair. |
 | **Withdrawal** | Penarikan saldo jualan ke rekening bank seller; diproses manual oleh admin. Kena `WD_FEE`. |

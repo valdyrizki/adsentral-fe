@@ -11,6 +11,8 @@ interface BalanceState {
   salesBalance: number
   depositHeld: number
   salesHeld: number
+  salesHeldWithdrawal: number | null  // null = BE belum mengirim rincian
+  salesHeldEscrow: number | null
   lastFetched: number | null  // timestamp in ms
   depositHistory: PageResponse<DepositResponse>
   loading: boolean
@@ -23,6 +25,8 @@ export const useBalanceStore = defineStore('balance', {
     salesBalance: 0,
     depositHeld: 0,
     salesHeld: 0,
+    salesHeldWithdrawal: null,
+    salesHeldEscrow: null,
     lastFetched: null,  // timestamp in ms
     depositHistory: {
       page: 0,
@@ -53,6 +57,8 @@ export const useBalanceStore = defineStore('balance', {
       this.salesBalance = data.sales_balance
       this.depositHeld = data.deposit_held
       this.salesHeld = data.sales_held
+      this.salesHeldWithdrawal = data.sales_held_withdrawal ?? null
+      this.salesHeldEscrow = data.sales_held_escrow ?? null
       this.lastFetched = Date.now()
     },
 
@@ -85,6 +91,8 @@ export const useBalanceStore = defineStore('balance', {
       this.salesBalance = 0
       this.depositHeld = 0
       this.salesHeld = 0
+      this.salesHeldWithdrawal = null
+      this.salesHeldEscrow = null
       this.lastFetched = null
       this.loading = false
     },

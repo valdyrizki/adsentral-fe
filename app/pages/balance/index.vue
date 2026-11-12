@@ -51,7 +51,10 @@
             <div class="rounded-xl border border-amber-200 bg-amber-50 p-4">
               <p class="text-xs text-amber-600 mb-1">Dana Tertahan</p>
               <p class="text-lg font-bold text-amber-700">{{ formatRupiah(balanceStore.salesHeld) }}</p>
-              <p class="text-[11px] text-amber-500 mt-0.5">Escrow / penarikan diproses</p>
+              <p v-if="balanceStore.salesHeldEscrow !== null && balanceStore.salesHeldWithdrawal !== null" class="text-[11px] text-amber-600 mt-0.5">
+                Escrow {{ formatRupiah(balanceStore.salesHeldEscrow) }} · Penarikan {{ formatRupiah(balanceStore.salesHeldWithdrawal) }}
+              </p>
+              <p v-else class="text-[11px] text-amber-500 mt-0.5">Escrow / penarikan diproses</p>
             </div>
           </div>
 
