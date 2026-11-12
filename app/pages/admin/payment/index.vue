@@ -270,7 +270,7 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
     { label: 'Menunggu Bayar', value: 'UNPAID' },
     { label: 'Dibayar', value: 'PAID' },
     { label: 'Dibatalkan', value: 'CANCELLED' },
-    { label: 'Ditolak', value: 'REJECTED' },
+    // tidak ada opsi REJECTED: status payment hanya UNPAID/PAID/EXPIRED/CANCELLED; "Tolak" admin = CANCELLED (EP04-14, F-06)
   ]
 
   let searchTimeout: ReturnType<typeof setTimeout> | null = null

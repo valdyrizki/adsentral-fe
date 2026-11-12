@@ -125,6 +125,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 
 ## F-06 — "Tolak" memanggil `/payment/cancel`, bukan `/payment/reject`
 
+> Catatan EP04-14 (2026-11-12): BE tidak punya `/payment/reject` dan status payment kini hanya `UNPAID`/`PAID`/`EXPIRED`/`CANCELLED`. Opsi filter "Ditolak" (`REJECTED`) di `/admin/payment` dihapus karena kini 400; `fetchRejectPayment` tetap tidak dipakai.
+
 - **Lokasi:** `app/pages/admin/payment/index.vue` & `app/pages/admin/payment/[id].vue` (`handleReject`)
 - **Status:** PERLU KONFIRMASI
 - **Gejala:** Tombol "Tolak" (dan toast "Pembayaran ditolak") memanggil `fetchCancelPayment` → `POST /payment/cancel/{id}`.
