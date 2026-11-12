@@ -1,9 +1,9 @@
 <template>
-  <header class="bg-gradient-to-br from-blue-600 to-teal-800 w-full text-white">
+  <header class="bg-navy-900 w-full text-white">
     <div class="h-auto">
       
       <!-- informasi (desktop only) -->
-      <div class="border-b border-blue-500">
+      <div class="border-b border-navy-700">
         <div class="hidden md:flex w-3/4 mx-auto justify-between items-center py-2 ">
           <div class="basis-1/4">
             <ULink to="/hubungi-kami" class="text-xs mx-2 text-white/90 hover:text-white transition-colors">

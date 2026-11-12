@@ -1,9 +1,9 @@
 <template>
   <UCard class="">
     <NuxtLink to="/seller/product">
-      <div class="flex items-center gap-2 p-4 border rounded-2xl border-blue-500 hover:bg-blue-50 cursor-pointer w-1/2 md:w-1/5">
-        <UIcon name="i-lucide-arrow-left" class="size-5 text-blue-500" />
-        <span class="font-medium text-blue-500">Back to Products</span>
+      <div class="flex items-center gap-2 p-4 border rounded-2xl border-primary-500 hover:bg-primary-50 cursor-pointer w-1/2 md:w-1/5">
+        <UIcon name="i-lucide-arrow-left" class="size-5 text-primary-500" />
+        <span class="font-medium text-primary-500">Back to Products</span>
       </div>
     </NuxtLink>
     
@@ -180,7 +180,7 @@
                 <p class="mt-2 text-sm text-gray-500">Masukan Harga Jual</p>
                 <p v-if="errors.sell_price" class="mt-1 text-sm text-red-500">{{ errors.sell_price }}</p>
 
-                <div v-if="productRequest.sell_price > 0" class="mt-3 rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs space-y-1">
+                <div v-if="productRequest.sell_price > 0" class="mt-3 rounded-lg border border-primary-100 bg-primary-50 p-3 text-xs space-y-1">
                   <div class="flex justify-between text-gray-600">
                     <span>Harga Jual</span>
                     <span class="font-medium text-gray-800">Rp {{ productRequest.sell_price.toLocaleString('id-ID') }}</span>
@@ -189,7 +189,7 @@
                     <span>Biaya Admin ({{ trxFeePercent }}%)</span>
                     <span class="font-medium text-red-500">- Rp {{ adminFeeAmount.toLocaleString('id-ID') }}</span>
                   </div>
-                  <div class="flex justify-between border-t border-blue-200 pt-1 font-semibold text-blue-700">
+                  <div class="flex justify-between border-t border-primary-200 pt-1 font-semibold text-primary-700">
                     <span>Estimasi Pendapatan Diterima</span>
                     <span>Rp {{ estimatedIncome.toLocaleString('id-ID') }}</span>
                   </div>
@@ -229,12 +229,12 @@
                   @click="productRequest.delivery_type = opt.value"
                   class="relative flex flex-col gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all"
                   :class="productRequest.delivery_type === opt.value
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 bg-white hover:border-blue-300'"
+                    ? 'border-primary-500 bg-primary-50'
+                    : 'border-gray-200 bg-white hover:border-primary-300'"
                 >
                   <div class="flex items-center gap-2">
-                    <UIcon :name="opt.icon" class="size-5" :class="productRequest.delivery_type === opt.value ? 'text-blue-500' : 'text-gray-400'" />
-                    <span class="font-semibold text-sm" :class="productRequest.delivery_type === opt.value ? 'text-blue-700' : 'text-gray-700'">
+                    <UIcon :name="opt.icon" class="size-5" :class="productRequest.delivery_type === opt.value ? 'text-primary-500' : 'text-gray-400'" />
+                    <span class="font-semibold text-sm" :class="productRequest.delivery_type === opt.value ? 'text-primary-700' : 'text-gray-700'">
                       {{ opt.label }}
                     </span>
                     <UBadge v-if="productRequest.delivery_type === opt.value" color="primary" size="xs" class="ml-auto">Dipilih</UBadge>
@@ -288,9 +288,9 @@
                 </label>
                 <div class="mt-1">
                   <div v-if="product?.auto_config?.file_url" class="mb-2 flex items-center gap-2 text-sm text-gray-600">
-                    <UIcon name="i-lucide-file" class="size-4 text-blue-500" />
+                    <UIcon name="i-lucide-file" class="size-4 text-primary-500" />
                     <span>File saat ini tersimpan</span>
-                    <a href="#" class="text-blue-500 hover:underline" @click.prevent="openSignedFile(product.auto_config.file_url, product.auto_config.file_name)">Unduh</a>
+                    <a href="#" class="text-primary-500 hover:underline" @click.prevent="openSignedFile(product.auto_config.file_url, product.auto_config.file_name)">Unduh</a>
                   </div>
                   <UFileUpload
                     id="auto_config_file"
@@ -336,7 +336,7 @@
                   :disabled="stockDisabled"
                 />
                 <p v-if="productRequest.delivery_type === 'AUTO'" class="mt-2 text-sm text-orange-500">Stok otomatis diatur ke 0 untuk tipe Otomatis (tidak terpakai).</p>
-                <p v-else-if="productRequest.delivery_type === 'STOCKING'" class="mt-2 text-sm text-blue-500">Stok diatur otomatis dari jumlah item stok akun yang ditambahkan (stok = 0).</p>
+                <p v-else-if="productRequest.delivery_type === 'STOCKING'" class="mt-2 text-sm text-primary-500">Stok diatur otomatis dari jumlah item stok akun yang ditambahkan (stok = 0).</p>
                 <p v-else class="mt-2 text-sm text-gray-500">Wajib diisi. 0 = stok habis, lebih dari 0 = jumlah stok tersedia.</p>
                 <p v-if="errors.stock" class="mt-1 text-sm text-red-500">{{ errors.stock }}</p>
               </div>

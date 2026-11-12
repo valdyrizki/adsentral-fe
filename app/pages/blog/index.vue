@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <div class="m-1 sm:m-3 border rounded-2xl border-blue-200 bg-gray-100">
+    <div class="m-1 sm:m-3 border rounded-2xl border-primary-200 bg-gray-100">
       <div class="p-6 md:p-10">
 
         <UBreadcrumb :items="breadcrumb" class="mb-4" />
@@ -31,9 +31,9 @@
           <div
             v-for="post in filteredPosts"
             :key="post.id"
-            class="bg-white rounded-2xl overflow-hidden border border-blue-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+            class="bg-white rounded-2xl overflow-hidden border border-primary-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
           >
-            <div class="h-44 bg-gradient-to-br from-blue-100 to-teal-100 flex items-center justify-center">
+            <div class="h-44 bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center">
               <UIcon :name="post.icon" class="text-primary text-5xl" />
             </div>
             <div class="p-5">

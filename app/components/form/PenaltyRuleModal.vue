@@ -147,7 +147,7 @@ const open = computed({
 
 const roleOptions = [
   { value: 'SELLER', label: 'Seller', icon: 'i-heroicons-building-storefront', iconColor: 'text-orange-500' },
-  { value: 'BUYER', label: 'Buyer', icon: 'i-heroicons-user', iconColor: 'text-sky-500' },
+  { value: 'BUYER', label: 'Buyer', icon: 'i-heroicons-user', iconColor: 'text-primary-500' },
 ]
 
 const triggerOptions = [

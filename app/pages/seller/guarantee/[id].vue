@@ -102,22 +102,22 @@
       <div
         v-if="guarantee.status === 'IN_PROGRESS'"
         class="rounded-lg border overflow-hidden"
-        :class="isProgressExpired ? 'border-red-300' : 'border-blue-200'"
+        :class="isProgressExpired ? 'border-red-300' : 'border-primary-200'"
       >
         <div
           class="p-4 flex flex-col items-center gap-2 text-center"
-          :class="isProgressExpired ? 'bg-red-50' : 'bg-blue-50'"
+          :class="isProgressExpired ? 'bg-red-50' : 'bg-primary-50'"
         >
           <div class="flex items-center gap-2">
-            <UIcon name="mdi:clock-fast" class="size-5" :class="isProgressExpired ? 'text-red-500' : 'text-blue-500'" />
-            <span class="font-semibold" :class="isProgressExpired ? 'text-red-700' : 'text-blue-700'">
+            <UIcon name="mdi:clock-fast" class="size-5" :class="isProgressExpired ? 'text-red-500' : 'text-primary-500'" />
+            <span class="font-semibold" :class="isProgressExpired ? 'text-red-700' : 'text-primary-700'">
               {{ isProgressExpired ? 'Batas Waktu Pengiriman Habis!' : 'Segera Kirim Garansi' }}
             </span>
           </div>
-          <div v-if="!isProgressExpired" class="text-4xl font-mono font-bold tracking-widest text-blue-600">
+          <div v-if="!isProgressExpired" class="text-4xl font-mono font-bold tracking-widest text-primary-600">
             {{ progressCountdownDisplay }}
           </div>
-          <p class="text-sm" :class="isProgressExpired ? 'text-red-600' : 'text-blue-600'">
+          <p class="text-sm" :class="isProgressExpired ? 'text-red-600' : 'text-primary-600'">
             {{ isProgressExpired
               ? 'Anda melewati batas waktu pengiriman. Sistem akan memproses penalty secara otomatis.'
               : `Kirim garansi garansi sebelum ${dayjs(guarantee.progress_deadline).format('D MMM YYYY, HH:mm')} untuk menghindari penalty.`
@@ -185,23 +185,23 @@
           <div v-if="guarantee.product.delivery_type === 'STOCKING'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div
               class="flex gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all"
-              :class="sendMethod === 'file' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'"
+              :class="sendMethod === 'file' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'"
               @click="sendMethod = 'file'"
             >
-              <UIcon name="i-lucide-upload" class="size-5 mt-0.5 flex-none" :class="sendMethod === 'file' ? 'text-blue-500' : 'text-gray-400'" />
+              <UIcon name="i-lucide-upload" class="size-5 mt-0.5 flex-none" :class="sendMethod === 'file' ? 'text-primary-500' : 'text-gray-400'" />
               <div>
-                <p class="font-semibold text-sm" :class="sendMethod === 'file' ? 'text-blue-700' : 'text-gray-700'">Upload File</p>
+                <p class="font-semibold text-sm" :class="sendMethod === 'file' ? 'text-primary-700' : 'text-gray-700'">Upload File</p>
                 <p class="text-xs text-gray-500 mt-0.5">Kirim file garansi secara manual.</p>
               </div>
             </div>
             <div
               class="flex gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all"
-              :class="sendMethod === 'stock' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'"
+              :class="sendMethod === 'stock' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'"
               @click="sendMethod = 'stock'"
             >
-              <UIcon name="i-lucide-file-check" class="size-5 mt-0.5 flex-none" :class="sendMethod === 'stock' ? 'text-blue-500' : 'text-gray-400'" />
+              <UIcon name="i-lucide-file-check" class="size-5 mt-0.5 flex-none" :class="sendMethod === 'stock' ? 'text-primary-500' : 'text-gray-400'" />
               <div>
-                <p class="font-semibold text-sm" :class="sendMethod === 'stock' ? 'text-blue-700' : 'text-gray-700'">Via Stok</p>
+                <p class="font-semibold text-sm" :class="sendMethod === 'stock' ? 'text-primary-700' : 'text-gray-700'">Via Stok</p>
                 <p class="text-xs text-gray-500 mt-0.5">Kirim otomatis dari stok akun yang tersedia.</p>
               </div>
             </div>
@@ -276,14 +276,14 @@
             </div>
           </div>
           <div v-if="guarantee.reviewed_at" class="flex items-start gap-2">
-            <UIcon name="mdi:circle" class="size-3 text-blue-500 mt-0.5 flex-none" />
+            <UIcon name="mdi:circle" class="size-3 text-primary-500 mt-0.5 flex-none" />
             <div>
               <span class="font-medium">{{ guarantee.status === 'REJECTED' ? 'Ditolak' : 'Diterima' }}</span>
               <span class="text-gray-400 ml-2">{{ dayjs(guarantee.reviewed_at).format('D MMM YYYY, HH:mm') }}</span>
             </div>
           </div>
           <div v-if="guarantee.progress_at" class="flex items-start gap-2">
-            <UIcon name="mdi:circle" class="size-3 text-blue-400 mt-0.5 flex-none" />
+            <UIcon name="mdi:circle" class="size-3 text-primary-400 mt-0.5 flex-none" />
             <div>
               <span class="font-medium">Sedang Diproses</span>
               <span class="text-gray-400 ml-2">{{ dayjs(guarantee.progress_at).format('D MMM YYYY, HH:mm') }}</span>

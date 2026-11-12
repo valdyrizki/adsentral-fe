@@ -1,14 +1,14 @@
 <template>
   <div class="w-full">
-    <div class="m-1 sm:m-3 border rounded-2xl border-blue-200 bg-gray-100">
+    <div class="m-1 sm:m-3 border rounded-2xl border-primary-200 bg-gray-100">
       <div class="p-6 md:p-10">
 
         <UBreadcrumb :items="breadcrumb" class="mb-4" />
 
         <!-- Hero -->
-        <div class="bg-gradient-to-br from-blue-600 to-teal-700 rounded-2xl p-8 md:p-12 text-white text-center mb-10">
+        <div class="bg-gradient-to-br from-primary-600 to-primary-700 rounded-2xl p-8 md:p-12 text-white text-center mb-10">
           <h1 class="text-4xl font-bold mb-3">Bergabung dengan Tim Adsentral</h1>
-          <p class="text-blue-100 text-lg max-w-2xl mx-auto">
+          <p class="text-primary-100 text-lg max-w-2xl mx-auto">
             Kami mencari talenta terbaik yang bersemangat membangun platform e-commerce yang berdampak bagi jutaan orang.
           </p>
         </div>
@@ -19,7 +19,7 @@
           <div
             v-for="perk in perks"
             :key="perk.title"
-            class="bg-white rounded-2xl p-5 border border-blue-100 shadow-sm"
+            class="bg-white rounded-2xl p-5 border border-primary-100 shadow-sm"
           >
             <UIcon :name="perk.icon" class="text-primary text-2xl mb-2" />
             <h3 class="font-semibold text-gray-800 mb-1">{{ perk.title }}</h3>
@@ -34,7 +34,7 @@
           <div
             v-for="job in openings"
             :key="job.id"
-            class="bg-white rounded-2xl p-5 border border-blue-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            class="bg-white rounded-2xl p-5 border border-primary-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
           >
             <div>
               <div class="flex items-center gap-2 mb-1">

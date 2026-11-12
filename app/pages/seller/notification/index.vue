@@ -63,7 +63,7 @@
           v-for="notif in data.content"
           :key="notif.id"
           class="flex items-start gap-4 px-5 py-4 transition-colors"
-          :class="!notif.read_at ? 'bg-sky-50 hover:bg-sky-100/60' : 'hover:bg-gray-50'"
+          :class="!notif.read_at ? 'bg-primary-50 hover:bg-primary-100/60' : 'hover:bg-gray-50'"
         >
           <!-- Icon -->
           <div
@@ -79,7 +79,7 @@
               <div class="min-w-0">
                 <p class="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
                   {{ notif.title }}
-                  <span v-if="!notif.read_at" class="inline-block w-2 h-2 rounded-full bg-sky-500 flex-shrink-0" />
+                  <span v-if="!notif.read_at" class="inline-block w-2 h-2 rounded-full bg-primary-500 flex-shrink-0" />
                 </p>
                 <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">{{ notif.message }}</p>
                 <div class="flex flex-wrap gap-1 mt-1.5">
@@ -212,23 +212,23 @@ function notifIcon(type: NotificationType): string {
 
 function notifIconBg(type: NotificationType): string {
   const map: Record<string, string> = {
-    ORDER: 'bg-blue-50',
+    ORDER: 'bg-primary-50',
     PAYMENT: 'bg-green-50',
     PENALTY: 'bg-red-50',
     PROMOTION: 'bg-orange-50',
     SYSTEM: 'bg-gray-100',
   }
-  return map[type] ?? 'bg-sky-50'
+  return map[type] ?? 'bg-primary-50'
 }
 
 function notifIconColor(type: NotificationType): string {
   const map: Record<string, string> = {
-    ORDER: 'text-blue-400',
+    ORDER: 'text-primary-400',
     PAYMENT: 'text-green-400',
     PENALTY: 'text-red-400',
     PROMOTION: 'text-orange-400',
     SYSTEM: 'text-gray-400',
   }
-  return map[type] ?? 'text-sky-400'
+  return map[type] ?? 'text-primary-400'
 }
 </script>

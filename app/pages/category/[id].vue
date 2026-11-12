@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <div class="m-1 sm:m-3 border rounded-2xl border-blue-200 bg-gray-100">
+    <div class="m-1 sm:m-3 border rounded-2xl border-primary-200 bg-gray-100">
       <div class="p-4">
         <!-- Header kategori & Category Chips -->
         <ClientOnly>
@@ -97,7 +97,7 @@
               <div
                 v-for="product in productsPagination.content"
                 :key="product.id"
-                class="relative group border border-transparent hover:border hover:rounded-2xl hover:border-blue-200 p-1 transition-all duration-300 ease-in-out"
+                class="relative group border border-transparent hover:border hover:rounded-2xl hover:border-primary-200 p-1 transition-all duration-300 ease-in-out"
               >
                 <AppProductItem :product="product" />
               </div>

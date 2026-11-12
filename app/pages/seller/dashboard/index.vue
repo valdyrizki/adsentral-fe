@@ -2,7 +2,7 @@
   <div class="space-y-6">
 
     <!-- Merchant Info Bar -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white border border-blue-100 rounded-2xl p-4 shadow-sm">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white border border-primary-100 rounded-2xl p-4 shadow-sm">
       <div class="flex items-center gap-3">
         <ClientOnly>
           <img
@@ -225,7 +225,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
           <!-- Saldo Jualan (bisa ditarik) -->
-          <div class="bg-gradient-to-br from-primary to-teal-600 rounded-2xl p-5 text-white">
+          <div class="bg-gradient-to-br from-primary to-primary-600 rounded-2xl p-5 text-white">
             <div class="flex items-center gap-2 mb-3">
               <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
                 <UIcon name="i-heroicons-check-circle" class="text-white text-base" />
@@ -248,16 +248,16 @@
           </div>
 
           <!-- Saldo Belanja (dari top up) -->
-          <div class="bg-sky-50 border border-sky-200 rounded-2xl p-5">
+          <div class="bg-primary-50 border border-primary-200 rounded-2xl p-5">
             <div class="flex items-center gap-2 mb-3">
-              <div class="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center">
-                <UIcon name="i-heroicons-shopping-bag" class="text-sky-500 text-base" />
+              <div class="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center">
+                <UIcon name="i-heroicons-shopping-bag" class="text-primary-500 text-base" />
               </div>
-              <p class="text-sm font-medium text-sky-700">Saldo Belanja</p>
+              <p class="text-sm font-medium text-primary-700">Saldo Belanja</p>
             </div>
-            <USkeleton v-if="balanceLoading" class="h-8 w-36 rounded-lg bg-sky-200 mb-1" />
-            <p v-else class="text-2xl font-bold text-sky-700">{{ formatRp(balanceStore.depositBalance) }}</p>
-            <p class="text-xs text-sky-500 mt-1">Hasil top up, hanya bisa dipakai belanja</p>
+            <USkeleton v-if="balanceLoading" class="h-8 w-36 rounded-lg bg-primary-200 mb-1" />
+            <p v-else class="text-2xl font-bold text-primary-700">{{ formatRp(balanceStore.depositBalance) }}</p>
+            <p class="text-xs text-primary-500 mt-1">Hasil top up, hanya bisa dipakai belanja</p>
           </div>
 
           <!-- Dana Tertahan -->
@@ -412,7 +412,7 @@
         v-for="action in quickActions"
         :key="action.label"
         :to="action.to"
-        :class="`flex flex-col items-center justify-center gap-2 bg-white border border-blue-100 rounded-2xl p-5 shadow-sm hover:border-primary hover:shadow-md transition-all text-center group`"
+        :class="`flex flex-col items-center justify-center gap-2 bg-white border border-primary-100 rounded-2xl p-5 shadow-sm hover:border-primary hover:shadow-md transition-all text-center group`"
       >
         <div :class="`w-11 h-11 rounded-xl flex items-center justify-center ${action.bgColor}`">
           <UIcon :name="action.icon" :class="`text-xl ${action.iconColor}`" />
@@ -467,14 +467,14 @@ const {
 } = useAsyncData('seller-dashboard-product-summary', fetchProductSummary, { server: false })
 
 const financeItems = computed(() => [
-  { label: 'Transaksi Hari Ini', value: formatRupiah(financeSummary.value?.today_transaction_amount), icon: 'i-heroicons-sun', color: 'text-sky-500', bgColor: 'bg-sky-50' },
+  { label: 'Transaksi Hari Ini', value: formatRupiah(financeSummary.value?.today_transaction_amount), icon: 'i-heroicons-sun', color: 'text-primary-500', bgColor: 'bg-primary-50' },
   { label: 'Seluruh Pendapatan Bersih', value: formatRupiah(financeSummary.value?.total_income), icon: 'i-heroicons-banknotes', color: 'text-green-500', bgColor: 'bg-green-50' },
-  { label: 'Pendapatan yang sudah ditarik', value: formatRupiah(financeSummary.value?.withdrawn), icon: 'mdi:cash-check', color: 'text-teal-500', bgColor: 'bg-teal-50', to: '/seller/balance' },
+  { label: 'Pendapatan yang sudah ditarik', value: formatRupiah(financeSummary.value?.withdrawn), icon: 'mdi:cash-check', color: 'text-primary-500', bgColor: 'bg-primary-50', to: '/seller/balance' },
 ])
 
 const productItems = computed(() => [
   { label: 'Produk Aktif', value: productSummary.value?.active ?? 0, icon: 'i-heroicons-check-circle', color: 'text-green-500', bgColor: 'bg-green-50', to: '/seller/product' },
-  { label: 'Produk sedang direview', value: productSummary.value?.in_review ?? 0, icon: 'i-heroicons-clock', color: 'text-blue-500', bgColor: 'bg-blue-50', to: '/seller/product' },
+  { label: 'Produk sedang direview', value: productSummary.value?.in_review ?? 0, icon: 'i-heroicons-clock', color: 'text-primary-500', bgColor: 'bg-primary-50', to: '/seller/product' },
   { label: 'Produk diblokir', value: productSummary.value?.blocked ?? 0, icon: 'i-heroicons-no-symbol', color: 'text-red-500', bgColor: 'bg-red-50', to: '/seller/product' },
 ])
 
@@ -546,7 +546,7 @@ const chartData = computed(() => {
       {
         label: 'Pendapatan',
         data,
-        borderColor: '#0ea5e9',
+        borderColor: '#01909E',
         backgroundColor: 'rgba(14, 165, 233, 0.1)',
         fill: true,
         tension: 0.4,
@@ -557,7 +557,7 @@ const chartData = computed(() => {
 
 // ===== QUICK ACTIONS =====
 const quickActions = [
-  { label: 'Tambah Produk', to: '/seller/product/create', icon: 'i-heroicons-plus-circle', bgColor: 'bg-blue-50', iconColor: 'text-blue-500' },
+  { label: 'Tambah Produk', to: '/seller/product/create', icon: 'i-heroicons-plus-circle', bgColor: 'bg-primary-50', iconColor: 'text-primary-500' },
   { label: 'Kelola Produk', to: '/seller/product', icon: 'i-lucide-package', bgColor: 'bg-purple-50', iconColor: 'text-purple-500' },
   { label: 'Kelola Pesanan', to: '/seller/order', icon: 'i-lucide-shopping-cart', bgColor: 'bg-green-50', iconColor: 'text-green-500' },
   { label: 'Chat Pembeli', to: '/seller/chat', icon: 'mdi:chat', bgColor: 'bg-yellow-50', iconColor: 'text-yellow-500' },

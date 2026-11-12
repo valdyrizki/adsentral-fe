@@ -1,9 +1,9 @@
 <template>
   <UCard class="mb-6">
     <NuxtLink to="/seller/stock/add">
-      <div class="flex items-center gap-2 p-4 border rounded-2xl border-blue-500 hover:bg-blue-50 cursor-pointer w-1/2 md:w-1/5">
-        <UIcon name="i-lucide-arrow-left" class="size-5 text-blue-500" />
-        <span class="font-medium text-blue-500">Pilih Produk Lain</span>
+      <div class="flex items-center gap-2 p-4 border rounded-2xl border-primary-500 hover:bg-primary-50 cursor-pointer w-1/2 md:w-1/5">
+        <UIcon name="i-lucide-arrow-left" class="size-5 text-primary-500" />
+        <span class="font-medium text-primary-500">Pilih Produk Lain</span>
       </div>
     </NuxtLink>
   </UCard>
@@ -63,12 +63,12 @@
             v-for="m in modes"
             :key="m.value"
             class="flex gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
-            :class="mode === m.value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'"
+            :class="mode === m.value ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'"
             @click="setMode(m.value)"
           >
-            <UIcon :name="m.icon" class="size-5 mt-0.5 flex-none" :class="mode === m.value ? 'text-blue-500' : 'text-gray-400'" />
+            <UIcon :name="m.icon" class="size-5 mt-0.5 flex-none" :class="mode === m.value ? 'text-primary-500' : 'text-gray-400'" />
             <div>
-              <p class="font-semibold text-sm" :class="mode === m.value ? 'text-blue-700' : 'text-gray-700'">{{ m.label }}</p>
+              <p class="font-semibold text-sm" :class="mode === m.value ? 'text-primary-700' : 'text-gray-700'">{{ m.label }}</p>
               <p class="text-xs text-gray-500 mt-0.5">{{ m.description }}</p>
             </div>
             <UBadge v-if="mode === m.value" color="primary" size="xs" class="ml-auto self-start">Aktif</UBadge>

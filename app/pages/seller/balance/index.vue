@@ -10,7 +10,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
       <!-- Saldo Jualan (bisa ditarik) -->
-      <div class="bg-gradient-to-br from-primary to-teal-600 rounded-2xl p-6 text-white shadow-sm">
+      <div class="bg-gradient-to-br from-primary to-primary-600 rounded-2xl p-6 text-white shadow-sm">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
             <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
@@ -46,16 +46,16 @@
       </div>
 
       <!-- Saldo Belanja (dari top up) -->
-      <div class="bg-sky-50 border border-sky-200 rounded-2xl p-6 shadow-sm">
+      <div class="bg-primary-50 border border-primary-200 rounded-2xl p-6 shadow-sm">
         <div class="flex items-center gap-2 mb-4">
-          <div class="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center">
-            <UIcon name="i-heroicons-shopping-bag" class="text-sky-500 text-lg" />
+          <div class="w-9 h-9 rounded-xl bg-primary-100 flex items-center justify-center">
+            <UIcon name="i-heroicons-shopping-bag" class="text-primary-500 text-lg" />
           </div>
-          <p class="text-sm font-medium text-sky-700">Saldo Belanja</p>
+          <p class="text-sm font-medium text-primary-700">Saldo Belanja</p>
         </div>
-        <USkeleton v-if="balanceLoading" class="h-9 w-40 rounded-lg bg-sky-200 mb-2" />
-        <p v-else class="text-3xl font-bold text-sky-700 mb-1">{{ formatRp(balanceStore.depositBalance) }}</p>
-        <p class="text-xs text-sky-500">Hasil top up, hanya bisa dipakai belanja</p>
+        <USkeleton v-if="balanceLoading" class="h-9 w-40 rounded-lg bg-primary-200 mb-2" />
+        <p v-else class="text-3xl font-bold text-primary-700 mb-1">{{ formatRp(balanceStore.depositBalance) }}</p>
+        <p class="text-xs text-primary-500">Hasil top up, hanya bisa dipakai belanja</p>
         <div v-if="isSeller" class="flex gap-2 mt-4">
           <UButton
             size="sm"

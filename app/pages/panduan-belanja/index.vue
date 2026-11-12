@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <div class="m-1 sm:m-3 border rounded-2xl border-blue-200 bg-gray-100">
+    <div class="m-1 sm:m-3 border rounded-2xl border-primary-200 bg-gray-100">
       <div class="p-6 md:p-10">
 
         <!-- Header -->
@@ -15,7 +15,7 @@
           <div
             v-for="(step, index) in steps"
             :key="index"
-            class="flex gap-4 bg-white rounded-2xl p-5 shadow-sm border border-blue-100"
+            class="flex gap-4 bg-white rounded-2xl p-5 shadow-sm border border-primary-100"
           >
             <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
               {{ index + 1 }}

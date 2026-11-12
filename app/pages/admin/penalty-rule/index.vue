@@ -108,11 +108,11 @@
           <div class="flex gap-4 flex-1 min-w-0">
             <!-- Icon -->
             <div
-              :class="`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${rule.target_role === 'SELLER' ? 'bg-orange-100' : 'bg-sky-100'}`"
+              :class="`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${rule.target_role === 'SELLER' ? 'bg-orange-100' : 'bg-primary-100'}`"
             >
               <UIcon
                 :name="rule.target_role === 'SELLER' ? 'i-heroicons-building-storefront' : 'i-heroicons-user'"
-                :class="`text-lg ${rule.target_role === 'SELLER' ? 'text-orange-500' : 'text-sky-500'}`"
+                :class="`text-lg ${rule.target_role === 'SELLER' ? 'text-orange-500' : 'text-primary-500'}`"
               />
             </div>
 

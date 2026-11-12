@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <div class="m-1 sm:m-3 border rounded-2xl border-blue-200 bg-gray-100">
+    <div class="m-1 sm:m-3 border rounded-2xl border-primary-200 bg-gray-100">
       <div class="p-6 md:p-10">
 
         <!-- Header -->
@@ -20,7 +20,7 @@
         /> -->
 
         <div class="space-y-8">
-          <section v-for="(section, index) in sections" :key="index" class="bg-white rounded-2xl p-6 shadow-sm border border-blue-100">
+          <section v-for="(section, index) in sections" :key="index" class="bg-white rounded-2xl p-6 shadow-sm border border-primary-100">
             <h2 class="text-lg font-semibold text-gray-800 mb-3">{{ index + 1 }}. {{ section.title }}</h2>
             <p v-if="section.description" class="text-sm text-gray-600 leading-relaxed mb-3">{{ section.description }}</p>
             <ul v-if="section.points" class="space-y-2">

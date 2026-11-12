@@ -2,7 +2,7 @@
   <div class="w-full">
     <div class="mx-auto  px-4 py-4 sm:px-6 sm:py-6 max-w-7xl lg:px-8">
       <UBreadcrumb :items="breadcrumb" class="mb-4" />
-      <div class="mx-auto w-full border rounded-2xl border-blue-200 bg-gray-100">
+      <div class="mx-auto w-full border rounded-2xl border-primary-200 bg-gray-100">
         <AppHeaderSection
           title="Buat Toko"
           description="Create your store"
@@ -10,7 +10,7 @@
         />
       </div>  
 
-      <div class="mx-auto w-full border rounded-2xl border-blue-200 bg-gray-100 p-4 mt-4">
+      <div class="mx-auto w-full border rounded-2xl border-primary-200 bg-gray-100 p-4 mt-4">
         <form>
           <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
             

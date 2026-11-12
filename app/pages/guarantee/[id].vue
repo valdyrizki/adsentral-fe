@@ -71,12 +71,12 @@
         </div>
 
         <!-- Status: IN_PROGRESS -->
-        <div v-if="guarantee.status === 'IN_PROGRESS'" class="p-4 rounded-lg border border-blue-200 bg-blue-50 flex items-center gap-3">
-          <UIcon name="mdi:clock-fast" class="size-6 text-blue-500 flex-none" />
+        <div v-if="guarantee.status === 'IN_PROGRESS'" class="p-4 rounded-lg border border-primary-200 bg-primary-50 flex items-center gap-3">
+          <UIcon name="mdi:clock-fast" class="size-6 text-primary-500 flex-none" />
           <div>
-            <p class="font-semibold text-blue-800">Garansi Sedang Diproses</p>
-            <p class="text-sm text-blue-700">Seller sedang memproses pengiriman garansi untuk Anda.</p>
-            <p v-if="guarantee.progress_deadline" class="text-xs text-blue-500 mt-1">
+            <p class="font-semibold text-primary-800">Garansi Sedang Diproses</p>
+            <p class="text-sm text-primary-700">Seller sedang memproses pengiriman garansi untuk Anda.</p>
+            <p v-if="guarantee.progress_deadline" class="text-xs text-primary-500 mt-1">
               Batas waktu pengiriman: {{ dayjs(guarantee.progress_deadline).format('D MMM YYYY, HH:mm') }}
             </p>
           </div>
@@ -148,14 +148,14 @@
               </div>
             </div>
             <div v-if="guarantee.reviewed_at" class="flex items-start gap-2">
-              <UIcon name="mdi:circle" class="size-3 text-blue-500 mt-0.5 flex-none" />
+              <UIcon name="mdi:circle" class="size-3 text-primary-500 mt-0.5 flex-none" />
               <div>
                 <span class="font-medium">{{ guarantee.status === 'REJECTED' ? 'Ditolak Seller' : 'Diterima Seller' }}</span>
                 <span class="text-gray-400 ml-2">{{ dayjs(guarantee.reviewed_at).format('D MMM YYYY, HH:mm') }}</span>
               </div>
             </div>
             <div v-if="guarantee.progress_at" class="flex items-start gap-2">
-              <UIcon name="mdi:circle" class="size-3 text-blue-400 mt-0.5 flex-none" />
+              <UIcon name="mdi:circle" class="size-3 text-primary-400 mt-0.5 flex-none" />
               <div>
                 <span class="font-medium">Sedang Diproses Seller</span>
                 <span class="text-gray-400 ml-2">{{ dayjs(guarantee.progress_at).format('D MMM YYYY, HH:mm') }}</span>

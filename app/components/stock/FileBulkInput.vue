@@ -30,7 +30,7 @@
         <!-- Drop zone -->
         <div
           class="border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer"
-          :class="isDragging ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-blue-300 hover:bg-gray-50'"
+          :class="isDragging ? 'border-primary-400 bg-primary-50' : 'border-gray-300 hover:border-primary-300 hover:bg-gray-50'"
           @click="triggerFileInput"
           @dragover.prevent="isDragging = true"
           @dragleave.prevent="isDragging = false"
@@ -87,12 +87,12 @@
           >
             <div
               class="w-8 h-8 rounded-lg flex items-center justify-center flex-none"
-              :class="f.status === 'success' ? 'bg-green-50' : f.status === 'error' ? 'bg-red-50' : 'bg-blue-50'"
+              :class="f.status === 'success' ? 'bg-green-50' : f.status === 'error' ? 'bg-red-50' : 'bg-primary-50'"
             >
               <UIcon
                 :name="f.status === 'success' ? 'i-lucide-check-circle' : f.status === 'error' ? 'i-lucide-x-circle' : f.status === 'uploading' ? 'i-lucide-loader' : 'i-lucide-file'"
                 class="size-4"
-                :class="f.status === 'success' ? 'text-green-500' : f.status === 'error' ? 'text-red-500' : f.status === 'uploading' ? 'text-blue-500 animate-spin' : 'text-blue-400'"
+                :class="f.status === 'success' ? 'text-green-500' : f.status === 'error' ? 'text-red-500' : f.status === 'uploading' ? 'text-primary-500 animate-spin' : 'text-primary-400'"
               />
             </div>
             <div class="flex-1 min-w-40">

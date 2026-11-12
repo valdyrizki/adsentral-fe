@@ -133,7 +133,7 @@ Hanya `cart` dan `merchant` yang memakai `persist: true`. Store lain dimuat ulan
 
 ### UI
 
-- Nuxt UI 4 (`UButton`, `UModal`, `UTable`, `UBadge`, `NavigationMenu`, dst.), Tailwind v4 via `assets/css/main.css` (`@import "tailwindcss"`, `@nuxt/ui`, typography). Warna tema di `app.config.ts` (primary `blue`); color mode dimatikan.
+- Nuxt UI 4 (`UButton`, `UModal`, `UTable`, `UBadge`, `NavigationMenu`, dst.), Tailwind v4 via `assets/css/main.css` (`@import "tailwindcss"`, `@nuxt/ui`, typography). Warna tema di `app.config.ts` (primary `brand` teal, secondary/neutral `navy`); skala warnanya di `main.css` sesuai palet Navy/Teal `docs/Adsentral-Canvas-Desain.pdf`. Pakai `primary-*`/`navy-*`, jangan `blue-*`/`sky-*`/`teal-*` bawaan Tailwind. Color mode dimatikan.
 - Ikon: Iconify (`i-lucide-*`, `i-heroicons-*`, `i-mdi-*`, …) — koleksi yang dibundel ada di `nuxt.config.ts`.
 - Konfirmasi aksi: `useConfirm()`, bukan `window.confirm`.
 - Mata uang: `components/u/InputCurrency` / `v-money3`; masking: `maska`; tanggal: `dayjs`; HTML dari user disanitasi dengan `isomorphic-dompurify`.

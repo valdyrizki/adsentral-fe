@@ -64,7 +64,7 @@
           class="flex flex-col sm:flex-row sm:items-center gap-3 py-4 px-2 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer"
           :class="{
             'border-l-4 border-l-orange-400': item.status === 'IN_REVIEW',
-            'border-l-4 border-l-blue-400': item.status === 'IN_PROGRESS',
+            'border-l-4 border-l-primary-400': item.status === 'IN_PROGRESS',
           }"
           @click="$router.push(`/seller/guarantee/${item.id}`)"
         >
@@ -93,7 +93,7 @@
           <!-- Countdown IN_PROGRESS -->
           <div v-if="item.status === 'IN_PROGRESS' && item.progress_deadline" class="flex-none text-right sm:min-w-28">
             <p class="text-xs text-gray-400">Sisa waktu kirim</p>
-            <div class="font-mono font-bold text-base" :class="isExpired(item.progress_deadline) ? 'text-red-600' : 'text-blue-500'">
+            <div class="font-mono font-bold text-base" :class="isExpired(item.progress_deadline) ? 'text-red-600' : 'text-primary-500'">
               {{ isExpired(item.progress_deadline) ? 'TERLEWAT' : formatCountdown(secondsUntil(item.progress_deadline)) }}
             </div>
             <p v-if="isExpired(item.progress_deadline)" class="text-xs text-red-500">Berisiko penalty!</p>

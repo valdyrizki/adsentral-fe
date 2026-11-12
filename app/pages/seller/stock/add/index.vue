@@ -1,9 +1,9 @@
 <template>
   <UCard class="mb-6">
     <NuxtLink to="/seller/stock">
-      <div class="flex items-center gap-2 p-4 border rounded-2xl border-blue-500 hover:bg-blue-50 cursor-pointer w-1/2 md:w-1/5">
-        <UIcon name="i-lucide-arrow-left" class="size-5 text-blue-500" />
-        <span class="font-medium text-blue-500">Kembali ke Stok</span>
+      <div class="flex items-center gap-2 p-4 border rounded-2xl border-primary-500 hover:bg-primary-50 cursor-pointer w-1/2 md:w-1/5">
+        <UIcon name="i-lucide-arrow-left" class="size-5 text-primary-500" />
+        <span class="font-medium text-primary-500">Kembali ke Stok</span>
       </div>
     </NuxtLink>
   </UCard>
@@ -60,7 +60,7 @@
           v-for="product in products"
           :key="product.id"
           :to="`/seller/stock/add/${product.id}`"
-          class="group flex gap-3 p-3 rounded-xl border border-gray-200 hover:border-blue-400 hover:bg-blue-50/50 transition-colors"
+          class="group flex gap-3 p-3 rounded-xl border border-gray-200 hover:border-primary-400 hover:bg-primary-50/50 transition-colors"
         >
           <img
             :src="getImageUrl(product.banner_url)"
@@ -68,7 +68,7 @@
             class="w-16 h-16 rounded-lg object-cover border border-gray-100 bg-gray-50 flex-none"
           />
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-blue-700">{{ product.name }}</p>
+            <p class="text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-primary-700">{{ product.name }}</p>
             <div class="flex flex-wrap items-center gap-2 mt-1.5">
               <UBadge :color="statusColor(product.status)" variant="soft" size="xs">{{ statusLabel(product.status) }}</UBadge>
               <span class="text-xs text-gray-500">
@@ -76,7 +76,7 @@
               </span>
             </div>
           </div>
-          <UIcon name="i-lucide-plus-circle" class="size-5 text-gray-300 group-hover:text-blue-500 flex-none self-center" />
+          <UIcon name="i-lucide-plus-circle" class="size-5 text-gray-300 group-hover:text-primary-500 flex-none self-center" />
         </NuxtLink>
       </div>
 

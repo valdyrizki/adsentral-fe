@@ -19,12 +19,12 @@
             <template #item="{ item }">
               <div class="flex items-center gap-2 py-0.5">
                 <div
-                  :class="item.role === 'SELLER' ? 'bg-orange-100' : 'bg-sky-100'"
+                  :class="item.role === 'SELLER' ? 'bg-orange-100' : 'bg-primary-100'"
                   class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
                 >
                   <UIcon
                     :name="item.role === 'SELLER' ? 'i-heroicons-building-storefront' : 'i-heroicons-user'"
-                    :class="item.role === 'SELLER' ? 'text-orange-500' : 'text-sky-500'"
+                    :class="item.role === 'SELLER' ? 'text-orange-500' : 'text-primary-500'"
                     class="text-xs"
                   />
                 </div>
@@ -55,12 +55,12 @@
               @click="form.rule_id = rule.id"
             >
               <div
-                :class="rule.target_role === 'SELLER' ? 'bg-orange-100' : 'bg-sky-100'"
+                :class="rule.target_role === 'SELLER' ? 'bg-orange-100' : 'bg-primary-100'"
                 class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
               >
                 <UIcon
                   :name="rule.target_role === 'SELLER' ? 'i-heroicons-building-storefront' : 'i-heroicons-user'"
-                  :class="rule.target_role === 'SELLER' ? 'text-orange-500' : 'text-sky-500'"
+                  :class="rule.target_role === 'SELLER' ? 'text-orange-500' : 'text-primary-500'"
                   class="text-sm"
                 />
               </div>

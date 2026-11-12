@@ -23,7 +23,7 @@
           </div>
 
           <div>
-            <div class="mx-auto mt-4 flow-root border rounded-2xl border-blue-200 bg-gray-100">
+            <div class="mx-auto mt-4 flow-root border rounded-2xl border-primary-200 bg-gray-100">
               <div class="flex flex-col sm:flex-row gap-8 sm:gap-4 p-4">
                 <div class="basis-1/3">
 
@@ -114,7 +114,7 @@
 
         <!-- PRODUCTS -->
         <div>
-          <div class="mx-auto mt-4 flow-root border rounded-2xl border-blue-200 bg-gray-100">
+          <div class="mx-auto mt-4 flow-root border rounded-2xl border-primary-200 bg-gray-100">
             <div class="flex flex-col sm:flex-row gap-8 sm:gap-4 p-4">
               <div class="mx-auto w-full p-4">
                 <!-- SEARCH -->
@@ -171,7 +171,7 @@
                     <div
                       v-for="product in productsPagination?.content"
                       :key="product.id"
-                      class="relative group border border-transparent hover:border hover:rounded-2xl hover:border-blue-200 p-1 transition-all duration-300 ease-in-out"
+                      class="relative group border border-transparent hover:border hover:rounded-2xl hover:border-primary-200 p-1 transition-all duration-300 ease-in-out"
                     >
                       <AppProductItem :product="product" />
                     </div>

@@ -121,7 +121,7 @@
                       >
                         <div>
                           <div v-if="chat.product">
-                            <NuxtLink :to="'/product/'+chat.product.id" class="flex items-center gap-4 mb-2 p-2 border rounded-lg border-blue-500 bg-gray-100">
+                            <NuxtLink :to="'/product/'+chat.product.id" class="flex items-center gap-4 mb-2 p-2 border rounded-lg border-primary-500 bg-gray-100">
                               <NuxtImg :src="getImageUrl(chat.product.banner_url)" width="50" height="50" />
                               <div>
                                 <p class="text-sm">{{ chat.product.name }}</p>
@@ -132,7 +132,7 @@
                           <div
                             class="px-4 py-2 rounded-lg max-w-xs"
                             :class="chat.sender_type === 'SELLER'
-                              ? 'bg-blue-500 text-white'
+                              ? 'bg-primary-500 text-white'
                               : 'bg-gray-500 text-white'"
                           >
                             <p class="text-sm">{{ chat.message }}</p>
@@ -196,7 +196,7 @@
                     </div>
                     <div>
                       <div v-if="attachedProduct" class="flex flex-row gap-2 mt-2">
-                        <NuxtLink :to="'/product/'+attachedProduct.id" class="flex items-center gap-4 mb-2 p-2 border rounded-lg border-blue-500 bg-gray-100">
+                        <NuxtLink :to="'/product/'+attachedProduct.id" class="flex items-center gap-4 mb-2 p-2 border rounded-lg border-primary-500 bg-gray-100">
                           <NuxtImg :src="getImageUrl(attachedProduct.banner_url)" width="50" height="50" />
                           <div>
                             <p class="text-sm">{{ attachedProduct.name }}</p>

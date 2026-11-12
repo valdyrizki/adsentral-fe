@@ -405,7 +405,7 @@ const statsCards = computed(() => {
     { label: 'Menunggu', value: pending_.toString(), icon: 'mdi:clock-outline', bgColor: 'bg-amber-50', iconColor: 'text-amber-500' },
     { label: 'Selesai', value: completed.toString(), icon: 'mdi:check-circle', bgColor: 'bg-green-50', iconColor: 'text-green-500' },
     { label: 'Ditolak', value: rejected.toString(), icon: 'mdi:close-circle', bgColor: 'bg-red-50', iconColor: 'text-red-500' },
-    { label: 'Total Dicairkan', value: formatRp(totalAmount), icon: 'mdi:cash-multiple', bgColor: 'bg-blue-50', iconColor: 'text-blue-500' },
+    { label: 'Total Dicairkan', value: formatRp(totalAmount), icon: 'mdi:cash-multiple', bgColor: 'bg-primary-50', iconColor: 'text-primary-500' },
   ]
 })
 

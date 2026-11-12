@@ -111,7 +111,7 @@
           <div class="flex gap-3 flex-1 min-w-0">
             <div
               class="w-10 h-10 rounded-xl flex-shrink-0 overflow-hidden"
-              :class="user.user.role === 'SELLER' ? 'bg-orange-100' : 'bg-sky-100'"
+              :class="user.user.role === 'SELLER' ? 'bg-orange-100' : 'bg-primary-100'"
             >
               <NuxtImg
                 v-if="user.user.avatar_url"
@@ -122,7 +122,7 @@
               <div v-else class="w-full h-full flex items-center justify-center">
                 <UIcon
                   :name="user.user.role === 'SELLER' ? 'i-heroicons-building-storefront' : 'i-heroicons-user'"
-                  :class="user.user.role === 'SELLER' ? 'text-orange-500' : 'text-sky-500'"
+                  :class="user.user.role === 'SELLER' ? 'text-orange-500' : 'text-primary-500'"
                   class="text-lg"
                 />
               </div>

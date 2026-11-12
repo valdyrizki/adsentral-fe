@@ -138,14 +138,14 @@
         </div>
 
         <!-- Menunggu Konfirmasi Seller -->
-        <div class="mt-4 w-full bg-blue-50 border border-blue-200 p-3 rounded-lg overflow-hidden" v-if="transaction?.status === 'PAID'">
+        <div class="mt-4 w-full bg-primary-50 border border-primary-200 p-3 rounded-lg overflow-hidden" v-if="transaction?.status === 'PAID'">
           <div class="flex flex-col items-center gap-2 text-center py-1">
             <div class="flex items-center gap-2">
-              <UIcon name="mdi:clock-outline" class="size-5 text-blue-500" />
-              <span class="font-semibold text-blue-700">Menunggu Konfirmasi Penjual</span>
+              <UIcon name="mdi:clock-outline" class="size-5 text-primary-500" />
+              <span class="font-semibold text-primary-700">Menunggu Konfirmasi Penjual</span>
             </div>
-            <p class="text-sm text-blue-600">Penjual sedang memproses pesanan Anda. Pesanan akan otomatis dibatalkan jika penjual tidak merespons dalam waktu:</p>
-            <div v-if="!isConfirmExpired" class="text-4xl font-mono font-bold tracking-widest text-blue-600">
+            <p class="text-sm text-primary-600">Penjual sedang memproses pesanan Anda. Pesanan akan otomatis dibatalkan jika penjual tidak merespons dalam waktu:</p>
+            <div v-if="!isConfirmExpired" class="text-4xl font-mono font-bold tracking-widest text-primary-600">
               {{ confirmCountdownDisplay }}
             </div>
             <div v-else class="text-sm font-medium text-red-500">
@@ -158,20 +158,20 @@
         <div
           v-if="transaction?.status === 'IN_PROGRESS'"
           class="mt-4 w-full p-3 rounded-lg overflow-hidden border"
-          :class="isDeliveryExpired ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-200'"
+          :class="isDeliveryExpired ? 'bg-red-50 border-red-300' : 'bg-primary-50 border-primary-200'"
         >
           <div class="flex flex-col items-center gap-2 text-center py-1">
             <div class="flex items-center gap-2">
               <UIcon
                 name="mdi:truck-delivery-outline"
                 class="size-5"
-                :class="isDeliveryExpired ? 'text-red-500' : 'text-blue-500'"
+                :class="isDeliveryExpired ? 'text-red-500' : 'text-primary-500'"
               />
-              <span class="font-semibold" :class="isDeliveryExpired ? 'text-red-600' : 'text-blue-600'">
+              <span class="font-semibold" :class="isDeliveryExpired ? 'text-red-600' : 'text-primary-600'">
                 {{ isDeliveryExpired ? 'Estimasi Pengiriman Terlewat!' : 'Menunggu Pengiriman Pesanan' }}
               </span>
             </div>
-            <p class="text-sm" :class="isDeliveryExpired ? 'text-red-500' : 'text-blue-500'">
+            <p class="text-sm" :class="isDeliveryExpired ? 'text-red-500' : 'text-primary-500'">
               {{ isDeliveryExpired
                 ? 'Estimasi pengiriman telah terlewat. Silakan hubungi penjual.'
                 : `Penjual sedang memproses pesananmu, estimasi dikirim sebelum ${deliveryDeadlineDisplay}`
@@ -429,23 +429,23 @@
         <div
           v-if="transaction?.status === 'DONE'"
           class="mt-4 w-full p-3 rounded-lg overflow-hidden border"
-          :class="isKliringExpired ? 'bg-green-50 border-green-300' : 'bg-blue-50 border-blue-200'"
+          :class="isKliringExpired ? 'bg-green-50 border-green-300' : 'bg-primary-50 border-primary-200'"
         >
           <div class="flex flex-col items-center gap-2 text-center py-1">
             <div class="flex items-center gap-2">
               <UIcon
                 name="mdi:bank-transfer"
                 class="size-5"
-                :class="isKliringExpired ? 'text-green-600' : 'text-blue-500'"
+                :class="isKliringExpired ? 'text-green-600' : 'text-primary-500'"
               />
-              <span class="font-semibold" :class="isKliringExpired ? 'text-green-700' : 'text-blue-700'">
+              <span class="font-semibold" :class="isKliringExpired ? 'text-green-700' : 'text-primary-700'">
                 {{ isKliringExpired ? 'Transaksi Selesai Diproses!' : 'Transaksi Sedang Diproses' }}
               </span>
             </div>
-            <div v-if="!isKliringExpired" class="text-4xl font-mono font-bold tracking-widest text-blue-600">
+            <div v-if="!isKliringExpired" class="text-4xl font-mono font-bold tracking-widest text-primary-600">
               {{ kliringCountdownDisplay }}
             </div>
-            <p class="text-sm" :class="isKliringExpired ? 'text-green-600' : 'text-blue-500'">
+            <p class="text-sm" :class="isKliringExpired ? 'text-green-600' : 'text-primary-500'">
               {{ isKliringExpired
                 ? 'Proses penyelesaian transaksi telah selesai.'
                 : 'Transaksi Anda sedang dalam proses penyelesaian oleh sistem.'
@@ -492,19 +492,19 @@
           <div
             v-if="guarantee.status === 'IN_PROGRESS'"
             class="p-3 border-t"
-            :class="isGuaranteeDeadlineExpired ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'"
+            :class="isGuaranteeDeadlineExpired ? 'bg-red-50 border-red-200' : 'bg-primary-50 border-primary-200'"
           >
             <div class="flex flex-col items-center gap-1 text-center py-1">
               <div class="flex items-center gap-2">
-                <UIcon name="mdi:clock-outline" class="size-4" :class="isGuaranteeDeadlineExpired ? 'text-red-500' : 'text-blue-500'" />
-                <span class="text-sm font-semibold" :class="isGuaranteeDeadlineExpired ? 'text-red-600' : 'text-blue-700'">
+                <UIcon name="mdi:clock-outline" class="size-4" :class="isGuaranteeDeadlineExpired ? 'text-red-500' : 'text-primary-500'" />
+                <span class="text-sm font-semibold" :class="isGuaranteeDeadlineExpired ? 'text-red-600' : 'text-primary-700'">
                   {{ isGuaranteeDeadlineExpired ? 'Batas Waktu Habis!' : 'Penjual Sedang Menyiapkan Akun Garansi' }}
                 </span>
               </div>
-              <div v-if="!isGuaranteeDeadlineExpired" class="text-3xl font-mono font-bold tracking-widest text-blue-600">
+              <div v-if="!isGuaranteeDeadlineExpired" class="text-3xl font-mono font-bold tracking-widest text-primary-600">
                 {{ guaranteeCountdownDisplay }}
               </div>
-              <p class="text-xs" :class="isGuaranteeDeadlineExpired ? 'text-red-500' : 'text-blue-500'">
+              <p class="text-xs" :class="isGuaranteeDeadlineExpired ? 'text-red-500' : 'text-primary-500'">
                 {{ isGuaranteeDeadlineExpired
                   ? 'Penjual tidak mengirimkan akun garansi — sistem akan memberikan penalty secara otomatis.'
                   : `Penjual memiliki waktu hingga ${dayjs(guarantee.progress_deadline).format('D MMM YYYY HH:mm')} untuk mengirimkan akun garansi.` }}
@@ -701,7 +701,7 @@
                 </div>
 
 
-                <div v-if="orderDiscussion.sender_role === 'SELLER'" class="flex flex-col gap-2 w-full bg-blue-100 p-2 border-t border-gray-300">  <!-- for looping discussion items -->
+                <div v-if="orderDiscussion.sender_role === 'SELLER'" class="flex flex-col gap-2 w-full bg-primary-100 p-2 border-t border-gray-300">  <!-- for looping discussion items -->
                   <div class="flex flex-row gap-2 ">
                     <div>
                       <UAvatar

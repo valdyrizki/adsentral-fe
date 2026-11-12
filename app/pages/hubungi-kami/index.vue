@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <div class="m-1 sm:m-3 border rounded-2xl border-blue-200 bg-gray-100">
+    <div class="m-1 sm:m-3 border rounded-2xl border-primary-200 bg-gray-100">
       <div class="p-6 md:p-10">
 
         <UBreadcrumb :items="breadcrumb" class="mb-4" />
@@ -12,7 +12,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
           <!-- Form Pesan -->
-          <div class="bg-white rounded-2xl p-6 border border-blue-100 shadow-sm">
+          <div class="bg-white rounded-2xl p-6 border border-primary-100 shadow-sm">
             <h2 class="text-xl font-bold text-gray-800 mb-5">Kirim Pesan</h2>
             <div class="space-y-4">
               <UFormField label="Nama Lengkap" required>
@@ -60,7 +60,7 @@
               :target="info.href ? '_blank' : undefined"
               :rel="info.href ? 'noopener noreferrer' : undefined"
               class="bg-white rounded-2xl p-5 border shadow-sm flex items-start gap-4 transition-colors"
-              :class="info.href ? 'border-green-200 hover:bg-green-50 cursor-pointer' : 'border-blue-100'"
+              :class="info.href ? 'border-green-200 hover:bg-green-50 cursor-pointer' : 'border-primary-100'"
             >
               <div
                 class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -76,7 +76,7 @@
             </component>
 
             <!-- Jam Operasional -->
-            <div class="bg-white rounded-2xl p-5 border border-blue-100 shadow-sm">
+            <div class="bg-white rounded-2xl p-5 border border-primary-100 shadow-sm">
               <div class="flex items-center gap-3 mb-3">
                 <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <UIcon name="i-heroicons-clock" class="text-primary text-xl" />
@@ -96,7 +96,7 @@
             </div>
 
             <!-- Sosial Media -->
-            <div class="bg-white rounded-2xl p-5 border border-blue-100 shadow-sm">
+            <div class="bg-white rounded-2xl p-5 border border-primary-100 shadow-sm">
               <h3 class="font-semibold text-gray-800 mb-3">Ikuti Kami</h3>
               <div class="flex gap-3">
                 <UButton

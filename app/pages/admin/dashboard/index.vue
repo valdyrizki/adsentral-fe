@@ -2,7 +2,7 @@
   <div class="space-y-6">
 
     <!-- Welcome Bar -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white border border-blue-100 rounded-2xl p-4 shadow-sm">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white border border-primary-100 rounded-2xl p-4 shadow-sm">
       <div class="flex items-center gap-3">
         <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
           <UIcon name="i-lucide-shield-check" class="text-primary text-xl" />
@@ -253,7 +253,7 @@
         v-for="action in quickActions"
         :key="action.label"
         :to="action.to"
-        class="flex flex-col items-center justify-center gap-2 bg-white border border-blue-100 rounded-2xl p-5 shadow-sm hover:border-primary hover:shadow-md transition-all text-center group"
+        class="flex flex-col items-center justify-center gap-2 bg-white border border-primary-100 rounded-2xl p-5 shadow-sm hover:border-primary hover:shadow-md transition-all text-center group"
       >
         <div :class="`w-11 h-11 rounded-xl flex items-center justify-center ${action.bgColor}`">
           <UIcon :name="action.icon" :class="`text-xl ${action.iconColor}`" />
@@ -342,8 +342,8 @@ const statsCards = computed(() => {
       value: totalTx.toString(),
       sub: 'Semua waktu',
       icon: 'i-lucide-shopping-cart',
-      bgColor: 'bg-blue-50',
-      iconColor: 'text-blue-500',
+      bgColor: 'bg-primary-50',
+      iconColor: 'text-primary-500',
     },
     {
       label: 'Total Pendapatan',
@@ -378,9 +378,9 @@ const statusBreakdown = computed(() => {
   const count = (s: string) => list.filter(t => t.status === s).length
   return [
     { label: 'Menunggu Bayar',      count: count('UNPAID'),    color: 'warning' as const, dotColor: 'bg-yellow-400' },
-    { label: 'Menunggu Konfirmasi', count: count('PAID'),      color: 'info' as const,    dotColor: 'bg-blue-400' },
+    { label: 'Menunggu Konfirmasi', count: count('PAID'),      color: 'info' as const,    dotColor: 'bg-primary-400' },
     { label: 'Diproses',            count: count('IN_PROGRESS'), color: 'primary' as const, dotColor: 'bg-primary' },
-    { label: 'Dikirim',             count: count('DELIVERED'), color: 'primary' as const, dotColor: 'bg-teal-400' },
+    { label: 'Dikirim',             count: count('DELIVERED'), color: 'primary' as const, dotColor: 'bg-primary-400' },
     { label: 'Selesai',             count: count('DONE') + count('COMPLETE'), color: 'success' as const, dotColor: 'bg-green-400' },
     { label: 'Arbitrage',           count: count('ARBITRAGE'), color: 'error' as const,   dotColor: 'bg-red-400' },
     { label: 'Dibatalkan',          count: count('CANCELLED') + count('REJECTED'), color: 'error' as const, dotColor: 'bg-gray-400' },
@@ -406,7 +406,7 @@ const chartData = computed(() => {
       label: 'Pendapatan',
       data,
       backgroundColor: 'rgba(14, 165, 233, 0.7)',
-      borderColor: '#0ea5e9',
+      borderColor: '#01909E',
       borderRadius: 6,
     }],
   }
@@ -414,7 +414,7 @@ const chartData = computed(() => {
 
 // ===== QUICK ACTIONS =====
 const quickActions = [
-  { label: 'Kelola Pesanan',  to: '/admin/order',    icon: 'i-lucide-shopping-cart', bgColor: 'bg-blue-50',   iconColor: 'text-blue-500' },
+  { label: 'Kelola Pesanan',  to: '/admin/order',    icon: 'i-lucide-shopping-cart', bgColor: 'bg-primary-50',   iconColor: 'text-primary-500' },
   { label: 'Kelola Produk',   to: '/admin/product',  icon: 'i-lucide-box',           bgColor: 'bg-purple-50', iconColor: 'text-purple-500' },
   { label: 'System Settings', to: '/admin/settings', icon: 'i-lucide-settings',      bgColor: 'bg-green-50',  iconColor: 'text-green-500' },
   { label: 'Chat',            to: '/admin/chat',     icon: 'mdi:chat',               bgColor: 'bg-yellow-50', iconColor: 'text-yellow-500' },

@@ -174,8 +174,8 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <UCard class="shadow-sm hover:shadow-md transition-shadow cursor-pointer" @click="navigateTo('/admin/finance/journal')">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-              <UIcon name="mdi:notebook-outline" class="text-2xl text-blue-500" />
+            <div class="w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center flex-shrink-0">
+              <UIcon name="mdi:notebook-outline" class="text-2xl text-primary-500" />
             </div>
             <div>
               <p class="font-semibold text-gray-800">Jurnal Keuangan</p>

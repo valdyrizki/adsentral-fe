@@ -1,7 +1,7 @@
 <template>
   <div class="w-full">
     <div class="mx-auto max-w-2xl px-4 py-4 sm:px-6 sm:py-6 lg:max-w-7xl lg:px-8">
-      <div class="mx-auto mt-4 flow-root pb-10 border rounded-2xl border-blue-200 bg-gray-100">
+      <div class="mx-auto mt-4 flow-root pb-10 border rounded-2xl border-primary-200 bg-gray-100">
         <AppHeaderSection
           title="Category"
           description="Cari kebutuhanmu berdasarkan kategori produk yang tersedia disini!"

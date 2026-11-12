@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <div class="m-1 sm:m-3 border rounded-2xl border-blue-200 bg-gray-100">
+    <div class="m-1 sm:m-3 border rounded-2xl border-primary-200 bg-gray-100">
       <div class="p-4 md:p-6 space-y-6">
 
         <!-- Back + Breadcrumb -->
@@ -29,11 +29,11 @@
         <template v-else-if="payment">
 
           <!-- Payment Card -->
-          <div class="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden">
+          <div class="bg-white rounded-2xl border border-primary-100 shadow-sm overflow-hidden">
 
             <!-- Card Header -->
             <div
-              :class="`p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${payment.payment_type === 'DEPOSIT' ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100' : 'bg-gradient-to-r from-blue-50 to-primary/5 border-b border-blue-100'}`"
+              :class="`p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${payment.payment_type === 'DEPOSIT' ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100' : 'bg-gradient-to-r from-primary-50 to-primary/5 border-b border-primary-100'}`"
             >
               <div class="flex items-center gap-3">
                 <div
@@ -383,7 +383,7 @@
 
           <!-- ===== LIST TRANSAKSI (TRANSACTION type) ===== -->
           <template v-if="payment.payment_type === 'TRANSACTION'">
-            <div class="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden mt-4">
+            <div class="bg-white rounded-2xl border border-primary-100 shadow-sm overflow-hidden mt-4">
 
               <div class="p-5 border-b border-gray-100 flex items-center justify-between gap-3 flex-wrap">
                 <p class="font-semibold text-gray-800">

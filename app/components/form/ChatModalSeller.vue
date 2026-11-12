@@ -3,7 +3,7 @@
     <template #body>
       <div class="p-2 space-y-3">
         <div v-if="product">
-          <div class="flex flex-col gap-2 border-1 border-gray-300 p-4 rounded-2xl bg-blue-100">
+          <div class="flex flex-col gap-2 border-1 border-gray-300 p-4 rounded-2xl bg-primary-100">
             <p class="text-sm"> Produk Terkait : </p>
             <div class="flex gap-4">
               <NuxtImg :src="getImageUrl(product.banner_url)" width="50" height="50" />
@@ -18,7 +18,7 @@
         </div>
 
         <div v-if="transaction">
-          <div class="flex flex-col gap-2 border-1 border-gray-300 p-4 rounded-2xl bg-blue-100">
+          <div class="flex flex-col gap-2 border-1 border-gray-300 p-4 rounded-2xl bg-primary-100">
             <p class="text-sm"> Transaksi Terkait : </p>
             <div class="flex gap-4">
               <NuxtImg :src="getImageUrl(transaction.product.banner_url)" width="50" height="50" />

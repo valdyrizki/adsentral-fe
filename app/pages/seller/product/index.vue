@@ -139,7 +139,7 @@
               </div>
 
               <!-- Keterangan REVIEW -->
-              <p v-if="product.status === 'REVIEW'" class="text-xs text-blue-400 mt-1">
+              <p v-if="product.status === 'REVIEW'" class="text-xs text-primary-400 mt-1">
                 Menunggu persetujuan admin.
               </p>
               <!-- Keterangan NONACTIVE -->
@@ -257,7 +257,7 @@ const {
 
 const productSummaryItems = computed(() => [
   { label: 'Produk Aktif', value: productSummary.value?.active ?? 0, icon: 'i-heroicons-check-circle', color: 'text-green-500', bgColor: 'bg-green-50' },
-  { label: 'Produk sedang direview', value: productSummary.value?.in_review ?? 0, icon: 'i-heroicons-clock', color: 'text-blue-500', bgColor: 'bg-blue-50' },
+  { label: 'Produk sedang direview', value: productSummary.value?.in_review ?? 0, icon: 'i-heroicons-clock', color: 'text-primary-500', bgColor: 'bg-primary-50' },
   { label: 'Produk diblokir', value: productSummary.value?.blocked ?? 0, icon: 'i-heroicons-no-symbol', color: 'text-red-500', bgColor: 'bg-red-50' },
 ])
 

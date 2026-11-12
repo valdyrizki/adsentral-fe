@@ -1,9 +1,9 @@
 <template>
   <UCard class="">
     <NuxtLink to="/seller/product">
-      <div class="flex items-center gap-2 p-4 border rounded-2xl border-blue-500 hover:bg-blue-50 cursor-pointer w-1/2 md:w-1/5">
-        <UIcon name="i-lucide-arrow-left" class="size-5 text-blue-500" />
-        <span class="font-medium text-blue-500">Back to Products</span>
+      <div class="flex items-center gap-2 p-4 border rounded-2xl border-primary-500 hover:bg-primary-50 cursor-pointer w-1/2 md:w-1/5">
+        <UIcon name="i-lucide-arrow-left" class="size-5 text-primary-500" />
+        <span class="font-medium text-primary-500">Back to Products</span>
       </div>
     </NuxtLink>
     
@@ -123,7 +123,7 @@
                 <p class="mt-2 text-sm text-gray-500">Masukan Harga Jual</p>
                 <p v-if="errors.sell_price" class="mt-1 text-sm text-red-500">{{ errors.sell_price }}</p>
 
-                <div v-if="productRequest.sell_price > 0" class="mt-3 rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs space-y-1">
+                <div v-if="productRequest.sell_price > 0" class="mt-3 rounded-lg border border-primary-100 bg-primary-50 p-3 text-xs space-y-1">
                   <div class="flex justify-between text-gray-600">
                     <span>Harga Jual</span>
                     <span class="font-medium text-gray-800">Rp {{ productRequest.sell_price.toLocaleString('id-ID') }}</span>
@@ -132,7 +132,7 @@
                     <span>Biaya Admin ({{ trxFeePercent }}%)</span>
                     <span class="font-medium text-red-500">- Rp {{ adminFeeAmount.toLocaleString('id-ID') }}</span>
                   </div>
-                  <div class="flex justify-between border-t border-blue-200 pt-1 font-semibold text-blue-700">
+                  <div class="flex justify-between border-t border-primary-200 pt-1 font-semibold text-primary-700">
                     <span>Estimasi Pendapatan Diterima</span>
                     <span>Rp {{ estimatedIncome.toLocaleString('id-ID') }}</span>
                   </div>

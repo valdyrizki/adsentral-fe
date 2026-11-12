@@ -2,8 +2,51 @@
 @import "@nuxt/ui";
 @plugin "@tailwindcss/typography";
 
+/*
+ * Palet v4 Navy / Teal (docs/Adsentral-Canvas-Desain.pdf).
+ * Proporsi: putih 60% (latar, kartu), navy 30% (header, footer, judul, teks), teal 10% (aksen, tombol).
+ * Titik acuan: navy #152951 (navy-900), biru baja #284A6E (navy-700), abu kebiruan #DAE1E7 (navy-200),
+ * teal #01909E (brand-500), teal tua #017A86 (brand-600, tombol agar teks putih terbaca).
+ */
 @theme static {
   --font-sans: "Public Sans", sans-serif;
+
+  --color-brand-50: #e6f6f7;
+  --color-brand-100: #c2e9ec;
+  --color-brand-200: #8fd6dc;
+  --color-brand-300: #52bec8;
+  --color-brand-400: #1fa8b4;
+  --color-brand-500: #01909e;
+  --color-brand-600: #017a86;
+  --color-brand-700: #02636d;
+  --color-brand-800: #054f57;
+  --color-brand-900: #083f46;
+  --color-brand-950: #04282d;
+
+  --color-navy-50: #f4f6f9;
+  --color-navy-100: #ebeff3;
+  --color-navy-200: #dae1e7;
+  --color-navy-300: #c3cdd7;
+  --color-navy-400: #94a3b5;
+  --color-navy-500: #66788f;
+  --color-navy-600: #4a5d76;
+  --color-navy-700: #284a6e;
+  --color-navy-800: #1d3558;
+  --color-navy-900: #152951;
+  --color-navy-950: #0c1a36;
+
+  /* Kelas gray-* yang di-hardcode ikut bernuansa navy. */
+  --color-gray-50: #f4f6f9;
+  --color-gray-100: #ebeff3;
+  --color-gray-200: #dae1e7;
+  --color-gray-300: #c3cdd7;
+  --color-gray-400: #94a3b5;
+  --color-gray-500: #66788f;
+  --color-gray-600: #4a5d76;
+  --color-gray-700: #284a6e;
+  --color-gray-800: #1d3558;
+  --color-gray-900: #152951;
+  --color-gray-950: #0c1a36;
 
   --color-green-50: #effdf5;
   --color-green-100: #d9fbe8;
@@ -16,4 +59,10 @@
   --color-green-800: #016538;
   --color-green-900: #0a5331;
   --color-green-950: #052e16;
+}
+
+/* Tombol & aksen primary memakai teal tua (putih di atasnya 5,1:1), bukan shade 500 bawaan Nuxt UI. */
+:root {
+  --ui-primary: var(--ui-color-primary-600);
+  --ui-secondary: var(--ui-color-secondary-900);
 }

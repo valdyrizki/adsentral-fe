@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <div class="m-1 sm:m-3 border rounded-2xl border-blue-200 bg-gray-100">
+    <div class="m-1 sm:m-3 border rounded-2xl border-primary-200 bg-gray-100">
       <div class="p-6 md:p-10">
 
         <UBreadcrumb :items="breadcrumb" class="mb-4" />
@@ -15,7 +15,7 @@
             v-for="topic in topics"
             :key="topic.label"
             :class="[
-              'bg-white rounded-2xl p-4 border border-blue-100 shadow-sm text-center hover:border-primary hover:shadow-md transition-all',
+              'bg-white rounded-2xl p-4 border border-primary-100 shadow-sm text-center hover:border-primary hover:shadow-md transition-all',
               activeTopic === topic.label ? 'border-primary ring-1 ring-primary' : ''
             ]"
             @click="activeTopic = topic.label"
@@ -37,7 +37,7 @@
           <div
             v-for="channel in supportChannels"
             :key="channel.title"
-            class="bg-white rounded-2xl p-6 border border-blue-100 shadow-sm text-center"
+            class="bg-white rounded-2xl p-6 border border-primary-100 shadow-sm text-center"
           >
             <UIcon :name="channel.icon" class="text-primary text-3xl mb-3" />
             <h3 class="font-semibold text-gray-800 mb-1">{{ channel.title }}</h3>
@@ -49,7 +49,7 @@
         </div>
 
         <!-- Jam Operasional -->
-        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 flex items-start gap-4">
+        <div class="bg-primary-50 border border-primary-200 rounded-2xl p-5 flex items-start gap-4">
           <UIcon name="i-heroicons-clock" class="text-primary text-2xl flex-shrink-0 mt-0.5" />
           <div>
             <h3 class="font-semibold text-gray-800 mb-1">Jam Operasional Tim Dukungan</h3>

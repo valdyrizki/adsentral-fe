@@ -298,7 +298,7 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
       .reduce((s, p) => s + p.amount, 0)
 
     return [
-      { label: 'Total Payment', value: total.toString(), icon: 'i-heroicons-credit-card', bgColor: 'bg-blue-50', iconColor: 'text-blue-500' },
+      { label: 'Total Payment', value: total.toString(), icon: 'i-heroicons-credit-card', bgColor: 'bg-primary-50', iconColor: 'text-primary-500' },
       { label: 'Lunas', value: paid.toString(), icon: 'i-heroicons-clock', bgColor: 'bg-yellow-50', iconColor: 'text-yellow-500' },
       { label: 'Selesai', value: done.toString(), icon: 'i-heroicons-check-circle', bgColor: 'bg-green-50', iconColor: 'text-green-500' },
       { label: 'Total Nominal', value: 'Rp ' + totalAmount.toLocaleString('id-ID'), icon: 'i-heroicons-banknotes', bgColor: 'bg-purple-50', iconColor: 'text-purple-500' },

@@ -76,7 +76,7 @@
             </UButton>
           </div>
           <div
-            class="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer border-gray-300 hover:border-blue-300 hover:bg-gray-50"
+            class="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer border-gray-300 hover:border-primary-300 hover:bg-gray-50"
             @click="csvInputRef?.click()"
           >
             <input ref="csvInputRef" type="file" accept=".csv,text/csv" class="hidden" :disabled="busy" @change="onCsvSelected" />

@@ -133,7 +133,7 @@
           <!-- Info -->
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-gray-800 truncate flex items-center gap-1">
-              <UIcon name="i-lucide-package" class="size-3.5 flex-none text-blue-500" />
+              <UIcon name="i-lucide-package" class="size-3.5 flex-none text-primary-500" />
               {{ item.product_name || '-' }}
             </p>
             <div class="flex flex-wrap items-center gap-1.5 my-0.5">
@@ -151,7 +151,7 @@
             <a
               v-if="item.file_name"
               href="#"
-              class="text-xs text-blue-500 hover:underline truncate flex items-center gap-1 w-fit max-w-full"
+              class="text-xs text-primary-500 hover:underline truncate flex items-center gap-1 w-fit max-w-full"
               @click.prevent.stop="openSignedFile(item.file_url, item.file_name)"
             >
               <UIcon name="i-lucide-download" class="size-3 flex-none" />
@@ -175,7 +175,7 @@
               <NuxtLink
                 v-if="item.transaction_id"
                 :to="`/admin/order/${item.transaction_id}`"
-                class="font-mono text-blue-500 hover:underline flex items-center gap-1"
+                class="font-mono text-primary-500 hover:underline flex items-center gap-1"
                 title="Lihat transaksi"
                 @click.stop
               >

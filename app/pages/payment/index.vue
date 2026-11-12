@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <div class="m-1 sm:m-3 border rounded-2xl border-blue-200 bg-gray-100">
+    <div class="m-1 sm:m-3 border rounded-2xl border-primary-200 bg-gray-100">
       <div class="p-4 md:p-6">
 
         <UBreadcrumb :items="breadcrumb" class="mb-4" />
@@ -55,7 +55,7 @@
           <div
             v-for="payment in payments.content"
             :key="payment.id"
-            class="bg-white rounded-2xl border border-blue-100 p-4 shadow-sm hover:shadow-md transition-shadow"
+            class="bg-white rounded-2xl border border-primary-100 p-4 shadow-sm hover:shadow-md transition-shadow"
           >
             <div class="flex flex-col sm:flex-row sm:items-center gap-3">
 

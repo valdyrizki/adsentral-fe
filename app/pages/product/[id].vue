@@ -25,7 +25,7 @@
       </div>
       <div v-else>
         <!-- HEADER PRODUCT & ACTION -->
-        <div class="mx-auto max-w-7xl mt-2 border rounded-2xl overflow-x-hidden border-blue-200 bg-gray-100">
+        <div class="mx-auto max-w-7xl mt-2 border rounded-2xl overflow-x-hidden border-primary-200 bg-gray-100">
           <div class="m-2 md:m-4">
             <div class="flex md:flex-row flex-col gap-4">
               <div class="basis-1/3">
@@ -101,7 +101,7 @@
                     <template v-else>
                       <UIcon name="mdi:truck-delivery-outline" class="size-4 text-gray-400" />
                       <span class="text-gray-500">Estimasi Pengiriman:</span>
-                      <span v-if="product?.delivery_days" class="font-medium text-blue-600">{{ product.delivery_days }} hari</span>
+                      <span v-if="product?.delivery_days" class="font-medium text-primary-600">{{ product.delivery_days }} hari</span>
                       <span v-else class="font-medium text-gray-400">-</span>
                     </template>
                   </div>
@@ -159,7 +159,7 @@
           
         </div>
 
-        <div class="mx-auto max-w-7xl mt-2 border rounded-2xl overflow-x-hidden border-blue-200 bg-gray-100">
+        <div class="mx-auto max-w-7xl mt-2 border rounded-2xl overflow-x-hidden border-primary-200 bg-gray-100">
           <div class="m-2 md:m-4">
             <div class="flex md:flex-row flex-col gap-4">
               <div class="basis-1/3 mx-auto">
@@ -280,7 +280,7 @@
         </div>
 
         <!-- DESKRIPSI & RATING -->
-        <div class="mx-auto max-w-7xl mt-2 border rounded-2xl overflow-x-hidden border-blue-200 bg-gray-100">
+        <div class="mx-auto max-w-7xl mt-2 border rounded-2xl overflow-x-hidden border-primary-200 bg-gray-100">
           <div class="m-2 md:m-4">
             <UTabs size="xl" color="primary" variant="link" :items="items" class="w-full">
               <template #description>
@@ -379,7 +379,7 @@
                       </div>
 
                       <!-- Seller Reply -->
-                      <div v-if="group.seller" class="ml-10 pl-4 border-l-2 border-blue-200 bg-blue-50 rounded-r-xl py-3 pr-3">
+                      <div v-if="group.seller" class="ml-10 pl-4 border-l-2 border-primary-200 bg-primary-50 rounded-r-xl py-3 pr-3">
                         <div class="flex gap-3">
                           <UAvatar
                             :src="getImageUrl(product?.merchant_logo)"
@@ -389,7 +389,7 @@
                           <div class="flex-1">
                             <div class="flex items-center justify-between gap-2">
                               <div class="flex items-center gap-1.5">
-                                <span class="font-semibold text-sm text-blue-700">{{ product?.merchant_name }}</span>
+                                <span class="font-semibold text-sm text-primary-700">{{ product?.merchant_name }}</span>
                                 <UBadge size="xs" color="primary" variant="subtle">Penjual</UBadge>
                               </div>
                               <span class="text-xs text-gray-400 shrink-0">{{ formatDate(group.seller.created_at) }}</span>
@@ -665,7 +665,7 @@ const deliveryTypeInfo = computed(() => {
     AUTO: {
       label: 'Otomatis',
       icon: 'i-lucide-zap',
-      iconClass: 'text-blue-500',
+      iconClass: 'text-primary-500',
       color: 'info',
     },
     STOCKING: {

@@ -1,9 +1,9 @@
 <template>
   <UCard>
     <NuxtLink to="/admin/product">
-      <div class="flex items-center gap-2 p-4 border rounded-2xl border-blue-500 hover:bg-blue-50 cursor-pointer w-1/2 md:w-1/5">
-        <UIcon name="i-lucide-arrow-left" class="size-5 text-blue-500" />
-        <span class="font-medium text-blue-500">Kembali ke Produk</span>
+      <div class="flex items-center gap-2 p-4 border rounded-2xl border-primary-500 hover:bg-primary-50 cursor-pointer w-1/2 md:w-1/5">
+        <UIcon name="i-lucide-arrow-left" class="size-5 text-primary-500" />
+        <span class="font-medium text-primary-500">Kembali ke Produk</span>
       </div>
     </NuxtLink>
   </UCard>
@@ -109,7 +109,7 @@
               <label class="block text-sm font-medium text-gray-900 mb-1">Harga Jual</label>
               <UInput :model-value="'Rp ' + product.sell_price.toLocaleString('id-ID')" disabled class="block w-full" />
 
-              <div v-if="product.sell_price > 0" class="mt-3 rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs space-y-1">
+              <div v-if="product.sell_price > 0" class="mt-3 rounded-lg border border-primary-100 bg-primary-50 p-3 text-xs space-y-1">
                 <div class="flex justify-between text-gray-600">
                   <span>Harga Jual</span>
                   <span class="font-medium text-gray-800">Rp {{ product.sell_price.toLocaleString('id-ID') }}</span>
@@ -118,7 +118,7 @@
                   <span>Biaya Admin ({{ trxFeePercent }}%)</span>
                   <span class="font-medium text-red-500">- Rp {{ adminFeeAmount.toLocaleString('id-ID') }}</span>
                 </div>
-                <div class="flex justify-between border-t border-blue-200 pt-1 font-semibold text-blue-700">
+                <div class="flex justify-between border-t border-primary-200 pt-1 font-semibold text-primary-700">
                   <span>Estimasi Pendapatan Diterima</span>
                   <span>Rp {{ estimatedIncome.toLocaleString('id-ID') }}</span>
                 </div>
@@ -153,12 +153,12 @@
                   :key="opt.value"
                   class="relative flex flex-col gap-2 p-4 rounded-xl border-2 transition-all"
                   :class="product.delivery_type === opt.value
-                    ? 'border-blue-500 bg-blue-50'
+                    ? 'border-primary-500 bg-primary-50'
                     : 'border-gray-200 bg-white opacity-50'"
                 >
                   <div class="flex items-center gap-2">
-                    <UIcon :name="opt.icon" class="size-5" :class="product.delivery_type === opt.value ? 'text-blue-500' : 'text-gray-400'" />
-                    <span class="font-semibold text-sm" :class="product.delivery_type === opt.value ? 'text-blue-700' : 'text-gray-700'">
+                    <UIcon :name="opt.icon" class="size-5" :class="product.delivery_type === opt.value ? 'text-primary-500' : 'text-gray-400'" />
+                    <span class="font-semibold text-sm" :class="product.delivery_type === opt.value ? 'text-primary-700' : 'text-gray-700'">
                       {{ opt.label }}
                     </span>
                     <UBadge v-if="product.delivery_type === opt.value" color="primary" size="xs" class="ml-auto">Dipilih</UBadge>
@@ -200,7 +200,7 @@
             <template v-if="product.auto_config">
               <div class="col-span-2">
                 <USeparator class="mb-4" />
-                <div class="font-medium mb-4 text-blue-700">Konfigurasi Pengiriman Otomatis</div>
+                <div class="font-medium mb-4 text-primary-700">Konfigurasi Pengiriman Otomatis</div>
               </div>
 
               <div>
@@ -211,9 +211,9 @@
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-1">File Lampiran</label>
                 <div v-if="product.auto_config.file_url" class="flex items-center gap-2 text-sm text-gray-600 p-2 border rounded-md bg-gray-50">
-                  <UIcon name="i-lucide-file" class="size-4 text-blue-500" />
+                  <UIcon name="i-lucide-file" class="size-4 text-primary-500" />
                   <span>{{ product.auto_config.file_name || 'File tersimpan' }}</span>
-                  <a href="#" class="text-blue-500 hover:underline ml-auto" @click.prevent="openSignedFile(product.auto_config.file_url, product.auto_config.file_name)">Unduh</a>
+                  <a href="#" class="text-primary-500 hover:underline ml-auto" @click.prevent="openSignedFile(product.auto_config.file_url, product.auto_config.file_name)">Unduh</a>
                 </div>
                 <div v-else class="p-2 border rounded-md bg-gray-50 text-sm text-gray-400">Tidak ada file</div>
               </div>

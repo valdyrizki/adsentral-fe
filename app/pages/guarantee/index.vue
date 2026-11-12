@@ -56,7 +56,7 @@
             class="flex flex-col sm:flex-row sm:items-center gap-3 py-4 px-2 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer"
             :class="{
               'border-l-4 border-l-orange-400': item.status === 'IN_REVIEW',
-              'border-l-4 border-l-blue-400': item.status === 'IN_PROGRESS',
+              'border-l-4 border-l-primary-400': item.status === 'IN_PROGRESS',
               'border-l-4 border-l-green-400': item.status === 'DONE',
               'border-l-4 border-l-red-400': item.status === 'REJECTED',
             }"

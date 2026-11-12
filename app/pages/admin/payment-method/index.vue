@@ -130,9 +130,9 @@
           :class="method.status !== 'ACTIVE' ? 'opacity-50' : ''"
         >
           <!-- Icon -->
-          <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-sky-50 overflow-hidden">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-primary-50 overflow-hidden">
             <img v-if="method.icon_url" :src="method.icon_url" class="w-full h-full object-cover" />
-            <UIcon v-else name="mdi:credit-card-outline" class="text-lg text-sky-500" />
+            <UIcon v-else name="mdi:credit-card-outline" class="text-lg text-primary-500" />
           </div>
 
           <!-- Info -->
@@ -238,7 +238,7 @@ const statsCards = computed(() => {
   const suspended = list.filter(m => m.status === 'SUSPENDED').length
 
   return [
-    { label: 'Total Metode', value: total.toString(), icon: 'mdi:credit-card-multiple-outline', bgColor: 'bg-sky-50', iconColor: 'text-sky-500' },
+    { label: 'Total Metode', value: total.toString(), icon: 'mdi:credit-card-multiple-outline', bgColor: 'bg-primary-50', iconColor: 'text-primary-500' },
     { label: 'Aktif', value: active.toString(), icon: 'mdi:check-circle-outline', bgColor: 'bg-green-50', iconColor: 'text-green-500' },
     { label: 'Suspended', value: suspended.toString(), icon: 'mdi:close-circle-outline', bgColor: 'bg-red-50', iconColor: 'text-red-400' },
   ]

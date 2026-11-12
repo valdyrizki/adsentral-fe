@@ -117,8 +117,8 @@
                         </div>
 
                         <div v-if="getTxConfirmCountdown(transaction, paymentNow)" class="flex flex-row gap-1">
-                          <UIcon name="mdi:clock-alert-outline" class="size-5" :class="getTxConfirmCountdown(transaction, paymentNow)!.expired ? 'text-red-500' : 'text-blue-500'" />
-                          <div class="font-medium tabular-nums" :class="getTxConfirmCountdown(transaction, paymentNow)!.expired ? 'text-red-600' : 'text-blue-600'">
+                          <UIcon name="mdi:clock-alert-outline" class="size-5" :class="getTxConfirmCountdown(transaction, paymentNow)!.expired ? 'text-red-500' : 'text-primary-500'" />
+                          <div class="font-medium tabular-nums" :class="getTxConfirmCountdown(transaction, paymentNow)!.expired ? 'text-red-600' : 'text-primary-600'">
                             {{ getTxConfirmCountdown(transaction, paymentNow)!.text }}
                           </div>
                         </div>

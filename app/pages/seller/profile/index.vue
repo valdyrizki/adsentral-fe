@@ -2,7 +2,7 @@
   <div class="space-y-6">
 
     <!-- Header -->
-    <div class="mx-auto w-full border rounded-2xl border-blue-200 bg-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-1">
+    <div class="mx-auto w-full border rounded-2xl border-primary-200 bg-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-1">
       <AppHeaderSection
         title="Profil Toko"
         description="Kelola informasi dan tampilan toko Anda"

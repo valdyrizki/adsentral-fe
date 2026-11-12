@@ -35,7 +35,7 @@
           <p class="text-xs font-medium text-gray-500">File</p>
           <a
             href="#"
-            class="text-sm text-blue-500 hover:underline flex items-center gap-1 w-fit max-w-full break-all"
+            class="text-sm text-primary-500 hover:underline flex items-center gap-1 w-fit max-w-full break-all"
             @click.prevent="openSignedFile(item.file_url, item.file_name ?? undefined)"
           >
             <UIcon name="i-lucide-download" class="size-4 flex-none" />
@@ -87,7 +87,7 @@
           <NuxtLink
             v-if="item.transaction_id && transactionBase"
             :to="`${transactionBase}/${item.transaction_id}`"
-            class="font-mono text-blue-500 hover:underline flex items-center gap-1"
+            class="font-mono text-primary-500 hover:underline flex items-center gap-1"
           >
             <UIcon name="i-lucide-receipt" class="size-3" />
             {{ item.transaction_id }}

@@ -14,7 +14,7 @@
 
         <!-- Edit: file saat ini + aksi ganti / hapus -->
         <div v-if="isEdit && item?.file_name && !form.file && !replacingFile" class="flex flex-wrap items-center gap-2 p-3 rounded-xl border border-gray-100 bg-gray-50">
-          <UIcon name="i-lucide-file" class="size-4 flex-none" :class="removeFile ? 'text-gray-300' : 'text-blue-500'" />
+          <UIcon name="i-lucide-file" class="size-4 flex-none" :class="removeFile ? 'text-gray-300' : 'text-primary-500'" />
           <div class="flex-1 min-w-0">
             <p class="text-sm truncate" :class="removeFile ? 'line-through text-gray-400' : 'text-gray-800'">{{ item.file_name }}</p>
             <p class="text-xs text-gray-400 flex flex-wrap gap-x-3">
@@ -51,8 +51,8 @@
           />
 
           <!-- Detail file yang dipilih -->
-          <div v-if="form.file" class="mt-2 p-3 rounded-xl border border-blue-100 bg-blue-50/60 text-xs">
-            <p class="font-medium text-blue-800 mb-1.5 flex items-center gap-1">
+          <div v-if="form.file" class="mt-2 p-3 rounded-xl border border-primary-100 bg-primary-50/60 text-xs">
+            <p class="font-medium text-primary-800 mb-1.5 flex items-center gap-1">
               <UIcon name="i-lucide-file-check" class="size-3.5" />
               {{ isEdit && item?.file_name ? 'File pengganti' : 'File dipilih' }}
             </p>
@@ -88,7 +88,7 @@
 
       <div class="space-y-3">
         <div class="flex items-center gap-2">
-          <UIcon name="i-lucide-user-round" class="size-4 text-blue-500" />
+          <UIcon name="i-lucide-user-round" class="size-4 text-primary-500" />
           <p class="text-sm font-semibold text-gray-800">Data Akun</p>
           <span class="text-xs text-gray-400">(opsional)</span>
         </div>

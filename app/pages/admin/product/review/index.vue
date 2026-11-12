@@ -81,7 +81,7 @@
               <UBadge :color="statusColor(product.status)" :label="statusLabel(product.status)" size="sm" variant="solid" />
               <span class="text-xs font-mono text-gray-400">#{{ product.id }}</span>
             </div>
-            <NuxtLink :to="`/admin/product/view/${product.id}`" class="block text-sm font-semibold text-gray-800 truncate hover:text-blue-600 hover:underline">
+            <NuxtLink :to="`/admin/product/view/${product.id}`" class="block text-sm font-semibold text-gray-800 truncate hover:text-primary-600 hover:underline">
               {{ product.name }}
             </NuxtLink>
             <p class="text-xs text-gray-500 mt-0.5">

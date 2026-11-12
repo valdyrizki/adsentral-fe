@@ -1,6 +1,6 @@
 <template>
   <NuxtLayout name="default">
-    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100 px-4">
+    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-gray-100 px-4">
       <div class="max-w-md w-full text-center">
         <!-- Icon besar sesuai error code -->
         <div class="mb-6 flex justify-center">
