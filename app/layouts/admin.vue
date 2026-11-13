@@ -78,7 +78,8 @@ const items = computed<NavigationMenuItem[][]>(() => [[
   {
     label: 'Verifikasi Akun',
     icon: 'mdi:card-account-details-outline',
-    to: '/admin/verification'
+    to: '/admin/verification', // daftar default terfilter PENDING
+    ...pendingCountBadge(alerts.value?.pending_verifications, `${alerts.value?.pending_verifications} pengajuan verifikasi menunggu review`),
   },
   {
     label: 'Keuangan',

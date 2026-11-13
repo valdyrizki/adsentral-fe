@@ -96,6 +96,7 @@ export const useVerificationApi = () => {
     if (res.status !== 'success' || !res.data) {
       throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal menyetujui verifikasi' })
     }
+    useAlertsStore().refresh() // badge "Verifikasi Akun" langsung turun
     return res.data
   }
 
@@ -107,6 +108,7 @@ export const useVerificationApi = () => {
     if (res.status !== 'success' || !res.data) {
       throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal menolak verifikasi' })
     }
+    useAlertsStore().refresh() // badge "Verifikasi Akun" langsung turun
     return res.data
   }
 

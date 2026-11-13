@@ -11,6 +11,8 @@ export interface AdminAlertsResponse {
   arbitrage_pending: number | null
   // Withdrawal seller berstatus PENDING (menunggu admin transfer/tolak)
   pending_withdrawals: number | null
+  // Pengajuan verifikasi KTP PENDING (SLA 1x24 jam kerja, EP06-01)
+  pending_verifications: number | null
 }
 
 export interface SellerAlertsResponse {
