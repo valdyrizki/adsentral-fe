@@ -344,19 +344,17 @@ export const useProductsApi = () => {
     }
   }
 
-  const rejectProduct = async (id: number) => {
+  /** Alasan wajib (10-500 karakter), dikirim ke seller lewat notifikasi (EP06-02). */
+  const rejectProduct = async (id: number, reason: string) => {
     try {
-      const res = await api<WebResponse<ProductResponse>>(`/product/reject/${id}`, { method: 'PATCH' })
+      const res = await api<WebResponse<ProductResponse>>(`/product/reject/${id}`, { method: 'PATCH', body: { reason } })
       if (!res || res.status !== 'success') {
         throw createError({ statusCode: 400, statusMessage: res?.message || 'Reject Failed' })
       }
       useAlertsStore().refresh() // badge produk menunggu review turun
       return res.data
     } catch (err: any) {
-      throw createError({
-        statusCode: err.statusCode || 500,
-        statusMessage: err.statusMessage || 'Reject failed, server error',
-      })
+      rethrowApiError('Gagal menolak produk')(err) // pesan BE (mis. validasi alasan) tampil apa adanya
     }
   }
 
@@ -580,18 +578,16 @@ export const useProductsApi = () => {
     }
   }
 
-  const suspendProduct = async (id: number) => {
+  /** Alasan wajib (10-500 karakter), dikirim ke seller lewat notifikasi (EP06-02). */
+  const suspendProduct = async (id: number, reason: string) => {
     try {
-      const res = await api<WebResponse<ProductResponse>>(`/product/suspend/${id}`, { method: 'PATCH' })
+      const res = await api<WebResponse<ProductResponse>>(`/product/suspend/${id}`, { method: 'PATCH', body: { reason } })
       if (!res || res.status !== 'success') {
         throw createError({ statusCode: 400, statusMessage: res?.message || 'Suspend Failed' })
       }
       return res.data
     } catch (err: any) {
-      throw createError({
-        statusCode: err.statusCode || 500,
-        statusMessage: err.statusMessage || 'Suspend failed, server error',
-      })
+      rethrowApiError('Gagal suspend produk')(err) // pesan BE (mis. validasi alasan) tampil apa adanya
     }
   }
 

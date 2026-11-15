@@ -90,8 +90,8 @@ Admin:
 | `getAllProductsAdmin` | `/products/all` | `pages/admin/product`, `pages/admin/product/review` |
 | `fetchProductByIdAdmin` | `/product/admin/{id}` | `pages/admin/product/view` |
 | `adminActivateProduct` | PATCH `/product/admin/activate/{id}` | `pages/admin/product`, `.../review` |
-| `rejectProduct` | PATCH `/product/reject/{id}` | `pages/admin/product`, `.../review` |
-| `suspendProduct` | PATCH `/product/suspend/{id}` | `pages/admin/product`, `.../review` |
+| `rejectProduct` | PATCH `/product/reject/{id}` (body `{ reason }` wajib, 10-500 karakter; EP06-02) | `pages/admin/product`, `.../review` (dialog `FormAdminReasonModal`) |
+| `suspendProduct` | PATCH `/product/suspend/{id}` (body `{ reason }` wajib, 10-500 karakter; EP06-02) | `pages/admin/product`, `.../review` (dialog `FormAdminReasonModal`) |
 
 Stok (produk `STOCKING`):
 
@@ -145,6 +145,7 @@ Stok (produk `STOCKING`):
 | `registerMerchant` | POST `/merchant/create` | `pages/merchant/create` |
 | `updateMerchant` | PATCH `/merchant/update` multipart; field libur `isHoliday` (camelCase, opsional), respons `is_holiday` (sebelum EP03-06 BE membaca/mengirim `holiday`, toggle libur tidak tersimpan) | `pages/seller/profile` |
 | `fetchMerchantById` | `/merchant/get/{id}` | `pages/merchant/[id].vue`, `pages/product/[id].vue` |
+| — | PATCH `/merchant/suspend/{id}` (admin, body `{ reason }` wajib; EP06-02) · PATCH `/merchant/activate/{id}` (admin) | **belum ada UI admin**; seller menerima notifikasi `MERCHANT_SUSPENDED` / `MERCHANT_ACTIVATED` |
 | `fetchMyMerchant` | `/merchant/my` | `stores/merchant.ts` |
 
 ## Transaksi & pesanan

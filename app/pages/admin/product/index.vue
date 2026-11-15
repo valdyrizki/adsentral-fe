@@ -199,6 +199,16 @@
     </UCard>
     </ClientOnly>
 
+    <FormAdminReasonModal
+      v-model:open="reasonOpen"
+      :title="reasonDialog.title"
+      :description="reasonDialog.description"
+      :confirm-text="reasonDialog.confirmText"
+      :confirm-color="reasonDialog.color"
+      :placeholder="reasonDialog.placeholder"
+      :loading="loadingId !== null"
+      @submit="submitReason"
+    />
   </div>
 </template>
 
@@ -340,49 +350,58 @@ async function handleApprove(product: ProductResponse) {
   }
 }
 
-async function handleReject(product: ProductResponse) {
-  const yes = await confirm({
-    title: 'Tolak Produk?',
-    message: `Produk "${product.name}" dari ${product.merchant_name} akan ditolak dan statusnya menjadi NONACTIVE.`,
-    confirmText: 'Ya, Tolak',
-    cancelText: 'Batal',
-    confirmColor: 'error',
-  })
-  if (!yes) return
+type ReasonAction = { kind: 'reject' | 'suspend', product: ProductResponse }
+const reasonAction = ref<ReasonAction | null>(null)
+const reasonOpen = computed({
+  get: () => reasonAction.value !== null,
+  set: (v: boolean) => { if (!v) reasonAction.value = null },
+})
+const reasonDialog = computed(() => {
+  const a = reasonAction.value
+  if (!a) return { title: '', description: '', confirmText: '', color: 'error' as const, placeholder: '' }
+  return a.kind === 'reject'
+    ? {
+        title: 'Tolak Produk',
+        description: `Produk "${a.product.name}" dari ${a.product.merchant_name} akan ditolak (status NONACTIVE).`,
+        confirmText: 'Tolak Produk',
+        color: 'error' as const,
+        placeholder: 'Contoh: deskripsi memuat nomor WA; hapus kontak di luar Adsentral lalu ajukan kembali',
+      }
+    : {
+        title: 'Suspend Produk',
+        description: `Produk "${a.product.name}" akan disuspend dan tidak bisa dibeli.`,
+        confirmText: 'Suspend Produk',
+        color: 'warning' as const,
+        placeholder: 'Contoh: produk termasuk daftar produk terlarang',
+      }
+})
 
-  loadingId.value = `reject-${product.id}`
-  try {
-    await rejectProduct(product.id)
-    toast.add({ title: 'Produk Ditolak', description: `${product.name} telah ditolak.`, color: 'warning' })
-    await refresh()
-  } catch (err: any) {
-    toast.add({ title: 'Gagal ❌', description: err.statusMessage || err.message, color: 'error' })
-  } finally {
-    loadingId.value = null
-    close()
-  }
+function handleReject(product: ProductResponse) {
+  reasonAction.value = { kind: 'reject', product }
 }
 
-async function handleSuspend(product: ProductResponse) {
-  const yes = await confirm({
-    title: 'Suspend Produk?',
-    message: `Produk "${product.name}" akan disuspend karena melanggar ketentuan.`,
-    confirmText: 'Ya, Suspend',
-    cancelText: 'Batal',
-    confirmColor: 'warning',
-  })
-  if (!yes) return
+function handleSuspend(product: ProductResponse) {
+  reasonAction.value = { kind: 'suspend', product }
+}
 
-  loadingId.value = `suspend-${product.id}`
+async function submitReason(reason: string) {
+  const a = reasonAction.value
+  if (!a) return
+  loadingId.value = `${a.kind}-${a.product.id}`
   try {
-    await suspendProduct(product.id)
-    toast.add({ title: 'Produk Disuspend', description: `${product.name} telah disuspend.`, color: 'warning' })
+    if (a.kind === 'reject') {
+      await rejectProduct(a.product.id, reason)
+      toast.add({ title: 'Produk Ditolak', description: `${a.product.name} telah ditolak.`, color: 'warning' })
+    } else {
+      await suspendProduct(a.product.id, reason)
+      toast.add({ title: 'Produk Disuspend', description: `${a.product.name} telah disuspend.`, color: 'warning' })
+    }
+    reasonAction.value = null
     await refresh()
   } catch (err: any) {
     toast.add({ title: 'Gagal ❌', description: err.statusMessage || err.message, color: 'error' })
   } finally {
     loadingId.value = null
-    close()
   }
 }
 </script>
