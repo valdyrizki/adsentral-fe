@@ -88,10 +88,12 @@ export const useAdminWithdrawalApi = () => {
   const fetchAllWithdrawals = async (
     page: number = 0,
     size: number = 20,
-    status: string = 'ALL'
+    status: string = 'ALL',
+    userId?: number
   ): Promise<PageResponse<AdminWithdrawalResponse>> => {
     const params: Record<string, any> = { page, size }
     if (status !== 'ALL') params.status = status
+    if (userId) params.user_id = userId // withdrawal satu seller (EP06-08)
 
     const res = await api<WebResponse<PageResponse<AdminWithdrawalResponse>>>(
       '/admin/withdrawal',

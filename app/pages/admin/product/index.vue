@@ -21,6 +21,7 @@
           @update:model-value="handleFilter"
         />
         <USelect v-model="perPageValue" :items="perPageItems" class="w-full sm:w-24" />
+        <UBadge v-if="merchantFilter" color="neutral" variant="subtle" class="cursor-pointer self-center" @click="clearMerchantFilter">Filter toko #{{ merchantFilter }} ✕</UBadge>
         <UButton icon="mdi:refresh" color="neutral" variant="outline" :loading="pending" @click="refresh()">
           Refresh
         </UButton>
@@ -244,6 +245,17 @@ const statusOptions = [
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
 // ===== FETCH =====
+// Filter toko dari detail seller (?merchant_id=, EP06-08)
+const route = useRoute()
+const router = useRouter()
+const merchantFilter = computed(() => {
+  const v = Number(route.query.merchant_id)
+  return Number.isInteger(v) && v > 0 ? v : undefined
+})
+function clearMerchantFilter() {
+  router.replace({ query: { ...route.query, merchant_id: undefined } })
+}
+
 const {
   data: productPagination,
   pending,
@@ -251,8 +263,8 @@ const {
   refresh,
 } = await useAsyncData<PageResponse<ProductResponse>>(
   'admin-all-products',
-  () => getAllProductsAdmin(page.value, perPageValue.value, keyword.value, 'terbaru', filterStatus.value),
-  { watch: [page, perPageValue, keyword, filterStatus], server: false }
+  () => getAllProductsAdmin(page.value, perPageValue.value, keyword.value, 'terbaru', filterStatus.value, merchantFilter.value),
+  { watch: [page, perPageValue, keyword, filterStatus, merchantFilter], server: false }
 )
 
 watch(search, (val) => {

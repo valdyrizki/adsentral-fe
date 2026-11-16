@@ -109,6 +109,7 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     icon: 'i-lucide-users',
     to: '/admin/users'
   },
+  { label: 'Garansi', icon: 'i-lucide-shield-check', to: '/admin/guarantee' }, // daftar klaim untuk CS (EP06-08)
   // Jejak aksi admin (EP06-05): khusus super admin, BE 403 untuk admin biasa
   ...(authStore.isSuperAdmin ? [{ label: 'Audit Log', icon: 'i-lucide-clipboard-list', to: '/admin/audit-log' }] : []),
   {

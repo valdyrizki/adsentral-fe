@@ -41,6 +41,7 @@
           @update:model-value="handleFilter"
         />
         <USelect v-model="perPageValue" :items="perPageItems" class="w-full sm:w-24" />
+        <UBadge v-if="userFilter" color="neutral" variant="subtle" class="cursor-pointer self-center" @click="clearUserFilter">Filter seller #{{ userFilter }} ✕</UBadge>
         <UButton icon="mdi:refresh" color="neutral" variant="outline" :loading="pending" @click="refresh()">
           Refresh
         </UButton>
@@ -371,6 +372,15 @@ const statusFromQuery = (q: unknown) => {
   return typeof v === 'string' && statusOptions.some(o => o.value === v) ? v : ''
 }
 filterStatus.value = statusFromQuery(route.query.status) || 'ALL'
+// ?user_id= dari detail seller (EP06-08): withdrawal satu seller
+const router = useRouter()
+const userFilter = computed(() => {
+  const v = Number(route.query.user_id)
+  return Number.isInteger(v) && v > 0 ? v : undefined
+})
+function clearUserFilter() {
+  router.replace({ query: { ...route.query, user_id: undefined } })
+}
 watch(() => route.query.status, (q) => {
   const v = statusFromQuery(q)
   if (v && v !== filterStatus.value) {
@@ -387,8 +397,8 @@ const {
   refresh,
 } = await useAsyncData<PageResponse<AdminWithdrawalResponse>>(
   'admin-withdrawals',
-  () => fetchAllWithdrawals(page.value, perPageValue.value, filterStatus.value),
-  { watch: [page, perPageValue, filterStatus], server: false }
+  () => fetchAllWithdrawals(page.value, perPageValue.value, filterStatus.value, userFilter.value),
+  { watch: [page, perPageValue, filterStatus, userFilter], server: false }
 )
 
 // ===== STATS =====

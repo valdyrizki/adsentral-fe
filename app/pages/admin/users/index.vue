@@ -34,6 +34,9 @@
       </template>
     </UModal>
 
+    <!-- Detail pengguna: mutasi saldo, ringkasan seller, rekening (EP06-08) -->
+    <AppUserDetailModal v-model:open="detailOpen" :user="detailUser" />
+
     <!-- Modal aktifkan kembali akun nonaktif (EP06-06) -->
     <FormAdminReasonModal
       v-model:open="activateOpen"
@@ -217,6 +220,9 @@
               >
                 Cairkan Refund
               </UButton>
+              <UButton size="sm" color="neutral" variant="outline" icon="mdi:card-account-details-outline" @click="detailUser = user">
+                Detail
+              </UButton>
               <UButton
                 v-if="canActivate(user)"
                 size="sm"
@@ -351,6 +357,13 @@ async function handleUnlock() {
     saving.value = false
   }
 }
+
+// ===== DETAIL PENGGUNA (EP06-08) =====
+const detailUser = ref<AdminUserResponse | null>(null)
+const detailOpen = computed({
+  get: () => detailUser.value !== null,
+  set: (v: boolean) => { if (!v) detailUser.value = null },
+})
 
 // ===== AKTIFKAN KEMBALI AKUN (EP06-06) =====
 const activateTarget = ref<AdminUserResponse | null>(null)

@@ -15,6 +15,7 @@ type StockListFilters = {
   productName?: string
   accountTypeId?: number | null
   account?: string
+  merchantId?: number // khusus admin: stok satu toko (EP06-08)
 }
 
 const buildStockQuery = (page: number, size: number, filters: StockListFilters) => {
@@ -26,6 +27,7 @@ const buildStockQuery = (page: number, size: number, filters: StockListFilters) 
   if (filters.productName) query.productName = filters.productName
   if (filters.accountTypeId) query.accountTypeId = filters.accountTypeId
   if (filters.account?.trim()) query.account = filters.account.trim()
+  if (filters.merchantId) query.merchant_id = filters.merchantId // stok satu toko, khusus admin (EP06-08)
   return query
 }
 
@@ -313,11 +315,12 @@ export const useProductsApi = () => {
     }
   }
 
-  const getAllProductsAdmin = async (page = 0, size = 20, keyword = '', sort = 'terbaru', status = '') => {
+  const getAllProductsAdmin = async (page = 0, size = 20, keyword = '', sort = 'terbaru', status = '', merchantId?: number) => {
     try {
       const query: Record<string, any> = { page, size, sort }
       if (keyword) query.keyword = keyword
       if (status) query.status = status
+      if (merchantId) query.merchant_id = merchantId // semua produk satu toko (EP06-08)
       const res = await api<WebResponse<PageResponse<ProductResponse>>>('/products/all', { query })
       if (res.status !== 'success' || !res.data) {
         throw createError({ statusCode: 400, statusMessage: res.message || 'Failed to fetch products' })

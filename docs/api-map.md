@@ -402,3 +402,14 @@ Filter list: hanya **satu** nilai `status` per request (`'ALL'` = tanpa paramete
 | Fungsi | Endpoint BE | Dipakai di |
 |---|---|---|
 | `fetchAuditLog` | GET `/admin/audit-log` (query `page`, `size`, `action`, `actor`, `target_user_id`; super admin, EP06-05) | `pages/admin/audit-log` (menu hanya super admin) |
+
+**`admin-seller.ts` → `useAdminSellerApi`** · types: `types/seller-summary/AdminSellerSummaryResponse.ts` (EP06-08)
+
+| Fungsi | Endpoint BE | Dipakai di |
+|---|---|---|
+| `fetchAdminGuarantees` | GET `/admin/guarantee` (query `page`, `perPage`, `status`, `merchant_id`, `transaction_id`) | `pages/admin/guarantee` |
+| `fetchUserBalanceLog` | GET `/admin/balance/log/{userId}` | `components/app/UserDetailModal.vue` (dari `pages/admin/users`) |
+| `fetchSellerSummary` | GET `/admin/seller/{sellerId}/summary` | idem (tab Ringkasan Seller) |
+| `fetchSellerBankAccount` | GET `/admin/bank-account/{userId}` (nomor penuh, tercatat di audit BE) | idem (tab Rekening) |
+
+Filter tambahan admin (EP06-08): `getAllProductsAdmin(..., merchantId)` → `merchant_id` di `/products/all`; `getAdminAllStockItems` filter `merchantId` → `merchant_id` di `/admin/stock`; `fetchAllWithdrawals(..., userId)` → `user_id` di `/admin/withdrawal`. Halaman membaca nilainya dari query URL (`?merchant_id=`, `?user_id=`).

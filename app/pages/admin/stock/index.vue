@@ -53,6 +53,7 @@
         />
         <div class="flex gap-2">
           <USelect v-model="perPageValue" :items="perPageItems" class="w-24" />
+          <UBadge v-if="merchantFilter" color="neutral" variant="subtle" class="cursor-pointer self-center" @click="clearMerchantFilter">Filter toko #{{ merchantFilter }} ✕</UBadge>
           <UButton icon="mdi:refresh" color="neutral" variant="outline" :loading="pending" @click="refresh()">
             Refresh
           </UButton>
@@ -256,6 +257,17 @@ const hasActiveFilter = computed(() =>
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
+// Filter toko dari detail seller (?merchant_id=, EP06-08)
+const route = useRoute()
+const router = useRouter()
+const merchantFilter = computed(() => {
+  const v = Number(route.query.merchant_id)
+  return Number.isInteger(v) && v > 0 ? v : undefined
+})
+function clearMerchantFilter() {
+  router.replace({ query: { ...route.query, merchant_id: undefined } })
+}
+
 const {
   data: stockData,
   pending,
@@ -263,8 +275,8 @@ const {
   refresh,
 } = await useAsyncData<PageResponse<ProductStockItemResponse>>(
   'admin-all-stock',
-  () => getAdminAllStockItems(page.value, perPageValue.value, { ...appliedFilters }),
-  { server: false }
+  () => getAdminAllStockItems(page.value, perPageValue.value, { ...appliedFilters, merchantId: merchantFilter.value }),
+  { watch: [merchantFilter], server: false }
 )
 
 // URL file stok presigned (kedaluwarsa 1 jam); modal detail juga memakai sumber ini
