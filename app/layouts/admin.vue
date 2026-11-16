@@ -109,6 +109,8 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     icon: 'i-lucide-users',
     to: '/admin/users'
   },
+  // Jejak aksi admin (EP06-05): khusus super admin, BE 403 untuk admin biasa
+  ...(authStore.isSuperAdmin ? [{ label: 'Audit Log', icon: 'i-lucide-clipboard-list', to: '/admin/audit-log' }] : []),
   {
     label: 'Notifikasi',
     icon: 'i-heroicons-bell',

@@ -396,3 +396,9 @@ Filter list: hanya **satu** nilai `status` per request (`'ALL'` = tanpa paramete
 | `createSystemSetting` | POST `/system/setting/create` | `pages/admin/settings/system` |
 | `updateSystemSetting` | PATCH `/system/setting/update/{id}` | idem |
 | `deleteSystemSetting` | DELETE `/system/setting/delete/{id}` | idem |
+
+**`audit-log.ts` → `useAuditLogApi`** · types: `types/audit/AuditLogResponse.ts`
+
+| Fungsi | Endpoint BE | Dipakai di |
+|---|---|---|
+| `fetchAuditLog` | GET `/admin/audit-log` (query `page`, `size`, `action`, `actor`, `target_user_id`; super admin, EP06-05) | `pages/admin/audit-log` (menu hanya super admin) |
