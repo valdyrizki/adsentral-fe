@@ -13,4 +13,6 @@ export interface AdminUserResponse {
   created_at: string
   /** Login terkunci sampai waktu ini (WIB). Di masa lalu/null = tidak terkunci. */
   locked_until: string | null
+  /** Label status akun (BE EP06-06): DEACTIVATED = dinonaktifkan pemiliknya sendiri (status SUSPEND), bukan penalti. */
+  account_status?: 'ACTIVE' | 'INACTIVE' | 'DEACTIVATED' | null
 }

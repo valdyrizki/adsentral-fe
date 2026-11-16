@@ -34,6 +34,18 @@
       </template>
     </UModal>
 
+    <!-- Modal aktifkan kembali akun nonaktif (EP06-06) -->
+    <FormAdminReasonModal
+      v-model:open="activateOpen"
+      title="Aktifkan Akun"
+      :description="activateTarget ? `${activateTarget.email} dinonaktifkan pemiliknya sendiri. Pastikan kepemilikan akun sudah dicek; pemilik perlu login ulang.` : ''"
+      confirm-text="Aktifkan Akun"
+      confirm-color="primary"
+      placeholder="Contoh: pemilik terverifikasi via WA minta akun dibuka"
+      :loading="activating"
+      @submit="handleActivate"
+    />
+
     <!-- Modal kode reset password (super admin, EP03-07) -->
     <UModal
       v-if="showResetCode"
@@ -178,7 +190,7 @@
               <p class="text-xs text-gray-400 truncate">{{ user.email }} · @{{ user.username }}</p>
               <div class="flex flex-wrap gap-1 mt-0.5">
                 <UBadge color="neutral" variant="subtle" size="xs">{{ user.role }}</UBadge>
-                <UBadge :color="statusColor(user.status)" variant="subtle" size="xs">{{ user.status }}</UBadge>
+                <UBadge :color="statusColor(user.status)" variant="subtle" size="xs">{{ accountLabel(user) }}</UBadge>
                 <UBadge v-if="isLocked(user)" color="error" variant="subtle" size="xs" icon="mdi:lock">
                   Login terkunci s/d {{ formatDate(user.locked_until) }}
                 </UBadge>
@@ -204,6 +216,16 @@
                 @click="openPayout(user)"
               >
                 Cairkan Refund
+              </UButton>
+              <UButton
+                v-if="canActivate(user)"
+                size="sm"
+                color="success"
+                variant="outline"
+                icon="mdi:account-check"
+                @click="activateTarget = user"
+              >
+                Aktifkan
               </UButton>
               <UButton
                 v-if="canUnlock(user)"
@@ -246,7 +268,7 @@ definePageMeta({ layout: 'admin', label: 'Pengguna' })
 
 const toast = useToast()
 const authStore = useAuthStore()
-const { fetchUsers, unlockLogin, viewResetCode, payoutRefund } = useAdminUserApi()
+const { fetchUsers, unlockLogin, viewResetCode, payoutRefund, activateAccount } = useAdminUserApi()
 
 // ===== FILTER & PAGINATION =====
 const page = ref(0)
@@ -278,6 +300,11 @@ const isLocked = (u: AdminUserResponse) => !!u.locked_until && dayjs(u.locked_un
 // Kunci akun ADMIN/SUPER_ADMIN hanya bisa dibuka super admin (BE menjawab 403 untuk admin biasa)
 const canUnlock = (u: AdminUserResponse) =>
   isLocked(u) && (authStore.isSuperAdmin || (u.role !== 'ADMIN' && u.role !== 'SUPER_ADMIN'))
+// Akun admin/super admin hanya bisa diaktifkan super admin (BE 403 untuk admin biasa), sama dengan buka kunci
+const canActivate = (u: AdminUserResponse) =>
+  u.account_status === 'DEACTIVATED' && (authStore.isSuperAdmin || (u.role !== 'ADMIN' && u.role !== 'SUPER_ADMIN'))
+const accountLabel = (u: AdminUserResponse) =>
+  u.account_status === 'DEACTIVATED' ? 'Nonaktif (oleh pemilik)' : u.status
 const formatDate = (v: string | null | undefined) => (v ? dayjs(v).format('DD MMM YYYY, HH:mm') : '-')
 const statusColor = (s: AdminUserResponse['status']) =>
   s === 'ACTIVE' ? 'success' : s === 'SUSPEND' ? 'error' : 'warning'
@@ -322,6 +349,34 @@ async function handleUnlock() {
     toast.add({ title: 'Gagal membuka kunci', description: formError.value, color: 'error' })
   } finally {
     saving.value = false
+  }
+}
+
+// ===== AKTIFKAN KEMBALI AKUN (EP06-06) =====
+const activateTarget = ref<AdminUserResponse | null>(null)
+const activateOpen = computed({
+  get: () => activateTarget.value !== null,
+  set: (v: boolean) => { if (!v) activateTarget.value = null },
+})
+const activating = ref(false)
+
+async function handleActivate(reason: string) {
+  if (!activateTarget.value || activating.value) return
+  activating.value = true
+  try {
+    await activateAccount(activateTarget.value.id, reason)
+    toast.add({ title: 'Akun diaktifkan kembali', description: activateTarget.value.email, color: 'success', icon: 'mdi:check-circle' })
+    activateTarget.value = null
+    await refresh()
+  } catch (err: any) {
+    const stale = apiErrorDetail(err)?.code === 'ACCOUNT_NOT_DEACTIVATED' // sudah diaktifkan admin lain
+    toast.add({ title: stale ? 'Akun sudah aktif' : 'Gagal mengaktifkan akun', description: apiErrorMessage(err), color: stale ? 'warning' : 'error' })
+    if (stale) {
+      activateTarget.value = null
+      await refresh()
+    }
+  } finally {
+    activating.value = false
   }
 }
 

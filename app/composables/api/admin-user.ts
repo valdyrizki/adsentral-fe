@@ -48,5 +48,14 @@ export const useAdminUserApi = () => {
     return res.data!
   }
 
-  return { fetchUsers, unlockLogin, viewResetCode, payoutRefund }
+  /** Aktifkan kembali akun yang dinonaktifkan pemiliknya (EP06-06). Alasan 10–500 karakter; 409 `ACCOUNT_NOT_DEACTIVATED`. */
+  const activateAccount = async (userId: number, reason: string) => {
+    const res = await api<WebResponse<null>>(`/admin/users/${userId}/activate`, {
+      method: 'PATCH',
+      body: { reason },
+    })
+    if (res.status !== 'success') throw new Error(res.message)
+  }
+
+  return { fetchUsers, unlockLogin, viewResetCode, payoutRefund, activateAccount }
 }
