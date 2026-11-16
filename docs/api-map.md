@@ -131,8 +131,8 @@ Stok (produk `STOCKING`):
 
 | Fungsi | Endpoint | Dipakai di |
 |---|---|---|
-| `fetchReviewByProduct` | `/review/product/{productId}` | `pages/product/[id].vue` |
-| `fetchReviewByTransaction` | `/review/transaction/{txId}` | halaman detail order (buyer/seller/admin) |
+| `fetchReviewByProduct` | `/review/product/{productId}` (publik sejak EP06-11) | `pages/product/[id].vue` |
+| `fetchReviewByTransaction` | `/review/transaction/{txId}` (hanya pihak transaksi atau admin, EP06-11) | halaman detail order (buyer/seller/admin) |
 | `fetchCreateReview` | POST `/review/create` | `pages/transaction/[id].vue` (+ import di detail seller/admin) |
 | `fetchUpdateReview` | PATCH `/review/update` | idem |
 | `fetchReviewByUser` / `fetchReviewByMerchant` | `/review/user/{productId}` · `/review/merchant/{merchantId}` | — |
