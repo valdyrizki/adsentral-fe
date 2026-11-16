@@ -83,16 +83,14 @@
             <p class="font-semibold text-gray-800 flex items-center gap-2">
               <UIcon name="mdi:card-account-details-outline" class="text-primary" /> Data Sesuai KTP
             </p>
-            <UButton
-              v-if="detail.status === 'APPROVED' && detail.user_id"
-              icon="mdi:pencil"
-              size="xs"
-              color="primary"
-              variant="soft"
-              @click="openEdit"
-            >
-              Edit Data
-            </UButton>
+            <div v-if="detail.active_verification && detail.user_id" class="flex gap-2">
+              <UButton icon="mdi:pencil" size="xs" color="primary" variant="soft" @click="openEdit">
+                Edit Data
+              </UButton>
+              <UButton icon="mdi:shield-off-outline" size="xs" color="error" variant="soft" @click="isRevokeOpen = true">
+                Cabut Verifikasi
+              </UButton>
+            </div>
           </div>
         </template>
         <VerificationDataView :data="detail" />
@@ -148,6 +146,18 @@
       </div>
 
     </template>
+
+    <!-- Modal Cabut Verifikasi (EP06-07) -->
+    <FormAdminReasonModal
+      v-model:open="isRevokeOpen"
+      title="Cabut Verifikasi"
+      :description="`Verifikasi ${detail?.user_email ?? ''} dicabut: fee dan limit penarikan kembali seperti akun belum terverifikasi, dan NIK ini tidak bisa dipakai verifikasi lagi.`"
+      confirm-text="Cabut Verifikasi"
+      confirm-color="error"
+      placeholder="Contoh: foto KTP terbukti milik orang lain"
+      :loading="revoking"
+      @submit="submitRevoke"
+    />
 
     <!-- Modal Approve -->
     <UModal v-model:open="isApproveOpen" title="Setujui Verifikasi Akun">
@@ -300,7 +310,7 @@ definePageMeta({ layout: 'admin', label: 'Review Verifikasi Akun' })
 
 const route = useRoute()
 const toast = useToast()
-const { fetchAdminVerificationDetail, approveVerification, rejectVerification, editVerifiedUser } = useVerificationApi()
+const { fetchAdminVerificationDetail, approveVerification, rejectVerification, editVerifiedUser, revokeVerification } = useVerificationApi()
 
 const id = route.params.id as string
 
@@ -323,6 +333,30 @@ const {
 function statusLabel(status: string) {
   const map: Record<string, string> = { PENDING: 'Menunggu Review', APPROVED: 'Disetujui', REJECTED: 'Ditolak' }
   return map[status] ?? status
+}
+
+// ===== CABUT VERIFIKASI (EP06-07) =====
+const isRevokeOpen = ref(false)
+const revoking = ref(false)
+
+async function submitRevoke(reason: string) {
+  if (!detail.value?.user_id) return
+  revoking.value = true
+  try {
+    await revokeVerification(detail.value.user_id, reason)
+    toast.add({ title: 'Verifikasi Dicabut', description: `${detail.value.user_email} kembali belum terverifikasi.`, color: 'warning' })
+    isRevokeOpen.value = false
+    await refresh()
+  } catch (err: any) {
+    toast.add({ title: 'Gagal', description: apiErrorMessage(err), color: 'error' })
+    // 404 = sudah tidak terverifikasi (mis. dicabut admin lain); 403/409 = status berubah: muat ulang
+    if (isStaleActionError(err) || apiErrorStatus(err) === 404) {
+      isRevokeOpen.value = false
+      await refresh()
+    }
+  } finally {
+    revoking.value = false
+  }
 }
 
 // ===== APPROVE / REJECT =====

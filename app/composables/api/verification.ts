@@ -123,7 +123,23 @@ export const useVerificationApi = () => {
     return res.data
   }
 
+  /** Cabut verifikasi aktif (EP06-07): alasan 10-500 karakter, NIK diblokir untuk semua akun. */
+  const revokeVerification = async (userId: number, reason: string): Promise<void> => {
+    try {
+      const res = await api<WebResponse<null>>(`/admin/verification/user/${userId}/revoke`, {
+        method: 'PATCH',
+        body: { reason },
+      })
+      if (res.status !== 'success') {
+        throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal mencabut verifikasi' })
+      }
+    } catch (err: any) {
+      rethrowApiError('Gagal mencabut verifikasi')(err)
+    }
+  }
+
   return {
+    revokeVerification,
     fetchVerificationStatus,
     fetchVerificationHistory,
     submitVerification,

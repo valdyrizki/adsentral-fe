@@ -7,6 +7,8 @@ export type Gender = 'MALE' | 'FEMALE'
 export interface UserVerificationRequest {
   id: string
   user_id?: number | null
+  // detail admin (BE EP06-07): true bila pengajuan ini sumber verifikasi yang masih aktif (boleh diedit/dicabut)
+  active_verification?: boolean | null
   user_email: string
   nik_masked: string
   full_name_ktp: string

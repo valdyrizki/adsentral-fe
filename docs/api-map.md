@@ -357,7 +357,8 @@ Filter list: hanya **satu** nilai `status` per request (`'ALL'` = tanpa paramete
 | `fetchAdminVerificationList` | `/admin/verification` | `pages/admin/verification` |
 | `fetchAdminVerificationDetail` | `/admin/verification/{requestId}` | `pages/admin/verification/[id].vue` |
 | `approveVerification` / `rejectVerification` | PATCH `/admin/verification/{requestId}/approve` · `/reject` | idem |
-| `editVerifiedUser` | PATCH `/admin/verification/user/{userId}` | idem |
+| `editVerifiedUser` | PATCH `/admin/verification/user/{userId}` | idem (hanya bila `active_verification`) |
+| `revokeVerification` | PATCH `/admin/verification/user/{userId}/revoke` (body `{ reason }`, EP06-07) | idem |
 
 ## Chat & notifikasi
 

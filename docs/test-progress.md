@@ -355,6 +355,7 @@ Total saat ini: **189 tes** di 14 spec (termasuk `security.spec.ts`, `session.sp
 |---|---|
 | Badge sidebar admin/seller & header buyer dari `/admin/alerts`, `/seller/alerts`, `/alerts` | Sebagian (refresh setelah aksi sudah dicek di payment & withdrawal) |
 | Badge Verifikasi Akun (`pending_verifications`), null disembunyikan | ✅ `admin-verification-badge.spec.ts` |
+| Cabut verifikasi aktif dengan alasan; tombol Cabut/Edit hanya untuk `active_verification`; 404 tampil + muat ulang (EP06-07) | ✅ `admin-verification-revoke.spec.ts` |
 | Field `null` → badge disembunyikan; polling 45 detik | ⬜ P3 |
 
 ## 27. Halaman statis
