@@ -71,7 +71,7 @@ NUXT_PUBLIC_BACKEND_URL=http://<host>:8080   # target devProxy (/backend → <ur
 NUXT_BACKEND_INTERNAL_URL=http://adsentral-be-dev:8080  # target proxy server di Docker; WAJIB URL jaringan Docker internal, bukan domain publik
 ```
 
-Proxy `/backend/* → <BE>/api/*` ada dua: `nitro.devProxy` (dev, dengan cookie rewrite ke localhost) dan `server/middleware/proxy.ts` (runtime/Docker, memakai `runtimeConfig.backendInternalUrl`). Proxy runtime meneruskan `X-Forwarded-For` (rantai masuk + IP peer); BE memakainya untuk rate limit per IP dan hanya mempercayainya dari alamat internal, jadi lewat domain publik semua user berbagi satu kuota. Deploy lewat `Dockerfile` + `docker-compose.yml` (network eksternal `proxy`).
+Proxy `/backend/* → <BE>/api/*` ada dua: `nitro.devProxy` (dev, dengan cookie rewrite ke localhost) dan `server/middleware/proxy.ts` (runtime/Docker, memakai `runtimeConfig.backendInternalUrl`). Proxy runtime meneruskan `X-Forwarded-For` (rantai masuk + IP peer); BE memakainya untuk rate limit per IP dan hanya mempercayainya dari alamat internal, jadi lewat domain publik semua user berbagi satu kuota. Deploy lewat `Dockerfile` + `docker-compose.yml` (network eksternal `proxy`). Staging `https://dev.adsentral.com` memakai `docker-compose-staging.yml` (proxy tetap ke `adsentral-be-staging`; langkah pasang di repo BE `docs/ops/deployment.md` §9.1).
 
 ## Arsitektur
 

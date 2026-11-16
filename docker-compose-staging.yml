@@ -1,0 +1,25 @@
+# Staging (EP07-01 di repo BE): menggantikan stack FE dev, domain https://dev.adsentral.com (basic auth di Caddy).
+# Pasangan stack BE `docker-compose-staging.yml` di repo BE; langkah pemasangan di docs/ops/deployment.md §9.1 repo BE.
+services:
+  adsentral-fe:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: adsentral-fe-staging
+    restart: unless-stopped
+    # Tanpa `ports`: hanya dijangkau Caddy lewat network `proxy` (port 3000 host dipakai FE production).
+    environment:
+      NODE_ENV: production
+      NITRO_PORT: 3000
+      NITRO_HOST: 0.0.0.0
+      NUXT_PUBLIC_API_BASE: /backend
+      NUXT_PUBLIC_BACKEND_URL: ${NUXT_PUBLIC_BACKEND_URL}
+      # Ditulis tetap, tanpa env: FE staging tidak boleh diarahkan ke BE production (T-52) atau ke domain publik
+      # (IP klien hilang untuk rate limit).
+      NUXT_BACKEND_INTERNAL_URL: http://adsentral-be-staging:8080
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
