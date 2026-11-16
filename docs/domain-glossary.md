@@ -103,6 +103,7 @@ Helper: `utils/paymentDeadline.ts`, `utils/txConfirmDeadline.ts`.
 ## Produk
 
 **Status produk** (`types/enum/status.ts`): `REVIEW` (Menunggu Review, produk baru/diubah menunggu admin), `ACTIVE` (Aktif), `INACTIVE` (Ditangguhkan), `NONACTIVE` (Nonaktif), `SUSPEND`, `DELETED`.
+Aksi admin hanya dari status asal yang sah (BE EP06-03, selain itu 409): Setujui/Aktifkan dari `REVIEW`/`SUSPEND`/`NONACTIVE`; Tolak dari `REVIEW`; Suspend dari `ACTIVE`/`REVIEW`; nonaktifkan dari `ACTIVE`. Produk `INACTIVE` (dinonaktifkan seller sendiri) tidak bisa diaktifkan admin.
 
 **Tipe pengiriman** (`delivery_type`):
 

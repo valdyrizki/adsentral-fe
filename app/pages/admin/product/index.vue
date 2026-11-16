@@ -343,7 +343,9 @@ async function handleApprove(product: ProductResponse) {
     toast.add({ title: 'Produk Disetujui ✅', description: `${product.name} telah diaktifkan.`, color: 'success' })
     await refresh()
   } catch (err: any) {
-    toast.add({ title: 'Gagal ❌', description: err.statusMessage || err.message, color: 'error' })
+    toast.add({ title: 'Gagal ❌', description: apiErrorMessage(err), color: 'error' })
+    // 409 = status produk sudah berubah (mis. dinonaktifkan seller): muat ulang supaya tombol sesuai status baru
+    if (isStaleActionError(err)) await refresh()
   } finally {
     loadingId.value = null
     close()
@@ -399,7 +401,11 @@ async function submitReason(reason: string) {
     reasonAction.value = null
     await refresh()
   } catch (err: any) {
-    toast.add({ title: 'Gagal ❌', description: err.statusMessage || err.message, color: 'error' })
+    toast.add({ title: 'Gagal ❌', description: apiErrorMessage(err), color: 'error' })
+    if (isStaleActionError(err)) {
+      reasonAction.value = null
+      await refresh()
+    }
   } finally {
     loadingId.value = null
   }

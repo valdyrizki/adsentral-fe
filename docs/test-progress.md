@@ -41,7 +41,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | 🐞 | P3 (dashboard admin) | Refund 400 menutup modal (F-24). GET membuang pesan BE (F-26). `alert()` diskusi (F-27). Filter & teks Cancel Arbitrage (F-28). |
 | 17 | Pembayaran admin | `payment.spec.ts` | Sebagian | P1 (unprocessed payment) | "Tolak" memanggil `/payment/cancel` (F-06, perlu konfirmasi). Filter `status=ALL` (F-07). |
 | 18 | Penarikan dana admin | `withdrawal.spec.ts` | 🐞 | — | Rumus "Potensi Anomali" ikut menghitung saldo deposit (F-22). Statistik hanya halaman aktif (F-23). |
-| 19 | Produk & stok admin (review, suspend) | `admin-product-reason.spec.ts` | Sebagian | P1 | Halaman create/edit admin memakai ulang form produk seller; tes setelah modul 12. |
+| 19 | Produk & stok admin (review, suspend) | `admin-product-reason.spec.ts`, `admin-product-status.spec.ts` | Sebagian | P1 | Halaman create/edit admin memakai ulang form produk seller; tes setelah modul 12. |
 | 20 | Verifikasi seller (admin) | — | ⬜ | P1 | Termasuk edit user terverifikasi (`editVerifiedUser`). |
 | 21 | Master data admin (kategori, tipe akun, voucher, metode/channel bayar) | — | ⬜ | P2 | Pola CRUD serupa; cocok satu spec per halaman. Sinkron Tripay memanggil gateway lewat BE. |
 | 22 | Keuangan admin (ringkasan, jurnal, kategori, failed journal) | — | ⬜ | P2 | Total per kategori diagregasi di FE (loop semua halaman jurnal, abaikan void) — perlu dicek kebenarannya. |
@@ -295,6 +295,7 @@ Total saat ini: **189 tes** di 14 spec (termasuk `security.spec.ts`, `session.sp
 | `/admin/product`: daftar, filter (`getAllProductsAdmin`) | ⬜ P1 |
 | `/admin/product/review`: tolak dengan alasan wajib (≥ 10 karakter, body `{ reason }`) | ✅ `admin-product-reason.spec.ts` |
 | `/admin/product`: suspend dengan alasan wajib, pesan error BE tampil dan dialog tetap terbuka | ✅ `admin-product-reason.spec.ts` |
+| Aktifkan/suspend ditolak 409 (status basi, EP06-03): pesan BE tampil, dialog ditutup, daftar dimuat ulang | ✅ `admin-product-status.spec.ts` |
 | `/admin/product/review`: setujui | ⬜ P1 |
 | `/admin/product/view/[id]`, `create`, `edit` | ⬜ P2 |
 | `/admin/stock`: daftar stok semua seller | ⬜ P3 |

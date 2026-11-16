@@ -337,10 +337,7 @@ export const useProductsApi = () => {
       useAlertsStore().refresh() // badge produk menunggu review turun
       return res.data
     } catch (err: any) {
-      throw createError({
-        statusCode: err.statusCode || 500,
-        statusMessage: err.statusMessage || 'Activate failed, server error',
-      })
+      rethrowApiError('Gagal mengaktifkan produk')(err) // 409 status asal tidak sah (EP06-03): pesan BE apa adanya
     }
   }
 
