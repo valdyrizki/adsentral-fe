@@ -3,6 +3,7 @@
     <div class="flex items-center justify-between mb-2">
       <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">Foto Verifikasi</p>
       <UButton
+        v-if="!data.photos_purged_at"
         icon="mdi:refresh"
         size="xs"
         color="neutral"
@@ -12,6 +13,12 @@
         Muat Ulang Foto
       </UButton>
     </div>
+    <!-- EP08-07: foto dihapus BE setelah masa simpan (kebijakan privasi §4); URL foto null -->
+    <p v-if="data.photos_purged_at" class="text-xs text-gray-500 flex items-center gap-1" data-testid="verification-photos-purged">
+      <UIcon name="mdi:delete-clock-outline" class="size-3.5" />
+      Foto sudah dihapus sesuai masa simpan data (Kebijakan Privasi) pada {{ dayjs(data.photos_purged_at).format('D MMM YYYY') }}.
+    </p>
+    <template v-else>
     <p v-if="anyFailed" class="text-xs text-amber-600 mb-2 flex items-center gap-1">
       <UIcon name="mdi:alert-outline" class="size-3.5" />
       Link foto sudah kedaluwarsa (15 menit). Klik "Muat Ulang Foto" untuk memuat ulang.
@@ -38,6 +45,7 @@
         </div>
       </div>
     </div>
+    </template>
 
     <UModal v-model:open="previewOpen" :title="previewLabel">
       <template #body>
@@ -49,6 +57,7 @@
 
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue'
+import dayjs from 'dayjs'
 import type { UserVerificationRequest } from '~/types/verification/UserVerificationRequest'
 import type { UserVerificationData } from '~/types/verification/UserVerificationData'
 

@@ -179,6 +179,8 @@ Sumber mutasi saldo (`WalletSource`, label di `utils/walletSource.ts`): `DEPOSIT
 
 **Cabut verifikasi** (admin, EP06-07): dari detail pengajuan yang menjadi verifikasi aktif (`active_verification: true`) lewat tombol **Cabut Verifikasi** dengan alasan 10-500 karakter. Seller kembali `UNVERIFIED` (fee dan limit penarikan akun belum terverifikasi berlaku untuk transaksi berikutnya), mendapat notifikasi `VERIFICATION_REVOKED`, dan NIK itu tidak bisa dipakai verifikasi lagi oleh akun mana pun; seller boleh mengajukan ulang dengan NIK lain. **Edit Data** juga hanya untuk verifikasi aktif.
 
+**Masa simpan foto** (EP08-07): BE menghapus foto KTP/selfie 30 hari setelah ditolak, 12 bulan setelah disetujui, atau saat akun dihapus. Respons memberi `photos_purged_at` dan URL foto `null`; `VerificationPhotoGrid` menampilkan keterangan "Foto sudah dihapus sesuai masa simpan data". Pesan pengiriman pesanan yang lewat masa simpan (90 hari setelah selesai + garansi habis) diganti teks "[Isi pengiriman sudah dihapus ...]" dari BE.
+
 ## Voucher
 
 `discount_type`: `PERCENT` (dibatasi `max_discount_amount`) atau `NOMINAL`. `min_transaction_amount`, `quota`/`used_count`, periode `start_date`–`end_date`, `is_public`. Status `ACTIVE` / `SUSPENDED`.

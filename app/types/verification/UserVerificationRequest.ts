@@ -29,6 +29,8 @@ export interface UserVerificationRequest {
   ktp_photo_url: string
   selfie_ktp_photo_url: string
   selfie_note_photo_url: string
+  /** EP08-07: terisi = foto sudah dihapus sesuai masa simpan; URL foto null */
+  photos_purged_at?: string | null
   status: VerificationRequestStatus
   rejection_reason: string | null
   reviewed_by: string | null
