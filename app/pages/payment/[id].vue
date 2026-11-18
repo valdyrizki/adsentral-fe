@@ -259,6 +259,7 @@
                   <UIcon name="mdi:bank-outline" class="size-5 text-yellow-600" />
                   <h3 class="font-semibold text-yellow-800">Informasi Rekening Pembayaran</h3>
                 </div>
+                <AppSlaNote prefix="Konfirmasi transfer oleh CS:" class="mb-3" />
                 <p class="text-xs text-yellow-700 mb-3">
                   Transfer sejumlah
                   <span class="font-semibold">Rp {{ payment.amount.toLocaleString('id-ID') }}</span>

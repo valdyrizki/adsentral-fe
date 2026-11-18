@@ -32,7 +32,8 @@
         <UAccordion :items="currentFaq" class="mb-10" />
 
         <!-- Kontak Dukungan -->
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Masih butuh bantuan?</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Masih butuh bantuan?</h2>
+        <AppSlaNote prefix="Permintaan ke CS (pembayaran manual, penarikan, verifikasi, review produk, arbitrase):" class="mb-4" />
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
           <div
             v-for="channel in supportChannels"

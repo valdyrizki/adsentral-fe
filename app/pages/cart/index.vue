@@ -243,7 +243,10 @@
                   Setelah checkout, Anda akan diarahkan ke halaman pembayaran dengan informasi rekening transfer.
                 </p>
               </div>
+              <AppSlaNote prefix="Konfirmasi transfer oleh CS:" class="mt-1.5" />
             </div>
+
+            <LegalRefundSummary />
 
             <p v-if="authStore.isAnyAdmin" class="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
               Akun admin tidak bisa checkout. Gunakan akun pembeli untuk berbelanja.

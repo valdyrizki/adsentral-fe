@@ -22,6 +22,7 @@
         type="deposit"
         :disabled="loading"
       />
+      <AppSlaNote v-if="selectedPayment === 'MANUAL_BANK'" prefix="Konfirmasi transfer oleh CS:" class="mt-2" />
     </UFormField>
 
     <!-- Rincian Biaya -->

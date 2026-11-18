@@ -32,7 +32,7 @@ Saat menambah/mengubah endpoint, perbarui tabel terkait di file ini.
 
 | Fungsi | Endpoint | Dipakai di |
 |---|---|---|
-| `registerUser` | POST `/user/register` (429 `RATE_LIMITED` 10/jam per IP) | `components/form/Register.vue` |
+| `registerUser` | POST `/user/register` dengan `accepted_terms: true` (centang S&K + privasi wajib, EP08-05; 429 `RATE_LIMITED` 10/jam per IP) | `components/form/Register.vue` |
 | `fetchMe` | `/user/profile` | `stores/auth.ts`, `pages/profile` |
 | `deleteAccount` | PATCH `/user/deactivate` body `{ password }` (EP03-05): sukses → `authStore.clearAuth()` + ke beranda (sesi sudah diakhiri BE); 400 password salah; 409 `ACCOUNT_DELETION_BLOCKED` (pesan BE menyebut alasannya, `data.reasons`) | `pages/profile` (bagian Hapus Akun) |
 | `updateProfile` | PATCH `/user/profile` (ganti password: 403 `ACCOUNT_LOCKED` bila password lama salah berulang; jangan logout) | `pages/profile` |

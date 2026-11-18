@@ -33,6 +33,7 @@ test.describe('Detail pembayaran (buyer)', () => {
 
     // Rekening dari system setting grup REKENING
     await expect(main.getByText('Informasi Rekening Pembayaran')).toBeVisible()
+    await expect(main.getByTestId('sla-note')).toContainText('Konfirmasi transfer oleh CS: Diproses maks. 1×24 jam kerja') // EP08-05
     await expect(main.getByText('BCA a.n. Adsentral')).toBeVisible()
     await expect(main.getByText('1234567890')).toBeVisible()
 

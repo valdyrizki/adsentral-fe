@@ -15,6 +15,10 @@
     <UCard>
       <template #header>
         <div class="text-lg font-semibold">Form Create Product</div>
+        <p class="text-xs text-gray-500 mt-1">
+          Produk ditinjau admin sebelum tampil. Pastikan tidak termasuk
+          <NuxtLink to="/produk-terlarang" target="_blank" class="text-primary-600 hover:underline">Produk Terlarang</NuxtLink>.
+        </p>
       </template>
       <div class="">
         

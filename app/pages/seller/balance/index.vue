@@ -217,6 +217,8 @@
               <!-- Catatan dari seller -->
               <p v-if="item.notes" class="text-xs text-gray-400 italic mt-1.5">Catatan: {{ item.notes }}</p>
 
+              <AppSlaNote v-if="item.status === 'PENDING'" prefix="Transfer oleh CS:" class="mt-1.5" />
+
               <!-- Tombol Cancel (hanya PENDING) -->
               <div v-if="item.status === 'PENDING'" class="mt-2 flex justify-end">
                 <UButton

@@ -131,6 +131,8 @@ const nav = {
     { name: 'Panduan Berjualan', to: '/panduan-berjualan' },
     { name: 'Kebijakan Privasi', to: '/kebijakan-privasi' },
     { name: 'Syarat & Ketentuan', to: '/syarat-ketentuan' },
+    { name: 'Kebijakan Refund & Garansi', to: '/kebijakan-refund-garansi' },
+    { name: 'Produk Terlarang', to: '/produk-terlarang' },
   ],
 }
 </script>

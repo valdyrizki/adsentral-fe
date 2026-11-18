@@ -139,9 +139,10 @@
               </div>
 
               <!-- Keterangan REVIEW -->
-              <p v-if="product.status === 'REVIEW'" class="text-xs text-primary-400 mt-1">
-                Menunggu persetujuan admin.
-              </p>
+              <template v-if="product.status === 'REVIEW'">
+                <p class="text-xs text-primary-400 mt-1">Menunggu persetujuan admin.</p>
+                <AppSlaNote class="mt-0.5" />
+              </template>
               <!-- Keterangan NONACTIVE -->
               <p v-else-if="product.status === 'NONACTIVE'" class="text-xs text-red-400 mt-1">
                 Produk ditolak / dinonaktifkan admin. Hubungi admin untuk mengajukan banding.

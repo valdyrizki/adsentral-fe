@@ -400,6 +400,7 @@
           <div class="flex flex-col gap-2 text-center">
             <div>
               <h1 class="text-lg">Pembeli Mengajukan Penangguhan!</h1>
+              <AppSlaNote prefix="Keputusan arbitrase oleh CS:" class="justify-center text-gray-700" />
             </div>
             <div>
               <p class="text-sm">{{ transaction?.tx_description ?? "Tidak ada alasan pembatalan" }}</p>
@@ -576,7 +577,10 @@
               Berlaku hingga {{ dayjs(transaction?.done_at).add(transaction?.product?.guarantee_days ?? 0, 'day').format('D MMM YYYY HH:mm') }}
             </p>
             <div v-if="!guarantee" class="pt-1">
-              <p class="text-sm text-gray-500 mb-2">Produk tidak sesuai? Ajukan klaim garansi untuk mendapatkan akun pengganti.</p>
+              <p class="text-sm text-gray-500 mb-2">
+                Produk tidak sesuai? Ajukan klaim garansi untuk mendapatkan akun pengganti
+                (<NuxtLink to="/kebijakan-refund-garansi" target="_blank" class="text-primary-600 hover:underline">ketentuan garansi</NuxtLink>).
+              </p>
               <UButton icon="material-symbols:shield" color="warning" variant="solid" size="sm" @click="isGuaranteeClaimModal = true">
                 Klaim Garansi
               </UButton>

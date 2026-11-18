@@ -415,6 +415,7 @@
       <div class="flex flex-col gap-2 text-center">
         <div>
           <h1 class="text-lg">Pembeli Mengajukan Penangguhan!</h1>
+          <AppSlaNote prefix="Keputusan arbitrase oleh CS:" class="justify-center text-gray-700" />
         </div>
         <div>
           <p class="text-sm">{{ transaction?.tx_description ?? "Tidak ada alasan pembatalan" }}</p>

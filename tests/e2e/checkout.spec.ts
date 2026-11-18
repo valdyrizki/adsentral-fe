@@ -86,6 +86,11 @@ test.describe('Checkout keranjang', () => {
 
     await gotoHydrated(page, '/cart')
     await expect(page.getByText('Setelah checkout, Anda akan diarahkan ke halaman pembayaran')).toBeVisible()
+    // EP08-05: SLA konfirmasi transfer + ringkasan refund dengan tautan kebijakan
+    await expect(page.getByTestId('sla-note')).toContainText('Diproses maks. 1×24 jam kerja (setiap hari 11.00–21.00 WIB)')
+    const refund = page.getByTestId('refund-summary')
+    await expect(refund).toContainText('refund otomatis ke Saldo Belanja')
+    await expect(refund.getByRole('link', { name: 'Kebijakan Refund & Garansi' })).toHaveAttribute('href', '/kebijakan-refund-garansi')
     await confirmCheckout(page)
 
     await expect(page).toHaveURL(/\/payment\/PAY-77$/)

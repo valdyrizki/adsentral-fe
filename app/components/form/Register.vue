@@ -31,6 +31,18 @@
         <UInput type="password" v-model="confirmPassword" id="confirmPassword" placeholder="Ulangi kata sandi Anda" class="block" size="lg"/>
       </div>
 
+      <!-- EP08-05: persetujuan wajib, dicatat BE sebagai bukti (accepted_terms) -->
+      <label class="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300" data-testid="register-terms">
+        <input v-model="acceptedTerms" type="checkbox" class="mt-1 accent-primary-600" data-testid="register-terms-checkbox" />
+        <span>
+          Saya berusia minimal 18 tahun (atau mendapat izin orang tua/wali) dan menyetujui
+          <NuxtLink to="/syarat-ketentuan" target="_blank" class="font-medium text-primary-600 hover:underline">Syarat &amp; Ketentuan</NuxtLink>
+          serta
+          <NuxtLink to="/kebijakan-privasi" target="_blank" class="font-medium text-primary-600 hover:underline">Kebijakan Privasi</NuxtLink>
+          Adsentral.
+        </span>
+      </label>
+
       <!-- 429 RATE_LIMITED: tombol dikunci selama hitung mundur dari BE -->
       <UAlert
         v-if="rateLimitMessage"
@@ -40,7 +52,7 @@
         :title="rateLimitMessage"
         data-testid="register-block-alert"
       />
-      <UButton :loading="loading" :disabled="cooldownActive" type="submit" size="lg" class="w-full flex justify-center items-center" @click="handleRegister">
+      <UButton :loading="loading" :disabled="cooldownActive || !acceptedTerms" type="submit" size="lg" class="w-full flex justify-center items-center" @click="handleRegister">
         {{ cooldownActive ? `Coba lagi dalam ${cooldownLabel}` : 'Daftar' }}
       </UButton>
 
@@ -60,6 +72,7 @@ import type { RegisterRequest } from '~/types/RegisterRequest'
 import { useUserApi } from '~/composables/api/user'
 
 const confirmPassword = ref('')
+const acceptedTerms = ref(false)
 
 const registerRequest = reactive({
   username: '',
@@ -88,7 +101,7 @@ watch(cooldownActive, (active) => {
 })
 
 const handleRegister = async () => {
-  if (cooldownActive.value) return
+  if (cooldownActive.value || !acceptedTerms.value) return
 
   console.log(registerRequest);
   
@@ -123,7 +136,7 @@ const handleRegister = async () => {
   }
 
   try {
-    const response = await registerUser(registerRequest as RegisterRequest)
+    const response = await registerUser({ ...registerRequest, accepted_terms: true } as RegisterRequest)
 
     console.log(response)
     toast.add({

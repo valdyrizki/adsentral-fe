@@ -61,6 +61,7 @@
             color="warning"
             variant="subtle"
           />
+          <AppSlaNote prefix="Review verifikasi:" class="mt-2" />
 
           <UCard class="shadow-sm mt-4">
             <template #header>
@@ -113,6 +114,7 @@
                 <p class="font-semibold text-gray-700">Akun Anda belum terverifikasi</p>
                 <p class="text-sm text-gray-400 mt-1 max-w-md">
                   Lengkapi data sesuai KTP dan unggah 3 foto untuk memulai proses verifikasi. Admin akan meninjau pengajuan Anda secara manual.
+                  Data KTP diproses sesuai <NuxtLink to="/kebijakan-privasi" target="_blank" class="text-primary-600 hover:underline">Kebijakan Privasi</NuxtLink>.
                 </p>
               </div>
               <UButton icon="mdi:shield-check-outline" color="primary" @click="openForm(null)">

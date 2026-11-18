@@ -73,6 +73,7 @@ test.describe('Register: rate limit', () => {
     await page.locator('#username').fill('tesdaftar')
     await page.locator('#password').fill('password123')
     await page.locator('#confirmPassword').fill('password123')
+    await page.getByTestId('register-terms-checkbox').check()
     await page.getByRole('main').getByRole('button', { name: 'Daftar' }).click()
 
     const main = page.getByRole('main')
@@ -111,6 +112,7 @@ async function submitRegister(page: import('@playwright/test').Page, password: s
   await page.locator('#username').fill('tesdaftar')
   await page.locator('#password').fill(password)
   await page.locator('#confirmPassword').fill(password)
+  await page.getByTestId('register-terms-checkbox').check()
   await page.getByRole('main').getByRole('button', { name: 'Daftar' }).click()
 }
 
