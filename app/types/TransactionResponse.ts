@@ -19,6 +19,7 @@ export interface TransactionResponse {
   delivered_at: string | null; // LocalDateTime → string | null
   rejected_at: string | null; // LocalDateTime → string | null
   cancel_requested_at?: string | null; // saat buyer mengajukan batal; dasar timer auto-refund (EP04-04)
+  discussion_purged_at?: string | null; // terisi = diskusi pesanan sudah dihapus sesuai masa simpan 2 tahun (EP08-07)
   done_at: string | null; // LocalDateTime → string | null
   buyer_id: string;
   buyer_username: string;

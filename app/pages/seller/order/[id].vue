@@ -643,7 +643,9 @@
             <UCard>
               <div class="flex flex-col gap-2 items-center justify-center p-4">
                 <UIcon name="mdi:message-text-outline" class="size-6 text-gray-400" />
-                <p>Belum ada diskusi antara pembeli dan penjual</p>
+                <!-- EP08-07: diskusi dihapus BE 2 tahun setelah pesanan dan garansi berakhir (Kebijakan Privasi §4) -->
+                <p v-if="transaction?.discussion_purged_at" data-testid="discussion-purged">Diskusi pesanan ini sudah dihapus sesuai masa simpan data (Kebijakan Privasi) pada {{ dayjs(transaction.discussion_purged_at).format('D MMM YYYY') }}.</p>
+                <p v-else>Belum ada diskusi antara pembeli dan penjual</p>
               </div>
             </UCard>
           </div>

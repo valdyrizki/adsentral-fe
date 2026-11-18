@@ -317,3 +317,20 @@ test.describe('Detail transaksi buyer', () => {
     await expect(main(page).getByRole('link', { name: 'Lakukan Pembayaran' })).toHaveAttribute('href', '/payment/PAY-1')
   })
 })
+
+test.describe('Diskusi pesanan yang sudah lewat masa simpan', () => {
+  test('keterangan dihapus menggantikan "Belum ada diskusi" (EP08-07)', async ({ page, mockApi }) => {
+    let tx = makeTx('TX-1', 'PAY-1', { status: 'COMPLETE', done_at: hoursAgo(20000), discussion_purged_at: '2026-11-18T03:10:00' })
+    mockBuyerDetail(mockApi, () => tx)
+
+    await gotoHydrated(page, '/transaction/TX-1')
+    await expect(page.getByTestId('discussion-purged')).toContainText('sudah dihapus sesuai masa simpan data')
+    await expect(page.getByTestId('discussion-purged')).toContainText('18 Nov 2026')
+    await expect(main(page).getByText('Belum ada diskusi antara pembeli dan penjual')).toHaveCount(0)
+
+    tx = { ...tx, discussion_purged_at: null }
+    await gotoHydrated(page, '/transaction/TX-1')
+    await expect(main(page).getByText('Belum ada diskusi antara pembeli dan penjual')).toBeVisible()
+    await expect(page.getByTestId('discussion-purged')).toHaveCount(0)
+  })
+})
