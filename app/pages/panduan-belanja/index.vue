@@ -72,14 +72,14 @@ const breadcrumb = [
   { label: 'Panduan Belanja', icon: 'i-lucide-book-open' },
 ]
 
+// Angka dan alur wajib sesuai S&K dan Kebijakan Refund & Garansi (app/legal)
 const steps = [
   {
     title: 'Daftar & Masuk Akun',
     description: 'Buat akun Adsentral gratis untuk mulai berbelanja. Jika sudah punya akun, langsung masuk.',
     points: [
       'Klik tombol "Daftar" di pojok kanan atas.',
-      'Isi nama, email, dan kata sandi.',
-      'Verifikasi email Anda, lalu masuk.',
+      'Isi username, email, dan password, lalu setujui Syarat & Ketentuan.',
     ],
   },
   {
@@ -88,7 +88,7 @@ const steps = [
     points: [
       'Gunakan kotak pencarian di bagian atas halaman.',
       'Browse melalui menu Kategori untuk menemukan produk terkait.',
-      'Gunakan filter harga dan urutan untuk menyempurnakan hasil.',
+      'Cek masa garansi, estimasi pengiriman, dan tanda kirim otomatis di halaman produk.',
     ],
   },
   {
@@ -102,29 +102,29 @@ const steps = [
   },
   {
     title: 'Checkout & Pilih Pembayaran',
-    description: 'Periksa isi keranjang, masukkan detail pengiriman, dan pilih metode pembayaran.',
+    description: 'Periksa isi keranjang dan pilih metode pembayaran.',
     points: [
       'Buka halaman Keranjang dan pastikan semua item sudah benar.',
-      'Klik "Checkout" dan ikuti langkah pengisian alamat.',
-      'Pilih metode pembayaran yang tersedia.',
+      'Pilih Saldo Belanja, metode payment gateway, atau transfer bank manual.',
+      'Rincian biaya (biaya aplikasi Rp1.000 dan biaya layanan pembayaran) tampil sebelum checkout.',
     ],
   },
   {
-    title: 'Konfirmasi & Selesaikan Pembayaran',
-    description: 'Lakukan pembayaran sesuai metode yang dipilih, lalu simpan bukti transaksi.',
+    title: 'Selesaikan Pembayaran',
+    description: 'Bayar dalam 24 jam sejak pesanan dibuat; lewat dari itu pesanan dibatalkan otomatis.',
     points: [
       'Ikuti instruksi pembayaran yang muncul.',
-      'Unggah bukti pembayaran jika diperlukan.',
-      'Status pesanan akan berubah menjadi "Diproses" setelah pembayaran dikonfirmasi.',
+      'Transfer manual: kirim nominal persis termasuk kode unik; dikonfirmasi CS maks. 1×24 jam kerja.',
+      'Uang Anda ditahan Adsentral (rekber) sampai pesanan selesai.',
     ],
   },
   {
-    title: 'Pantau Status Pesanan',
-    description: 'Lacak pesanan Anda secara real-time melalui halaman Transaksi.',
+    title: 'Terima & Periksa Produk',
+    description: 'Pantau pesanan di menu Transaksi dan periksa produk begitu dikirim.',
     points: [
-      'Buka menu "Transaksi" di akun Anda.',
-      'Lihat status pesanan: Menunggu, Diproses, Dikirim, atau Selesai.',
-      'Hubungi penjual melalui fitur Chat jika ada pertanyaan.',
+      'Isi akun atau file dari penjual tampil di diskusi pesanan.',
+      'Ada masalah? Tolak kiriman dalam 24 jam; tanpa keluhan, pesanan dianggap diterima.',
+      'Segera ganti password dan data pemulihan akun yang Anda beli, bila produk mengizinkan.',
     ],
   },
 ]
@@ -132,23 +132,23 @@ const steps = [
 const faq = [
   {
     label: 'Apakah belanja di Adsentral aman?',
-    content: 'Ya, Adsentral menggunakan enkripsi data dan sistem pembayaran yang terpercaya untuk menjaga keamanan transaksi Anda.',
+    content: 'Ya. Pembayaran ditahan Adsentral (rekber) dan baru diteruskan ke penjual setelah pesanan selesai. Bila pesanan gagal, uang kembali ke Saldo Belanja.',
   },
   {
     label: 'Bagaimana jika produk yang diterima tidak sesuai?',
-    content: 'Anda dapat mengajukan komplain melalui halaman detail transaksi dalam waktu 2×24 jam setelah barang diterima. Tim kami akan membantu menyelesaikan masalah.',
+    content: 'Tolak kiriman dari halaman pesanan dalam 24 jam setelah dikirim; penjual punya 24 jam untuk memperbaikinya, atau pesanan dibatalkan dan uang kembali. Setelah pesanan diterima, masalah dalam masa garansi diajukan lewat klaim garansi.',
   },
   {
     label: 'Metode pembayaran apa saja yang tersedia?',
-    content: 'Adsentral mendukung berbagai metode pembayaran sesuai yang dikonfigurasi oleh seller, termasuk transfer bank dan dompet digital.',
+    content: 'Saldo Belanja, metode payment gateway yang tampil di Keranjang, dan transfer bank manual.',
   },
   {
     label: 'Berapa lama pesanan saya diproses?',
-    content: 'Seller akan memproses pesanan dalam 1×24 jam setelah pembayaran dikonfirmasi. Waktu pengiriman tergantung lokasi dan jasa kurir yang digunakan.',
+    content: 'Produk kirim otomatis terkirim sesaat setelah dibayar. Produk lain dikonfirmasi penjual maks. 24 jam setelah dibayar dan dikirim sesuai estimasi pengiriman di halaman produk; bila terlewat, pesanan dibatalkan otomatis dan uang kembali.',
   },
   {
     label: 'Bagaimana cara menghubungi penjual?',
-    content: 'Gunakan fitur Chat yang tersedia di halaman produk atau halaman detail transaksi untuk berkomunikasi langsung dengan penjual.',
+    content: 'Gunakan fitur Chat atau diskusi di halaman detail transaksi.',
   },
 ]
 </script>

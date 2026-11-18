@@ -34,31 +34,9 @@
         <!-- Kontak Dukungan -->
         <h2 class="text-2xl font-bold text-gray-800 mb-2">Masih butuh bantuan?</h2>
         <AppSlaNote prefix="Permintaan ke CS (pembayaran manual, penarikan, verifikasi, review produk, arbitrase):" class="mb-4" />
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-          <div
-            v-for="channel in supportChannels"
-            :key="channel.title"
-            class="bg-white rounded-2xl p-6 border border-primary-100 shadow-sm text-center"
-          >
-            <UIcon :name="channel.icon" class="text-primary text-3xl mb-3" />
-            <h3 class="font-semibold text-gray-800 mb-1">{{ channel.title }}</h3>
-            <p class="text-sm text-gray-500 mb-3">{{ channel.description }}</p>
-            <UButton :color="channel.color" variant="soft" size="sm" :icon="channel.icon">
-              {{ channel.action }}
-            </UButton>
-          </div>
-        </div>
-
-        <!-- Jam Operasional -->
-        <div class="bg-primary-50 border border-primary-200 rounded-2xl p-5 flex items-start gap-4">
-          <UIcon name="i-heroicons-clock" class="text-primary text-2xl flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 class="font-semibold text-gray-800 mb-1">Jam Operasional Tim Dukungan</h3>
-            <p class="text-sm text-gray-600">Senin – Jumat: 08.00 – 20.00 WIB</p>
-            <p class="text-sm text-gray-600">Sabtu – Minggu: 09.00 – 17.00 WIB</p>
-            <p class="text-xs text-gray-400 mt-1">Di luar jam operasional, silakan tinggalkan pesan dan kami akan membalas secepatnya.</p>
-          </div>
-        </div>
+        <UButton to="/hubungi-kami" color="primary" icon="i-heroicons-chat-bubble-left-right" data-testid="help-contact-link">
+          Hubungi Kami
+        </UButton>
 
       </div>
     </div>
@@ -78,55 +56,57 @@ const breadcrumb = [
   { label: 'Pusat Bantuan', icon: 'i-heroicons-question-mark-circle' },
 ]
 
+// Isi FAQ wajib sesuai S&K dan Kebijakan Refund & Garansi (app/legal); ubah angka/alur di sana dulu
 const topics = [
   { icon: 'i-heroicons-shopping-bag', label: 'Pembelian' },
   { icon: 'i-heroicons-credit-card', label: 'Pembayaran' },
-  { icon: 'i-heroicons-truck', label: 'Pengiriman' },
-  { icon: 'i-heroicons-arrow-uturn-left', label: 'Pengembalian' },
+  { icon: 'i-heroicons-paper-airplane', label: 'Pengiriman' },
+  { icon: 'i-heroicons-arrow-uturn-left', label: 'Refund & Garansi' },
   { icon: 'i-heroicons-user-circle', label: 'Akun' },
-  { icon: 'i-heroicons-store', label: 'Seller' },
+  { icon: 'i-heroicons-building-storefront', label: 'Seller' },
 ]
 
 const activeTopic = ref('Pembelian')
 
 const faqMap: Record<string, { label: string; content: string }[]> = {
   'Pembelian': [
-    { label: 'Bagaimana cara memesan produk?', content: 'Pilih produk → Tambah ke Keranjang → Checkout → Pilih metode pembayaran → Konfirmasi pesanan.' },
-    { label: 'Apakah bisa memesan produk dari beberapa seller sekaligus?', content: 'Ya, keranjang belanja Adsentral mendukung multi-seller. Setiap seller akan diproses sebagai transaksi terpisah.' },
-    { label: 'Bagaimana jika stok produk habis saat checkout?', content: 'Sistem akan memberi tahu jika stok tidak mencukupi sebelum pembayaran dilakukan.' },
+    { label: 'Bagaimana cara memesan produk?', content: 'Pilih produk → Tambah ke Keranjang → buka Keranjang → pilih metode pembayaran → Checkout, lalu selesaikan pembayaran dalam 24 jam.' },
+    { label: 'Apakah uang saya aman?', content: 'Ya. Pembayaran ditahan Adsentral (rekber) dan baru diteruskan ke penjual setelah pesanan selesai. Bila pesanan gagal, uang kembali ke Saldo Belanja Anda.' },
+    { label: 'Bisakah saya membatalkan pesanan?', content: 'Pembatalan bisa diajukan setelah penjual mengonfirmasi pesanan dan sebelum produk dikirim. Penjual dapat menerima atau menolak; tanpa tanggapan dalam 24 jam, pengajuan dianggap diterima. Pesanan kirim otomatis tidak dapat dibatalkan. Pembatalan tercatat sebagai poin penalti.' },
+    { label: 'Bisakah memesan dari beberapa seller sekaligus?', content: 'Ya. Setiap seller diproses sebagai pesanan terpisah dalam satu pembayaran.' },
   ],
   'Pembayaran': [
-    { label: 'Metode pembayaran apa yang tersedia?', content: 'Tersedia transfer bank dan dompet digital sesuai konfigurasi seller.' },
-    { label: 'Berapa lama batas waktu pembayaran?', content: 'Pembayaran harus dilakukan dalam 24 jam setelah pesanan dibuat, sebelum otomatis dibatalkan.' },
-    { label: 'Apakah ada biaya tambahan saat pembayaran?', content: 'Tidak ada biaya tersembunyi dari Adsentral. Biaya admin transfer tergantung kebijakan bank masing-masing.' },
+    { label: 'Metode pembayaran apa yang tersedia?', content: 'Saldo Belanja, metode payment gateway yang tampil di Keranjang, dan transfer bank manual.' },
+    { label: 'Berapa lama batas waktu pembayaran?', content: '24 jam sejak pesanan dibuat. Lewat dari itu pesanan dibatalkan otomatis, dan tidak membayar berulang kali dapat dikenai penalti.' },
+    { label: 'Apakah ada biaya tambahan?', content: 'Ada biaya aplikasi Rp1.000 per checkout dan biaya layanan pembayaran sesuai metode yang dipilih. Rinciannya tampil sebelum Anda membayar.' },
+    { label: 'Bagaimana dengan transfer bank manual?', content: 'Transfer sesuai nominal persis, termasuk kode unik, sebelum masa bayar habis. Pembayaran dikonfirmasi CS maks. 1×24 jam kerja (setiap hari 11.00–21.00 WIB). Transfer yang terlambat atau nominalnya berbeda dikembalikan manual.' },
   ],
   'Pengiriman': [
-    { label: 'Berapa lama estimasi pengiriman?', content: 'Tergantung lokasi dan kurir. Seller akan mengupdate resi pengiriman setelah barang dikirim.' },
-    { label: 'Bagaimana cara melacak pesanan?', content: 'Buka menu Transaksi → pilih pesanan → lihat status dan resi pengiriman.' },
-    { label: 'Apa yang terjadi jika paket tidak sampai?', content: 'Hubungi seller melalui fitur Chat atau laporkan ke tim dukungan Adsentral dalam 7 hari.' },
+    { label: 'Kapan produk dikirim?', content: 'Produk bertanda kirim otomatis terkirim sesaat setelah pembayaran diterima. Produk lainnya dikirim penjual sesuai estimasi pengiriman di halaman produk, setelah penjual mengonfirmasi pesanan (maks. 24 jam setelah dibayar).' },
+    { label: 'Di mana saya melihat produk yang dikirim?', content: 'Buka menu Transaksi → pilih pesanan. Isi akun atau file dari penjual tampil di diskusi pesanan.' },
+    { label: 'Bagaimana jika penjual tidak mengirim?', content: 'Bila penjual tidak mengonfirmasi dalam 24 jam atau tidak mengirim dalam estimasi pengiriman, pesanan dibatalkan otomatis dan uang kembali penuh ke Saldo Belanja.' },
+    { label: 'Bagaimana jika produk yang diterima bermasalah?', content: 'Periksa segera. Anda punya 24 jam setelah produk dikirim untuk menolak kiriman; penjual lalu punya 24 jam untuk memperbaikinya, atau pesanan dibatalkan dan uang kembali. Tanpa keluhan dalam 24 jam, pesanan dianggap diterima.' },
   ],
-  'Pengembalian': [
-    { label: 'Bagaimana cara mengajukan pengembalian barang?', content: 'Buka detail transaksi dan klik "Ajukan Komplain" dalam 2×24 jam setelah barang diterima.' },
-    { label: 'Berapa lama proses refund?', content: 'Proses refund memakan waktu 3–7 hari kerja setelah pengajuan disetujui.' },
-    { label: 'Produk apa yang tidak bisa dikembalikan?', content: 'Produk digital, makanan, dan produk yang sudah digunakan umumnya tidak dapat dikembalikan.' },
+  'Refund & Garansi': [
+    { label: 'Ke mana uang refund dikembalikan?', content: 'Ke Saldo Belanja, segera setelah status pesanan berubah, dan bisa langsung dipakai belanja. Dana refund dapat diminta dicairkan ke rekening atas nama Anda melalui CS (maks. 1×24 jam kerja; biaya transfer antarbank, bila ada, dipotong).' },
+    { label: 'Berapa yang dikembalikan?', content: 'Harga produk dikurangi bagian diskon voucher, ditambah biaya aplikasi bila refund terjadi karena penjual. Biaya layanan pembayaran tidak dikembalikan.' },
+    { label: 'Bagaimana cara klaim garansi?', content: 'Ajukan dari halaman pesanan selama masa garansi produk masih berlaku, dengan penjelasan dan bukti. Penjual wajib menanggapi dalam 72 jam dan mengirim pengganti dalam 72 jam berikutnya. Garansi berupa penggantian produk, bukan uang, dan satu pesanan hanya bisa diklaim satu kali.' },
+    { label: 'Bagaimana jika ada sengketa dengan penjual?', content: 'Selama pesanan belum selesai, Anda dapat membuka arbitrase. Adsentral memeriksa diskusi dan bukti kedua pihak lalu memutuskan. Selengkapnya di Kebijakan Refund & Garansi.' },
   ],
   'Akun': [
-    { label: 'Bagaimana cara mengubah password?', content: 'Masuk ke Profil → Pengaturan Akun → Ubah Password.' },
-    { label: 'Apakah data saya aman?', content: 'Ya, data Anda dienkripsi dan tidak dibagikan kepada pihak ketiga tanpa izin Anda.' },
-    { label: 'Bagaimana jika lupa password?', content: 'Klik "Lupa Password" di halaman login dan ikuti instruksi reset via email.' },
+    { label: 'Bagaimana cara mengubah password?', content: 'Buka Profil, isi password baru beserta konfirmasinya, lalu simpan.' },
+    { label: 'Bagaimana jika lupa password?', content: 'Klik "Lupa kata sandi?" di halaman login dan minta kode reset. Kode disampaikan oleh CS; hubungi CS dari email yang terdaftar, lalu masukkan kodenya untuk membuat password baru.' },
+    { label: 'Akun saya terkunci, apa yang harus dilakukan?', content: 'Setelah beberapa kali salah password, akun dikunci demi keamanan. Hubungi CS untuk membukanya, atau reset lewat Lupa kata sandi.' },
+    { label: 'Bagaimana cara menghapus akun?', content: 'Buka Profil → Hapus Akun. Akun hanya bisa dihapus bila saldo kosong dan tidak ada pesanan, pembayaran, penarikan, atau klaim garansi yang masih berjalan. Data akun dihapus permanen 30 hari kemudian.' },
   ],
   'Seller': [
-    { label: 'Bagaimana cara mendaftar sebagai seller?', content: 'Buka halaman Panduan Berjualan atau daftar langsung melalui halaman Register dengan memilih tipe akun Seller.' },
-    { label: 'Bagaimana cara mencairkan saldo?', content: 'Buka dashboard Seller → Balance → Ajukan Penarikan. Dana masuk dalam 1–3 hari kerja.' },
-    { label: 'Apakah ada biaya komisi?', content: 'Ya, Adsentral mengambil komisi kecil dari setiap transaksi yang berhasil. Detail tersedia di dashboard seller.' },
+    { label: 'Bagaimana cara mulai berjualan?', content: 'Daftar akun, lalu buka menu Buat Toko dan isi data toko. Tambahkan produk dari dashboard seller; produk baru ditinjau CS sebelum tampil (maks. 1×24 jam kerja).' },
+    { label: 'Berapa biayanya?', content: 'Pendaftaran dan listing gratis. Adsentral memotong fee transaksi 10% dari harga produk untuk setiap pesanan yang selesai, atau 5% bila Anda sudah terverifikasi KTP.' },
+    { label: 'Kapan dana penjualan masuk?', content: 'Setelah pesanan selesai: pembeli mengonfirmasi atau 24 jam setelah dikirim tanpa keluhan, ditambah 24 jam masa kliring. Dana masuk ke Saldo Penjualan setelah dipotong fee.' },
+    { label: 'Bagaimana cara mencairkan saldo?', content: 'Dashboard Seller → Balance → Ajukan Penarikan ke rekening atas nama Anda. Minimal Rp50.000, biaya Rp2.500, limit Rp2.000.000 per hari (Rp10.000.000 bila terverifikasi KTP). Diproses CS maks. 1×24 jam kerja.' },
   ],
 }
 
 const currentFaq = computed(() => faqMap[activeTopic.value] ?? [])
 
-const supportChannels = [
-  { icon: 'i-heroicons-chat-bubble-left-right', title: 'Live Chat', description: 'Hubungi agen kami secara langsung untuk bantuan cepat.', action: 'Mulai Chat', color: 'primary' as const },
-  { icon: 'i-heroicons-envelope', title: 'Email', description: 'Kirim pertanyaan detail ke tim support kami.', action: 'support@adsentral.id', color: 'info' as const },
-  { icon: 'i-heroicons-phone', title: 'Telepon', description: 'Hubungi kami di jam operasional.', action: '085855558813', color: 'success' as const },
-]
 </script>

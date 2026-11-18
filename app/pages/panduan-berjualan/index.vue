@@ -80,42 +80,45 @@ const breadcrumb = [
   { label: 'Panduan Berjualan', icon: 'i-heroicons-store' },
 ]
 
+// Angka dan alur wajib sesuai S&K (app/legal)
 const steps = [
   {
     title: 'Daftar Akun',
-    description: 'Buat akun Adsentral dan daftarkan toko Anda secara gratis.',
+    description: 'Buat akun Adsentral secara gratis.',
     points: [
-      'Klik "Daftar" lalu pilih tipe akun Seller.',
-      'Isi informasi nama, deskripsi, dan logo.',
-      'Lengkapi data diri dan informasi rekening bank.',
+      'Klik "Daftar", isi username, email, dan password.',
+      'Setujui Syarat & Ketentuan, lalu masuk.',
     ],
   },
   {
     title: 'Buat Merchant / Toko Anda',
     description: 'Buat toko virtual Anda di Adsentral.',
     points: [
-      'Buka menu lalu pilih Create Merchant / Buat Toko',
+      'Buka menu lalu pilih Create Merchant / Buat Toko.',
       'Isi informasi toko: nama, email, no hp dll.',
-      'Lengkapi data diri dan informasi rekening bank.',
+      'Tambahkan rekening bank atas nama Anda untuk penarikan dana.',
+      'Opsional: verifikasi KTP untuk fee 5% dan limit penarikan lebih tinggi.',
     ],
   },
   {
     title: 'Tambah Produk',
-    description: 'Upload produk Anda dengan foto berkualitas dan deskripsi yang lengkap.',
+    description: 'Upload produk dengan deskripsi, masa garansi, dan estimasi pengiriman yang benar.',
     points: [
       'Masuk ke dashboard Seller → menu Produk.',
       'Klik "Tambah Produk" dan isi detail lengkap.',
       'Upload foto produk (maks. 5 MB, format JPG/PNG).',
-      'Tentukan harga, stok, dan kategori produk.',
+      'Isi stok akun agar bisa dikirim otomatis.',
+      'Produk ditinjau CS sebelum tampil, maks. 1×24 jam kerja. Pastikan tidak termasuk Produk Terlarang.',
     ],
   },
   {
     title: 'Kelola Pesanan',
-    description: 'Terima dan proses setiap pesanan dari pembeli dengan cepat.',
+    description: 'Terima dan proses setiap pesanan tepat waktu.',
     points: [
       'Notifikasi pesanan baru akan muncul di dashboard.',
-      'Konfirmasi pesanan dalam 1×24 jam.',
-      'Update status pengiriman setelah barang dikirim.',
+      'Konfirmasi pesanan maks. 24 jam setelah dibayar; bila terlewat, pesanan dibatalkan dan uang kembali ke pembeli.',
+      'Kirim produk dalam estimasi pengiriman lewat diskusi pesanan.',
+      'Tanggapi klaim garansi dalam 72 jam. Keterlambatan dikenai poin penalti.',
     ],
   },
   {
@@ -123,15 +126,15 @@ const steps = [
     description: 'Gunakan fitur Chat untuk menjawab pertanyaan dan membangun kepercayaan.',
     points: [
       'Balas pertanyaan pembeli dengan cepat dan ramah.',
-      'Informasikan estimasi pengiriman jika diminta.',
+      'Jangan bertransaksi di luar Adsentral.',
     ],
   },
   {
     title: 'Terima Pembayaran',
-    description: 'Dana dari transaksi yang selesai akan diteruskan ke akun Anda.',
+    description: 'Dana pesanan yang selesai masuk ke Saldo Penjualan setelah dipotong fee.',
     points: [
       'Pantau saldo di menu Balance.',
-      'Ajukan pencairan dana kapan saja.',
+      'Ajukan penarikan minimal Rp50.000 (biaya Rp2.500), diproses CS maks. 1×24 jam kerja.',
     ],
   },
 ]
@@ -141,14 +144,14 @@ const benefits = [
   { icon: 'i-heroicons-shield-check', title: 'Transaksi Aman', description: 'Sistem pembayaran terproteksi dan dana terjamin.' },
   { icon: 'i-heroicons-chart-bar', title: 'Analitik Penjualan', description: 'Pantau performa toko melalui dashboard yang mudah dibaca.' },
   { icon: 'i-heroicons-chat-bubble-left-right', title: 'Chat Terintegrasi', description: 'Komunikasi langsung dengan pembeli tanpa aplikasi lain.' },
-  { icon: 'i-heroicons-tag', title: 'Tanpa Biaya Listing', description: 'Upload produk sebanyak-banyaknya tanpa biaya tambahan.' },
+  { icon: 'i-heroicons-tag', title: 'Tanpa Biaya Listing', description: 'Gratis upload produk; fee hanya dari pesanan yang selesai.' },
   { icon: 'i-heroicons-device-phone-mobile', title: 'Kelola dari Mana Saja', description: 'Akses dashboard seller kapan saja lewat browser mobile.' },
 ]
 
 const faq = [
-  { label: 'Apakah berjualan di Adsentral gratis?', content: 'Ya, pendaftaran dan listing produk tidak dipungut biaya. Adsentral hanya mengambil komisi kecil dari setiap transaksi yang berhasil.' },
-  { label: 'Berapa lama proses verifikasi toko?', content: 'Verifikasi toko biasanya selesai dalam 1–2 hari kerja setelah data lengkap disubmit.' },
-  { label: 'Bagaimana cara mencairkan dana penjualan?', content: 'Buka menu Balance di dashboard seller, lalu ajukan penarikan. Dana akan masuk ke rekening dalam 1–3 hari kerja.' },
-  { label: 'Apa yang terjadi jika pembeli komplain?', content: 'Tim Adsentral akan menjadi mediator. Pastikan produk sesuai deskripsi dan kirim tepat waktu untuk meminimalkan komplain.' },
+  { label: 'Apakah berjualan di Adsentral gratis?', content: 'Pendaftaran dan listing gratis. Adsentral memotong fee transaksi 10% dari harga produk untuk setiap pesanan yang selesai, atau 5% bila Anda sudah terverifikasi KTP.' },
+  { label: 'Apakah verifikasi KTP wajib?', content: 'Tidak, verifikasi KTP opsional. Penjual terverifikasi mendapat fee 5% dan limit penarikan Rp10.000.000 per hari (tanpa verifikasi Rp2.000.000). Verifikasi diproses CS maks. 1×24 jam kerja.' },
+  { label: 'Kapan dana penjualan bisa ditarik?', content: 'Setelah pesanan selesai (pembeli mengonfirmasi atau 24 jam setelah dikirim tanpa keluhan) ditambah 24 jam masa kliring. Penarikan ke rekening atas nama Anda: minimal Rp50.000, biaya Rp2.500, diproses CS maks. 1×24 jam kerja.' },
+  { label: 'Apa yang terjadi jika pembeli komplain?', content: 'Pembeli dapat menolak kiriman (Anda punya 24 jam untuk memperbaiki) atau membuka arbitrase selama pesanan belum selesai. Adsentral memeriksa diskusi dan bukti kedua pihak lalu memutuskan. Klaim garansi wajib ditanggapi dalam 72 jam.' },
 ]
 </script>
