@@ -7,7 +7,6 @@ export interface VerificationEditRequest {
   place_of_birth?: string
   date_of_birth?: string
   gender?: Gender
-  religion?: string
   marital_status?: string
   occupation?: string
   nationality?: string

@@ -220,10 +220,6 @@
                   <p v-if="formErrors.gender" class="mt-1 text-sm text-red-500">{{ formErrors.gender }}</p>
                 </UFormField>
 
-                <UFormField label="Agama">
-                  <UInput v-model="form.religion" placeholder="Opsional" class="w-full" />
-                </UFormField>
-
                 <UFormField label="Status Perkawinan">
                   <UInput v-model="form.maritalStatus" placeholder="Opsional" class="w-full" />
                 </UFormField>
@@ -349,7 +345,6 @@ function openForm(prefillFrom: UserVerificationRequest | null) {
     form.placeOfBirth = prefillFrom.place_of_birth
     form.dateOfBirth = prefillFrom.date_of_birth
     form.gender = prefillFrom.gender
-    form.religion = prefillFrom.religion ?? ''
     form.maritalStatus = prefillFrom.marital_status ?? ''
     form.occupation = prefillFrom.occupation ?? ''
     form.nationality = prefillFrom.nationality || 'WNI'

@@ -7,7 +7,6 @@ export interface UserVerificationData {
   place_of_birth: string
   date_of_birth: string
   gender: Gender
-  religion: string | null
   marital_status: string | null
   occupation: string | null
   nationality: string

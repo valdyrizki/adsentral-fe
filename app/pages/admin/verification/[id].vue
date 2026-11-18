@@ -246,9 +246,6 @@
             <UFormField label="Jenis Kelamin">
               <USelect v-model="editForm.gender" :items="genderOptions" value-key="value" class="w-full" />
             </UFormField>
-            <UFormField label="Agama">
-              <UInput v-model="editForm.religion" class="w-full" />
-            </UFormField>
             <UFormField label="Status Perkawinan">
               <UInput v-model="editForm.marital_status" class="w-full" />
             </UFormField>
@@ -435,7 +432,6 @@ function openEdit() {
     place_of_birth: detail.value.place_of_birth,
     date_of_birth: detail.value.date_of_birth,
     gender: detail.value.gender,
-    religion: detail.value.religion ?? '',
     marital_status: detail.value.marital_status ?? '',
     occupation: detail.value.occupation ?? '',
     nationality: detail.value.nationality ?? '',

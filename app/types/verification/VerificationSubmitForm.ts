@@ -7,7 +7,6 @@ export interface VerificationSubmitForm {
   placeOfBirth: string
   dateOfBirth: string // yyyy-MM-dd
   gender: Gender | ''
-  religion: string
   maritalStatus: string
   occupation: string
   nationality: string
@@ -31,7 +30,6 @@ export function createEmptyVerificationForm(): VerificationSubmitForm {
     placeOfBirth: '',
     dateOfBirth: '',
     gender: '',
-    religion: '',
     maritalStatus: '',
     occupation: '',
     nationality: 'WNI',

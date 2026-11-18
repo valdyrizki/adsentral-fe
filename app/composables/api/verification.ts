@@ -35,7 +35,6 @@ export const useVerificationApi = () => {
     formData.append('placeOfBirth', form.placeOfBirth)
     formData.append('dateOfBirth', form.dateOfBirth)
     formData.append('gender', form.gender)
-    if (form.religion) formData.append('religion', form.religion)
     if (form.maritalStatus) formData.append('maritalStatus', form.maritalStatus)
     if (form.occupation) formData.append('occupation', form.occupation)
     if (form.nationality) formData.append('nationality', form.nationality)

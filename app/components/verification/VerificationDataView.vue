@@ -17,10 +17,6 @@
       <span class="text-gray-700 sm:block">{{ data.gender === 'MALE' ? 'Laki-laki' : 'Perempuan' }}</span>
     </div>
     <div class="flex justify-between sm:block">
-      <span class="text-gray-400">Agama</span>
-      <span class="text-gray-700 sm:block">{{ data.religion || '-' }}</span>
-    </div>
-    <div class="flex justify-between sm:block">
       <span class="text-gray-400">Status Perkawinan</span>
       <span class="text-gray-700 sm:block">{{ data.marital_status || '-' }}</span>
     </div>
