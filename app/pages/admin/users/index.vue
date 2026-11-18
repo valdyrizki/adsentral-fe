@@ -307,10 +307,15 @@ const isLocked = (u: AdminUserResponse) => !!u.locked_until && dayjs(u.locked_un
 const canUnlock = (u: AdminUserResponse) =>
   isLocked(u) && (authStore.isSuperAdmin || (u.role !== 'ADMIN' && u.role !== 'SUPER_ADMIN'))
 // Akun admin/super admin hanya bisa diaktifkan super admin (BE 403 untuk admin biasa), sama dengan buka kunci
+// Akun yang sudah dihapus permanen (EP03-05) tidak bisa diaktifkan lagi (BE 409 ACCOUNT_ANONYMIZED)
 const canActivate = (u: AdminUserResponse) =>
-  u.account_status === 'DEACTIVATED' && (authStore.isSuperAdmin || (u.role !== 'ADMIN' && u.role !== 'SUPER_ADMIN'))
+  u.account_status === 'DEACTIVATED' && !u.anonymized_at
+  && (authStore.isSuperAdmin || (u.role !== 'ADMIN' && u.role !== 'SUPER_ADMIN'))
+// Minta hapus: dihapus permanen 30 hari sesudahnya (EP03-05); mengaktifkan kembali = membatalkan hapus akun
 const accountLabel = (u: AdminUserResponse) =>
-  u.account_status === 'DEACTIVATED' ? 'Nonaktif (oleh pemilik)' : u.status
+  u.anonymized_at ? 'Dihapus permanen'
+  : u.deletion_requested_at ? `Minta hapus (dihapus ${dayjs(u.deletion_requested_at).add(30, 'day').format('DD MMM YYYY')})`
+  : u.account_status === 'DEACTIVATED' ? 'Nonaktif (oleh pemilik)' : u.status
 const formatDate = (v: string | null | undefined) => (v ? dayjs(v).format('DD MMM YYYY, HH:mm') : '-')
 const statusColor = (s: AdminUserResponse['status']) =>
   s === 'ACTIVE' ? 'success' : s === 'SUSPEND' ? 'error' : 'warning'

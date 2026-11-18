@@ -41,6 +41,19 @@ test.describe('Admin: aktifkan kembali akun nonaktif (EP06-06)', () => {
     await expect(main(page).getByRole('button', { name: 'Aktifkan' })).toHaveCount(0)
   })
 
+  test('minta hapus akun (EP03-05): label tanggal hapus + tombol Aktifkan; yang sudah dihapus permanen tanpa tombol', async ({ page, mockApi }) => {
+    mockApi.asRole('ADMIN')
+    mockApi.on('GET', '/admin/users', ok(page1([
+      deactivated(7, { deletion_requested_at: '2026-11-18T10:00:00' }),
+      deactivated(8, { email: 'deleted-8@deleted.invalid', deletion_requested_at: '2026-10-01T10:00:00', anonymized_at: '2026-10-31T02:40:00' }),
+    ])))
+
+    await gotoHydrated(page, '/admin/users')
+    await expect(main(page).getByText(/Minta hapus \(dihapus 18 (Dec|Des) 2026\)/)).toHaveCount(1)
+    await expect(main(page).getByText('Dihapus permanen')).toHaveCount(1)
+    await expect(main(page).getByRole('button', { name: 'Aktifkan' })).toHaveCount(1)
+  })
+
   test('admin biasa tidak melihat tombol Aktifkan untuk akun admin (BE 403; hanya super admin)', async ({ page, mockApi }) => {
     mockApi.asRole('ADMIN')
     mockApi.on('GET', '/admin/users', ok(page1([deactivated(7, { role: 'ADMIN' })])))

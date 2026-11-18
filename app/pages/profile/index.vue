@@ -121,6 +121,42 @@
           </div>
         </form>
       </div>
+
+      <!-- Hapus akun (EP03-05) -->
+      <div class="mx-auto w-full border rounded-2xl border-red-200 bg-red-50 p-4 mt-4" data-testid="delete-account-section">
+        <h3 class="text-base font-semibold text-red-700">Hapus Akun</h3>
+        <p class="mt-1 text-sm text-gray-700">
+          Akun langsung dinonaktifkan dan data akun (nama, email, nomor HP, alamat, rekening) dihapus permanen
+          30 hari kemudian. Selama 30 hari itu Anda masih bisa membatalkan lewat CS. Riwayat transaksi tetap disimpan
+          sesuai kebijakan privasi.
+        </p>
+        <p class="mt-1 text-sm text-gray-700">
+          Syarat: saldo Rp 0, dan tidak ada pesanan, pembayaran, penarikan, atau klaim garansi yang masih berjalan.
+        </p>
+        <div class="mt-3 flex justify-end">
+          <UButton color="error" variant="outline" icon="mdi:account-remove-outline" @click="openDeleteModal">Hapus Akun</UButton>
+        </div>
+      </div>
+
+      <UModal v-if="showDeleteModal" v-model:open="showDeleteModal" title="Hapus Akun" :ui="{ footer: 'justify-end' }">
+        <template #body>
+          <div class="space-y-4">
+            <p class="text-sm text-gray-700">
+              Akun akan dinonaktifkan sekarang dan dihapus permanen dalam 30 hari. Masukkan password untuk melanjutkan.
+            </p>
+            <UFormField label="Password" required>
+              <UInput v-model="deletePassword" type="password" placeholder="Password saat ini" class="w-full" data-testid="delete-account-password" @keyup.enter="confirmDelete" />
+            </UFormField>
+            <p v-if="deleteError" class="text-sm text-red-500" data-testid="delete-account-error">{{ deleteError }}</p>
+          </div>
+        </template>
+        <template #footer>
+          <UButton color="neutral" variant="outline" @click="showDeleteModal = false">Batal</UButton>
+          <UButton color="error" :loading="deleting" :disabled="!deletePassword" data-testid="delete-account-confirm" @click="confirmDelete">
+            Hapus Akun Saya
+          </UButton>
+        </template>
+      </UModal>
       
 
 
@@ -150,7 +186,38 @@ import type { UserResponse } from '~/types/UserResponse';
   const confirm_password = ref<string>("");
   const errors = ref<string[]>([])
 
-  const { fetchMe  } = useUserApi()
+  const { fetchMe, deleteAccount } = useUserApi()
+
+  // Hapus akun (EP03-05)
+  const showDeleteModal = ref(false)
+  const deletePassword = ref('')
+  const deleteError = ref('')
+  const deleting = ref(false)
+
+  const openDeleteModal = () => {
+    deletePassword.value = ''
+    deleteError.value = ''
+    showDeleteModal.value = true
+  }
+
+  const confirmDelete = async () => {
+    if (!deletePassword.value || deleting.value) return
+    deleting.value = true
+    deleteError.value = ''
+    try {
+      const message = await deleteAccount(deletePassword.value)
+      showDeleteModal.value = false
+      // Sesi sudah diakhiri BE; cukup bersihkan state lokal (logout ke BE akan ditolak)
+      authStore.clearAuth()
+      toast.add({ title: 'Akun dihapus', description: message, color: 'success', duration: 10000 })
+      await navigateTo('/')
+    } catch (err: any) {
+      // 409 ACCOUNT_DELETION_BLOCKED: pesan BE sudah menyebut semua alasannya
+      deleteError.value = apiErrorMessage(err, 'Gagal menghapus akun')
+    } finally {
+      deleting.value = false
+    }
+  }
 
   const {
     data: profile, 

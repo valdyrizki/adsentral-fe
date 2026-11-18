@@ -34,6 +34,7 @@ Saat menambah/mengubah endpoint, perbarui tabel terkait di file ini.
 |---|---|---|
 | `registerUser` | POST `/user/register` (429 `RATE_LIMITED` 10/jam per IP) | `components/form/Register.vue` |
 | `fetchMe` | `/user/profile` | `stores/auth.ts`, `pages/profile` |
+| `deleteAccount` | PATCH `/user/deactivate` body `{ password }` (EP03-05): sukses → `authStore.clearAuth()` + ke beranda (sesi sudah diakhiri BE); 400 password salah; 409 `ACCOUNT_DELETION_BLOCKED` (pesan BE menyebut alasannya, `data.reasons`) | `pages/profile` (bagian Hapus Akun) |
 | `updateProfile` | PATCH `/user/profile` (ganti password: 403 `ACCOUNT_LOCKED` bila password lama salah berulang; jangan logout) | `pages/profile` |
 | `requestPasswordReset` | POST `/user/password/reset` (selalu 200; 429 `RATE_LIMITED` 5/15 menit) | `pages/forgot-password` |
 | `confirmPasswordReset` | POST `/user/password/confirm` → `data.password` (400 satu pesan; 429 tanpa kode = 5 kali salah; 429 `RATE_LIMITED` 10/15 menit) | `pages/forgot-password` |
@@ -43,7 +44,7 @@ Saat menambah/mengubah endpoint, perbarui tabel terkait di file ini.
 | Fungsi | Endpoint | Dipakai di |
 |---|---|---|
 | `fetchUsers` | `/admin/users` (memuat `locked_until`) | `pages/admin/users` |
-| `activateAccount` | PATCH `/admin/users/{id}/activate` body `{ reason }` 10–500 karakter (EP06-06; 409 `ACCOUNT_NOT_DEACTIVATED` → muat ulang; akun ADMIN/SUPER_ADMIN hanya super admin) | `pages/admin/users` |
+| `activateAccount` | PATCH `/admin/users/{id}/activate` body `{ reason }` 10–500 karakter (EP06-06; 409 `ACCOUNT_NOT_DEACTIVATED` → muat ulang; akun ADMIN/SUPER_ADMIN hanya super admin). Untuk akun yang minta hapus (`deletion_requested_at`, label "Minta hapus (dihapus <tgl>)") = membatalkan hapus akun; `anonymized_at` terisi → label "Dihapus permanen", tombol disembunyikan (BE 409 `ACCOUNT_ANONYMIZED`, EP03-05) | `pages/admin/users` |
 | `unlockLogin` | PATCH `/admin/users/{id}/unlock-login` body `{ notes }` 5–500 karakter (400 `LOGIN_NOT_LOCKED` bila sudah tidak terkunci → tutup modal & muat ulang; 403 bila target ADMIN/SUPER_ADMIN dan pemanggil bukan super admin → tombol disembunyikan) | `pages/admin/users` |
 | `viewResetCode` | POST `/admin/users/{id}/reset-code` body `{ notes }` 5–500 karakter, **super admin** (tombol hanya bila `authStore.isSuperAdmin`); 404 `NO_ACTIVE_RESET_CODE` bila tidak ada kode yang masih bisa dipakai → petunjuk di modal. Kode dibuang saat modal ditutup | `pages/admin/users` |
 | `payoutRefund` | POST `/admin/balance/{userId}/refund-payout` body `{ amount, notes }` (notes 5–500), **super admin**: potong saldo belanja sebelum transfer manual refund (EP04-16); 400 bila melebihi saldo; 409 `DUPLICATE_PAYOUT` bila user, nominal & catatan sama dalam 10 menit (saldo tidak dipotong lagi → tampilkan sebagai peringatan, bukan gagal) | `pages/admin/users` (tombol Cairkan Refund + konfirmasi) |

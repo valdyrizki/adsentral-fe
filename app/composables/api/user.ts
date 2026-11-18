@@ -70,6 +70,13 @@ export const useUserApi = () => {
       return res.data
     }
 
+  // Hapus akun (EP03-05): akun langsung nonaktif, data dihapus permanen 30 hari kemudian. Error dilempar apa adanya:
+  // 400 password salah, 403 ACCOUNT_LOCKED / akun admin, 409 ACCOUNT_DELETION_BLOCKED (data.reasons) dibaca pemanggil.
+  const deleteAccount = async (password: string): Promise<string> => {
+    const res = await api<WebResponse>('/user/deactivate', { method: 'PATCH', body: { password } })
+    return res.message
+  }
+
   // Lupa password. BE selalu menjawab 200 untuk permintaan kode (email terdaftar atau tidak),
   // jadi jangan menyimpulkan apa pun dari jawabannya. Error dilempar apa adanya: pemanggil
   // membaca status, `message`, dan `data.code` (RATE_LIMITED) dengan helper apiError.
@@ -88,5 +95,5 @@ export const useUserApi = () => {
     return res.data.password
   }
 
-  return { registerUser, updateProfile, fetchMe, requestPasswordReset, confirmPasswordReset }
+  return { registerUser, updateProfile, fetchMe, deleteAccount, requestPasswordReset, confirmPasswordReset }
 }

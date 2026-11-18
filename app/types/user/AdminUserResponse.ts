@@ -15,4 +15,8 @@ export interface AdminUserResponse {
   locked_until: string | null
   /** Label status akun (BE EP06-06): DEACTIVATED = dinonaktifkan pemiliknya sendiri (status SUSPEND), bukan penalti. */
   account_status?: 'ACTIVE' | 'INACTIVE' | 'DEACTIVATED' | null
+  /** EP03-05: pemilik minta hapus akun pada waktu ini; data dianonimkan 30 hari sesudahnya kecuali diaktifkan kembali. */
+  deletion_requested_at?: string | null
+  /** EP03-05: terisi = sudah dihapus permanen (dianonimkan), tidak bisa diaktifkan kembali. */
+  anonymized_at?: string | null
 }

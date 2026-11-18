@@ -9,7 +9,7 @@ export const apiErrorStatus = (err: any): number =>
 // Kode error yang dikirim BE di `data` body error: { status: 'error', message, data: { code, ... } }.
 // Key di dalam `data` ini camelCase (pengecualian dari konvensi snake_case BE).
 export type ApiErrorCode = 'RATE_LIMITED' | 'ACCOUNT_LOCKED' | 'VERIFICATION_LOCKED' | 'LOGIN_NOT_LOCKED'
-  | 'NO_ACTIVE_RESET_CODE' | 'DUPLICATE_PAYOUT' | 'ACCOUNT_NOT_DEACTIVATED'
+  | 'NO_ACTIVE_RESET_CODE' | 'DUPLICATE_PAYOUT' | 'ACCOUNT_NOT_DEACTIVATED' | 'ACCOUNT_ANONYMIZED' | 'ACCOUNT_DELETION_BLOCKED'
 
 export interface ApiErrorDetail {
   code: ApiErrorCode | string
