@@ -9,7 +9,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## Rencana & catatan
 
 - **Cakupan tes** (modul yang sudah/belum dites, prioritas): lihat **`docs/test-progress.md`**. Dokumen ini hanya berisi bug.
-- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
+- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
   composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
   Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
 - **Setelah memperbaiki temuan:** ubah statusnya di sini menjadi `SELESAI`, hapus `test.fail` di spec, dan ubah 🐞 → ✅
@@ -25,35 +25,35 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-01 | Login | Kredensial bocor ke URL jika form ter-submit sebelum hidrasi | Tinggi | SELESAI | Sudah diperbaiki: `@submit.prevent` + `method="post"`. Tes regresi di `auth.spec.ts`. |
 | F-02 | Login | Hydration mismatch di halaman `/login` | Rendah | TERBUKA | Belum ada tes. Dugaan: `definePageMeta()` dipanggil di komponen, bukan halaman. |
 | F-03 | Keranjang | `depositBalance` tidak reaktif, pengecekan saldo bisa memakai nilai lama | Sedang | SELESAI | Cek saldo memakai `balanceStore.depositBalance` langsung (tanpa destructure), jadi tombol ikut berubah saat saldo dimuat ulang. Tes regresi di `checkout.spec.ts`. |
-| F-04 | Keranjang | Pengecekan saldo mengabaikan biaya aplikasi | Sedang | PERLU KONFIRMASI | Tanya BE: untuk SALDO, apakah biaya aplikasi ikut dipotong & voucher mengurangi potongan? Jika ya, bandingkan dengan `orderTotal`. |
-| F-05 | Pembayaran (buyer) | Nominal transfer di info rekening/WhatsApp ≠ Total Tagihan | Tinggi | PERLU KONFIRMASI | Hampir pasti harus `total_amount` (agar kode unik ikut ditransfer). Konfirmasi lalu ubah di instruksi transfer & link WA. |
-| F-06 | Pembayaran (admin) | "Tolak" memanggil `/payment/cancel`, bukan `/payment/reject` | Sedang | PERLU KONFIRMASI | Tanya: "Tolak" seharusnya `/payment/reject` + alasan? Tes lama mengunci perilaku `cancel`, ubah saat diperbaiki. `uploadPaymentProof` juga tidak dipakai. |
+| F-04 | Keranjang | Pengecekan saldo mengabaikan biaya aplikasi | Sedang | SELESAI | Dikonfirmasi dari BE: bayar SALDO memotong `total_amount` (subtotal + FEE_APP − diskon). Cek saldo keranjang memakai `orderTotal`. Tes regresi di `checkout.spec.ts`; aturan dicatat di `docs/domain-glossary.md`. |
+| F-05 | Pembayaran (buyer) | Nominal transfer di info rekening/WhatsApp ≠ Total Tagihan | Tinggi | SELESAI | Dikonfirmasi dari BE: yang ditransfer `total_amount` (termasuk kode unik). Instruksi transfer & pesan WhatsApp memakai `total_amount ?? amount`. Assertion ditambahkan di `payment.spec.ts`. |
+| F-06 | Pembayaran (admin) | "Tolak" memanggil `/payment/cancel`, bukan `/payment/reject` | Sedang | SELESAI | Ditutup sesuai desain BE (EP04-14): tidak ada `/payment/reject`, "Tolak" = `/payment/cancel` → `CANCELLED`. `fetchRejectPayment` (endpoint tidak ada) dan `uploadPaymentProof` tidak dipakai; dibiarkan sebagai kode mati, hapus bila ingin bersih-bersih. |
 | F-07 | Pembayaran (admin) | Filter "Semua Status" mengirim `status=ALL` ke BE | Sedang | SELESAI | Filter "Semua Status" tidak lagi mengirim `status` (pola yang sama dengan F-30). |
-| F-08 | Pembayaran (buyer) | Deposit berstatus `PAID` tidak menampilkan keterangan apa pun | Rendah | PERLU KONFIRMASI | Tanya: status apa saja yang mungkin untuk deposit, dan apakah `DONE` masih dipakai BE? |
+| F-08 | Pembayaran (buyer) | Deposit berstatus `PAID` tidak menampilkan keterangan apa pun | Rendah | SELESAI | Status deposit di BE hanya UNPAID/PAID/EXPIRED/CANCELLED. Blok `DONE`/`COMPLETE` diganti `PAID`, blok `REJECTED` diganti `EXPIRED` ("Pembayaran kedaluwarsa"). Tes: deposit EXPIRED, dan tes 409 kini memakai `PAID`. |
 | F-09 | Pesanan seller | Tombol "Batalkan" (PAID) memanggil placeholder `addToCart` | Tinggi | SELESAI | Tombol "Batalkan" placeholder dihapus; pembatalan lewat "Tolak Pesanan". Tes diubah jadi regresi. |
 | F-10 | Pesanan seller | Validasi pesan kosong memakai `window.alert()` | Rendah | SELESAI | Pesan kosong tampil sebagai toast, bukan `alert()`; sekaligus di halaman transaksi buyer (pesan kosong dan gagal kirim). |
 | F-11 | Pesanan seller & transaksi buyer | Countdown UNPAID/PAID langsung "habis" bila `expired_at`/`paid_at` null | Sedang | SELESAI | Countdown UNPAID di halaman seller & buyer memakai `getPaymentExpiry` (`expired_at`, atau `created_at` + 24 jam seperti scheduler BE); tombol bayar buyer tetap tampil. Countdown konfirmasi PAID tanpa `paid_at` tidak diubah (status PAID selalu punya `paid_at`). |
-| F-12 | Pesanan seller | Aksi permanen tanpa dialog konfirmasi (terima pesanan, terima pembatalan) | Sedang | PERLU KONFIRMASI | Tanya: perlu `useConfirm()`? Sekalian perjelas label "Setujui/Tolak Pembatalan" yang mudah tertukar. |
+| F-12 | Pesanan seller | Aksi permanen tanpa dialog konfirmasi (terima pesanan, terima pembatalan) | Sedang | SELESAI | Dialog konfirmasi untuk Terima Pesanan (daftar & detail), Setujui/Tolak Pembatalan (seller), dan Tarik Pengajuan Pembatalan (buyer); label diganti dan ikon setujui dibedakan. Tes: "Batal" di dialog tidak memanggil BE. |
 | F-13 | Pesanan seller | Tolak 409 di halaman detail tidak menutup modal (daftar menutup) | Rendah | SELESAI | Tolak 403/409 di halaman detail menutup modal lalu memuat ulang, sama dengan halaman daftar. Tes regresi di `seller-order.spec.ts`. |
-| F-14 | Pesanan seller | Tombol "Kirim Orderan" tetap muncul di DELIVERED/DONE/ARBITRAGE | Rendah | PERLU KONFIRMASI | Tanya: di status mana seller boleh kirim ulang orderan? (`REJECT` kemungkinan perlu.) |
+| F-14 | Pesanan seller | Tombol "Kirim Orderan" tetap muncul di DELIVERED/DONE/ARBITRAGE | Rendah | SELESAI | Sudah diselesaikan EP04-03: tombol "Kirim Orderan" hanya untuk PAID/IN_PROGRESS/REJECT/ARBITRAGE, sama dengan whitelist BE (`requireDeliverable`). |
 | F-15 | Pesanan seller | Kode mati di daftar pesanan (`handleReject`, tombol produk ACTIVE/INACTIVE) | Rendah | TERBUKA | Bersih-bersih: hapus `handleReject`, tombol status produk & `console.log`. |
 | F-16 | Transaksi buyer | Tombol "Batalkan", "Beli Lagi", "Tangguhkan" (daftar) memanggil placeholder `alert()` | Tinggi | SELESAI | "Beli Lagi" → halaman produk, "Tangguhkan" (daftar) → detail transaksi, "Batalkan" UNPAID dihapus (pembatalan dari halaman pembayaran, membatalkan seluruh isi pembayaran). Tes diubah jadi regresi. |
 | F-17 | Transaksi buyer | Form "Edit Penilaian" tidak terisi penilaian sebelumnya | Sedang | SELESAI | Form "Edit Penilaian" diisi dari review BUYER (`reviews.find(r => r.user_type === 'BUYER')`); edit tanpa perubahan mengirim nilai lama. Validasi komentar kosong tidak ditambah karena komentar opsional di BE. |
-| F-18 | Transaksi buyer | Filter status buyer tidak punya `REJECT`, `REJECTED`, `CANCEL_REQUEST` | Rendah | PERLU KONFIRMASI | Tanya: sengaja disembunyikan? Apakah `/tx/buyer` menerima ketiga status itu? |
+| F-18 | Transaksi buyer | Filter status buyer tidak punya `REJECT`, `REJECTED`, `CANCEL_REQUEST` | Rendah | SELESAI | BE menerima semua `TransactionStatus`. Filter buyer ditambah "Kiriman Ditolak" (REJECT), "Pengajuan Batal" (CANCEL_REQUEST), "Ditolak Penjual" (REJECTED). |
 | F-19 | Garansi buyer | `/guarantee` tidak dilindungi login (tidak ada di `authRequiredRoutes`) | Sedang | SELESAI | `/guarantee` dan `/penalty` masuk `authRequiredRoutes`: pengunjung diarahkan ke `/login?redirect=...` tanpa memanggil BE. |
 | F-20 | Garansi, withdrawal, penalty & deposit | Pesan error BE hilang (toast `[POST] "/backend/...": 409 Conflict` / "Conflict") & 409 tidak memuat ulang | Sedang | SELESAI | `useApi` memasang pesan BE ke `message` dan `statusMessage` error HTTP (status, `data`, `response` tetap); reload saat 403/409 ditambahkan di detail garansi seller dan batal deposit (penarikan sudah reload). |
 | F-21 | Garansi | Label/warna status garansi diduplikasi di 5 tempat dengan teks berbeda | Rendah | TERBUKA | Buat `GuaranteeStatusBadge.vue` lalu pakai ulang di 5 tempat. |
-| F-22 | Withdrawal (admin) | Rumus "Potensi Anomali" menghitung saldo belanja (deposit) sebagai saldo yang bisa ditarik | Sedang | PERLU KONFIRMASI | Tanya BE rumus yang benar; opsi lebih sederhana: pakai `sales_balance` + `sales_held` dari BE. |
-| F-23 | Withdrawal | `WD_FEE` diam-diam jatuh ke Rp 2.500 bila setting gagal dimuat; kartu statistik admin hanya dari halaman aktif | Sedang | PERLU KONFIRMASI | Tanya: siapa sumber kebenaran `admin_fee` (FE/BE)? Ada endpoint ringkasan statistik withdrawal? |
+| F-22 | Withdrawal (admin) | Rumus "Potensi Anomali" menghitung saldo belanja (deposit) sebagai saldo yang bisa ditarik | Sedang | SELESAI | Estimasi = transaksi COMPLETE − `amount` penarikan COMPLETED (tanpa deposit), diberi label "Estimasi Maksimal" karena fee transaksi & transfer ke saldo belanja tidak ada di ringkasan. Tes regresi di `withdrawal.spec.ts`. |
+| F-23 | Withdrawal | `WD_FEE` diam-diam jatuh ke Rp 2.500 bila setting gagal dimuat; kartu statistik admin hanya dari halaman aktif | Sedang | SELESAI | Kartu statistik `/admin/withdrawal` memakai endpoint BE baru `GET /admin/withdrawal/summary` (seluruh data). Biaya admin & jumlah diterima di daftar/detail/modal memakai `admin_fee`/`amount_received` yang ditetapkan BE saat pengajuan (bukan WD_FEE saat ini dengan fallback 2500); "Tandai Selesai" tidak lagi mengirim `admin_fee` (BE mengabaikannya). Ganti filter tidak memuat dua kali. Sisa: form penarikan seller masih memakai fallback 2500 bila setting gagal dimuat (sama dengan default BE). |
 | F-24 | Pesanan admin | Refund/Selesaikan gagal (400) menutup modal, alasan yang diketik hilang | Sedang | SELESAI | Modal refund/selesaikan hanya ditutup saat berhasil atau status basi (403/409); error lain tampil di modal (`refundTxError`/`completexError`) dan alasan tetap. |
 | F-25 | Pesanan admin | Tombol "Refund Transaksi"/"Selesaikan Transaksi" muncul di status final (REFUNDED, CANCELLED, REJECTED, EXPIRED) dan UNPAID | Sedang | SELESAI | Tombol hanya saat `ARBITRAGE`; BE menolak status lain (EP04-02). |
 | F-26 | API layer | Banyak composable GET membuang pesan BE (`err.message` → `[GET] "/backend/...": 400 Bad Request`); `fetchCreateOrderDiscussion` bisa crash di `err.response._data` | Sedang | SELESAI | Pesan BE lewat `useApi`; `err.response._data` di `chat.ts`, `order-discussion.ts`, `review.ts`, `transaction.ts` diganti `rethrowApiError`; gangguan jaringan tampil "Tidak dapat terhubung ke server...". `DepositOld.vue` (tidak dipakai) masih memakai pola lama. |
 | F-27 | Pesanan admin | Validasi pesan diskusi kosong memakai `window.alert()` (sama dengan F-10) | Rendah | SELESAI | Sama dengan F-10: toast "Pesan tidak boleh kosong". |
-| F-28 | Pesanan admin | Filter status admin tidak lengkap; teks konfirmasi "Cancel Arbitrage" tidak formal & tujuan statusnya belum jelas | Rendah | PERLU KONFIRMASI | Tanya: status tujuan `PATCH /tx/cancel/arbitrage` & opsi filter yang dibutuhkan admin. Teks "lhooo" perlu diganti. |
+| F-28 | Pesanan admin | Filter status admin tidak lengkap; teks konfirmasi "Cancel Arbitrage" tidak formal & tujuan statusnya belum jelas | Rendah | SELESAI | Filter admin memakai `adminTxStatusFilters` (semua status BE), "Semua Status" tidak mengirim `status`, ganti filter satu request. Teks Indonesia: "Detail Pesanan", "Batalkan Arbitrase", dialog & toast menyebut transaksi kembali ke Dikirim (BE: `DELIVERED`, timer 24 jam diulang). Badge "Penjual Mengirim Pesanan" di bubble admin tidak mungkin muncul (BE hanya mengizinkan seller mengirim ORDER_DELIVERY/GUARANTEE). Kode mati Terima/Tolak di daftar admin dibiarkan. |
 | F-29 | Penalty rule (admin) | Normalisasi Rule ID (kapital + underscore) tidak jalan; form edit menyimpan perubahan yang dibatalkan | Sedang | SELESAI | Normalisasi Rule ID lewat `watch` (kapital, spasi → underscore) + validasi `^[A-Z0-9_]+$`; modal edit diisi ulang setiap dibuka. |
 | F-30 | Manage penalty (admin) | Filter "Semua" mengirim `status=ALL`; status `WARNING` tampil "Normal" (hijau) | Sedang | SELESAI | "Semua" tidak mengirim `status`; WARNING tampil "Peringatan" (kuning) di ketiga salinan mapping; filter/cari tidak lagi memuat dua kali. |
 | F-31 | Manage penalty (admin) | Poin & status di header slideover detail user tidak diperbarui setelah penalty dibatalkan; error detail tidak ditangani | Rendah | SELESAI | Setelah batalkan penalty, header slideover memakai data user terbaru dari daftar; gagal memuat riwayat tampil pesan BE + tombol coba lagi. |
-| F-32 | Penalty | Halaman `/admin/penalty-user` yatim (tanpa menu, duplikat `/admin/penalty`); statistik penalty user dihitung per halaman; rule target `BUYER` bisa dikenakan ke seller | Rendah | PERLU KONFIRMASI | Tanya: hapus `/admin/penalty-user`? Rule dibatasi sesuai role user? Kartu poin sebaiknya pakai `/user/penalty/stat`. |
+| F-32 | Penalty | Halaman `/admin/penalty-user` yatim (tanpa menu, duplikat `/admin/penalty`); statistik penalty user dihitung per halaman; rule target `BUYER` bisa dikenakan ke seller | Rendah | SELESAI | `/admin/penalty-user` dihapus (dan dari `docs/api-map.md`). Modal kenakan penalty hanya menampilkan rule yang cocok dengan peran user, sama dengan `requireRuleFitsUser` di BE. Sisa (rendah, belum dikerjakan): batas 100 rule di modal, kartu statistik `/penalty` & `/seller/penalty` per halaman, penalty yang dibatalkan admin tampil sebagai "Kedaluwarsa" (BE tidak membedakan). |
 | F-33 | Deposit | Metode default `'QRIS'` bukan id metode mana pun → tombol "Deposit" nonaktif tanpa penjelasan | Rendah | SELESAI | Form deposit memilih otomatis metode non-SALDO pertama beserta channel aktif pertamanya. |
 | F-34 | Deposit | Riwayat deposit gagal dimuat tampil "Belum ada riwayat deposit"; ref `error` tidak pernah diisi | Sedang | SELESAI | Riwayat deposit dan mutasi saldo memakai `error` dari `useAsyncData`: gagal muat tampil pesan BE dengan tombol "Coba lagi". |
 | F-35 | Produk seller | Pesan error BE hilang saat buat/edit/tangguhkan/aktifkan produk (toast "Conflict" / "Bad Request") | Sedang | SELESAI | `useApi` memasang pesan BE ke `message` dan `statusMessage` error HTTP (status, `data`, `response` tetap). |
@@ -108,7 +108,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-04 — Pengecekan saldo mengabaikan biaya aplikasi
 
 - **Lokasi:** `app/pages/cart/index.vue`, computed `isSaldoInsufficient`
-- **Status:** PERLU KONFIRMASI
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Dikonfirmasi dari BE: bayar SALDO memotong `total_amount` (subtotal + FEE_APP − diskon). Cek saldo keranjang memakai `orderTotal`. Tes regresi di `checkout.spec.ts`; aturan dicatat di `docs/domain-glossary.md`.
 - **Gejala:** Saldo dibandingkan dengan `cartStore.subTotal`, sedangkan "Order total" yang ditampilkan =
   subtotal + biaya aplikasi (`FEE_APP`, default Rp 1.000) − diskon voucher. Contoh: subtotal Rp 50.000 dan saldo
   Rp 50.000 → tombol Checkout aktif, padahal total yang ditampilkan Rp 51.000. Kemungkinan BE menolak, atau
@@ -120,7 +121,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-05 — Nominal transfer di info rekening/WhatsApp ≠ Total Tagihan
 
 - **Lokasi:** `app/pages/payment/[id].vue` (blok "Informasi Rekening Pembayaran" dan computed `waLink`)
-- **Status:** PERLU KONFIRMASI
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Dikonfirmasi dari BE: yang ditransfer `total_amount` (termasuk kode unik). Instruksi transfer & pesan WhatsApp memakai `total_amount ?? amount`. Assertion ditambahkan di `payment.spec.ts`.
 - **Gejala:** Untuk `MANUAL_BANK`, teks "Transfer sejumlah Rp …" dan pesan WhatsApp memakai `payment.amount`.
   Padahal di kartu yang sama, "Total Tagihan" = `total_amount` (nominal + biaya aplikasi + kode unik − diskon).
   Contoh: amount 50.000, app_fee 1.000, kode unik 123 → Total Tagihan Rp 51.123, tetapi instruksi meminta
@@ -136,7 +138,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 > Catatan EP04-14 (2026-11-12): BE tidak punya `/payment/reject` dan status payment kini hanya `UNPAID`/`PAID`/`EXPIRED`/`CANCELLED`. Opsi filter "Ditolak" (`REJECTED`) di `/admin/payment` dihapus karena kini 400; `fetchRejectPayment` tetap tidak dipakai.
 
 - **Lokasi:** `app/pages/admin/payment/index.vue` & `app/pages/admin/payment/[id].vue` (`handleReject`)
-- **Status:** PERLU KONFIRMASI
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Ditutup sesuai desain BE (EP04-14): tidak ada `/payment/reject`, "Tolak" = `/payment/cancel` → `CANCELLED`. `fetchRejectPayment` (endpoint tidak ada) dan `uploadPaymentProof` tidak dipakai; dibiarkan sebagai kode mati, hapus bila ingin bersih-bersih.
 - **Gejala:** Tombol "Tolak" (dan toast "Pembayaran ditolak") memanggil `fetchCancelPayment` → `POST /payment/cancel/{id}`.
   `fetchRejectPayment` (`POST /payment/reject/{id}` dengan `reason`) ada di `composables/api/payment.ts` tetapi
   tidak pernah dipakai. Menurut `docs/domain-glossary.md`, `REJECTED` = admin menolak, `CANCELLED` = dibatalkan.
@@ -166,7 +169,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-08 — Deposit berstatus `PAID` tidak menampilkan keterangan apa pun
 
 - **Lokasi:** `app/pages/payment/[id].vue` (blok "DEPOSIT ACTIONS")
-- **Status:** PERLU KONFIRMASI
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Status deposit di BE hanya UNPAID/PAID/EXPIRED/CANCELLED. Blok `DONE`/`COMPLETE` diganti `PAID`, blok `REJECTED` diganti `EXPIRED` ("Pembayaran kedaluwarsa"). Tes: deposit EXPIRED, dan tes 409 kini memakai `PAID`.
 - **Gejala:** Blok status deposit menangani `UNPAID`, `DONE`/`COMPLETE`, `REJECTED`, dan `CANCELLED`. Status
   `PAID`, `IN_PROGRESS`, dan `EXPIRED` tidak punya keterangan, sehingga area itu kosong. Selain itu, `DONE` tidak
   tercantum di `docs/domain-glossary.md` (status payment: `UNPAID`, `IN_PROGRESS`, `PAID`/`COMPLETE`, `EXPIRED`,
@@ -222,7 +226,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 - **Lokasi:** `app/pages/seller/order/index.vue` & `[id].vue` → "Terima Pesanan"; `[id].vue` → "Terima Permintaan
   Pembatalan" dan "Batalkan Permintaan Pembatalan". Di sisi buyer (`app/pages/transaction/[id].vue`), "Batalkan
   Permintaan Pembatalan" juga langsung jalan tanpa konfirmasi.
-- **Status:** PERLU KONFIRMASI
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Dialog konfirmasi untuk Terima Pesanan (daftar & detail), Setujui/Tolak Pembatalan (seller), dan Tarik Pengajuan Pembatalan (buyer); label diganti dan ikon setujui dibedakan. Tes: "Batal" di dialog tidak memanggil BE.
 - **Gejala:** Satu klik langsung memanggil BE, tanpa `useConfirm()`. "Terima Permintaan Pembatalan" bersifat final
   (transaksi dibatalkan dan dana dikembalikan), dan tombolnya bersebelahan dengan "Batalkan Permintaan Pembatalan".
   Kedua tombol memakai ikon `mdi:close-circle` dan label yang mirip, sehingga mudah salah klik.
@@ -242,7 +247,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-14 — Tombol "Kirim Orderan" tetap muncul di DELIVERED/DONE/ARBITRAGE
 
 - **Lokasi:** `app/pages/seller/order/[id].vue` → computed `showSendOrderButton`
-- **Status:** PERLU KONFIRMASI
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Sudah diselesaikan EP04-03: tombol "Kirim Orderan" hanya untuk PAID/IN_PROGRESS/REJECT/ARBITRAGE, sama dengan whitelist BE (`requireDeliverable`).
 - **Gejala:** Tombol tampil untuk `IN_PROGRESS`, `DELIVERED`, `REJECT`, `ARBITRAGE`, dan `DONE`. Komentarnya berbunyi
   "hanya tampilkan tombol ... jika belum pernah kirim file order sebelumnya", tetapi kode tidak memeriksa `fileOrders`.
   Dialog konfirmasi menyebut "status transaksi akan berubah menjadi DELIVERED", padahal untuk `DONE`/`ARBITRAGE`
@@ -298,7 +304,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-18 — Filter status buyer tidak lengkap
 
 - **Lokasi:** `app/utils/txStatusFilter.ts` → `buyerTxStatusFilters`
-- **Status:** PERLU KONFIRMASI
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** BE menerima semua `TransactionStatus`. Filter buyer ditambah "Kiriman Ditolak" (REJECT), "Pengajuan Batal" (CANCEL_REQUEST), "Ditolak Penjual" (REJECTED).
 - **Gejala:** Opsi filter buyer tidak memuat `REJECT` (buyer menolak hasil kiriman), `REJECTED` (seller menolak), dan
   `CANCEL_REQUEST` (buyer mengajukan batal). Ketiganya status yang dialami buyer, tetapi tidak bisa difilter.
 - **Perlu dikonfirmasi:** Apakah sengaja disembunyikan, dan apakah endpoint `/tx/buyer` menerima ketiga status itu?
@@ -369,7 +376,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-22 — Rumus "Potensi Anomali" withdrawal
 
 - **Lokasi:** `app/pages/admin/withdrawal/[id].vue` → `isAnomalous`
-- **Status:** PERLU KONFIRMASI
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Estimasi = transaksi COMPLETE − `amount` penarikan COMPLETED (tanpa deposit), diberi label "Estimasi Maksimal" karena fee transaksi & transfer ke saldo belanja tidak ada di ringkasan. Tes regresi di `withdrawal.spec.ts`.
 - **Gejala:** Estimasi saldo yang bisa ditarik = total transaksi `COMPLETE` + **total deposit `PAID`** − total
   **`amount_received`** penarikan `COMPLETED`. Ada dua hal yang janggal jika dibandingkan dengan `docs/domain-glossary.md`:
   1. Deposit masuk ke **Saldo Belanja**, yang "hanya bisa dipakai belanja" dan tidak bisa ditarik. Menambahkannya membuat
@@ -386,7 +394,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-23 — `WD_FEE` fallback diam-diam & statistik admin per halaman
 
 - **Lokasi:** `app/components/form/Withdrawal.vue`, `app/pages/admin/withdrawal/index.vue`, `[id].vue` → `wdFee`
-- **Status:** PERLU KONFIRMASI
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Kartu statistik `/admin/withdrawal` memakai endpoint BE baru `GET /admin/withdrawal/summary` (seluruh data). Biaya admin & jumlah diterima di daftar/detail/modal memakai `admin_fee`/`amount_received` yang ditetapkan BE saat pengajuan (bukan WD_FEE saat ini dengan fallback 2500); "Tandai Selesai" tidak lagi mengirim `admin_fee` (BE mengabaikannya). Ganti filter tidak memuat dua kali. Sisa: form penarikan seller masih memakai fallback 2500 bila setting gagal dimuat (sama dengan default BE).
 - **Gejala:**
   - Jika `/system/settings/public` atau `/system/settings/all` gagal dimuat, atau `WD_FEE` tidak ada, `wdFee` diam-diam
     bernilai **2500**. Di sisi admin, nilai ini **dikirim ke BE** sebagai `admin_fee` saat "Tandai Transfer Selesai".
@@ -456,7 +465,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-28 — Filter status admin tidak lengkap & teks Cancel Arbitrage
 
 - **Lokasi:** `app/pages/admin/order/index.vue`, `app/pages/admin/order/[id].vue` → `handleCancelArbitrage`
-- **Status:** PERLU KONFIRMASI
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Filter admin memakai `adminTxStatusFilters` (semua status BE), "Semua Status" tidak mengirim `status`, ganti filter satu request. Teks Indonesia: "Detail Pesanan", "Batalkan Arbitrase", dialog & toast menyebut transaksi kembali ke Dikirim (BE: `DELIVERED`, timer 24 jam diulang). Badge "Penjual Mengirim Pesanan" di bubble admin tidak mungkin muncul (BE hanya mengizinkan seller mengirim ORDER_DELIVERY/GUARANTEE). Kode mati Terima/Tolak di daftar admin dibiarkan.
 - **Gejala:**
   - `statusOptions` admin tidak punya `DELIVERED`, `REJECT`, `CANCEL_REQUEST`, `REFUNDED`, `COMPLETE`, `EXPIRED`.
     Opsi "Selesai" memakai `DONE`, padahal `COMPLETE` juga berlabel "Selesai". Sebaiknya pakai ulang opsi dari
@@ -530,7 +540,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 
 - **Lokasi:** `app/pages/admin/penalty-user/index.vue`, `app/components/form/ApplyPenaltyModal.vue`,
   `app/pages/penalty/index.vue`, `app/pages/seller/penalty/index.vue`
-- **Status:** PERLU KONFIRMASI
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** `/admin/penalty-user` dihapus (dan dari `docs/api-map.md`). Modal kenakan penalty hanya menampilkan rule yang cocok dengan peran user, sama dengan `requireRuleFitsUser` di BE. Sisa (rendah, belum dikerjakan): batas 100 rule di modal, kartu statistik `/penalty` & `/seller/penalty` per halaman, penalty yang dibatalkan admin tampil sebagai "Kedaluwarsa" (BE tidak membedakan).
 - **Gejala:**
   - `/admin/penalty-user` tidak ada di menu `layouts/admin.vue`, dan isinya hampir sama dengan `/admin/penalty`
     (default filter `NONE`, tanpa tombol kenakan penalty). Kemungkinan halaman lama; `docs/api-map.md` masih

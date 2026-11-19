@@ -383,6 +383,29 @@ test.describe('Manage penalty (admin)', () => {
     await expect(slideover.getByText('Tidak ada riwayat penalty.')).toHaveCount(0)
   })
 
+  test('kenakan penalty: rule hanya yang berlaku untuk peran user (F-32)', async ({ page, mockApi }) => {
+    const buyer = makeUser('BUYER', { id: 8, full_name: 'Tes BUYER' })
+    mockManagePenalty(mockApi, {
+      getUsers: () => [],
+      rules: [makeRule('SELLER_LATE'), makeRule('BUYER_SPAM', { name: 'Spam Chat', target_role: 'BUYER' })],
+    })
+    mockApi.on('GET', '/admin/users', ok(page1([buyer])))
+
+    await gotoHydrated(page, '/admin/penalty')
+    await main(page).getByRole('button', { name: 'Kenakan Penalty' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Kenakan Penalty' })
+    await dialog.getByRole('button', { name: /Keterlambatan Pengiriman/ }).click()
+
+    await dialog.getByPlaceholder('Ketik username atau email...').fill('buyer')
+    await page.getByRole('option', { name: /Tes BUYER/ }).click()
+
+    await expect(dialog.getByText('BUYER_SPAM')).toBeVisible()
+    await expect(dialog.getByText('SELLER_LATE')).toHaveCount(0)
+    await dialog.getByRole('button', { name: 'Kenakan Penalty' }).click()
+    // rule SELLER yang sempat dipilih dikosongkan
+    await expect(dialog.getByText('Penalty rule harus dipilih')).toBeVisible()
+  })
+
   test('dari detail user: modal kenakan penalty terisi user tersebut', async ({ page, mockApi }) => {
     mockManagePenalty(mockApi, { getUsers: () => [makePenaltyUser()] })
     let body: any = null

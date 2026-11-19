@@ -80,7 +80,7 @@ UNPAID ──bayar──▶ PAID ──seller terima──▶ IN_PROGRESS ──
 | Tolak pembatalan | Seller | `CANCEL_REQUEST` | `/tx/cancel/reject/{id}` · `fetchRejectCancelRequest` |
 | Tarik pengajuan pembatalan | Buyer | `CANCEL_REQUEST` | `/tx/cancel/withdraw/{id}` · `fetchWithdrawCancelRequest` |
 | Ajukan penangguhan (arbitrase) | Buyer (`DELIVERED`/`DONE`), seller (`REJECT`) | lihat kiri | `/tx/arbitrage/{id}` · `fetchArbitrageRequest` |
-| Batalkan arbitrase / lanjutkan transaksi | Admin | `ARBITRAGE` | `/tx/cancel/arbitrage/{id}` · `fetchCancelArbitrage` ⚠️ perlu konfirmasi status tujuannya |
+| Batalkan arbitrase / lanjutkan transaksi | Admin | `ARBITRAGE` | `/tx/cancel/arbitrage/{id}` · `fetchCancelArbitrage` → `DELIVERED`, `delivered_at` di-reset (24 jam lagi sebelum `DONE` otomatis) |
 | Refund | Admin | hanya `ARBITRAGE` | `/tx/refund/{id}` · `fetchRefundTx` |
 | Selesaikan paksa | Admin | hanya `ARBITRAGE` | `/tx/complete/{id}` · `fetchCompleteTx` |
 
@@ -153,9 +153,17 @@ Aksi seller: `fetchReviewGuarantee` (terima/tolak), `fetchSendGuarantee` (kirim 
 | Status | Arti |
 |---|---|
 | `UNPAID` | Menunggu pembayaran; batas `expired_at` (fallback `created_at` + 24 jam). |
-| `IN_PROGRESS` | Deposit sedang diproses admin. |
-| `PAID` / `COMPLETE` | Berhasil. |
-| `EXPIRED`, `CANCELLED`, `REJECTED` | Gagal (`REJECTED` = admin menolak). |
+| `PAID` | Berhasil (dibayar / dikonfirmasi admin). |
+| `EXPIRED` | Lewat batas bayar. |
+| `CANCELLED` | Dibatalkan pemilik, admin (tombol "Tolak" di `/admin/payment` memanggil `/payment/cancel`), atau gateway gagal. |
+
+Sejak EP04-14 hanya empat status di atas (`PaymentStatus` di BE); tidak ada `/payment/reject`, `REJECTED`, `IN_PROGRESS`, `DONE`, atau `COMPLETE` untuk payment/deposit.
+
+**Nominal:** `amount` = subtotal transaksi (deposit: nominal top up). `total_amount` = yang dibayar/ditransfer:
+`amount − diskon + FEE_APP (hanya transaksi) + biaya gateway`, ditambah kode unik untuk `MANUAL_BANK`. Bayar `SALDO`
+memotong saldo belanja sebesar `total_amount`, jadi cek saldo di keranjang memakai total ini (F-04). Instruksi transfer
+manual dan pesan WhatsApp juga memakai `total_amount` (F-05). Kode unik `MANUAL_BANK` dikembalikan ke saldo belanja
+buyer saat dikonfirmasi.
 
 Pembayaran `MANUAL_BANK` dikonfirmasi admin (`/admin/payment`); badge admin `pending_payment_confirmation`.
 

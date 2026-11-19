@@ -11,12 +11,33 @@ export const buyerTxStatusFilters: TxStatusFilterOption[] = [
   { label: 'Dibayar', value: 'PAID' },
   { label: 'Diproses', value: 'IN_PROGRESS' },
   { label: 'Dikirim', value: 'DELIVERED' },
+  { label: 'Kiriman Ditolak', value: 'REJECT' },
   { label: 'Selesai', value: 'DONE' },
   { label: 'Selesai & Cair', value: 'COMPLETE' },
+  { label: 'Pengajuan Batal', value: 'CANCEL_REQUEST' },
   { label: 'Dibatalkan', value: 'CANCELLED' },
+  { label: 'Ditolak Penjual', value: 'REJECTED' },
   { label: 'Kedaluwarsa', value: 'EXPIRED' },
   { label: 'Refund', value: 'REFUNDED' },
   { label: 'Banding', value: 'ARBITRAGE' },
+]
+
+// Admin: semua nilai TransactionStatus di BE (F-28)
+export const adminTxStatusFilters: TxStatusFilterOption[] = [
+  { label: 'Semua Status', value: 'ALL' },
+  { label: 'Belum Bayar', value: 'UNPAID' },
+  { label: 'Sudah Bayar', value: 'PAID' },
+  { label: 'Diproses', value: 'IN_PROGRESS' },
+  { label: 'Dikirim', value: 'DELIVERED' },
+  { label: 'Kiriman Ditolak Pembeli', value: 'REJECT' },
+  { label: 'Arbitrase', value: 'ARBITRAGE' },
+  { label: 'Pengajuan Batal', value: 'CANCEL_REQUEST' },
+  { label: 'Selesai (kliring)', value: 'DONE' },
+  { label: 'Selesai & Cair', value: 'COMPLETE' },
+  { label: 'Dibatalkan', value: 'CANCELLED' },
+  { label: 'Ditolak Penjual', value: 'REJECTED' },
+  { label: 'Refund', value: 'REFUNDED' },
+  { label: 'Kedaluwarsa', value: 'EXPIRED' },
 ]
 
 export const sellerTxStatusFilters: TxStatusFilterOption[] = [

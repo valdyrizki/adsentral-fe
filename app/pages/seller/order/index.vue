@@ -372,7 +372,15 @@
   })
 
   const acceptingId = ref<string | null>(null) //untuk fungsi loading button
+  const { confirm, close: closeConfirm } = useConfirm()
+
   const handleConfirmOrder = async (txId: string) => {
+    if (!(await confirm({
+      title: 'Terima Pesanan?',
+      message: 'Setelah diterima, pesanan wajib dikirim. Menolak pesanan setelah ini bisa dikenai penalty.',
+      confirmText: 'Ya, Terima',
+      confirmColor: 'primary',
+    }))) return
     try {
       acceptingId.value = txId //untuk fungsi loading button
       await fetchConfirmTx(txId)
@@ -387,6 +395,7 @@
       if (isStaleActionError(err)) await refreshAll()
     }finally {
       acceptingId.value = null //untuk fungsi loading button
+      closeConfirm()
     }
   }
   

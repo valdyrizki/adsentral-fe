@@ -487,7 +487,8 @@ const checkout = async () =>{
 
   const isSaldoInsufficient = computed(() => {
   if (cartStore.payment_method !== 'SALDO') return false
-  return balanceStore.depositBalance < cartStore.subTotal
+  // BE memotong saldo sebesar total payment (subtotal + biaya aplikasi - diskon), bukan subtotal (F-04)
+  return balanceStore.depositBalance < orderTotal.value
 })
 
 const selectedChannel = computed(() => {

@@ -359,7 +359,7 @@
                 @click="handleRejectCancelRequest"
                 :loading="isSubmitting"
               >
-                Batalkan Permintaan Pembatalan
+                Tarik Pengajuan Pembatalan
               </UButton>
             </div>
           </div>
@@ -1167,7 +1167,15 @@ const selectRating = ref<SelectItem[]>(
     }
   }
 
+  const { confirm, close: closeConfirm } = useConfirm()
+
   const handleRejectCancelRequest = async () => {
+    if (!(await confirm({
+      title: 'Tarik Pengajuan Pembatalan?',
+      message: 'Pengajuan batal ditarik dan pesanan dilanjutkan seperti semula.',
+      confirmText: 'Ya, Tarik',
+      confirmColor: 'warning',
+    }))) return
     try {
       isSubmitting.value = true
       await fetchWithdrawCancelRequest(route.params.id as string)
@@ -1187,6 +1195,7 @@ const selectRating = ref<SelectItem[]>(
     }finally {
       isSubmitting.value = false
       isCancelRequestModal.value = false
+      closeConfirm()
     }
   }
 

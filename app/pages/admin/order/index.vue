@@ -200,16 +200,7 @@ const debouncedSearch = ref('')
 const route = useRoute()
 const filterStatus = ref('')
 
-const statusOptions = [
-  { label: 'Semua Status', value: 'ALL' },
-  { label: 'Belum Bayar', value: 'UNPAID' },
-  { label: 'Sudah Bayar', value: 'PAID' },
-  { label: 'Diproses', value: 'IN_PROGRESS' },
-  { label: 'Selesai', value: 'DONE' },
-  { label: 'Dibatalkan', value: 'CANCELLED' },
-  { label: 'Ditolak', value: 'REJECTED' },
-  { label: 'Arbitrage', value: 'ARBITRAGE' },
-]
+const statusOptions = adminTxStatusFilters
 
 // ?status=ARBITRAGE (mis. dari badge sidebar) -> pilih filter yang sudah ada
 const statusFromQuery = (q: unknown) => {
@@ -235,7 +226,7 @@ const {
   refresh,
 } = useAsyncData<PageResponse<TransactionResponse>>(
   'admin-all-tx',
-  () => fetchAllTx(page.value, perPageValue.value, debouncedSearch.value, filterStatus.value),
+  () => fetchAllTx(page.value, perPageValue.value, debouncedSearch.value, filterStatus.value === 'ALL' ? '' : filterStatus.value),
   { watch: [page, perPageValue, debouncedSearch, filterStatus], server: false }
 )
 
@@ -255,7 +246,6 @@ function handleSearchEnter() {
 
 function handleFilter() {
   page.value = 0
-  refresh()
 }
 
 function onPageChange(newPage: number) {

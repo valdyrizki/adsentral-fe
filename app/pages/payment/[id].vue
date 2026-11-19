@@ -262,7 +262,7 @@
                 <AppSlaNote prefix="Konfirmasi transfer oleh CS:" class="mb-3" />
                 <p class="text-xs text-yellow-700 mb-3">
                   Transfer sejumlah
-                  <span class="font-semibold">Rp {{ payment.amount.toLocaleString('id-ID') }}</span>
+                  <span class="font-semibold">Rp {{ (payment.total_amount ?? payment.amount).toLocaleString('id-ID') }}</span>
                   ke rekening berikut, lalu kirimkan bukti transfer ke admin melalui WhatsApp.
                 </p>
                 <div v-if="rekeningLoading" class="py-2">
@@ -331,8 +331,8 @@
                 </UButton>
               </div>
 
-              <!-- DONE / COMPLETE -->
-              <div v-else-if="['DONE', 'COMPLETE'].includes(payment.status)" class="px-5 pb-5 pt-0 border-t border-gray-100 mt-2">
+              <!-- PAID (status deposit di BE: UNPAID, PAID, EXPIRED, CANCELLED) -->
+              <div v-else-if="payment.status === 'PAID'" class="px-5 pb-5 pt-0 border-t border-gray-100 mt-2">
                 <UAlert
                   title="Pembayaran berhasil dikonfirmasi"
                   description="Saldo Anda telah berhasil ditambahkan."
@@ -342,13 +342,13 @@
                 />
               </div>
 
-              <!-- REJECTED -->
-              <div v-else-if="payment.status === 'REJECTED'" class="px-5 pb-5 pt-0 border-t border-gray-100 mt-2">
+              <!-- EXPIRED -->
+              <div v-else-if="payment.status === 'EXPIRED'" class="px-5 pb-5 pt-0 border-t border-gray-100 mt-2">
                 <UAlert
-                  title="Pembayaran ditolak"
-                  description="Pembayaran Anda ditolak oleh admin. Silakan hubungi support untuk informasi lebih lanjut."
-                  icon="i-heroicons-x-circle"
-                  color="error"
+                  title="Pembayaran kedaluwarsa"
+                  description="Batas waktu pembayaran sudah lewat. Silakan buat deposit baru."
+                  icon="i-heroicons-clock"
+                  color="neutral"
                   class="mt-4"
                 />
               </div>
@@ -497,7 +497,7 @@ const waLink = computed(() => {
   const msg = encodeURIComponent(
     `Halo Admin, saya ingin mengirimkan bukti transfer untuk:\n` +
     `ID Pembayaran: #${payment.value.id}\n` +
-    `Nominal: Rp ${payment.value.amount.toLocaleString('id-ID')}\n\n` +
+    `Nominal: Rp ${(payment.value.total_amount ?? payment.value.amount).toLocaleString('id-ID')}\n\n` +
     `[Lampirkan foto bukti transfer di sini]`
   )
   return `https://wa.me/${number.replace(/\D/g, '')}?text=${msg}`

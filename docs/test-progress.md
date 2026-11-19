@@ -26,21 +26,21 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 1 | Auth: login & guard rute | `auth.spec.ts`, `session.spec.ts`, `register-logout.spec.ts` | ✅ | — | F-01 (kredensial bocor ke URL) sudah diperbaiki. F-02 hydration mismatch `/login` belum dites. `/guarantee` & `/penalty` wajib login (F-19 selesai). |
 | 2 | Profil buyer | — | ⬜ | P2 | Halaman sederhana: tampil profil + `updateProfile`. |
 | 3 | Katalog publik (beranda, kategori, produk, merchant, pencarian) | — | ⬜ | P2 | Halaman SSR; data publik juga lewat mock BE SSR (`mock-backend.mjs`), bukan hanya `mockApi`. Detail produk adalah pintu masuk keranjang. |
-| 4 | Keranjang & checkout | `checkout.spec.ts` | ✅ | — | Cek saldo mengabaikan biaya aplikasi (F-04, perlu konfirmasi). F-03 selesai. Belum: ubah qty/hapus item, multi-merchant. |
-| 5 | Pembayaran buyer | `payment.spec.ts` | Sebagian | P2 (daftar `/payment`) | Nominal transfer ≠ Total Tagihan (F-05, prioritas tinggi, perlu konfirmasi). Deposit `PAID` tanpa keterangan (F-08). |
-| 6 | Transaksi buyer | `transaction.spec.ts` | 🐞 | — | Filter status kurang (F-18, perlu konfirmasi). F-11 & F-17 selesai. |
+| 4 | Keranjang & checkout | `checkout.spec.ts` | ✅ | — | F-03 & F-04 selesai (saldo dibandingkan dengan total termasuk biaya aplikasi). Belum: ubah qty/hapus item, multi-merchant. |
+| 5 | Pembayaran buyer | `payment.spec.ts` | Sebagian | P2 (daftar `/payment`) | F-05 (nominal transfer = total tagihan) & F-08 (keterangan deposit PAID/EXPIRED) selesai. |
+| 6 | Transaksi buyer | `transaction.spec.ts` | ✅ | — | F-11, F-17, F-18 selesai. Tarik pengajuan batal lewat konfirmasi (F-12). |
 | 7 | Garansi (buyer & seller) | `guarantee.spec.ts` | ✅ | — | Label status diduplikasi di 5 tempat (F-21). |
 | 8 | Saldo, deposit & transfer | `balance.spec.ts` | ✅ | — | F-20, F-33, F-34 selesai. |
-| 9 | Penalty (buyer, seller, admin) | `penalty.spec.ts` | ✅ | P3 (`/admin/penalty-user`) | F-29, F-30, F-31 selesai. Halaman yatim & rule BUYER bisa ke seller (F-32, perlu konfirmasi). |
+| 9 | Penalty (buyer, seller, admin) | `penalty.spec.ts` | ✅ | — | F-29–F-32 selesai (`/admin/penalty-user` dihapus, rule sesuai peran user). |
 | 10 | Pesanan seller | `seller-order.spec.ts` | 🐞 | — | F-10 & F-11 selesai. Belum: seller ajukan arbitrase, kirim via file/stok. |
 | 11 | Penarikan dana & rekening bank seller | `withdrawal.spec.ts`, `bank-account.spec.ts` | 🐞 | — | `WD_FEE` diam-diam jatuh ke Rp 2.500 (F-23). |
 | 12 | Produk seller | `seller-product.spec.ts` | ✅ | P2 (REJECTED/SUSPEND detail) | Teks menyesatkan (F-37) selesai. |
 | 13 | Stok seller | `seller-stock.spec.ts` | ✅ | P2 (detail & tambah ulang item RETURNED, import CSV) | Hitungan Aktif/Terkirim hanya halaman aktif (F-38, rendah). |
 | 14 | Verifikasi seller & daftar merchant | `verification.spec.ts`, `security.spec.ts`, `verification-photos-purged.spec.ts` | ✅ | — | F-40 selesai. |
 | 15 | Dashboard & profil toko seller | — | ⬜ | P3 | Riwayat penalty di dashboard sudah tercakup `penalty.spec.ts`. |
-| 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | 🐞 | P3 (dashboard admin) | Filter & teks Cancel Arbitrage (F-28). `alert()` diskusi selesai (F-27). |
-| 17 | Pembayaran admin | `payment.spec.ts`, `admin-unprocessed-payment.spec.ts` | 🐞 | — | "Tolak" memanggil `/payment/cancel` (F-06, perlu konfirmasi). F-07 selesai. |
-| 18 | Penarikan dana admin | `withdrawal.spec.ts` | 🐞 | — | Rumus "Potensi Anomali" ikut menghitung saldo deposit (F-22). Statistik hanya halaman aktif (F-23). |
+| 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | ✅ | P3 (dashboard admin) | F-27 & F-28 selesai. |
+| 17 | Pembayaran admin | `payment.spec.ts`, `admin-unprocessed-payment.spec.ts` | ✅ | — | F-06 ditutup (sesuai BE), F-07 selesai. |
+| 18 | Penarikan dana admin | `withdrawal.spec.ts` | ✅ | — | F-22 & F-23 selesai (kartu statistik dari `GET /admin/withdrawal/summary`, biaya admin dari data penarikan). |
 | 19 | Produk & stok admin (review, suspend) | `admin-product-reason.spec.ts`, `admin-product-status.spec.ts` | Sebagian | P1 | Halaman create/edit admin memakai ulang form produk seller; tes setelah modul 12. |
 | 20 | Verifikasi seller (admin) | `verification.spec.ts`, `admin-verification-revoke.spec.ts`, `admin-verification-badge.spec.ts` | ✅ | — | F-39 selesai. |
 | 21 | Master data admin (kategori, tipe akun, voucher, metode/channel bayar) | — | ⬜ | P2 | Pola CRUD serupa; cocok satu spec per halaman. Sinkron Tripay memanggil gateway lewat BE. |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **296 tes** di 32 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-19 dengan `npx playwright test --list`).
+Total saat ini: **302 tes** di 32 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-19 dengan `npx playwright test --list`).
 
 ---
 
@@ -114,7 +114,7 @@ Total saat ini: **296 tes** di 32 spec, tanpa tes `test.fail` (semua bug yang pu
 |---|---|---|
 | Checkout pakai saldo (`createTransaction`) → daftar transaksi | ✅ | |
 | Akun admin: checkout nonaktif, tanpa ikon keranjang di header | ✅ | EP04-09 |
-| Saldo kurang → tombol checkout nonaktif; saldo dimuat ulang → tombol ikut berubah | ✅ | F-03 (selesai), F-04 dicatat |
+| Saldo kurang (termasuk biaya aplikasi) → tombol checkout nonaktif; saldo dimuat ulang → tombol ikut berubah | ✅ | F-03, F-04 (selesai) |
 | Transfer manual → halaman pembayaran | ✅ | |
 | Payment gateway: channel & biaya | ✅ | |
 | Voucher valid (`checkVoucher`) / tidak valid | ✅ | |
@@ -128,10 +128,10 @@ Total saat ini: **296 tes** di 32 spec, tanpa tes `test.fail` (semua bug yang pu
 
 | Skenario | Status | Catatan |
 |---|---|---|
-| Detail transfer manual: rincian, rekening, countdown, WhatsApp | ✅ | F-05 dicatat (nominal) |
+| Detail transfer manual: rincian, rekening, countdown, WhatsApp, nominal = total tagihan | ✅ | F-05 (selesai) |
 | Batas bayar lewat / `expired_at` null | ✅ | |
 | Payment gateway: kode bayar, QR, tombol bayar | ✅ | |
-| Sudah dibayar: instruksi disembunyikan | ✅ | F-08 dicatat |
+| Sudah dibayar: instruksi disembunyikan; deposit PAID/EXPIRED berketerangan | ✅ | F-08 (selesai) |
 | Batalkan deposit + 409 | ✅ | |
 | Payment tidak ditemukan | ✅ | |
 | Daftar pembayaran `/payment` (`fetchMyPayments`) | ⬜ P2 | |
@@ -142,7 +142,7 @@ Total saat ini: **296 tes** di 32 spec, tanpa tes `test.fail` (semua bug yang pu
 | Skenario | Status | Catatan |
 |---|---|---|
 | Daftar, tombol bayar UNPAID | ✅ | |
-| Filter status dari URL & pencarian ID | ✅ | F-18 dicatat |
+| Filter status dari URL & pencarian ID | ✅ | F-18 (selesai) |
 | Status ditolak BE (400) → filter kembali "Semua" | ✅ | |
 | Tombol daftar: tanpa placeholder, "Tangguhkan" ke detail | ✅ | F-16 (selesai) |
 | Tombol aksi sesuai status | ✅ | |
@@ -197,7 +197,7 @@ Total saat ini: **296 tes** di 32 spec, tanpa tes `test.fail` (semua bug yang pu
 | Manage: filter "Semua", label WARNING | ✅ | F-30 (selesai) |
 | Manage: header slideover basi, riwayat gagal dimuat | ✅ | F-31 (selesai) |
 | Buyer: banner & riwayat; seller: riwayat | ✅ | |
-| `/admin/penalty-user` | ⬜ P3 | Halaman yatim: F-32 |
+| Kenakan penalty: rule sesuai peran user (`/admin/penalty-user` dihapus) | ✅ | F-32 (selesai) |
 
 ## 10. Pesanan seller — `seller-order.spec.ts`
 
@@ -206,10 +206,10 @@ Total saat ini: **296 tes** di 32 spec, tanpa tes `test.fail` (semua bug yang pu
 | Daftar: terima/tolak, countdown, filter | ✅ | |
 | Tolak basi (409) | ✅ | |
 | Detail: terima (+409), tolak (+409 menutup modal) | ✅ | F-13 (selesai) |
-| Kirim orderan → DELIVERED, kirim pesan | ✅ | F-14 dicatat |
+| Kirim orderan → DELIVERED, kirim pesan | ✅ | F-14 (selesai di EP04-03) |
 | Tombol "Kirim Orderan" per status (PAID/IN_PROGRESS/REJECT/ARBITRAGE saja) | ✅ | EP04-03 |
 | Pesan kosong | ✅ | F-10 (selesai) |
-| Terima / tolak pengajuan batal | ✅ | F-12 dicatat |
+| Setujui / tolak pengajuan batal lewat dialog konfirmasi | ✅ | F-12 (selesai) |
 | Countdown pengajuan batal dari `cancel_requested_at` | ✅ | EP04-04 |
 | PAID tanpa tombol "Batalkan" placeholder | ✅ | F-09 (selesai) |
 | Countdown UNPAID tanpa `expired_at` | ✅ | F-11 (selesai) |
@@ -268,7 +268,7 @@ Total saat ini: **296 tes** di 32 spec, tanpa tes `test.fail` (semua bug yang pu
 
 | Skenario | Status | Catatan |
 |---|---|---|
-| Daftar: filter ARBITRAGE dari badge, link detail | ✅ | F-28 dicatat |
+| Daftar: filter ARBITRAGE dari badge, link detail, semua status, "Semua Status" tanpa parameter | ✅ | F-28 (selesai) |
 | Error daftar | ✅ | F-26 (pesan BE) |
 | Cancel arbitrage, refund, selesaikan paksa, refund 409 | ✅ | |
 | Refund 400: modal tetap terbuka dengan pesan BE | ✅ | F-24 (selesai) |
@@ -281,7 +281,7 @@ Total saat ini: **296 tes** di 32 spec, tanpa tes `test.fail` (semua bug yang pu
 | Skenario | Status | Catatan |
 |---|---|---|
 | Tombol konfirmasi hanya untuk UNPAID manual/deposit | ✅ | |
-| Konfirmasi dari daftar + 409; tolak dari detail; batal di dialog | ✅ | F-06 dicatat |
+| Konfirmasi dari daftar + 409; tolak dari detail; batal di dialog | ✅ | F-06 (ditutup) |
 | Filter "Semua Status" | ✅ | F-07 (selesai) |
 | `/admin/payments/unprocessed`: tab status, normalisasi camelCase, detail RESOLVED, tandai selesai (catatan wajib, ter-trim), 409 → muat ulang, error muat | ✅ | `admin-unprocessed-payment.spec.ts` |
 
@@ -291,7 +291,7 @@ Total saat ini: **296 tes** di 32 spec, tanpa tes `test.fail` (semua bug yang pu
 |---|---|---|
 | Daftar: estimasi pakai `WD_FEE`, filter | ✅ | F-23 dicatat |
 | Tandai selesai / tolak; selesai basi (409) | ✅ | F-20 (selesai) |
-| Detail: peringatan anomali, biaya admin COMPLETED | ✅ | F-22 dicatat |
+| Detail: peringatan anomali (tanpa deposit, `amount` penarikan), biaya admin COMPLETED | ✅ | F-22 (selesai) |
 
 ## 19. Produk & stok admin
 
@@ -374,4 +374,4 @@ Cukup satu smoke test (halaman terbuka tanpa error) — ⬜ P3.
 
 1. **P1:** selesai 2026-11-19 (produk & stok seller, verifikasi seller + admin, daftar toko, rekening bank, unprocessed payment, register/logout). Sisa P1 di modul 19: halaman create/edit produk admin.
 2. **P2:** katalog publik → chat → notifikasi → master data admin → keuangan admin → system settings → sisa (profil, `/payment`, diskusi buyer).
-3. **P3:** dashboard, `/admin/stock`, `/admin/penalty-user`, polling badge, smoke test halaman statis.
+3. **P3:** dashboard, `/admin/stock`, polling badge, smoke test halaman statis.

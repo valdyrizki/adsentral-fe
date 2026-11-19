@@ -28,7 +28,7 @@ test.describe('Detail pembayaran (buyer)', () => {
     const main = page.getByRole('main')
 
     await expect(main.getByText('Menunggu Pembayaran').first()).toBeVisible()
-    await expect(main.getByText('Rp 51.123')).toBeVisible() // total tagihan
+    await expect(main.getByText('Rp 51.123').first()).toBeVisible() // total tagihan
     await expect(main.getByText('+123')).toBeVisible() // kode unik
 
     // Rekening dari system setting grup REKENING
@@ -36,6 +36,8 @@ test.describe('Detail pembayaran (buyer)', () => {
     await expect(main.getByTestId('sla-note')).toContainText('Konfirmasi transfer oleh CS: Diproses maks. 1×24 jam kerja') // EP08-05
     await expect(main.getByText('BCA a.n. Adsentral')).toBeVisible()
     await expect(main.getByText('1234567890')).toBeVisible()
+    // F-05: nominal transfer = total tagihan (termasuk biaya aplikasi & kode unik), bukan amount
+    await expect(main.getByText('Transfer sejumlah')).toContainText('Rp 51.123')
 
     // Countdown batas bayar (±2 jam lagi)
     await expect(main.getByText(/sisa 0[12]:\d{2}:\d{2}/)).toBeVisible()
@@ -45,6 +47,7 @@ test.describe('Detail pembayaran (buyer)', () => {
     const href = await wa.getAttribute('href')
     expect(href).toContain('https://wa.me/08123456789')
     expect(decodeURIComponent(href!)).toContain('#PAY-1')
+    expect(decodeURIComponent(href!)).toContain('Nominal: Rp 51.123')
 
     // Transaksi terkait
     await expect(main.getByText('Produk Pesanan')).toBeVisible()
@@ -135,7 +138,7 @@ test.describe('Detail pembayaran (buyer)', () => {
     mockApi.on('GET', '/payment/DEP-2', () => ok(payment))
     mockApi.on('POST', '/balance/deposit/cancel/DEP-2', () => {
       // Admin sudah mengonfirmasi lebih dulu
-      payment = { ...payment, status: 'COMPLETE' }
+      payment = { ...payment, status: 'PAID' }
       return fail(409, 'Deposit sudah dikonfirmasi admin')
     })
 
@@ -146,6 +149,13 @@ test.describe('Detail pembayaran (buyer)', () => {
     await expect(page.getByText('Gagal membatalkan').first()).toBeVisible()
     await expect(page.getByText('Deposit sudah dikonfirmasi admin').first()).toBeVisible()
     await expect(page.getByRole('main').getByText('Pembayaran berhasil dikonfirmasi')).toBeVisible()
+  })
+
+  test('deposit kedaluwarsa menampilkan keterangan (F-08)', async ({ page, mockApi }) => {
+    mockBuyerPayment(mockApi, makePayment('DEP-3', { payment_type: 'DEPOSIT', status: 'EXPIRED' }))
+
+    await gotoHydrated(page, '/payment/DEP-3')
+    await expect(page.getByRole('main').getByText('Pembayaran kedaluwarsa')).toBeVisible()
   })
 
   test('payment tidak ditemukan menampilkan pesan gagal', async ({ page, mockApi }) => {

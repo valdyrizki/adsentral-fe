@@ -142,8 +142,8 @@
 
               <!-- Estimasi biaya jika PENDING -->
               <div v-else-if="item.status === 'PENDING'" class="text-xs text-right text-gray-400 space-y-0.5">
-                <p>Biaya admin (WD_FEE): {{ formatRp(wdFee) }}</p>
-                <p class="text-green-600 font-medium">Estimasi diterima: {{ formatRp(item.amount - wdFee) }}</p>
+                <p>Biaya admin: {{ formatRp(item.admin_fee) }}</p>
+                <p class="text-green-600 font-medium">Akan diterima: {{ formatRp(item.amount_received) }}</p>
               </div>
 
               <!-- Alasan jika REJECTED -->
@@ -235,13 +235,13 @@
           </div>
 
           <div class="flex justify-between items-center text-sm px-1">
-            <span class="text-gray-400">Biaya Admin (otomatis)</span>
-            <span class="font-semibold text-gray-700">{{ formatRp(wdFee) }}</span>
+            <span class="text-gray-400">Biaya Admin (ditetapkan saat pengajuan)</span>
+            <span class="font-semibold text-gray-700">{{ formatRp(selectedItem.admin_fee) }}</span>
           </div>
 
           <div v-if="selectedItem" class="rounded-lg bg-green-50 border border-green-200 px-4 py-3 flex justify-between items-center">
             <span class="text-sm text-gray-600">Jumlah diterima seller</span>
-            <span class="text-base font-bold text-green-700">{{ formatRp(selectedItem.amount - wdFee) }}</span>
+            <span class="text-base font-bold text-green-700">{{ formatRp(selectedItem.amount_received) }}</span>
           </div>
 
           <div class="flex justify-end gap-2 pt-1">
@@ -284,12 +284,12 @@
                 <span class="font-semibold text-gray-800">{{ formatRp(selectedItem.amount) }}</span>
               </div>
               <div class="flex justify-between text-sm">
-                <span class="text-gray-400">Biaya Admin (WD_FEE)</span>
-                <span class="text-gray-600">{{ formatRp(wdFee) }}</span>
+                <span class="text-gray-400">Biaya Admin</span>
+                <span class="text-gray-600">{{ formatRp(selectedItem.admin_fee) }}</span>
               </div>
               <div class="flex justify-between text-sm">
-                <span class="text-gray-400">Estimasi Diterima</span>
-                <span class="text-gray-600">{{ formatRp(selectedItem.amount - wdFee) }}</span>
+                <span class="text-gray-400">Diterima Seller</span>
+                <span class="text-gray-600">{{ formatRp(selectedItem.amount_received) }}</span>
               </div>
               <div class="flex justify-between text-sm">
                 <span class="text-gray-400">Tanggal Pengajuan</span>
@@ -328,28 +328,13 @@
 import dayjs from 'dayjs'
 import NameCheckBadge from '~/components/bank-account/NameCheckBadge.vue'
 import { useAdminWithdrawalApi } from '~/composables/api/admin-withdrawal'
-import { useSystemSettingApi } from '~/composables/api/system-setting'
 import type { AdminWithdrawalResponse } from '~/types/balance/AdminWithdrawalResponse'
 import type { PageResponse } from '~/types/PageResponse'
 
 definePageMeta({ layout: 'admin', label: 'Manajemen Penarikan Dana' })
 
 const toast = useToast()
-const { fetchAllWithdrawals, approveWithdrawal, rejectWithdrawal } = useAdminWithdrawalApi()
-const { fetchAllSystemSetting } = useSystemSettingApi()
-
-// ===== WD_FEE (biaya admin penarikan, otomatis dari system setting) =====
-const { data: systemSettings } = await useAsyncData(
-  'admin-withdrawal-system-settings',
-  () => fetchAllSystemSetting(),
-  { server: false }
-)
-
-const wdFee = computed(() => {
-  const setting = (systemSettings.value ?? []).find(s => s.key === 'WD_FEE')
-  const parsed = Number(setting?.value)
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 2500
-})
+const { fetchAllWithdrawals, fetchWithdrawalSummary, approveWithdrawal, rejectWithdrawal } = useAdminWithdrawalApi()
 
 // ===== FILTER =====
 const page = ref(0)
@@ -402,20 +387,21 @@ const {
 )
 
 // ===== STATS =====
-const statsCards = computed(() => {
-  const list = withdrawals.value?.content ?? []
-  const pending_ = list.filter(w => w.status === 'PENDING').length
-  const completed = list.filter(w => w.status === 'COMPLETED').length
-  const rejected = list.filter(w => w.status === 'REJECTED').length
-  const totalAmount = list
-    .filter(w => w.status === 'COMPLETED')
-    .reduce((s, w) => s + w.amount_received, 0)
+// Dari seluruh data (GET /admin/withdrawal/summary), bukan dari baris halaman aktif (F-23)
+const { data: summary, refresh: refreshSummary } = await useAsyncData(
+  'admin-withdrawal-summary',
+  () => fetchWithdrawalSummary(),
+  { server: false }
+)
 
+const statsCards = computed(() => {
+  const s = summary.value
+  const count = (n: number | undefined) => (s ? String(n ?? 0) : '-')
   return [
-    { label: 'Menunggu', value: pending_.toString(), icon: 'mdi:clock-outline', bgColor: 'bg-amber-50', iconColor: 'text-amber-500' },
-    { label: 'Selesai', value: completed.toString(), icon: 'mdi:check-circle', bgColor: 'bg-green-50', iconColor: 'text-green-500' },
-    { label: 'Ditolak', value: rejected.toString(), icon: 'mdi:close-circle', bgColor: 'bg-red-50', iconColor: 'text-red-500' },
-    { label: 'Total Dicairkan', value: formatRp(totalAmount), icon: 'mdi:cash-multiple', bgColor: 'bg-primary-50', iconColor: 'text-primary-500' },
+    { label: 'Menunggu', value: count(s?.pending_count), icon: 'mdi:clock-outline', bgColor: 'bg-amber-50', iconColor: 'text-amber-500' },
+    { label: 'Selesai', value: count(s?.completed_count), icon: 'mdi:check-circle', bgColor: 'bg-green-50', iconColor: 'text-green-500' },
+    { label: 'Ditolak', value: count(s?.rejected_count), icon: 'mdi:close-circle', bgColor: 'bg-red-50', iconColor: 'text-red-500' },
+    { label: 'Total Dicairkan', value: s ? formatRp(s.total_disbursed) : '-', icon: 'mdi:cash-multiple', bgColor: 'bg-primary-50', iconColor: 'text-primary-500' },
   ]
 })
 
@@ -440,7 +426,6 @@ function onPageChange(newPage: number) {
 
 function handleFilter() {
   page.value = 0
-  refresh()
 }
 
 // ===== ACTION STATE =====
@@ -467,23 +452,19 @@ function openReject(item: AdminWithdrawalResponse) {
 // ===== APPROVE =====
 async function handleApprove() {
   if (!selectedItem.value) return
-  if (wdFee.value >= selectedItem.value.amount) {
-    actionError.value = 'Biaya admin (WD_FEE) tidak boleh melebihi jumlah penarikan.'
-    return
-  }
 
   try {
     actionLoading.value = true
     actionError.value = null
-    await approveWithdrawal(selectedItem.value.id, wdFee.value)
+    await approveWithdrawal(selectedItem.value.id)
     toast.add({
       title: 'Transfer Ditandai Selesai',
-      description: `Seller menerima ${formatRp(selectedItem.value.amount - wdFee.value)}.`,
+      description: `Seller menerima ${formatRp(selectedItem.value.amount_received)}.`,
       color: 'success',
       icon: 'mdi:bank-transfer',
     })
     isApproveOpen.value = false
-    await refresh()
+    await Promise.all([refresh(), refreshSummary()])
   } catch (err: any) {
     actionError.value = err.statusMessage || 'Gagal menyetujui penarikan.'
   } finally {
@@ -510,7 +491,7 @@ async function handleReject() {
       icon: 'mdi:close-circle',
     })
     isRejectOpen.value = false
-    await refresh()
+    await Promise.all([refresh(), refreshSummary()])
   } catch (err: any) {
     actionError.value = err.statusMessage || 'Gagal menolak penarikan.'
   } finally {

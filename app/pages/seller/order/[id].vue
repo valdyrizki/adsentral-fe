@@ -364,17 +364,17 @@
             @click="handleRejectCancelRequest"
             :loading="isSubmitting"
           >
-            Batalkan Permintaan Pembatalan
+            Tolak Pembatalan
           </UButton>   
           <UButton
-            icon="mdi:close-circle"
+            icon="mdi:check-circle"
             size="lg"
             color="success"
             variant="solid"
             @click="handleAcceptCancelRequest"
             :loading="isSubmitting"
           >
-            Terima Permintaan Pembatalan
+            Setujui Pembatalan
           </UButton>        
         </div>
       </div>
@@ -1016,8 +1016,16 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
     { watch: [fileOrderPage], server: false }
   )
 
+  const { confirm, close: closeConfirm } = useConfirm()
+
   const handleConfirmOrder = async () => {
     if (acceptingId.value) return
+    if (!(await confirm({
+      title: 'Terima Pesanan?',
+      message: 'Setelah diterima, pesanan wajib dikirim. Menolak pesanan setelah ini bisa dikenai penalty.',
+      confirmText: 'Ya, Terima',
+      confirmColor: 'primary',
+    }))) return
     try {
       acceptingId.value = 'confirm'
       await fetchConfirmTx(route.params.id as string)
@@ -1033,6 +1041,7 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
       useToast().add({ title: 'Gagal', description: err.message || 'Gagal menerima pesanan', color: 'error' })
     }finally {
       acceptingId.value = null //untuk fungsi loading button
+      closeConfirm()
     }
   }
 
@@ -1079,6 +1088,12 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
   }
 
   const handleRejectCancelRequest = async () => {
+    if (!(await confirm({
+      title: 'Tolak Pembatalan?',
+      message: 'Pengajuan batal pembeli ditolak dan pesanan tetap harus diproses.',
+      confirmText: 'Ya, Tolak',
+      confirmColor: 'warning',
+    }))) return
     try {
       isSubmitting.value = true
       await fetchRejectCancelRequest(route.params.id as string)
@@ -1097,10 +1112,17 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
       })
     }finally {
       isSubmitting.value = false
+      closeConfirm()
     }
   }
 
   const handleAcceptCancelRequest = async () => {
+    if (!(await confirm({
+      title: 'Setujui Pembatalan?',
+      message: 'Transaksi dibatalkan dan dana dikembalikan ke saldo pembeli. Tindakan ini tidak bisa dibatalkan.',
+      confirmText: 'Ya, Setujui',
+      confirmColor: 'error',
+    }))) return
     try {
       isSubmitting.value = true
       await fetchAcceptCancelRequest(route.params.id as string)
@@ -1119,6 +1141,7 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
       })
     }finally {
       isSubmitting.value = false
+      closeConfirm()
     }
   }
 

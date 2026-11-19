@@ -231,12 +231,15 @@ test.describe('Penarikan dana seller', () => {
   })
 })
 
+const SUMMARY = { pending_count: 0, completed_count: 0, rejected_count: 0, total_disbursed: 0 }
+
 /** Mock halaman penarikan admin; mengembalikan query tiap request daftar */
-function mockAdminList(mockApi: MockApi, getWds: () => Wd[]) {
+function mockAdminList(mockApi: MockApi, getWds: () => Wd[], getSummary: () => typeof SUMMARY = () => SUMMARY) {
   const queries: URLSearchParams[] = []
   mockApi
     .asRole('ADMIN')
     .on('GET', '/system/settings/all', ok(WD_FEE_5000))
+    .on('GET', '/admin/withdrawal/summary', () => ok(getSummary()))
     .on('GET', '/admin/withdrawal', (_r, url) => {
       queries.push(url.searchParams)
       return ok(page1(getWds()))
@@ -248,20 +251,22 @@ const adminRow = (page: Page, sellerName: string) =>
   page.locator('div.divide-y > div.py-4').filter({ hasText: sellerName })
 
 test.describe('Penarikan dana admin', () => {
-  test('daftar: estimasi diterima pakai WD_FEE & filter status dari URL', async ({ page, mockApi }) => {
-    const queries = mockAdminList(mockApi, () => [makeWd('WD-1', { notes: 'Untuk modal' })])
+  test('daftar: biaya admin & jumlah diterima dari data penarikan (bukan WD_FEE saat ini) & filter status dari URL (F-23)', async ({ page, mockApi }) => {
+    // BE menetapkan admin_fee saat pengajuan; WD_FEE di setting (5.000) sudah berubah sejak itu
+    const queries = mockAdminList(mockApi, () => [makeWd('WD-1', { notes: 'Untuk modal', admin_fee: 2500, amount_received: 97500 })])
 
     await gotoHydrated(page, '/admin/withdrawal?status=PENDING')
     const row = adminRow(page, 'Tes SELLER')
-    await expect(row.getByText('Biaya admin (WD_FEE): Rp 5.000')).toBeVisible()
-    await expect(row.getByText('Estimasi diterima: Rp 95.000')).toBeVisible()
+    await expect(row.getByText('Biaya admin: Rp 2.500')).toBeVisible()
+    await expect(row.getByText('Akan diterima: Rp 97.500')).toBeVisible()
     await expect(row.getByRole('button', { name: 'Tandai Selesai' })).toBeVisible()
     expect(queries.at(-1)?.get('status')).toBe('PENDING')
   })
 
-  test('tandai transfer selesai: body admin_fee, daftar & badge dimuat ulang', async ({ page, mockApi }) => {
-    let wds = [makeWd('WD-1')]
-    mockAdminList(mockApi, () => wds)
+  test('tandai transfer selesai: tanpa admin_fee, daftar, ringkasan & badge dimuat ulang', async ({ page, mockApi }) => {
+    let wds = [makeWd('WD-1', { admin_fee: 5000, amount_received: 95000 })]
+    let summaryFetches = 0
+    mockAdminList(mockApi, () => wds, () => (summaryFetches++, SUMMARY))
     let alertFetches = 0
     mockApi.on('GET', '/admin/alerts', () => (alertFetches++, ok({ pending_withdrawals: wds.filter((w) => w.status === 'PENDING').length })))
     let body: unknown = null
@@ -277,16 +282,32 @@ test.describe('Penarikan dana admin', () => {
     await expect(dialog.getByText('BCA — 9876543210')).toBeVisible()
     await expect(dialog.getByText('Rp 95.000')).toBeVisible()
     const alertsBefore = alertFetches
+    const summaryBefore = summaryFetches
     await dialog.getByRole('button', { name: 'Tandai Transfer Selesai' }).click()
 
     await expect(page.getByText('Seller menerima Rp 95.000.').first()).toBeVisible()
-    expect(body).toEqual({ admin_fee: 5000 })
+    // BE tidak membaca admin_fee dari request (biaya ditetapkan saat pengajuan)
+    expect(body).toEqual({})
+    await expect.poll(() => summaryFetches).toBeGreaterThan(summaryBefore)
     await expect(dialog).toHaveCount(0)
     const row = adminRow(page, 'Tes SELLER')
     await expect(row.getByText('Diterima: Rp 95.000')).toBeVisible()
     await expect(row.getByText('Oleh: admin_test')).toBeVisible()
     await expect(row.getByRole('button', { name: 'Tandai Selesai' })).toHaveCount(0)
     await expect.poll(() => alertFetches).toBeGreaterThan(alertsBefore)
+  })
+
+  test('kartu statistik dari ringkasan BE, bukan dari baris halaman aktif (F-23)', async ({ page, mockApi }) => {
+    // halaman (filter Menunggu) hanya berisi 1 baris PENDING; ringkasan mencakup seluruh data
+    mockAdminList(mockApi, () => [makeWd('WD-1', { admin_fee: 5000, amount_received: 95000 })],
+      () => ({ pending_count: 4, completed_count: 12, rejected_count: 3, total_disbursed: 1250000 }))
+
+    await gotoHydrated(page, '/admin/withdrawal?status=PENDING')
+    const card = (label: string) => page.locator('p.text-xs.text-gray-400.mb-1', { hasText: new RegExp(`^${label}$`) }).locator('xpath=..')
+    await expect(card('Selesai')).toContainText('12')
+    await expect(card('Menunggu')).toContainText('4')
+    await expect(card('Ditolak')).toContainText('3')
+    await expect(card('Total Dicairkan')).toContainText('Rp 1.250.000')
   })
 
   test('tolak penarikan: alasan wajib & body request', async ({ page, mockApi }) => {
@@ -338,8 +359,25 @@ test.describe('Penarikan dana admin', () => {
 
     await gotoHydrated(page, '/admin/withdrawal/WD-1')
     await expect(page.getByText('Peringatan: Potensi Anomali')).toBeVisible()
-    await expect(page.getByText('Estimasi Diterima Seller')).toBeVisible()
+    await expect(page.getByText('Akan Diterima Seller')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Tandai Transfer Selesai' })).toBeVisible()
+  })
+
+  test('anomali: deposit tidak menambah estimasi & penarikan dihitung dengan biaya admin (F-22)', async ({ page, mockApi }) => {
+    const seller = makeUser('SELLER')
+    mockApi
+      .asRole('ADMIN')
+      .on('GET', '/system/settings/all', ok(WD_FEE_5000))
+      .on('GET', '/admin/withdrawal/WD-1', ok(makeWd('WD-1', { amount: 202000 })))
+      .on('GET', `/tx/admin/seller/${seller.id}/sum`, ok({ seller_id: seller.id, seller_username: '', seller_email: '', total_transactions: 3, total_amount: 250000 }))
+      // deposit masuk Saldo Belanja (tidak bisa ditarik): rumus lama menambahkannya sehingga anomali tertutup
+      .on('GET', `/balance/admin/deposit/${seller.id}/sum`, ok({ user_id: seller.id, username: '', email: '', total_deposits: 2, total_amount: 1000000 }))
+      .on('GET', `/admin/withdrawal/${seller.id}/sum`, ok({ user_id: seller.id, username: '', email: '', total_withdrawals: 1, total_amount: 50000, total_amount_received: 45000 }))
+
+    await gotoHydrated(page, '/admin/withdrawal/WD-1')
+    // 250.000 - 50.000 = 200.000 < 202.000
+    await expect(page.getByText('Peringatan: Potensi Anomali')).toBeVisible()
+    await expect(page.getByText('Estimasi Maksimal Tersedia').locator('..')).toContainText('Rp 200.000')
   })
 
   test('detail COMPLETED: biaya admin dari data penarikan, bukan WD_FEE saat ini', async ({ page, mockApi }) => {

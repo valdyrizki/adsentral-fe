@@ -41,7 +41,7 @@
         <UFormField label="Penalty Rule" required :error="formErrors.rule_id">
           <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
             <button
-              v-for="rule in penaltyRules"
+              v-for="rule in rulesForUser"
               :key="rule.id"
               type="button"
               :class="[
@@ -49,9 +49,7 @@
                 form.rule_id === rule.id
                   ? 'border-primary bg-primary/5'
                   : 'border-gray-200 hover:border-gray-300',
-                !rule.is_active ? 'opacity-50 cursor-not-allowed' : '',
               ]"
-              :disabled="!rule.is_active"
               @click="form.rule_id = rule.id"
             >
               <div
@@ -73,8 +71,8 @@
                 <UBadge color="neutral" variant="subtle" size="xs">{{ rule.expired_days }} hari</UBadge>
               </div>
             </button>
-            <div v-if="!penaltyRules.length" class="py-4 text-center text-sm text-gray-400">
-              Tidak ada rule aktif.
+            <div v-if="!rulesForUser.length" class="py-4 text-center text-sm text-gray-400">
+              {{ penaltyRules.length ? 'Tidak ada rule aktif yang berlaku untuk peran user ini.' : 'Tidak ada rule aktif.' }}
             </div>
           </div>
         </UFormField>
@@ -164,8 +162,19 @@ const userItems = computed<UserMenuItem[]>(() =>
   }))
 )
 
+// Sama dengan requireRuleFitsUser di BE: rule SELLER hanya untuk seller, rule BUYER untuk buyer & seller,
+// rule tanpa target untuk semua user (F-32)
+const ruleFitsRole = (target: string | null | undefined, role: string) =>
+  !target || target === role || (target === 'BUYER' && role === 'SELLER')
+
+const rulesForUser = computed(() => {
+  const role = selectedUser.value?.role
+  return role ? props.penaltyRules.filter(r => ruleFitsRole(r.target_role, role)) : props.penaltyRules
+})
+
 watch(selectedUser, (u) => {
   form.user_id = u ? u.id : 0
+  if (form.rule_id && !rulesForUser.value.some(r => r.id === form.rule_id)) form.rule_id = ''
 })
 
 watch(() => form.rule_id, (ruleId) => {

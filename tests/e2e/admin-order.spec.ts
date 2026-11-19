@@ -76,6 +76,32 @@ test.describe('Daftar pesanan admin', () => {
     await expect(page).toHaveURL(/\/admin\/order\/TX-1$/)
   })
 
+  test('filter status: semua status BE tersedia, "Semua Status" tanpa parameter, satu request per ganti filter (F-28)', async ({ page, mockApi }) => {
+    const queries: URLSearchParams[] = []
+    mockApi
+      .asRole('ADMIN')
+      .on('GET', '/admin/alerts', ok({ arbitrage_pending: 0 }))
+      .on('GET', '/tx/all', (_r, url) => {
+        queries.push(url.searchParams)
+        return ok(page1([]))
+      })
+
+    await gotoHydrated(page, '/admin/order?status=ARBITRAGE')
+    await expect.poll(() => queries.at(-1)?.get('status')).toBe('ARBITRAGE')
+
+    const before = queries.length
+    await main(page).getByRole('combobox').first().click()
+    await page.getByRole('option', { name: 'Dikirim', exact: true }).click()
+    await expect.poll(() => queries.at(-1)?.get('status')).toBe('DELIVERED')
+    await page.waitForTimeout(500)
+    expect(queries.length - before).toBe(1)
+
+    await main(page).getByRole('combobox').first().click()
+    await page.getByRole('option', { name: 'Semua Status' }).click()
+    await expect.poll(() => queries.length).toBe(before + 2)
+    expect(queries.at(-1)?.get('status')).toBeNull()
+  })
+
   test('error BE pada daftar menampilkan pesan BE (F-26)', async ({ page, mockApi }) => {
     mockApi
       .asRole('ADMIN')
@@ -95,7 +121,7 @@ test.describe('Arbitrase & refund admin', () => {
     await expect(main(page).getByText('Pembeli Mengajukan Penangguhan!')).toBeVisible()
     await expect(main(page).getByText('Akun tidak bisa login sama sekali')).toBeVisible()
     await expect(main(page).getByText('Admin segera melakukan review !')).toBeVisible()
-    for (const name of ['Refund Transaksi', 'Cancel Arbitrage', 'Selesaikan Transaksi']) {
+    for (const name of ['Refund Transaksi', 'Batalkan Arbitrase', 'Selesaikan Transaksi']) {
       await expect(main(page).getByRole('button', { name })).toBeVisible()
     }
   })
@@ -105,7 +131,7 @@ test.describe('Arbitrase & refund admin', () => {
 
     await gotoHydrated(page, '/admin/order/TX-1')
     await expect(main(page).getByRole('button', { name: 'Refresh' })).toBeVisible()
-    for (const name of ['Refund Transaksi', 'Cancel Arbitrage', 'Selesaikan Transaksi']) {
+    for (const name of ['Refund Transaksi', 'Batalkan Arbitrase', 'Selesaikan Transaksi']) {
       await expect(main(page).getByRole('button', { name })).toHaveCount(0)
     }
   })
@@ -121,22 +147,22 @@ test.describe('Arbitrase & refund admin', () => {
     })
 
     await gotoHydrated(page, '/admin/order/TX-1')
-    await main(page).getByRole('button', { name: 'Cancel Arbitrage' }).click()
-    const dialog = page.getByRole('dialog', { name: 'Yakin ingin melanjutkan transaksi ini?' })
+    await main(page).getByRole('button', { name: 'Batalkan Arbitrase' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Batalkan arbitrase dan lanjutkan transaksi?' })
     await dialog.getByRole('button', { name: 'Tidak' }).click()
     await expect(dialog).toHaveCount(0)
     expect(calls).toBe(0)
 
     const alertsBefore = alertFetches()
-    await main(page).getByRole('button', { name: 'Cancel Arbitrage' }).click()
-    await page.getByRole('dialog').getByRole('button', { name: 'Ya, Teruskan' }).click()
+    await main(page).getByRole('button', { name: 'Batalkan Arbitrase' }).click()
+    await page.getByRole('dialog').getByRole('button', { name: 'Ya, Lanjutkan' }).click()
 
-    await expect(page.getByText('Pesanan berhasil diteruskan').first()).toBeVisible()
+    await expect(page.getByText('Arbitrase dibatalkan, transaksi kembali ke status Dikirim').first()).toBeVisible()
     expect(calls).toBe(1)
     await expect(page.getByRole('dialog')).toHaveCount(0)
     await expect(main(page).getByText('Pesanan Telah Dikirim')).toBeVisible()
     await expect(main(page).getByText('Pembeli Mengajukan Penangguhan!')).toHaveCount(0)
-    await expect(main(page).getByRole('button', { name: 'Cancel Arbitrage' })).toHaveCount(0)
+    await expect(main(page).getByRole('button', { name: 'Batalkan Arbitrase' })).toHaveCount(0)
     await expect.poll(alertFetches).toBeGreaterThan(alertsBefore)
   })
 
@@ -180,7 +206,7 @@ test.describe('Arbitrase & refund admin', () => {
     await expect(page.getByText('Pesanan berhasil diselesaikan').first()).toBeVisible()
     expect(body).toEqual({ reason: 'Akun sudah dicek dan normal' })
     await expect(dialog).toHaveCount(0)
-    for (const name of ['Refund Transaksi', 'Cancel Arbitrage', 'Selesaikan Transaksi']) {
+    for (const name of ['Refund Transaksi', 'Batalkan Arbitrase', 'Selesaikan Transaksi']) {
       await expect(main(page).getByRole('button', { name })).toHaveCount(0)
     }
   })

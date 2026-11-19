@@ -80,6 +80,7 @@ test.describe('Daftar pesanan seller', () => {
     await gotoHydrated(page, '/seller/order')
     const before = queries.length
     await main(page).getByRole('button', { name: 'Terima Pesanan' }).click()
+    await page.getByRole('dialog', { name: 'Terima Pesanan?' }).getByRole('button', { name: 'Ya, Terima' }).click()
 
     await expect(page.getByText('Pesanan berhasil diterima').first()).toBeVisible()
     expect(confirmCalls).toBe(1)
@@ -149,6 +150,7 @@ test.describe('Detail pesanan seller', () => {
     await expect(main(page).getByText('Sisa waktu konfirmasi')).toBeVisible()
 
     await main(page).getByRole('button', { name: 'Terima Pesanan' }).click()
+    await page.getByRole('dialog', { name: 'Terima Pesanan?' }).getByRole('button', { name: 'Ya, Terima' }).click()
 
     await expect(page.getByText('Pesanan berhasil diterima').first()).toBeVisible()
     await expect(main(page).getByText('Respon Pesanan!')).toHaveCount(0)
@@ -167,6 +169,7 @@ test.describe('Detail pesanan seller', () => {
 
     await gotoHydrated(page, '/seller/order/TX-1')
     await main(page).getByRole('button', { name: 'Terima Pesanan' }).click()
+    await page.getByRole('dialog', { name: 'Terima Pesanan?' }).getByRole('button', { name: 'Ya, Terima' }).click()
 
     await expect(page.getByText('Pesanan sudah dibatalkan otomatis').first()).toBeVisible()
     await expect(main(page).getByText('Respon Pesanan!')).toHaveCount(0)
@@ -335,8 +338,14 @@ test.describe('Detail pesanan seller', () => {
       await expect(main(page).getByText('Salah beli varian')).toBeVisible()
       await expect(main(page).getByText('Batas Waktu Pembatalan Otomatis')).toBeVisible()
 
-      const button = action === 'accept' ? 'Terima Permintaan Pembatalan' : 'Batalkan Permintaan Pembatalan'
+      const button = action === 'accept' ? 'Setujui Pembatalan' : 'Tolak Pembatalan'
       await main(page).getByRole('button', { name: button }).click()
+      // F-12: aksi lewat dialog konfirmasi; "Batal" tidak memanggil BE
+      const dialog = page.getByRole('dialog', { name: `${button}?` })
+      await dialog.getByRole('button', { name: 'Batal' }).click()
+      expect(called).toEqual([])
+      await main(page).getByRole('button', { name: button }).click()
+      await dialog.getByRole('button', { name: action === 'accept' ? 'Ya, Setujui' : 'Ya, Tolak' }).click()
 
       await expect(page.getByText(action === 'accept' ? 'transaksi akan dibatalkan' : 'transaksi akan dilanjutkan').first()).toBeVisible()
       expect(called).toEqual([action])
@@ -357,6 +366,7 @@ test.describe('Detail pesanan seller', () => {
 
     await gotoHydrated(page, '/seller/order/TX-1')
     await expect(main(page).getByText('Batas Waktu Pembayaran')).toBeVisible({ timeout: 5000 })
-    await expect(main(page).getByText(/2[23]:\d{2}:\d{2}/)).toBeVisible({ timeout: 3000 })
+    // ^...$: jangan ikut cocok dengan stempel waktu created_at saat tes jalan pukul 22–23
+    await expect(main(page).getByText(/^2[23]:\d{2}:\d{2}$/)).toBeVisible({ timeout: 3000 })
   })
 })

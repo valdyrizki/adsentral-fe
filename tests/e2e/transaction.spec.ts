@@ -253,7 +253,8 @@ test.describe('Detail transaksi buyer', () => {
     await expect(main(page).getByText('Salah beli varian')).toBeVisible()
     await expect(main(page).getByText('Batas Waktu Pembatalan Otomatis')).toBeVisible()
 
-    await main(page).getByRole('button', { name: 'Batalkan Permintaan Pembatalan' }).click()
+    await main(page).getByRole('button', { name: 'Tarik Pengajuan Pembatalan' }).click()
+    await page.getByRole('dialog', { name: 'Tarik Pengajuan Pembatalan?' }).getByRole('button', { name: 'Ya, Tarik' }).click()
 
     await expect(page.getByText('transaksi akan dilanjutkan seperti semula').first()).toBeVisible()
     expect(withdrawn).toBe(1)

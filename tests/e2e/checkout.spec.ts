@@ -78,6 +78,17 @@ test.describe('Checkout keranjang', () => {
     await expect(checkoutButton(page)).toBeDisabled()
   })
 
+  test('saldo = subtotal tetapi kurang dari total (+ biaya aplikasi): tombol "Saldo Tidak Cukup" (F-04)', async ({ page, context, mockApi }) => {
+    const product = makeProduct(1, { sell_price: 50000 })
+    await seedCart(context, [{ product, quantity: 1 }])
+    // BE memotong saldo sebesar totalAmount = subtotal + FEE_APP (default 1.000) - diskon
+    mockCartPage(mockApi, [product], 50_500)
+
+    await gotoHydrated(page, '/cart')
+    await expect(checkoutButton(page)).toHaveText(/Saldo Tidak Cukup/)
+    await expect(checkoutButton(page)).toBeDisabled()
+  })
+
   test('saldo di store diperbarui: tombol ikut berubah dari "Saldo Tidak Cukup" ke "Checkout" (F-03)', async ({ page, context, mockApi }) => {
     const product = makeProduct(1, { sell_price: 50000 })
     await seedCart(context, [{ product, quantity: 1 }])

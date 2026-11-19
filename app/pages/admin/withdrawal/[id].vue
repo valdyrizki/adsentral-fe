@@ -89,17 +89,13 @@
               <span>Total Transaksi Selesai</span>
               <span>{{ formatRp(sellerSum?.total_amount ?? 0) }}</span>
             </div>
-            <div class="flex justify-between">
-              <span>Total Deposit Sukses</span>
-              <span>{{ formatRp(depositSum?.total_amount ?? 0) }}</span>
-            </div>
             <div class="flex justify-between text-red-600">
-              <span>Total Penarikan Selesai</span>
-              <span>- {{ formatRp(withdrawalSum?.total_amount_received ?? 0) }}</span>
+              <span>Total Penarikan Selesai (termasuk biaya admin)</span>
+              <span>- {{ formatRp(withdrawalSum?.total_amount ?? 0) }}</span>
             </div>
             <div class="flex justify-between font-semibold border-t pt-1 mt-1">
-              <span>Estimasi Tersedia</span>
-              <span>{{ formatRp((sellerSum?.total_amount ?? 0) + (depositSum?.total_amount ?? 0) - (withdrawalSum?.total_amount_received ?? 0)) }}</span>
+              <span>Estimasi Maksimal Tersedia</span>
+              <span>{{ formatRp(estimatedAvailable ?? 0) }}</span>
             </div>
             <div class="flex justify-between font-semibold text-red-700">
               <span>Permintaan Penarikan</span>
@@ -273,16 +269,13 @@
           </template>
           <template v-else-if="withdrawal.status === 'PENDING'">
             <div class="flex justify-between text-sm">
-              <span class="text-gray-400 flex items-center gap-1">
-                Biaya Admin (WD_FEE)
-                <UIcon name="mdi:information-outline" class="size-3.5 text-gray-300" />
-              </span>
-              <span class="text-red-500">- {{ formatRp(wdFee) }}</span>
+              <span class="text-gray-400">Biaya Admin (ditetapkan saat pengajuan)</span>
+              <span class="text-red-500">- {{ formatRp(withdrawal.admin_fee) }}</span>
             </div>
             <USeparator />
             <div class="flex justify-between text-sm font-bold">
-              <span class="text-gray-700">Estimasi Diterima Seller</span>
-              <span class="text-green-600">{{ formatRp(withdrawal.amount - wdFee) }}</span>
+              <span class="text-gray-700">Akan Diterima Seller</span>
+              <span class="text-green-600">{{ formatRp(withdrawal.amount_received) }}</span>
             </div>
           </template>
           <div class="flex justify-between text-sm">
@@ -359,12 +352,12 @@
             icon="mdi:information-outline"
           />
           <div class="flex justify-between items-center text-sm px-1">
-            <span class="text-gray-400">Biaya Admin (otomatis)</span>
-            <span class="font-semibold text-gray-700">{{ formatRp(wdFee) }}</span>
+            <span class="text-gray-400">Biaya Admin (ditetapkan saat pengajuan)</span>
+            <span class="font-semibold text-gray-700">{{ formatRp(withdrawal.admin_fee) }}</span>
           </div>
           <div v-if="withdrawal" class="rounded-lg bg-green-50 border border-green-200 px-4 py-3 flex justify-between items-center">
             <span class="text-sm text-gray-600">Jumlah diterima seller</span>
-            <span class="text-base font-bold text-green-700">{{ formatRp(withdrawal.amount - wdFee) }}</span>
+            <span class="text-base font-bold text-green-700">{{ formatRp(withdrawal.amount_received) }}</span>
           </div>
           <div class="flex justify-end gap-2 pt-1">
             <UButton color="neutral" variant="outline" @click="isApproveOpen = false">Batal</UButton>
@@ -406,12 +399,12 @@
                 <span class="font-semibold text-gray-800">{{ formatRp(withdrawal.amount) }}</span>
               </div>
               <div class="flex justify-between text-sm">
-                <span class="text-gray-400">Biaya Admin (WD_FEE)</span>
-                <span class="text-gray-600">{{ formatRp(wdFee) }}</span>
+                <span class="text-gray-400">Biaya Admin</span>
+                <span class="text-gray-600">{{ formatRp(withdrawal.admin_fee) }}</span>
               </div>
               <div class="flex justify-between text-sm">
-                <span class="text-gray-400">Estimasi Diterima</span>
-                <span class="text-gray-600">{{ formatRp(withdrawal.amount - wdFee) }}</span>
+                <span class="text-gray-400">Diterima Seller</span>
+                <span class="text-gray-600">{{ formatRp(withdrawal.amount_received) }}</span>
               </div>
               <div class="flex justify-between text-sm">
                 <span class="text-gray-400">Tanggal Pengajuan</span>
@@ -449,7 +442,6 @@
 import dayjs from 'dayjs'
 import NameCheckBadge from '~/components/bank-account/NameCheckBadge.vue'
 import { useAdminWithdrawalApi } from '~/composables/api/admin-withdrawal'
-import { useSystemSettingApi } from '~/composables/api/system-setting'
 import type { AdminWithdrawalResponse } from '~/types/balance/AdminWithdrawalResponse'
 import type { SellerTransactionSumResponse } from '~/types/balance/SellerTransactionSumResponse'
 import type { DepositSumResponse } from '~/types/balance/DepositSumResponse'
@@ -460,22 +452,8 @@ definePageMeta({ layout: 'admin', label: 'Detail Penarikan Dana' })
 const route = useRoute()
 const toast = useToast()
 const { fetchWithdrawalDetail, fetchSellerTransactionSum, fetchSellerDepositSum, fetchSellerWithdrawalSum, approveWithdrawal, rejectWithdrawal } = useAdminWithdrawalApi()
-const { fetchAllSystemSetting } = useSystemSettingApi()
 
 const id = route.params.id as string
-
-// ===== WD_FEE (biaya admin penarikan, otomatis dari system setting) =====
-const { data: systemSettings } = await useAsyncData(
-  'admin-withdrawal-detail-system-settings',
-  () => fetchAllSystemSetting(),
-  { server: false }
-)
-
-const wdFee = computed(() => {
-  const setting = (systemSettings.value ?? []).find(s => s.key === 'WD_FEE')
-  const parsed = Number(setting?.value)
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 2500
-})
 
 const {
   data: withdrawal,
@@ -545,14 +523,16 @@ const {
 )
 
 // ===== ANOMALY CHECK =====
-const isAnomalous = computed(() => {
-  if (!sellerSum.value || !depositSum.value || !withdrawalSum.value || !withdrawal.value) return false
-  const estimatedAvailable =
-    sellerSum.value.total_amount +
-    depositSum.value.total_amount -
-    withdrawalSum.value.total_amount_received
-  return withdrawal.value.amount > estimatedAvailable
+// Batas atas saldo jualan (F-22): deposit masuk Saldo Belanja dan tidak bisa ditarik, jadi tidak dihitung;
+// penarikan memotong `amount` (termasuk biaya admin). Fee transaksi dan transfer ke saldo belanja tidak ada di
+// ringkasan ini, jadi saldo sebenarnya bisa lebih kecil dari estimasi.
+const estimatedAvailable = computed(() => {
+  if (!sellerSum.value || !withdrawalSum.value) return null
+  return sellerSum.value.total_amount - withdrawalSum.value.total_amount
 })
+const isAnomalous = computed(() =>
+  !!withdrawal.value && estimatedAvailable.value !== null && withdrawal.value.amount > estimatedAvailable.value,
+)
 
 // ===== ACTION STATE =====
 const isApproveOpen = ref(false)
@@ -574,18 +554,14 @@ function openReject() {
 
 async function handleApprove() {
   if (!withdrawal.value) return
-  if (wdFee.value >= withdrawal.value.amount) {
-    actionError.value = 'Biaya admin (WD_FEE) tidak boleh melebihi jumlah penarikan.'
-    return
-  }
 
   try {
     actionLoading.value = true
     actionError.value = null
-    await approveWithdrawal(withdrawal.value.id, wdFee.value)
+    await approveWithdrawal(withdrawal.value.id)
     toast.add({
       title: 'Transfer Ditandai Selesai',
-      description: `Seller menerima ${formatRp(withdrawal.value.amount - wdFee.value)}.`,
+      description: `Seller menerima ${formatRp(withdrawal.value.amount_received)}.`,
       color: 'success',
       icon: 'mdi:bank-transfer',
     })

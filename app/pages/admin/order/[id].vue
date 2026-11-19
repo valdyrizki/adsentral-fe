@@ -6,7 +6,7 @@
       Kembali
     </NuxtLink>
     <h1 class="text-base font-medium ">|</h1>
-    <h1 class="text-base font-medium ">Order Detail</h1>
+    <h1 class="text-base font-medium ">Detail Pesanan</h1>
   </div>
 
   <ClientOnly>
@@ -88,7 +88,7 @@
           <UButton icon="material-symbols:refresh" variant="outline" size="xs" @click="refreshHandler">Refresh</UButton>
           <!-- refund/selesaikan paksa hanya untuk memutus arbitrase (T-02) -->
           <UButton v-if="transaction?.status === 'ARBITRAGE'" icon="material-symbols:cancel" color="error" variant="outline" size="xs" @click="refundTxError = null; isRefundingTxModal = true">Refund Transaksi</UButton>
-          <UButton v-if="transaction?.status === 'ARBITRAGE'" icon="material-symbols:arrow-forward" color="primary" variant="outline" size="xs" :loading="loadingCancelArbitrage" @click="handleCancelArbitrage">Cancel Arbitrage</UButton>
+          <UButton v-if="transaction?.status === 'ARBITRAGE'" icon="material-symbols:arrow-forward" color="primary" variant="outline" size="xs" :loading="loadingCancelArbitrage" @click="handleCancelArbitrage">Batalkan Arbitrase</UButton>
           <UButton v-if="transaction?.status === 'ARBITRAGE'" icon="material-symbols:check" color="primary" variant="solid" size="xs" @click="completexError = null; isCompleteTxModal = true">Selesaikan Transaksi</UButton>
         </div> 
       </div>
@@ -877,9 +877,9 @@ const selectRating = ref<SelectItem[]>(
     if (!transaction.value) return
 
     const yes = await confirm({
-      title: 'Yakin ingin melanjutkan transaksi ini?',
-      message: 'Tidak bisa dibatalkan lhooo. Yakin?',
-      confirmText: 'Ya, Teruskan',
+      title: 'Batalkan arbitrase dan lanjutkan transaksi?',
+      message: 'Transaksi kembali ke status Dikirim. Pembeli punya 24 jam untuk menyelesaikan pesanan sebelum selesai otomatis. Tindakan ini tidak bisa dibatalkan.',
+      confirmText: 'Ya, Lanjutkan',
       cancelText: 'Tidak',
       confirmColor: 'primary',
     })
@@ -894,7 +894,7 @@ const selectRating = ref<SelectItem[]>(
 
       useToast().add({
         title: 'Berhasil',
-        description: 'Pesanan berhasil diteruskan, silahkan lakukan konfirmasi pesanan',
+        description: 'Arbitrase dibatalkan, transaksi kembali ke status Dikirim',
         color: 'success'
       })
 

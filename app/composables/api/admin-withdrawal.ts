@@ -5,6 +5,7 @@ import type { AdminWithdrawalResponse } from '~/types/balance/AdminWithdrawalRes
 import type { SellerTransactionSumResponse } from '~/types/balance/SellerTransactionSumResponse'
 import type { DepositSumResponse } from '~/types/balance/DepositSumResponse'
 import type { WithdrawalSumResponse } from '~/types/balance/WithdrawalSumResponse'
+import type { WithdrawalSummaryResponse } from '~/types/balance/WithdrawalSummaryResponse'
 
 export const useAdminWithdrawalApi = () => {
   const api = useApi()
@@ -110,10 +111,20 @@ export const useAdminWithdrawalApi = () => {
     return res.data
   }
 
-  const approveWithdrawal = async (id: string, adminFee: number): Promise<void> => {
+  // Ringkasan seluruh withdrawal untuk kartu statistik (F-23)
+  const fetchWithdrawalSummary = async (): Promise<WithdrawalSummaryResponse> => {
+    const res = await api<WebResponse<WithdrawalSummaryResponse>>('/admin/withdrawal/summary')
+    if (res.status !== 'success' || !res.data) {
+      throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal memuat ringkasan penarikan' })
+    }
+    return res.data
+  }
+
+  // Biaya admin ditetapkan BE saat withdrawal dibuat (WD_FEE saat itu); BE tidak membaca admin_fee dari request
+  const approveWithdrawal = async (id: string): Promise<void> => {
     const res = await api<WebResponse>(`/admin/withdrawal/${id}/complete`, {
       method: 'PATCH',
-      body: { admin_fee: adminFee },
+      body: {},
     })
 
     if (res.status !== 'success') {
@@ -140,5 +151,5 @@ export const useAdminWithdrawalApi = () => {
     refreshAlerts()
   }
 
-  return { fetchSellerTransactionSum, fetchSellerDepositSum, fetchSellerWithdrawalSum, fetchWithdrawalDetail, fetchAllWithdrawals, approveWithdrawal, rejectWithdrawal }
+  return { fetchSellerTransactionSum, fetchSellerDepositSum, fetchSellerWithdrawalSum, fetchWithdrawalDetail, fetchAllWithdrawals, fetchWithdrawalSummary, approveWithdrawal, rejectWithdrawal }
 }

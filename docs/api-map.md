@@ -331,8 +331,8 @@ Filter list: hanya **satu** nilai `status` per request (`'ALL'` = tanpa paramete
 |---|---|---|
 | `fetchMyPenalties` | `/user/penalty` | `pages/penalty`, `pages/seller/penalty` |
 | `fetchMyPenaltyStat` | `/user/penalty/stat` | `components/app/BuyerPenaltyBanner.vue`, `pages/seller/dashboard` |
-| `fetchPenaltyUsers` | `/admin/penalty/stat` | `pages/admin/penalty`, `pages/admin/penalty-user` |
-| `fetchUserPenaltyDetail` | `/admin/penalty/user/{userId}` | `pages/admin/penalty-user`, `PenaltyUserDetailSlideover` |
+| `fetchPenaltyUsers` | `/admin/penalty/stat` | `pages/admin/penalty` |
+| `fetchUserPenaltyDetail` | `/admin/penalty/user/{userId}` | `PenaltyUserDetailSlideover` |
 | `applyPenalty` | POST `/admin/penalty` | `components/form/ApplyPenaltyModal.vue` |
 | `cancelPenalty` | DELETE `/admin/penalty/{penaltyId}` | `PenaltyUserDetailSlideover` |
 | `fetchPenalty` | `/admin/penalty` | — |
