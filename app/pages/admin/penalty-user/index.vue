@@ -323,13 +323,14 @@ function handleFilter() {
 
 function suspendColor(status: UserSuspendStatus) {
   if (status === 'PERMANENT') return 'error'
-  if (status === 'TEMPORARY') return 'warning'
+  if (status === 'TEMPORARY' || status === 'WARNING') return 'warning'
   return 'success'
 }
 
 function suspendLabel(status: UserSuspendStatus) {
   if (status === 'PERMANENT') return 'Suspend Permanen'
   if (status === 'TEMPORARY') return 'Suspend Sementara'
+  if (status === 'WARNING') return 'Peringatan'
   return 'Normal'
 }
 

@@ -255,7 +255,7 @@ test.describe('Diskusi order oleh admin', () => {
     await expect(bubble.getByText('ADMIN', { exact: true })).toBeVisible()
   })
 
-  test.fail('pesan kosong divalidasi tanpa alert() browser (F-27)', async ({ page, mockApi }) => {
+  test('pesan kosong divalidasi tanpa alert() browser (F-27)', async ({ page, mockApi }) => {
     mockAdminDetail(mockApi, () => arbitrageTx('TX-1'))
     const alerts: string[] = []
     page.on('dialog', (d) => {

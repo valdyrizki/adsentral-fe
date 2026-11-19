@@ -9,7 +9,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## Rencana & catatan
 
 - **Cakupan tes** (modul yang sudah/belum dites, prioritas): lihat **`docs/test-progress.md`**. Dokumen ini hanya berisi bug.
-- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
+- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
   composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
   Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
 - **Setelah memperbaiki temuan:** ubah statusnya di sini menjadi `SELESAI`, hapus `test.fail` di spec, dan ubah 🐞 → ✅
@@ -31,7 +31,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-07 | Pembayaran (admin) | Filter "Semua Status" mengirim `status=ALL` ke BE | Sedang | TERBUKA | Fix satu baris: kirim kosong bila `ALL`. Ditandai `test.fail` di `payment.spec.ts`. |
 | F-08 | Pembayaran (buyer) | Deposit berstatus `PAID` tidak menampilkan keterangan apa pun | Rendah | PERLU KONFIRMASI | Tanya: status apa saja yang mungkin untuk deposit, dan apakah `DONE` masih dipakai BE? |
 | F-09 | Pesanan seller | Tombol "Batalkan" (PAID) memanggil placeholder `addToCart` | Tinggi | SELESAI | Tombol "Batalkan" placeholder dihapus; pembatalan lewat "Tolak Pesanan". Tes diubah jadi regresi. |
-| F-10 | Pesanan seller | Validasi pesan kosong memakai `window.alert()` | Rendah | TERBUKA | Ganti dengan toast / nonaktifkan tombol kirim. Ditandai `test.fail`. Sama dengan F-27. |
+| F-10 | Pesanan seller | Validasi pesan kosong memakai `window.alert()` | Rendah | SELESAI | Pesan kosong tampil sebagai toast, bukan `alert()`; sekaligus di halaman transaksi buyer (pesan kosong dan gagal kirim). |
 | F-11 | Pesanan seller & transaksi buyer | Countdown UNPAID/PAID langsung "habis" bila `expired_at`/`paid_at` null | Sedang | TERBUKA | Fix: pakai `getPaymentExpiry` & `getTxConfirmCountdown`. Ditandai `test.fail` di seller-order & transaction. |
 | F-12 | Pesanan seller | Aksi permanen tanpa dialog konfirmasi (terima pesanan, terima pembatalan) | Sedang | PERLU KONFIRMASI | Tanya: perlu `useConfirm()`? Sekalian perjelas label "Setujui/Tolak Pembatalan" yang mudah tertukar. |
 | F-13 | Pesanan seller | Tolak 409 di halaman detail tidak menutup modal (daftar menutup) | Rendah | TERBUKA | Fix: tutup modal saat `isStaleActionError`, samakan dengan halaman daftar. |
@@ -48,11 +48,11 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-24 | Pesanan admin | Refund/Selesaikan gagal (400) menutup modal, alasan yang diketik hilang | Sedang | SELESAI | Modal refund/selesaikan hanya ditutup saat berhasil atau status basi (403/409); error lain tampil di modal (`refundTxError`/`completexError`) dan alasan tetap. |
 | F-25 | Pesanan admin | Tombol "Refund Transaksi"/"Selesaikan Transaksi" muncul di status final (REFUNDED, CANCELLED, REJECTED, EXPIRED) dan UNPAID | Sedang | SELESAI | Tombol hanya saat `ARBITRAGE`; BE menolak status lain (EP04-02). |
 | F-26 | API layer | Banyak composable GET membuang pesan BE (`err.message` → `[GET] "/backend/...": 400 Bad Request`); `fetchCreateOrderDiscussion` bisa crash di `err.response._data` | Sedang | SELESAI | Pesan BE lewat `useApi`; `err.response._data` di `chat.ts`, `order-discussion.ts`, `review.ts`, `transaction.ts` diganti `rethrowApiError`; gangguan jaringan tampil "Tidak dapat terhubung ke server...". `DepositOld.vue` (tidak dipakai) masih memakai pola lama. |
-| F-27 | Pesanan admin | Validasi pesan diskusi kosong memakai `window.alert()` (sama dengan F-10) | Rendah | TERBUKA | Sama dengan F-10; perbaiki bersamaan. Ditandai `test.fail`. |
+| F-27 | Pesanan admin | Validasi pesan diskusi kosong memakai `window.alert()` (sama dengan F-10) | Rendah | SELESAI | Sama dengan F-10: toast "Pesan tidak boleh kosong". |
 | F-28 | Pesanan admin | Filter status admin tidak lengkap; teks konfirmasi "Cancel Arbitrage" tidak formal & tujuan statusnya belum jelas | Rendah | PERLU KONFIRMASI | Tanya: status tujuan `PATCH /tx/cancel/arbitrage` & opsi filter yang dibutuhkan admin. Teks "lhooo" perlu diganti. |
-| F-29 | Penalty rule (admin) | Normalisasi Rule ID (kapital + underscore) tidak jalan; form edit menyimpan perubahan yang dibatalkan | Sedang | TERBUKA | Fix: normalisasi lewat `watch` + validasi regex; reset form saat modal dibuka. Ditandai `test.fail`. |
-| F-30 | Manage penalty (admin) | Filter "Semua" mengirim `status=ALL`; status `WARNING` tampil "Normal" (hijau) | Sedang | TERBUKA | Fix: kirim kosong bila `ALL` & tambah label WARNING. Ditandai `test.fail`. |
-| F-31 | Manage penalty (admin) | Poin & status di header slideover detail user tidak diperbarui setelah penalty dibatalkan; error detail tidak ditangani | Rendah | TERBUKA | Fix: ambil ulang data user setelah `penalty-cancelled`. Ditandai `test.fail`. |
+| F-29 | Penalty rule (admin) | Normalisasi Rule ID (kapital + underscore) tidak jalan; form edit menyimpan perubahan yang dibatalkan | Sedang | SELESAI | Normalisasi Rule ID lewat `watch` (kapital, spasi → underscore) + validasi `^[A-Z0-9_]+$`; modal edit diisi ulang setiap dibuka. |
+| F-30 | Manage penalty (admin) | Filter "Semua" mengirim `status=ALL`; status `WARNING` tampil "Normal" (hijau) | Sedang | SELESAI | "Semua" tidak mengirim `status`; WARNING tampil "Peringatan" (kuning) di ketiga salinan mapping; filter/cari tidak lagi memuat dua kali. |
+| F-31 | Manage penalty (admin) | Poin & status di header slideover detail user tidak diperbarui setelah penalty dibatalkan; error detail tidak ditangani | Rendah | SELESAI | Setelah batalkan penalty, header slideover memakai data user terbaru dari daftar; gagal memuat riwayat tampil pesan BE + tombol coba lagi. |
 | F-32 | Penalty | Halaman `/admin/penalty-user` yatim (tanpa menu, duplikat `/admin/penalty`); statistik penalty user dihitung per halaman; rule target `BUYER` bisa dikenakan ke seller | Rendah | PERLU KONFIRMASI | Tanya: hapus `/admin/penalty-user`? Rule dibatasi sesuai role user? Kartu poin sebaiknya pakai `/user/penalty/stat`. |
 | F-33 | Deposit | Metode default `'QRIS'` bukan id metode mana pun → tombol "Deposit" nonaktif tanpa penjelasan | Rendah | SELESAI | Form deposit memilih otomatis metode non-SALDO pertama beserta channel aktif pertamanya. |
 | F-34 | Deposit | Riwayat deposit gagal dimuat tampil "Belum ada riwayat deposit"; ref `error` tidak pernah diisi | Sedang | SELESAI | Riwayat deposit dan mutasi saldo memakai `error` dari `useAsyncData`: gagal muat tampil pesan BE dengan tombol "Coba lagi". |
@@ -186,7 +186,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-10 — Validasi pesan kosong memakai `window.alert()`
 
 - **Lokasi:** `app/pages/seller/order/[id].vue` → `submitDiscussion` (`alert('Pesan tidak boleh kosong')`)
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Pesan kosong tampil sebagai toast, bukan `alert()`; sekaligus di halaman transaksi buyer (pesan kosong dan gagal kirim).
 - **Gejala:** Klik "Kirim Pesan" atau "Kirim Orderan" dengan pesan kosong memunculkan dialog native browser yang
   memblokir halaman. Ini tidak konsisten dengan pola toast di seluruh aplikasi (lihat `CLAUDE.md`: `useConfirm`/toast,
   bukan dialog browser).
@@ -440,7 +441,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-27 — Validasi pesan diskusi admin memakai `window.alert()`
 
 - **Lokasi:** `app/pages/admin/order/[id].vue` → `submitDiscussion`
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Sama dengan F-10: toast "Pesan tidak boleh kosong".
 - **Gejala:** Sama dengan F-10 di halaman seller. Klik "Kirim Pesan" dengan textarea kosong memunculkan dialog browser
   `alert('Pesan tidak boleh kosong')`. Sebaiknya tampilkan toast atau pesan di bawah textarea, atau nonaktifkan tombol
   saat pesan kosong. Kemungkinan ada di halaman buyer juga; perbaiki sekaligus.
@@ -469,7 +471,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-29 — Form penalty rule: normalisasi ID tidak jalan & form edit basi
 
 - **Lokasi:** `app/components/form/PenaltyRuleModal.vue` (input Rule ID), `app/components/form/PenaltyRuleEditModal.vue`
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Normalisasi Rule ID lewat `watch` (kapital, spasi → underscore) + validasi `^[A-Z0-9_]+$`; modal edit diisi ulang setiap dibuka.
 - **Gejala:**
   - Input Rule ID punya `@input` yang mengubah nilai ke huruf kapital dan spasi ke underscore. Listener itu berjalan
     sebelum `v-model` UInput memperbarui nilai, sehingga yang dikonversi adalah nilai lama, lalu langsung ditimpa nilai
@@ -490,7 +493,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 
 - **Lokasi:** `app/pages/admin/penalty/index.vue`, `app/components/form/PenaltyUserDetailSlideover.vue`,
   `app/pages/admin/penalty-user/index.vue` → `suspendLabel`/`suspendColor`
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** "Semua" tidak mengirim `status`; WARNING tampil "Peringatan" (kuning) di ketiga salinan mapping; filter/cari tidak lagi memuat dua kali.
 - **Gejala:**
   - `filterStatus` default `'ALL'`, dan `fetchPenaltyUsers` hanya membuang string kosong, jadi `status=ALL` selalu
     terkirim ke BE (sama dengan F-07). Jika BE memvalidasi enum, daftar gagal dimuat.
@@ -505,7 +509,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-31 — Slideover detail user tidak diperbarui setelah batalkan penalty
 
 - **Lokasi:** `app/components/form/PenaltyUserDetailSlideover.vue`, `app/pages/admin/penalty/index.vue` → `selectedUser`
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Setelah batalkan penalty, header slideover memakai data user terbaru dari daftar; gagal memuat riwayat tampil pesan BE + tombol coba lagi.
 - **Gejala:**
   - Header slideover (poin aktif, status suspend) memakai objek `selectedUser` yang disalin saat baris diklik.
     Setelah penalty dibatalkan, riwayat dan daftar di belakangnya dimuat ulang, tetapi header tetap menampilkan poin

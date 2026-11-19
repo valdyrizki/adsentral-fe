@@ -128,7 +128,7 @@ test.describe('Penalty rule (admin)', () => {
     await expect(ruleRow(page, 'SELLER_LATE')).toBeVisible()
   })
 
-  test.fail('Rule ID yang diketik dinormalisasi ke huruf kapital + underscore (F-29)', async ({ page, mockApi }) => {
+  test('Rule ID yang diketik dinormalisasi ke huruf kapital + underscore (F-29)', async ({ page, mockApi }) => {
     mockRules(mockApi, () => [])
 
     await gotoHydrated(page, '/admin/penalty-rule')
@@ -182,7 +182,7 @@ test.describe('Penalty rule (admin)', () => {
     await expect(ruleRow(page, 'SELLER_LATE').getByText('15 poin')).toBeVisible()
   })
 
-  test.fail('edit dibatalkan lalu dibuka lagi: form kembali ke data rule (F-29)', async ({ page, mockApi }) => {
+  test('edit dibatalkan lalu dibuka lagi: form kembali ke data rule (F-29)', async ({ page, mockApi }) => {
     mockRules(mockApi, () => [makeRule('SELLER_LATE')])
 
     await gotoHydrated(page, '/admin/penalty-rule')
@@ -256,7 +256,7 @@ test.describe('Manage penalty (admin)', () => {
     await expect(row.getByText('40', { exact: true })).toBeVisible()
   })
 
-  test.fail('filter "Semua" tidak mengirim status=ALL ke BE (F-30)', async ({ page, mockApi }) => {
+  test('filter "Semua" tidak mengirim status=ALL ke BE (F-30)', async ({ page, mockApi }) => {
     const { queries } = mockManagePenalty(mockApi, { getUsers: () => [makePenaltyUser()] })
 
     await gotoHydrated(page, '/admin/penalty')
@@ -264,7 +264,7 @@ test.describe('Manage penalty (admin)', () => {
     expect(queries.at(-1)?.get('status')).toBeNull()
   })
 
-  test.fail('status WARNING tampil "Peringatan", bukan "Normal" (F-30)', async ({ page, mockApi }) => {
+  test('status WARNING tampil "Peringatan", bukan "Normal" (F-30)', async ({ page, mockApi }) => {
     mockManagePenalty(mockApi, { getUsers: () => [makePenaltyUser({ suspend_status: 'WARNING' })] })
 
     await gotoHydrated(page, '/admin/penalty')
@@ -353,7 +353,7 @@ test.describe('Manage penalty (admin)', () => {
     expect(queries.length).toBeGreaterThan(listBefore)
   })
 
-  test.fail('detail user: poin aktif di header ikut berubah setelah penalty dibatalkan (F-31)', async ({ page, mockApi }) => {
+  test('detail user: poin aktif di header ikut berubah setelah penalty dibatalkan (F-31)', async ({ page, mockApi }) => {
     let penalties = [makePenalty('P-1')]
     mockManagePenalty(mockApi, {
       getUsers: () => [makePenaltyUser({ active_points: penalties.length * 10 })],
@@ -370,6 +370,17 @@ test.describe('Manage penalty (admin)', () => {
     await expect(slideover.getByText('Tidak ada riwayat penalty.')).toBeVisible()
 
     await expect(slideover.getByText('0', { exact: true })).toBeVisible({ timeout: 2000 })
+  })
+
+  test('detail user gagal dimuat: pesan BE tampil, bukan "Tidak ada riwayat penalty" (F-31)', async ({ page, mockApi }) => {
+    mockManagePenalty(mockApi, { getUsers: () => [makePenaltyUser()] })
+    mockApi.on('GET', '/admin/penalty/user/7', fail(500, 'Gagal membaca penalty'))
+
+    await gotoHydrated(page, '/admin/penalty')
+    await userRow(page).click()
+    const slideover = page.getByRole('dialog', { name: 'Tes SELLER' })
+    await expect(slideover.getByText('Gagal membaca penalty')).toBeVisible()
+    await expect(slideover.getByText('Tidak ada riwayat penalty.')).toHaveCount(0)
   })
 
   test('dari detail user: modal kenakan penalty terisi user tersebut', async ({ page, mockApi }) => {

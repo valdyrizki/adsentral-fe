@@ -1227,7 +1227,7 @@ const selectRating = ref<SelectItem[]>(
 
   const submitDiscussion = async () => {
     if (!discussionMessage.value.trim()) {
-      alert('Pesan tidak boleh kosong')
+      toast.add({ title: 'Pesan tidak boleh kosong', color: 'error', icon: 'material-symbols:error-outline' })
       return
     }
     try {
@@ -1249,7 +1249,7 @@ const selectRating = ref<SelectItem[]>(
       await refreshOrderDiscussion() // refresh transaction / discussion list
     } catch (err) {
       console.error(err)
-      alert('Gagal mengirim pesan')
+      toast.add({ title: 'Gagal mengirim pesan', description: apiErrorMessage(err), color: 'error', icon: 'material-symbols:error-outline' })
     } finally {
       isSubmitting.value = false
     }

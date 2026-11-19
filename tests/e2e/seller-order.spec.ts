@@ -284,8 +284,6 @@ test.describe('Detail pesanan seller', () => {
   })
 
   test('kirim pesan kosong ditolak lewat toast, bukan alert browser', async ({ page, mockApi }) => {
-    // Bug diketahui: saat ini memakai window.alert() (docs/test-findings.md F-10). Hapus setelah diperbaiki.
-    test.fail()
     mockSellerDetail(mockApi, () => makeTx('TX-1', 'PAY-1', { status: 'IN_PROGRESS', confirmed_at: hoursAgo(1) }))
     let nativeDialog = false
     page.on('dialog', (d) => {

@@ -93,10 +93,11 @@ const localForm = reactive<PenaltyRuleUpdateRequest>({
 })
 const errors = reactive<Partial<Record<keyof PenaltyRuleUpdateRequest, string>>>({})
 
+// Isi ulang juga saat modal dibuka, agar perubahan yang dibatalkan tidak tertinggal (F-29)
 watch(
-  () => props.rule,
-  (rule) => {
-    if (rule) {
+  [() => props.modelValue, () => props.rule],
+  ([open, rule]) => {
+    if (open && rule) {
       localForm.description = rule.description
       localForm.points = rule.points
       localForm.expired_days = rule.expired_days

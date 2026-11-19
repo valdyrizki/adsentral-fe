@@ -14,7 +14,7 @@
       v-model="showDetail"
       :user="selectedUser"
       @apply-penalty="openApplyForUser"
-      @penalty-cancelled="refresh()"
+      @penalty-cancelled="refreshAfterCancel"
     />
 
     <ClientOnly>
@@ -208,8 +208,8 @@ watch(search, (val) => {
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
     keyword.value = val
-    page.value = 0
-    refresh()
+    if (page.value !== 0) page.value = 0
+    else refresh()
   }, 500)
 })
 
@@ -221,7 +221,7 @@ const {
   refresh,
 } = useAsyncData<PageResponse<PenaltyUserResponse>>(
   'admin-penalty-users',
-  () => fetchPenaltyUsers(page.value, perPageValue.value, keyword.value, filterStatus.value),
+  () => fetchPenaltyUsers(page.value, perPageValue.value, keyword.value, filterStatus.value === 'ALL' ? '' : filterStatus.value),
   { watch: [page, perPageValue], server: false }
 )
 
@@ -254,19 +254,20 @@ const statsCards = computed(() => {
 
 // ===== HELPERS =====
 function handleFilter() {
-  page.value = 0
-  refresh()
+  if (page.value !== 0) page.value = 0
+  else refresh()
 }
 
 function suspendColor(status: UserSuspendStatus) {
   if (status === 'PERMANENT') return 'error'
-  if (status === 'TEMPORARY') return 'warning'
+  if (status === 'TEMPORARY' || status === 'WARNING') return 'warning'
   return 'success'
 }
 
 function suspendLabel(status: UserSuspendStatus) {
   if (status === 'PERMANENT') return 'Suspend Permanen'
   if (status === 'TEMPORARY') return 'Suspend Sementara'
+  if (status === 'WARNING') return 'Peringatan'
   return 'Normal'
 }
 
@@ -277,6 +278,14 @@ const selectedUser = ref<PenaltyUserResponse | null>(null)
 function openDetail(user: PenaltyUserResponse) {
   selectedUser.value = user
   showDetail.value = true
+}
+
+// Header slideover memakai salinan baris; ganti dengan data terbaru agar poin & status ikut berubah (F-31)
+async function refreshAfterCancel() {
+  await refresh()
+  const id = selectedUser.value?.user.id
+  const fresh = users.value?.content.find((u) => u.user.id === id)
+  if (fresh) selectedUser.value = fresh
 }
 
 // ===== APPLY MODAL =====

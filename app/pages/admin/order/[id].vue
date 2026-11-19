@@ -952,7 +952,7 @@ const selectRating = ref<SelectItem[]>(
 
   const submitDiscussion = async (discussionType: DiscussionType = DiscussionType.MESSAGE) => {
     if (!discussionMessage.value.trim()) {
-      alert('Pesan tidak boleh kosong')
+      toast.add({ title: 'Pesan tidak boleh kosong', color: 'error', icon: 'material-symbols:error-outline' })
       return
     }
 

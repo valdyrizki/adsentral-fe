@@ -61,6 +61,16 @@
         <!-- Penalty List -->
         <AppLoadingSkeleton v-if="pending" />
 
+        <UAlert
+          v-else-if="detailError"
+          color="error"
+          variant="subtle"
+          icon="i-heroicons-exclamation-triangle"
+          title="Gagal memuat riwayat penalty"
+          :description="detailError"
+          :actions="[{ label: 'Coba lagi', color: 'error', variant: 'outline', onClick: () => { loadDetail() } }]"
+        />
+
         <div v-else-if="!detailData?.content?.length" class="py-8 text-center text-sm text-gray-400">
           <UIcon name="i-heroicons-shield-check" class="text-3xl text-gray-300 mb-2" />
           <p>Tidak ada riwayat penalty.</p>
@@ -149,11 +159,12 @@ const isOpen = computed({
 
 const detailData = ref<PageResponse<PenaltyResponse> | null>(null)
 const pending = ref(false)
+const detailError = ref<string | null>(null)
 const cancellingId = ref<string | null>(null)
 const detailPage = ref(0)
 
-watch(() => props.user, (u) => {
-  if (u && isOpen.value) {
+watch(() => props.user?.user.id, (id) => {
+  if (id && isOpen.value) {
     detailPage.value = 0
     detailData.value = null
     loadDetail()
@@ -171,8 +182,11 @@ watch(isOpen, (opened) => {
 async function loadDetail() {
   if (!props.user) return
   pending.value = true
+  detailError.value = null
   try {
     detailData.value = await fetchUserPenaltyDetail(props.user.user.id, detailPage.value, 10)
+  } catch (err) {
+    detailError.value = apiErrorMessage(err, 'Terjadi kesalahan')
   } finally {
     pending.value = false
   }
@@ -180,13 +194,14 @@ async function loadDetail() {
 
 function suspendColor(status: UserSuspendStatus) {
   if (status === 'PERMANENT') return 'error'
-  if (status === 'TEMPORARY') return 'warning'
+  if (status === 'TEMPORARY' || status === 'WARNING') return 'warning'
   return 'success'
 }
 
 function suspendLabel(status: UserSuspendStatus) {
   if (status === 'PERMANENT') return 'Suspend Permanen'
   if (status === 'TEMPORARY') return 'Suspend Sementara'
+  if (status === 'WARNING') return 'Peringatan'
   return 'Normal'
 }
 
@@ -209,7 +224,7 @@ async function handleCancel(log: PenaltyResponse) {
     emit('penalty-cancelled')
     await loadDetail()
   } catch (err: any) {
-    toast.add({ title: 'Gagal membatalkan penalty', description: err.statusMessage || err.message, color: 'error' })
+    toast.add({ title: 'Gagal membatalkan penalty', description: apiErrorMessage(err), color: 'error' })
   } finally {
     cancellingId.value = null
     closeConfirm()

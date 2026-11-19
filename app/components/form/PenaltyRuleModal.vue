@@ -9,7 +9,6 @@
             v-model="localForm.id"
             placeholder="cth: SELLER_LATE_DELIVERY"
             class="w-full font-mono uppercase"
-            @input="localForm.id = (localForm.id as string).toUpperCase().replace(/\s+/g, '_')"
           />
           <template #hint>
             <span class="text-xs text-gray-400">Huruf kapital, pisahkan kata dengan underscore</span>
@@ -184,9 +183,19 @@ watch(
   (val) => { if (val) resetForm() },
 )
 
+// Normalisasi di watch, bukan @input: listener @input berjalan sebelum v-model memperbarui nilai (F-29)
+watch(
+  () => localForm.id,
+  (id) => {
+    const normalized = id.toUpperCase().replace(/\s+/g, '_')
+    if (normalized !== id) localForm.id = normalized
+  },
+)
+
 function validate(): boolean {
   Object.keys(errors).forEach((k) => delete errors[k as keyof PenaltyRuleRequest])
   if (!localForm.id.trim()) errors.id = 'Rule ID wajib diisi'
+  else if (!/^[A-Z0-9_]+$/.test(localForm.id)) errors.id = 'Rule ID hanya boleh huruf kapital, angka, dan underscore'
   if (!localForm.name.trim()) errors.name = 'Nama rule wajib diisi'
   if (!localForm.target_role) errors.target_role = 'Target role wajib dipilih'
   if (!localForm.trigger_type) errors.trigger_type = 'Trigger type wajib dipilih'
