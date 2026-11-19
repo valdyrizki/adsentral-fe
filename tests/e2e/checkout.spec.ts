@@ -78,6 +78,23 @@ test.describe('Checkout keranjang', () => {
     await expect(checkoutButton(page)).toBeDisabled()
   })
 
+  test('saldo di store diperbarui: tombol ikut berubah dari "Saldo Tidak Cukup" ke "Checkout" (F-03)', async ({ page, context, mockApi }) => {
+    const product = makeProduct(1, { sell_price: 50000 })
+    await seedCart(context, [{ product, quantity: 1 }])
+    mockCartPage(mockApi, [product], 10_000)
+
+    await gotoHydrated(page, '/cart')
+    await expect(checkoutButton(page)).toHaveText(/Saldo Tidak Cukup/)
+
+    // mis. saldo dimuat ulang setelah top up (loadBalance({ force: true }))
+    mockApi.on('GET', '/balance', ok(makeBalance(1_000_000)))
+    await page.evaluate(async () => {
+      const pinia = (document.querySelector('#__nuxt') as any).__vue_app__.config.globalProperties.$pinia
+      await pinia._s.get('balance').loadBalance({ force: true })
+    })
+    await expect(checkoutButton(page)).toHaveText(/Checkout/)
+  })
+
   test('transfer bank manual diarahkan ke halaman pembayaran', async ({ page, context, mockApi }) => {
     const product = makeProduct(1)
     await seedCart(context, [{ product, quantity: 1 }], 'MANUAL_BANK')

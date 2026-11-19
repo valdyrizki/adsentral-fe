@@ -87,6 +87,8 @@ test.describe('Produk seller: daftar & aksi status', () => {
     await main(page).getByRole('button', { name: 'Aktifkan' }).click()
 
     await expect(main(page).getByText('Menunggu persetujuan admin.')).toBeVisible()
+    // F-37: toast tidak lagi berkata "diaktifkan"
+    await expect(page.getByText('Produk diajukan ke admin', { exact: false }).first()).toBeVisible()
   })
 
   test('F-35: gagal tangguhkan menampilkan pesan BE', async ({ page, mockApi }) => {
@@ -217,15 +219,17 @@ test.describe('Produk seller: buat produk', () => {
     expect(calls).toBe(0)
   })
 
-  test('banner bukan gambar ditolak sebelum dikirim', async ({ page }) => {
+  test('banner bukan gambar ditolak sebelum dikirim lewat toast, bukan alert() (F-37)', async ({ page }) => {
     const dialogs: string[] = []
     page.on('dialog', (d) => { dialogs.push(d.message()); d.dismiss() })
 
     await openCreateForm(page)
+    await expect(main(page).getByText('JPG, PNG, atau WEBP (maks. 5MB)').first()).toBeVisible()
     await main(page).locator('input[type="file"]').first()
       .setInputFiles({ name: 'catatan.txt', mimeType: 'text/plain', buffer: Buffer.from('bukan gambar') })
 
-    await expect.poll(() => dialogs).toContain('Format gambar harus JPG / JPEG / PNG / WEBP')
+    await expect(page.getByText('Format gambar harus JPG / JPEG / PNG / WEBP').first()).toBeVisible()
+    expect(dialogs).toEqual([])
   })
 
   test('F-35: error BE saat simpan menampilkan pesan BE', async ({ page, mockApi }) => {
@@ -259,6 +263,8 @@ test.describe('Produk seller: edit produk', () => {
     await gotoHydrated(page, '/seller/product/edit/7')
     const m = main(page)
     await expect(m.locator('#product_name')).toHaveValue('Akun Lama')
+    // F-37: produk aktif yang diedit kembali ke review
+    await expect(m.getByText('Perubahan akan ditinjau admin')).toBeVisible()
     await expect(m.locator('#sell_price')).toHaveValue('15.000')
     await expect(m.locator('.ProseMirror')).toContainText('Deskripsi lama')
 
@@ -266,6 +272,7 @@ test.describe('Produk seller: edit produk', () => {
     await m.getByRole('button', { name: 'Edit Product' }).click()
 
     await expect(page).toHaveURL(/\/seller\/product$/)
+    await expect(page.getByText('Produk berhasil diperbarui').first()).toBeVisible()
     expect(formField(req!, 'name')).toBe('Akun Baru')
     expect(formField(req!, 'slug')).toBe('akun-baru')
     expect(formField(req!, 'sellPrice')).toBe('15000')

@@ -28,8 +28,8 @@
             <ul class="list-disc list-inside mt-2 text-sm text-gray-600">
               <li class="mb-2">Foto utama produk (1 foto)</li>
               <li class="mb-2">Foto pendukung produk (maksimal 3 foto)</li>
-              <li class="mb-2">Format: JPG, JPEG, PNG</li>
-              <li class="mb-2">Ukuran maksimal: 5MB per foto dan Resolusi max 1024x1024 piksel</li>
+              <li class="mb-2">Format: JPG, JPEG, PNG, WEBP</li>
+              <li class="mb-2">Ukuran maksimal: 5MB per foto dan resolusi maksimal 1500x1500 piksel</li>
             </ul>
           </div>
 
@@ -37,7 +37,7 @@
             <div class="font-medium p-4">Foto Utama <UBadge color="error">WAJIB</UBadge></div>
             <UFileUpload 
               label="Gambar Utama"
-              description="SVG, PNG, JPG or GIF (max. 2MB)"
+              description="JPG, PNG, atau WEBP (maks. 5MB)"
               class="w-96 min-h-48"
               v-model="productRequest.banner"
               @change="bannerValidation()"
@@ -50,14 +50,14 @@
           <div class="flex gap-4">
             <UFileUpload 
               label="Gambar Utama"
-              description="SVG, PNG, JPG or GIF (max. 2MB)"
+              description="JPG, PNG, atau WEBP (maks. 5MB)"
               class="w-64 min-h-24"
               v-model="productRequest.product_image1" 
               @change="productImageValidation"
             />
             <UFileUpload 
               label="Gambar Utama"
-              description="SVG, PNG, JPG or GIF (max. 2MB)"
+              description="JPG, PNG, atau WEBP (maks. 5MB)"
               class="w-64 min-h-24"
               v-model="productRequest.product_image2"
               @change="productImageValidation" 
@@ -65,7 +65,7 @@
             <UFileUpload 
               label="Gambar Utama"
               v-model="productRequest.product_image3"
-              description="SVG, PNG, JPG or GIF (max. 2MB)"
+              description="JPG, PNG, atau WEBP (maks. 5MB)"
               class="w-64 min-h-24"
               @change="productImageValidation" 
               />
@@ -407,7 +407,7 @@ import type { SystemSettingResponse } from '~/types/system-setting/SystemSetting
 /* Validasi images
     1. tidak boleh menggunakan gambar yang sama
     2. max 5MB/image
-    3. size lebih kecil dari 1024x768px
+    3. resolusi maksimal 1500x1500px (helper/imageHelper.ts)
   */
 const bannerValidation = async() =>{
   if (!productRequest.banner) return
@@ -416,7 +416,7 @@ const bannerValidation = async() =>{
     await validateImage(productRequest.banner)
   } catch (err: any) {
     productRequest.banner = null
-    alert(err)
+    toast.add({ title: 'Gambar ditolak', description: String(err), color: 'error' })
   }
 }
 
@@ -426,7 +426,7 @@ const productImageValidation  = async() =>{
       await validateImage(productRequest.product_image1)
     } catch (err: any) {
       productRequest.product_image1 = null
-      alert(err)
+      toast.add({ title: 'Gambar ditolak', description: String(err), color: 'error' })
     }
   }
 
@@ -435,7 +435,7 @@ const productImageValidation  = async() =>{
       await validateImage(productRequest.product_image2)
     } catch (err: any) {
       productRequest.product_image2 = null
-      alert(err)
+      toast.add({ title: 'Gambar ditolak', description: String(err), color: 'error' })
     }
   }
 
@@ -444,7 +444,7 @@ const productImageValidation  = async() =>{
     await validateImage(productRequest.product_image3)
     } catch (err: any) {
       productRequest.product_image3 = null
-      alert(err)
+      toast.add({ title: 'Gambar ditolak', description: String(err), color: 'error' })
     }
   }
 }
@@ -632,8 +632,8 @@ const handleSubmit = async () =>{
     await createProduct(productRequest)
     
     toast.add({
-      title: "Berhasil membuat product ✅",
-      description: "Anda akan diarahkan ke menu list product.",
+      title: "Produk berhasil dibuat ✅",
+      description: "Produk akan tampil di katalog setelah disetujui admin.",
       color: "success"
     })
 
@@ -641,7 +641,7 @@ const handleSubmit = async () =>{
     
   } catch (err: any) {
     toast.add({
-      title: "Gagal Simpan User ❌",
+      title: "Gagal menyimpan produk ❌",
       description: err.message || "Terjadi kesalahan",
       color: "error"
     })

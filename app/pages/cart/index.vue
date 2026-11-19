@@ -358,7 +358,6 @@ const syncing = ref<boolean>(false)
 // composables api
 const { fetchPaymentMethod,paymentMethodLoading } = usePaymentMethodApi()
 const { fetchPublicSystemSetting } = useSystemSettingApi()
-const { depositBalance } = useBalanceStore()
 
 //store
 const cartStore = useCartStore()
@@ -488,7 +487,7 @@ const checkout = async () =>{
 
   const isSaldoInsufficient = computed(() => {
   if (cartStore.payment_method !== 'SALDO') return false
-  return depositBalance < cartStore.subTotal
+  return balanceStore.depositBalance < cartStore.subTotal
 })
 
 const selectedChannel = computed(() => {

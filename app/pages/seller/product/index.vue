@@ -350,7 +350,7 @@ const statusLabel = (status: string) => {
 function buildWaLink(product: ProductResponse) {
   const number = systemSettingStore.systemSettings.find(s => s.key === 'WA_NUMBER')?.value
   if (!number) return undefined 
-  const msg = `Halo admin, saya ingin mengajukan banding untuk produk *${product.name}* (ID: #${product.id}) yang statusnya NONACTIVE. Mohon ditinjau kembali.`
+  const msg = `Halo admin, saya ingin mengajukan banding untuk produk *${product.name}* (ID: #${product.id}) yang statusnya ${statusLabel(product.status)}. Mohon ditinjau kembali.`
   return `https://wa.me/${number.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`
 }
 
@@ -373,7 +373,7 @@ async function activateHandler(id: number) {
   try {
     await activateProduct(id)
     await Promise.all([refresh(), refreshProductSummary()])
-    toast.add({ title: 'Berhasil ✅', description: 'Produk telah diaktifkan.', color: 'success' })
+    toast.add({ title: 'Berhasil ✅', description: 'Produk diajukan ke admin dan akan tampil di katalog setelah disetujui.', color: 'success' })
   } catch (err: any) {
     toast.add({ title: 'Gagal ❌', description: err.statusMessage || err.message, color: 'error' })
   } finally {

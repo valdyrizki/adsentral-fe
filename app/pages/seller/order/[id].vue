@@ -1056,7 +1056,12 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
       await refreshTransaction()
 
     } catch (err: any) {
-      if (isStaleActionError(err)) refreshTransaction()
+      // Status sudah berubah: tutup modal seperti di halaman daftar (F-13)
+      if (isStaleActionError(err)) {
+        isRejectingTxModal.value = false
+        selectedTxId.value = null
+        refreshTransaction()
+      }
       useToast().add({
         title: 'Gagal',
         description: err.message || 'Gagal menolak pesanan',

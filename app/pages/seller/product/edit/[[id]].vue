@@ -40,6 +40,15 @@
       <template #header>
         <div class="text-lg font-semibold">Form Edit Product</div>
       </template>
+      <UAlert
+        v-if="product.status === 'ACTIVE'"
+        class="mb-4"
+        color="warning"
+        variant="subtle"
+        icon="i-heroicons-exclamation-triangle"
+        title="Perubahan akan ditinjau admin"
+        description="Setelah disimpan, produk kembali ke status Menunggu Review dan tidak tampil di katalog sampai disetujui admin."
+      />
       <div class="">
         
         <div>
@@ -48,8 +57,8 @@
             <ul class="list-disc list-inside mt-2 text-sm text-gray-600">
               <li class="mb-2">Foto utama produk (1 foto)</li>
               <li class="mb-2">Foto pendukung produk (maksimal 3 foto)</li>
-              <li class="mb-2">Format: JPG, JPEG, PNG</li>
-              <li class="mb-2">Ukuran maksimal: 5MB per foto dan Resolusi max 1024x1024 piksel</li>
+              <li class="mb-2">Format: JPG, JPEG, PNG, WEBP</li>
+              <li class="mb-2">Ukuran maksimal: 5MB per foto dan resolusi maksimal 1500x1500 piksel</li>
             </ul>
           </div>
 
@@ -63,7 +72,7 @@
               />
               <UFileUpload 
                 label="Ubah Gambar Utama"
-                description="SVG, PNG, JPG or GIF (max. 2MB)"
+                description="JPG, PNG, atau WEBP (maks. 5MB)"
                 class="w-64 min-h-48"
                 v-model="productRequest.banner"
                 @change="bannerValidation()"
@@ -103,14 +112,14 @@
           <div class="mt-4 flex gap-4">
             <UFileUpload 
               label="Ubah Foto Tambahan 1"
-              description="SVG, PNG, JPG or GIF (max. 2MB)"
+              description="JPG, PNG, atau WEBP (maks. 5MB)"
               class="w-64 min-h-24"
               v-model="productRequest.product_image1" 
               @change="productImageValidation"
             />
             <UFileUpload 
               label="Ubah Foto Tambahan 2"
-              description="SVG, PNG, JPG or GIF (max. 2MB)"
+              description="JPG, PNG, atau WEBP (maks. 5MB)"
               class="w-64 min-h-24"
               v-model="productRequest.product_image2"
               @change="productImageValidation" 
@@ -118,7 +127,7 @@
             <UFileUpload 
               label="Ubah Foto Tambahan 3"
               v-model="productRequest.product_image3"
-              description="SVG, PNG, JPG or GIF (max. 2MB)"
+              description="JPG, PNG, atau WEBP (maks. 5MB)"
               class="w-64 min-h-24"
               @change="productImageValidation" 
               />
@@ -469,7 +478,7 @@ import type { SystemSettingResponse } from '~/types/system-setting/SystemSetting
 /* Validasi images
     1. tidak boleh menggunakan gambar yang sama
     2. max 5MB/image
-    3. size lebih kecil dari 1024x768px
+    3. resolusi maksimal 1500x1500px (helper/imageHelper.ts)
   */
 const bannerValidation = async() =>{
   if (!productRequest.banner) return
@@ -478,7 +487,7 @@ const bannerValidation = async() =>{
     await validateImage(productRequest.banner)
   } catch (err: any) {
     productRequest.banner = null
-    alert(err)
+    toast.add({ title: 'Gambar ditolak', description: String(err), color: 'error' })
   }
 }
 
@@ -488,7 +497,7 @@ const productImageValidation  = async() =>{
       await validateImage(productRequest.product_image1)
     } catch (err: any) {
       productRequest.product_image1 = null
-      alert(err)
+      toast.add({ title: 'Gambar ditolak', description: String(err), color: 'error' })
     }
   }
 
@@ -497,7 +506,7 @@ const productImageValidation  = async() =>{
       await validateImage(productRequest.product_image2)
     } catch (err: any) {
       productRequest.product_image2 = null
-      alert(err)
+      toast.add({ title: 'Gambar ditolak', description: String(err), color: 'error' })
     }
   }
 
@@ -506,7 +515,7 @@ const productImageValidation  = async() =>{
     await validateImage(productRequest.product_image3)
     } catch (err: any) {
       productRequest.product_image3 = null
-      alert(err)
+      toast.add({ title: 'Gambar ditolak', description: String(err), color: 'error' })
     }
   }
 }
@@ -772,11 +781,12 @@ const openSignedFile = provideSignedFileSource(async () => {
     // ✅ Submit ke backend (nanti pakai FormData) versi create merchant 
     try { 
       loading.value = true
+      const wasActive = product.value?.status === 'ACTIVE'
       await updateProduct(productRequest)
       
       toast.add({
-        title: "Berhasil membuat product ✅",
-        description: "Anda akan diarahkan ke menu list product.",
+        title: "Produk berhasil diperbarui ✅",
+        description: wasActive ? "Produk akan tampil lagi di katalog setelah perubahan disetujui admin." : "Anda akan diarahkan ke daftar produk.",
         color: "success"
       })
 
@@ -784,7 +794,7 @@ const openSignedFile = provideSignedFileSource(async () => {
       
     } catch (err: any) {
       toast.add({
-        title: "Gagal Simpan User ❌",
+        title: "Gagal menyimpan produk ❌",
         description: err.message || "Terjadi kesalahan",
         color: "error"
       })

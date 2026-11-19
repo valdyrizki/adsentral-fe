@@ -9,7 +9,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## Rencana & catatan
 
 - **Cakupan tes** (modul yang sudah/belum dites, prioritas): lihat **`docs/test-progress.md`**. Dokumen ini hanya berisi bug.
-- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka. Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
+- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
   composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
   Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
 - **Setelah memperbaiki temuan:** ubah statusnya di sini menjadi `SELESAI`, hapus `test.fail` di spec, dan ubah 🐞 → ✅
@@ -24,7 +24,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 |---|---|---|---|---|---|
 | F-01 | Login | Kredensial bocor ke URL jika form ter-submit sebelum hidrasi | Tinggi | SELESAI | Sudah diperbaiki: `@submit.prevent` + `method="post"`. Tes regresi di `auth.spec.ts`. |
 | F-02 | Login | Hydration mismatch di halaman `/login` | Rendah | TERBUKA | Belum ada tes. Dugaan: `definePageMeta()` dipanggil di komponen, bukan halaman. |
-| F-03 | Keranjang | `depositBalance` tidak reaktif, pengecekan saldo bisa memakai nilai lama | Sedang | TERBUKA | Fix: pakai `balanceStore.depositBalance` langsung di computed. Tes perlu ditambahkan. |
+| F-03 | Keranjang | `depositBalance` tidak reaktif, pengecekan saldo bisa memakai nilai lama | Sedang | SELESAI | Cek saldo memakai `balanceStore.depositBalance` langsung (tanpa destructure), jadi tombol ikut berubah saat saldo dimuat ulang. Tes regresi di `checkout.spec.ts`. |
 | F-04 | Keranjang | Pengecekan saldo mengabaikan biaya aplikasi | Sedang | PERLU KONFIRMASI | Tanya BE: untuk SALDO, apakah biaya aplikasi ikut dipotong & voucher mengurangi potongan? Jika ya, bandingkan dengan `orderTotal`. |
 | F-05 | Pembayaran (buyer) | Nominal transfer di info rekening/WhatsApp ≠ Total Tagihan | Tinggi | PERLU KONFIRMASI | Hampir pasti harus `total_amount` (agar kode unik ikut ditransfer). Konfirmasi lalu ubah di instruksi transfer & link WA. |
 | F-06 | Pembayaran (admin) | "Tolak" memanggil `/payment/cancel`, bukan `/payment/reject` | Sedang | PERLU KONFIRMASI | Tanya: "Tolak" seharusnya `/payment/reject` + alasan? Tes lama mengunci perilaku `cancel`, ubah saat diperbaiki. `uploadPaymentProof` juga tidak dipakai. |
@@ -34,7 +34,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-10 | Pesanan seller | Validasi pesan kosong memakai `window.alert()` | Rendah | SELESAI | Pesan kosong tampil sebagai toast, bukan `alert()`; sekaligus di halaman transaksi buyer (pesan kosong dan gagal kirim). |
 | F-11 | Pesanan seller & transaksi buyer | Countdown UNPAID/PAID langsung "habis" bila `expired_at`/`paid_at` null | Sedang | SELESAI | Countdown UNPAID di halaman seller & buyer memakai `getPaymentExpiry` (`expired_at`, atau `created_at` + 24 jam seperti scheduler BE); tombol bayar buyer tetap tampil. Countdown konfirmasi PAID tanpa `paid_at` tidak diubah (status PAID selalu punya `paid_at`). |
 | F-12 | Pesanan seller | Aksi permanen tanpa dialog konfirmasi (terima pesanan, terima pembatalan) | Sedang | PERLU KONFIRMASI | Tanya: perlu `useConfirm()`? Sekalian perjelas label "Setujui/Tolak Pembatalan" yang mudah tertukar. |
-| F-13 | Pesanan seller | Tolak 409 di halaman detail tidak menutup modal (daftar menutup) | Rendah | TERBUKA | Fix: tutup modal saat `isStaleActionError`, samakan dengan halaman daftar. |
+| F-13 | Pesanan seller | Tolak 409 di halaman detail tidak menutup modal (daftar menutup) | Rendah | SELESAI | Tolak 403/409 di halaman detail menutup modal lalu memuat ulang, sama dengan halaman daftar. Tes regresi di `seller-order.spec.ts`. |
 | F-14 | Pesanan seller | Tombol "Kirim Orderan" tetap muncul di DELIVERED/DONE/ARBITRAGE | Rendah | PERLU KONFIRMASI | Tanya: di status mana seller boleh kirim ulang orderan? (`REJECT` kemungkinan perlu.) |
 | F-15 | Pesanan seller | Kode mati di daftar pesanan (`handleReject`, tombol produk ACTIVE/INACTIVE) | Rendah | TERBUKA | Bersih-bersih: hapus `handleReject`, tombol status produk & `console.log`. |
 | F-16 | Transaksi buyer | Tombol "Batalkan", "Beli Lagi", "Tangguhkan" (daftar) memanggil placeholder `alert()` | Tinggi | SELESAI | "Beli Lagi" → halaman produk, "Tangguhkan" (daftar) → detail transaksi, "Batalkan" UNPAID dihapus (pembatalan dari halaman pembayaran, membatalkan seluruh isi pembayaran). Tes diubah jadi regresi. |
@@ -58,7 +58,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-34 | Deposit | Riwayat deposit gagal dimuat tampil "Belum ada riwayat deposit"; ref `error` tidak pernah diisi | Sedang | SELESAI | Riwayat deposit dan mutasi saldo memakai `error` dari `useAsyncData`: gagal muat tampil pesan BE dengan tombol "Coba lagi". |
 | F-35 | Produk seller | Pesan error BE hilang saat buat/edit/tangguhkan/aktifkan produk (toast "Conflict" / "Bad Request") | Sedang | SELESAI | `useApi` memasang pesan BE ke `message` dan `statusMessage` error HTTP (status, `data`, `response` tetap). |
 | F-36 | Produk seller | Edit produk Otomatis yang sudah punya file selalu ditolak "File lampiran otomatis wajib diupload" (cek field `auto_config_file_url` yang tidak ada) | Tinggi | SELESAI | Cek `product.auto_config?.file_url`. |
-| F-37 | Produk seller | Teks menyesatkan: aktifkan produk berkata "diaktifkan" padahal masuk review; edit produk aktif tidak memberi tahu produk kembali ke review dan toast berkata "membuat product"/"Simpan User"; pesan banding WA selalu menyebut NONACTIVE walau SUSPEND; petunjuk upload "SVG/GIF, 2MB, 1024px" berbeda dengan validasi (JPG/PNG/WEBP, 5MB, 1500px) | Rendah | TERBUKA | Perbaiki teks; validasi gambar memakai `alert()` (pola F-10). |
+| F-37 | Produk seller | Teks menyesatkan: aktifkan produk berkata "diaktifkan" padahal masuk review; edit produk aktif tidak memberi tahu produk kembali ke review dan toast berkata "membuat product"/"Simpan User"; pesan banding WA selalu menyebut NONACTIVE walau SUSPEND; petunjuk upload "SVG/GIF, 2MB, 1024px" berbeda dengan validasi (JPG/PNG/WEBP, 5MB, 1500px) | Rendah | SELESAI | Toast aktifkan: "diajukan ke admin"; form edit produk ACTIVE menampilkan peringatan kembali ke review; toast simpan "Produk berhasil dibuat/diperbarui" / "Gagal menyimpan produk"; pesan banding WA menyebut status sebenarnya; petunjuk upload JPG/PNG/WEBP, 5 MB, 1500×1500; validasi gambar lewat toast, bukan `alert()`. Halaman produk admin (`admin/product/create`, `edit`) masih memakai `alert()` untuk validasi gambar. |
 | F-38 | Stok seller | Badge "Aktif/Terkirim/Dikembalikan" di `/seller/stock` hanya menghitung item di halaman aktif, padahal tampil di sebelah total semua item | Rendah | TERBUKA | Pola sama dengan F-23: hitungan dari BE (ringkasan per status) atau beri label "di halaman ini". |
 | F-39 | Verifikasi (admin) | Setujui/tolak/edit verifikasi menampilkan "Bad Request", bukan pesan BE (NIK dipakai akun lain, sudah direview admin lain); status basi tidak memuat ulang; edit mengirim semua field walau tertulis "hanya field yang diubah" | Sedang | SELESAI | Pesan BE tampil; setujui/tolak yang gagal memuat ulang detail dan menutup modal bila sudah tidak PENDING; edit hanya mengirim field yang berubah (tanpa perubahan: tidak memanggil BE). |
 | F-40 | Daftar toko | `/merchant/create`: logo tidak dicek padahal wajib di BE, nama kosong lolos, GIF diterima padahal BE menolak, pesan BE hilang ("Bad Request"/"Conflict"), pesan berbahasa Inggris, pengunjung tidak diarahkan ke login | Sedang | SELESAI | Validasi disamakan dengan BE (logo wajib, nama 5–50 setelah trim, deskripsi ≤ 1000, JPG/PNG/WEBP ≤ 2 MB), teks Indonesia, pesan BE di toast, `/merchant/create` wajib login. |
@@ -94,7 +94,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-03 — `depositBalance` tidak reaktif di halaman keranjang
 
 - **Lokasi:** `app/pages/cart/index.vue:354`
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Cek saldo memakai `balanceStore.depositBalance` langsung (tanpa destructure), jadi tombol ikut berubah saat saldo dimuat ulang. Tes regresi di `checkout.spec.ts`.
 - **Gejala:** `const { depositBalance } = useBalanceStore()` men-destructure state Pinia, sehingga nilainya
   disalin satu kali saat setup dan tidak ikut berubah. `isSaldoInsufficient` memakai salinan ini.
   Jika saldo berubah selama halaman keranjang terbuka (login dari modal, `loadBalance({ force: true })`, top-up
@@ -231,7 +232,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-13 — Tolak pesanan 409 di halaman detail tidak menutup modal
 
 - **Lokasi:** `app/pages/seller/order/[id].vue` → `handeRejectTxSubmit` (catch)
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Tolak 403/409 di halaman detail menutup modal lalu memuat ulang, sama dengan halaman daftar. Tes regresi di `seller-order.spec.ts`.
 - **Gejala:** Di halaman daftar, error basi (403/409) menutup modal "Tolak Pesanan" lalu memuat ulang. Di halaman
   detail, data dimuat ulang tetapi modal tetap terbuka, sehingga seller bisa menekan "Tolak Pesanan" lagi untuk
   transaksi yang statusnya sudah berubah.
@@ -606,7 +608,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-37 — Teks menyesatkan di halaman produk seller
 
 - **Lokasi:** `app/pages/seller/product/index.vue`, `create/index.vue`, `edit/[[id]].vue`
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Toast aktifkan: "diajukan ke admin"; form edit produk ACTIVE menampilkan peringatan kembali ke review; toast simpan "Produk berhasil dibuat/diperbarui" / "Gagal menyimpan produk"; pesan banding WA menyebut status sebenarnya; petunjuk upload JPG/PNG/WEBP, 5 MB, 1500×1500; validasi gambar lewat toast, bukan `alert()`. Halaman produk admin (`admin/product/create`, `edit`) masih memakai `alert()` untuk validasi gambar.
 - **Gejala:**
   - "Aktifkan" pada produk INACTIVE menampilkan "Produk telah diaktifkan", padahal BE memindahkannya ke `REVIEW`.
   - Edit produk `ACTIVE` mengembalikannya ke `REVIEW` (hilang dari katalog sampai disetujui admin), tanpa peringatan.

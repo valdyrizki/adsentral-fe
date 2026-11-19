@@ -191,6 +191,23 @@ test.describe('Detail pesanan seller', () => {
     await expect(main(page).getByText('Respon Pesanan!')).toHaveCount(0)
   })
 
+  test('tolak basi (409) dari detail: pesan BE tampil, modal tertutup & data dimuat ulang (F-13)', async ({ page, mockApi }) => {
+    let tx = paidTx('TX-1')
+    mockSellerDetail(mockApi, () => tx)
+    mockApi.on('PATCH', '/tx/reject/TX-1', () => {
+      tx = { ...tx, status: 'REFUNDED' }
+      return fail(409, 'Pesanan sudah dibatalkan otomatis')
+    })
+
+    await gotoHydrated(page, '/seller/order/TX-1')
+    await main(page).getByRole('button', { name: 'Tolak Pesanan' }).click()
+    await rejectWithReason(page, 'Produk sudah tidak tersedia')
+
+    await expect(page.getByText('Pesanan sudah dibatalkan otomatis').first()).toBeVisible()
+    await expect(page.getByRole('dialog', { name: 'Tolak Pesanan' })).toHaveCount(0)
+    await expect(main(page).getByText('Respon Pesanan!')).toHaveCount(0)
+  })
+
   test('kirim orderan (IN_PROGRESS) → konfirmasi → DELIVERED', async ({ page, mockApi }) => {
     let tx = makeTx('TX-1', 'PAY-1', { status: 'IN_PROGRESS', paid_at: hoursAgo(3), confirmed_at: hoursAgo(2) })
     mockSellerDetail(mockApi, () => tx)
