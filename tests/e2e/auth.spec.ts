@@ -1,6 +1,18 @@
 import { test, expect, ok, fail, makeUser, gotoHydrated } from './support/fixtures'
 
 test.describe('Login', () => {
+  test('halaman login tanpa peringatan hydration mismatch (F-02)', async ({ page }) => {
+    const warnings: string[] = []
+    page.on('console', (msg) => {
+      if (/hydration|definePageMeta/i.test(msg.text())) warnings.push(msg.text())
+    })
+
+    await gotoHydrated(page, '/login')
+    await expect(page.locator('#email')).toBeVisible()
+    await page.waitForTimeout(500)
+    expect(warnings).toEqual([])
+  })
+
   test('menampilkan form login untuk pengunjung', async ({ page }) => {
     await page.goto('/login')
     await expect(page.locator('#email')).toBeVisible()

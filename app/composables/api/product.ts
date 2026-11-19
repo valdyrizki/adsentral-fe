@@ -2,6 +2,7 @@ import type { PageResponse } from "~/types/PageResponse"
 import type { ProductRequest } from "~/types/product/ProductRequest"
 import type { ProductResponse } from "~/types/product/ProductResponse"
 import type { ProductStockItemResponse } from "~/types/product/ProductStockItemResponse"
+import type { StockSummaryResponse } from "~/types/product/StockSummaryResponse"
 import type { ProductStockItemPatch, ProductStockItemRequest, StockAccountBulkRequest } from "~/types/product/ProductStockItemRequest"
 import type { StockBulkCheckResponse, StockBulkDeleteResult, StockBulkSaveResult, StockErrorData } from "~/types/product/StockBulkCheck"
 import type { WebResponse } from "~/types/WebResponse"
@@ -388,6 +389,13 @@ export const useProductsApi = () => {
     }
   }
 
+  // Jumlah seluruh stok seller per status untuk badge /seller/stock (F-38)
+  const getMyStockSummary = async (): Promise<StockSummaryResponse> => {
+    const res = await api<WebResponse<StockSummaryResponse>>('/stock/my/summary')
+    if (res.status !== 'success' || !res.data) throw new Error(res.message)
+    return res.data
+  }
+
   const getProductStockItems = async (
     productId: number,
     page = 0,
@@ -611,6 +619,7 @@ export const useProductsApi = () => {
     adminActivateProduct,
     getAdminAllStockItems,
     getMyAllStockItems,
+    getMyStockSummary,
     getProductStockItems,
     addProductStockItem,
     checkProductStockAccountsBulk,

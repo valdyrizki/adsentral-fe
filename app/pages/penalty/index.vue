@@ -155,7 +155,7 @@ const breadcrumb = [
 ]
 
 const systemSettingStore = useSystemSettingStore()
-const { fetchMyPenalties } = usePenaltyApi()
+const { fetchMyPenalties, fetchMyPenaltyStat } = usePenaltyApi()
 
 const waLink = computed(() => {
   const number = systemSettingStore.systemSettings.find(s => s.key === 'WA_NUMBER')?.value
@@ -177,12 +177,15 @@ const {
   { watch: [page, perPageValue], server: false }
 )
 
+// Poin aktif dari /user/penalty/stat (sama dengan banner), bukan jumlah baris halaman aktif (F-32)
+const { data: penaltyStat } = await useAsyncData('my-penalty-stat', () => fetchMyPenaltyStat(), { server: false })
+
 const statsCards = computed(() => {
   const list = data.value?.content ?? []
   const total = data.value?.total_elements ?? 0
   const active = list.filter(l => !l.is_expired).length
   const expired = list.filter(l => l.is_expired).length
-  const totalPoints = list.filter(l => !l.is_expired).reduce((s, l) => s + l.points, 0)
+  const totalPoints = penaltyStat.value?.active_points ?? list.filter(l => !l.is_expired).reduce((s, l) => s + l.points, 0)
 
   return [
     { label: 'Total Penalty', value: total.toString(), valueColor: 'text-gray-800' },

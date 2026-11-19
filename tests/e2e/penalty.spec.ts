@@ -487,4 +487,16 @@ test.describe('Penalty milik user', () => {
     await expect(m.getByText('Keterlambatan Pengiriman')).toBeVisible()
     await expect(m.getByText('Telat kirim 3x')).toBeVisible()
   })
+
+  test('kartu "Poin Aktif" memakai stat BE, bukan jumlah baris halaman ini (F-32)', async ({ page, mockApi }) => {
+    mockApi
+      .asRole('SELLER')
+      .on('GET', '/user/penalty/stat', ok({ active_points: 55, active_point_merchant: 55, suspend_status: 'WARNING', suspend_until: null, verified_seller: true }))
+      // halaman 1 hanya memuat satu penalty aktif (10 poin); sisanya di halaman lain
+      .on('GET', '/user/penalty', ok({ ...page1([makePenalty('P-1')]), total_elements: 30, total_pages: 2 }))
+
+    await gotoHydrated(page, '/seller/penalty')
+    const m = main(page)
+    await expect(m.locator('div').filter({ has: page.getByText('Poin Aktif', { exact: true }) }).getByText('55', { exact: true }).first()).toBeVisible()
+  })
 })

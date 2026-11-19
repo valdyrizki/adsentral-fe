@@ -64,7 +64,7 @@
           >
             <div class="flex-grow flex flex-col gap-1.5">
               <div class="flex items-center gap-2 flex-wrap">
-                <UBadge :color="statusColor(item.status)" variant="subtle" size="sm">{{ statusLabel(item.status) }}</UBadge>
+                <AppGuaranteeStatusBadge :status="item.status" variant="subtle" />
                 <span class="text-xs text-gray-400 font-mono">#{{ item.id }}</span>
               </div>
               <p class="text-sm font-medium text-gray-800">{{ item.product.name }}</p>
@@ -98,7 +98,7 @@
 <script lang="ts" setup>
 import dayjs from 'dayjs'
 import { useGuaranteeApi } from '~/composables/api/guarantee'
-import type { GuaranteeResponse, GuaranteeStatus } from '~/types/guarantee/GuaranteeResponse'
+import type { GuaranteeResponse } from '~/types/guarantee/GuaranteeResponse'
 import type { PageResponse } from '~/types/PageResponse'
 
 const breadcrumb = [
@@ -123,17 +123,4 @@ const {
   { watch: [page, perPageValue], server: false }
 )
 
-const statusLabel = (status: GuaranteeStatus): string => ({
-  IN_REVIEW: 'Menunggu Review Seller',
-  REJECTED: 'Ditolak',
-  IN_PROGRESS: 'Sedang Diproses',
-  DONE: 'Selesai',
-})[status] ?? status
-
-const statusColor = (status: GuaranteeStatus) => ({
-  IN_REVIEW: 'warning' as const,
-  REJECTED: 'error' as const,
-  IN_PROGRESS: 'info' as const,
-  DONE: 'success' as const,
-})[status] ?? 'warning' as const
 </script>

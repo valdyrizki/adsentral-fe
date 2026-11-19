@@ -30,7 +30,7 @@
             <div class="flex items-center gap-2 flex-wrap">
               <UIcon name="material-symbols:shield" class="size-5 text-yellow-600" />
               <span class="font-semibold text-lg">Klaim Garansi</span>
-              <UBadge :color="statusColor(guarantee.status)" size="md">{{ statusLabel(guarantee.status) }}</UBadge>
+              <AppGuaranteeStatusBadge :status="guarantee.status" size="md" />
               <span class="text-xs text-gray-400 ml-auto">#{{ guarantee.id }}</span>
             </div>
 
@@ -186,7 +186,7 @@
 <script lang="ts" setup>
 import dayjs from 'dayjs'
 import { useGuaranteeApi } from '~/composables/api/guarantee'
-import type { GuaranteeResponse, GuaranteeStatus } from '~/types/guarantee/GuaranteeResponse'
+import type { GuaranteeResponse } from '~/types/guarantee/GuaranteeResponse'
 
 const route = useRoute()
 const { fetchGuaranteeById } = useGuaranteeApi()
@@ -202,19 +202,6 @@ const {
   { server: false }
 )
 
-const statusLabel = (status: GuaranteeStatus): string => ({
-  IN_REVIEW: 'Menunggu Review Seller',
-  REJECTED: 'Ditolak',
-  IN_PROGRESS: 'Sedang Diproses',
-  DONE: 'Selesai',
-})[status] ?? status
-
-const statusColor = (status: GuaranteeStatus) => ({
-  IN_REVIEW: 'warning' as const,
-  REJECTED: 'error' as const,
-  IN_PROGRESS: 'info' as const,
-  DONE: 'success' as const,
-})[status] ?? 'warning' as const
 
 // File garansi presigned (kedaluwarsa 1 jam): dimuat ulang otomatis sebelum dibuka bila basi
 const openSignedFile = provideSignedFileSource(refresh, () => guarantee.value)

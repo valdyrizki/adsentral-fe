@@ -68,7 +68,7 @@ const multipartFields = (raw: string) =>
   Object.fromEntries([...raw.matchAll(/name="([^"]+)"\r\n\r\n([^\r]*)/g)].map((m) => [m[1]!, m[2]!]))
 
 test.describe('Klaim garansi buyer (detail transaksi)', () => {
-  test('ajukan klaim: validasi deskripsi, body request & status jadi "Sedang Ditinjau"', async ({ page, mockApi }) => {
+  test('ajukan klaim: validasi deskripsi, body request & status jadi "Menunggu Review Seller" (F-21: label sama dengan halaman garansi)', async ({ page, mockApi }) => {
     let guarantee: Guarantee | null = null
     mockBuyerTx(mockApi, doneTx(), () => guarantee)
     let body: unknown = null
@@ -97,7 +97,7 @@ test.describe('Klaim garansi buyer (detail transaksi)', () => {
     await expect(page.getByText('Klaim garansi berhasil diajukan').first()).toBeVisible()
     expect(body).toEqual({ transaction_id: 'TX-1', complain_description: 'Akun tidak bisa login sejak kemarin' })
     await expect(dialog).toHaveCount(0)
-    await expect(main(page).getByText('Sedang Ditinjau')).toBeVisible()
+    await expect(main(page).getByText('Menunggu Review Seller')).toBeVisible()
     await expect(main(page).getByText('Menunggu Respon Penjual')).toBeVisible()
     // Klaim hanya 1x per transaksi
     await expect(main(page).getByRole('button', { name: 'Klaim Garansi' })).toHaveCount(0)

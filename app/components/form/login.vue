@@ -52,10 +52,6 @@
 
 <script setup lang="ts">
 
-definePageMeta({
-  layout: "default"  // ✅ explicit!
-})
-
 import { useToast } from "#imports"
 import { useAuthApi } from "~/composables/api/auth";
 

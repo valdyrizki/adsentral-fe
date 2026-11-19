@@ -32,7 +32,7 @@
           <div class="flex items-center gap-2 flex-wrap">
             <UIcon name="material-symbols:shield" class="size-5 text-yellow-600" />
             <span class="font-semibold text-lg">Klaim Garansi</span>
-            <UBadge :color="statusColor(guarantee.status)" size="md">{{ statusLabel(guarantee.status) }}</UBadge>
+            <AppGuaranteeStatusBadge :status="guarantee.status" viewer="seller" size="md" />
             <span class="text-xs text-gray-400 ml-auto">#{{ guarantee.id }}</span>
           </div>
 
@@ -120,7 +120,7 @@
           <p class="text-sm" :class="isProgressExpired ? 'text-red-600' : 'text-primary-600'">
             {{ isProgressExpired
               ? 'Anda melewati batas waktu pengiriman. Sistem akan memproses penalty secara otomatis.'
-              : `Kirim garansi garansi sebelum ${dayjs(guarantee.progress_deadline).format('D MMM YYYY, HH:mm')} untuk menghindari penalty.`
+              : `Kirim akun garansi sebelum ${dayjs(guarantee.progress_deadline).format('D MMM YYYY, HH:mm')} untuk menghindari penalty.`
             }}
           </p>
         </div>
@@ -333,7 +333,7 @@
 import dayjs from 'dayjs'
 import { UTextarea } from '#components'
 import { useGuaranteeApi } from '~/composables/api/guarantee'
-import type { GuaranteeResponse, GuaranteeStatus } from '~/types/guarantee/GuaranteeResponse'
+import type { GuaranteeResponse } from '~/types/guarantee/GuaranteeResponse'
 
 definePageMeta({ layout: 'seller', label: 'Detail Garansi' })
 
@@ -410,13 +410,6 @@ const isReviewExpired = computed(() => reviewSeconds.value <= 0 && !!guarantee.v
 const isProgressExpired = computed(() => progressSeconds.value <= 0 && !!guarantee.value?.progress_deadline)
 
 // ===== Status helpers =====
-const statusLabel = (status: GuaranteeStatus): string => ({
-  IN_REVIEW: 'Perlu Review', REJECTED: 'Ditolak', IN_PROGRESS: 'Perlu Kirim Garansi', DONE: 'Selesai',
-})[status] ?? status
-
-const statusColor = (status: GuaranteeStatus) => ({
-  IN_REVIEW: 'warning' as const, REJECTED: 'error' as const, IN_PROGRESS: 'info' as const, DONE: 'success' as const,
-})[status] ?? 'warning' as const
 
 // ===== Actions =====
 async function handleAccept() {

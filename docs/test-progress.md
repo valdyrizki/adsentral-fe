@@ -23,19 +23,19 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 
 | # | Modul | Spec | Status | Prioritas sisa | Catatan |
 |---|---|---|---|---|---|
-| 1 | Auth: login & guard rute | `auth.spec.ts`, `session.spec.ts`, `register-logout.spec.ts` | ✅ | — | F-01 (kredensial bocor ke URL) sudah diperbaiki. F-02 hydration mismatch `/login` belum dites. `/guarantee` & `/penalty` wajib login (F-19 selesai). |
+| 1 | Auth: login & guard rute | `auth.spec.ts`, `session.spec.ts`, `register-logout.spec.ts` | ✅ | — | F-01 (kredensial bocor ke URL) sudah diperbaiki. F-02 selesai (tanpa peringatan hydration di `/login`). `/guarantee` & `/penalty` wajib login (F-19 selesai). |
 | 2 | Profil buyer | — | ⬜ | P2 | Halaman sederhana: tampil profil + `updateProfile`. |
 | 3 | Katalog publik (beranda, kategori, produk, merchant, pencarian) | — | ⬜ | P2 | Halaman SSR; data publik juga lewat mock BE SSR (`mock-backend.mjs`), bukan hanya `mockApi`. Detail produk adalah pintu masuk keranjang. |
 | 4 | Keranjang & checkout | `checkout.spec.ts` | ✅ | — | F-03 & F-04 selesai (saldo dibandingkan dengan total termasuk biaya aplikasi). Belum: ubah qty/hapus item, multi-merchant. |
 | 5 | Pembayaran buyer | `payment.spec.ts` | Sebagian | P2 (daftar `/payment`) | F-05 (nominal transfer = total tagihan) & F-08 (keterangan deposit PAID/EXPIRED) selesai. |
 | 6 | Transaksi buyer | `transaction.spec.ts` | ✅ | — | F-11, F-17, F-18 selesai. Tarik pengajuan batal lewat konfirmasi (F-12). |
-| 7 | Garansi (buyer & seller) | `guarantee.spec.ts` | ✅ | — | Label status diduplikasi di 5 tempat (F-21). |
+| 7 | Garansi (buyer & seller) | `guarantee.spec.ts` | ✅ | — | F-21 selesai (`GuaranteeStatusBadge`). |
 | 8 | Saldo, deposit & transfer | `balance.spec.ts` | ✅ | — | F-20, F-33, F-34 selesai. |
 | 9 | Penalty (buyer, seller, admin) | `penalty.spec.ts` | ✅ | — | F-29–F-32 selesai (`/admin/penalty-user` dihapus, rule sesuai peran user). |
 | 10 | Pesanan seller | `seller-order.spec.ts` | 🐞 | — | F-10 & F-11 selesai. Belum: seller ajukan arbitrase, kirim via file/stok. |
 | 11 | Penarikan dana & rekening bank seller | `withdrawal.spec.ts`, `bank-account.spec.ts` | 🐞 | — | `WD_FEE` diam-diam jatuh ke Rp 2.500 (F-23). |
 | 12 | Produk seller | `seller-product.spec.ts` | ✅ | P2 (REJECTED/SUSPEND detail) | Teks menyesatkan (F-37) selesai. |
-| 13 | Stok seller | `seller-stock.spec.ts` | ✅ | P2 (detail & tambah ulang item RETURNED, import CSV) | Hitungan Aktif/Terkirim hanya halaman aktif (F-38, rendah). |
+| 13 | Stok seller | `seller-stock.spec.ts` | ✅ | P2 (detail & tambah ulang item RETURNED, import CSV) | F-38 selesai (hitungan dari `GET /stock/my/summary`). |
 | 14 | Verifikasi seller & daftar merchant | `verification.spec.ts`, `security.spec.ts`, `verification-photos-purged.spec.ts` | ✅ | — | F-40 selesai. |
 | 15 | Dashboard & profil toko seller | — | ⬜ | P3 | Riwayat penalty di dashboard sudah tercakup `penalty.spec.ts`. |
 | 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | ✅ | P3 (dashboard admin) | F-27 & F-28 selesai. |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **302 tes** di 32 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-19 dengan `npx playwright test --list`).
+Total saat ini: **304 tes** di 32 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-19 dengan `npx playwright test --list`).
 
 ---
 
@@ -73,7 +73,7 @@ Total saat ini: **302 tes** di 32 spec, tanpa tes `test.fail` (semua bug yang pu
 | Pengunjung ke rute terlindungi → `/login` | ✅ | `/guarantee`, `/penalty`, `/merchant/create` (F-19, F-40) |
 | User login tidak bisa buka `/login` | ✅ | |
 | Buyer ditolak masuk `/admin*` dan `/seller*` | ✅ | |
-| Hydration mismatch di `/login` | 🐞 | F-02 (dicatat, belum ada tes) |
+| Tanpa peringatan hydration/definePageMeta di `/login` | ✅ | F-02 (selesai) |
 | Register (`registerUser`): tombol nonaktif tanpa S&K, body + `accepted_terms`, validasi email & konfirmasi password, error email terpakai | ✅ | `register-logout.spec.ts` |
 | Logout (`/user/logout`): sesi dibersihkan, redirect, rute seller tertutup lagi; BE gagal tetap logout | ✅ | `register-logout.spec.ts` |
 | Refresh token: 401 `TOKEN_EXPIRED` → refresh → retry sekali, hasil retry sampai ke pemanggil | ✅ | `session.spec.ts` |
@@ -164,7 +164,7 @@ Total saat ini: **302 tes** di 32 spec, tanpa tes `test.fail` (semua bug yang pu
 | Masa garansi habis / produk tanpa garansi | ✅ | |
 | Garansi DONE: balasan & file pengganti | ✅ | |
 | File garansi presigned: URL berlaku dibuka langsung; kedaluwarsa → "memuat ulang" + URL baru; tetap kedaluwarsa → tidak membuka error R2 | ✅ | `security.spec.ts` |
-| Daftar → detail klaim buyer | ✅ | F-21 dicatat |
+| Daftar → detail klaim buyer | ✅ | F-21 (selesai) |
 | `/guarantee` tanpa login | ✅ | F-19 (selesai) |
 | Seller: daftar + countdown review | ✅ | |
 | Seller: terima / tolak klaim | ✅ | |

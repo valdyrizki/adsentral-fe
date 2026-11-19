@@ -460,7 +460,7 @@
           <div class="flex items-center gap-2 flex-wrap p-3 bg-yellow-50">
             <UIcon name="material-symbols:shield" class="size-5 text-yellow-600" />
             <span class="font-semibold text-yellow-800">Klaim Garansi</span>
-            <UBadge :color="guaranteeStatusColor(guarantee.status)" size="sm">{{ guaranteeStatusLabel(guarantee.status) }}</UBadge>
+            <AppGuaranteeStatusBadge :status="guarantee.status" />
             <span class="text-xs text-gray-400 ml-auto">Diajukan: {{ dayjs(guarantee.created_at).format('D MMM YYYY HH:mm') }}</span>
           </div>
 
@@ -886,7 +886,7 @@ import { useGuaranteeApi } from '~/composables/api/guarantee'
 import { useOrderDiscussionApi } from '~/composables/api/order-discussion'
 import { useReviewApi } from '~/composables/api/review'
 import { useTransactionApi } from '~/composables/api/transaction'
-import type { GuaranteeResponse, GuaranteeStatus } from '~/types/guarantee/GuaranteeResponse'
+import type { GuaranteeResponse } from '~/types/guarantee/GuaranteeResponse'
 import { DiscussionType } from '~/types/order-discussion/DiscussionType'
 import type { OrderDiscussionResponse } from '~/types/order-discussion/OrderDiscussionResponse'
 import type { PageResponse } from '~/types/PageResponse'
@@ -1046,20 +1046,6 @@ const selectRating = ref<SelectItem[]>(
   )
 
 
-
-  const guaranteeStatusLabel = (status: GuaranteeStatus): string => {
-    const map: Record<GuaranteeStatus, string> = {
-      IN_REVIEW: 'Sedang Ditinjau', REJECTED: 'Ditolak', IN_PROGRESS: 'Diproses', DONE: 'Selesai',
-    }
-    return map[status] ?? status
-  }
-
-  const guaranteeStatusColor = (status: GuaranteeStatus) => {
-    const map: Record<GuaranteeStatus, 'warning' | 'error' | 'info' | 'success'> = {
-      IN_REVIEW: 'warning', REJECTED: 'error', IN_PROGRESS: 'info', DONE: 'success',
-    }
-    return map[status] ?? 'warning'
-  }
 
   // ===== COUNTDOWN GARANSI =====
   const guaranteeNow = ref(dayjs())

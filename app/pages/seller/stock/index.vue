@@ -321,7 +321,7 @@ definePageMeta({ layout: 'seller', label: 'Stok Produk', ssr: false })
 
 const toast = useToast()
 const { confirm, close: closeConfirm } = useConfirm()
-const { getMyAllStockItems, deleteProductStockItem, bulkDeleteStockItems } = useProductsApi()
+const { getMyAllStockItems, getMyStockSummary, deleteProductStockItem, bulkDeleteStockItems } = useProductsApi()
 
 const page = ref(0)
 const perPageValue = ref(20)
@@ -367,10 +367,18 @@ const {
 // URL file stok presigned (kedaluwarsa 1 jam); modal detail juga memakai sumber ini
 const openSignedFile = provideSignedFileSource(refresh, () => stockData.value)
 
-const countActive = computed(() => stockData.value?.content.filter(i => i.status === 'ACTIVE').length ?? 0)
-const countSent = computed(() => stockData.value?.content.filter(i => i.status === 'SENT').length ?? 0)
-const countReturned = computed(() => stockData.value?.content.filter(i => i.status === 'RETURNED').length ?? 0)
-const countRestocked = computed(() => stockData.value?.content.filter(i => i.status === 'RESTOCKED').length ?? 0)
+// Badge dihitung BE dari seluruh stok seller, bukan dari baris halaman aktif (F-38); dimuat ulang tiap daftar berubah
+const { data: stockSummary, refresh: refreshSummary } = await useAsyncData(
+  'seller-stock-summary',
+  () => getMyStockSummary(),
+  { server: false }
+)
+watch(stockData, () => { refreshSummary() })
+
+const countActive = computed(() => stockSummary.value?.active ?? 0)
+const countSent = computed(() => stockSummary.value?.sent ?? 0)
+const countReturned = computed(() => stockSummary.value?.returned ?? 0)
+const countRestocked = computed(() => stockSummary.value?.restocked ?? 0)
 
 function handleFilter() {
   if (debounceTimer) clearTimeout(debounceTimer)

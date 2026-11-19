@@ -57,11 +57,13 @@ const sellerWithStockProduct = (mockApi: MockApi) =>
     .on('GET', '/product/my/5', ok(makeProduct(5, { name: 'Akun ML', delivery_type: 'STOCKING', stock: 3 })))
 
 test.describe('Stok seller: daftar, filter, hapus', () => {
-  test('daftar menampilkan status & hitungan; filter status dan akun dikirim ke BE', async ({ page, mockApi }) => {
+  test('daftar menampilkan status & hitungan seluruh stok (F-38); filter status dan akun dikirim ke BE', async ({ page, mockApi }) => {
     const queries: URLSearchParams[] = []
     mockApi
       .asRole('SELLER')
       .on('GET', '/account-types', ok(ACCOUNT_TYPES))
+      // hitungan dari BE untuk seluruh stok, bukan dari 3 baris di halaman ini
+      .on('GET', '/stock/my/summary', ok({ active: 12, sent: 30, returned: 2, restocked: 0 }))
       .on('GET', '/stock/my', (_r, url) => {
         queries.push(url.searchParams)
         return ok(pageOf([
@@ -73,9 +75,10 @@ test.describe('Stok seller: daftar, filter, hapus', () => {
 
     await gotoHydrated(page, '/seller/stock')
     const m = main(page)
-    await expect(m.getByText('Aktif: 1')).toBeVisible()
-    await expect(m.getByText('Terkirim: 1')).toBeVisible()
-    await expect(m.getByText('Dikembalikan: 1')).toBeVisible()
+    await expect(m.getByText('Aktif: 12')).toBeVisible()
+    await expect(m.getByText('Terkirim: 30')).toBeVisible()
+    await expect(m.getByText('Dikembalikan: 2')).toBeVisible()
+    await expect(m.getByText('Ditambah Ulang:')).toHaveCount(0)
     await expect(m.getByRole('link', { name: 'TX123' })).toHaveAttribute('href', '/seller/order/TX123')
     // hanya item ACTIVE yang bisa diedit/dihapus/dipilih
     await expect(m.getByRole('button', { name: 'Edit' })).toHaveCount(1)
