@@ -41,12 +41,12 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | ✅ | P3 (dashboard admin) | F-27 & F-28 selesai. |
 | 17 | Pembayaran admin | `payment.spec.ts`, `admin-unprocessed-payment.spec.ts` | ✅ | — | F-06 ditutup (sesuai BE), F-07 selesai. |
 | 18 | Penarikan dana admin | `withdrawal.spec.ts` | ✅ | — | F-22 & F-23 selesai (kartu statistik dari `GET /admin/withdrawal/summary`, biaya admin dari data penarikan). |
-| 19 | Produk & stok admin (review, suspend) | `admin-product-reason.spec.ts`, `admin-product-status.spec.ts`, `admin-product-list.spec.ts` | ✅ | P2 (detail), P3 (`/admin/stock`) | F-42 selesai. Halaman create/edit admin yatim & ditolak BE (F-43, perlu konfirmasi). |
+| 19 | Produk & stok admin (review, suspend) | `admin-product-reason.spec.ts`, `admin-product-status.spec.ts`, `admin-product-list.spec.ts` | ✅ | P2 (detail), P3 (`/admin/stock`) | F-42 selesai. Halaman create/edit admin yatim & ditolak BE (F-43, todo). |
 | 20 | Verifikasi seller (admin) | `verification.spec.ts`, `admin-verification-revoke.spec.ts`, `admin-verification-badge.spec.ts` | ✅ | — | F-39 selesai. |
 | 21 | Master data admin (kategori, tipe akun, voucher, metode/channel bayar) | — | ⬜ | P2 | Pola CRUD serupa; cocok satu spec per halaman. Sinkron Tripay memanggil gateway lewat BE. |
 | 22 | Keuangan admin (ringkasan, jurnal, kategori, failed journal) | — | ⬜ | P2 | Total per kategori diagregasi di FE (loop semua halaman jurnal, abaikan void) — perlu dicek kebenarannya. |
 | 23 | System settings | — | ⬜ | P2 | Setting publik dipakai checkout & withdrawal (biaya aplikasi, `WD_FEE`); salah ubah berdampak luas. |
-| 24 | Chat (buyer, seller, admin) | — | ⬜ | P2 | Admin memakai endpoint percakapan seller. |
+| 24 | Chat (buyer, seller, admin) | `chat.spec.ts` | ✅ | — | Admin memakai endpoint percakapan seller. Pesan hilang saat gagal kirim (F-45, selesai). Chat dari halaman produk (`ChatModalBuyer`) belum. |
 | 25 | Notifikasi (buyer, seller, admin, broadcast) | — | ⬜ | P2 | Kirim ke user memakai pencarian `/admin/users` (sama dengan modal penalty). |
 | 26 | Badge/alerts sidebar & header | — (tersirat di beberapa tes) | Sebagian | P3 | Refresh badge setelah aksi sudah dicek di payment & withdrawal. Polling 45 detik & field `null` belum. |
 | 28 | Pengguna admin: daftar & buka kunci login | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk `locked_until` di masa depan; alasan ≥ 5 karakter; `LOGIN_NOT_LOCKED` menutup modal & memuat ulang; akun ADMIN/SUPER_ADMIN hanya bisa dibuka super admin; 403 BE tampil di modal. |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **321 tes** di 34 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-19 dengan `npx playwright test --list`).
+Total saat ini: **328 tes** di 35 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-19 dengan `npx playwright test --list`).
 
 ---
 
@@ -303,7 +303,7 @@ Total saat ini: **321 tes** di 34 spec, tanpa tes `test.fail` (semua bug yang pu
 | Aktifkan/suspend ditolak 409 (status basi, EP06-03): pesan BE tampil, dialog ditutup, daftar dimuat ulang | ✅ `admin-product-status.spec.ts` |
 | `/admin/product/review`: hanya REVIEW, setujui lewat konfirmasi, daftar dimuat ulang | ✅ `admin-product-list.spec.ts` |
 | `/admin/product/view/[id]` | ⬜ P2 |
-| `/admin/product/create`, `edit` | — | Yatim & ditolak BE (F-43, perlu konfirmasi) |
+| `/admin/product/create`, `edit` | — | Yatim & ditolak BE (F-43, todo: jangan dihapus dulu) |
 | `/admin/stock`: daftar stok semua seller | ⬜ P3 |
 
 ## 20. Verifikasi seller (admin)
@@ -344,9 +344,9 @@ Total saat ini: **321 tes** di 34 spec, tanpa tes `test.fail` (semua bug yang pu
 
 | Skenario | Status |
 |---|---|
-| Buyer `/chat`: daftar percakapan, buka, kirim pesan | ⬜ P2 |
+| Buyer `/chat`: daftar percakapan, buka, kirim pesan (body multipart), tombol nonaktif saat kosong, gagal kirim | ✅ |
 | Chat dari halaman produk / merchant (`ChatProductModal`) | ⬜ P2 |
-| Seller `/seller/chat`, admin `/admin/chat` | ⬜ P2 |
+| Seller `/seller/chat`, admin `/admin/chat`: balas, gagal kirim | ✅ |
 
 ## 25. Notifikasi
 
@@ -374,5 +374,5 @@ Cukup satu smoke test (halaman terbuka tanpa error) — ⬜ P3.
 ## Urutan pengerjaan yang disarankan
 
 1. **P1:** selesai 2026-11-19 (produk & stok seller, verifikasi seller + admin, daftar toko, rekening bank, unprocessed payment, register/logout, daftar & review produk admin).
-2. **P2:** ~~katalog publik~~ (selesai) → chat → notifikasi → master data admin → keuangan admin → system settings → sisa (profil, `/payment`, diskusi buyer).
+2. **P2:** ~~katalog publik~~, ~~chat~~ (selesai) → notifikasi → master data admin → keuangan admin → system settings → sisa (profil, `/payment`, diskusi buyer).
 3. **P3:** dashboard, `/admin/stock`, polling badge, smoke test halaman statis.

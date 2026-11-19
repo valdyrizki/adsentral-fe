@@ -9,7 +9,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## Rencana & catatan
 
 - **Cakupan tes** (modul yang sudah/belum dites, prioritas): lihat **`docs/test-progress.md`**. Dokumen ini hanya berisi bug.
-- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
+- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45 (selesai), F-43 (todo). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
   composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
   Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
 - **Setelah memperbaiki temuan:** ubah statusnya di sini menjadi `SELESAI`, hapus `test.fail` di spec, dan ubah 🐞 → ✅
@@ -65,8 +65,9 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-41 | Rekening bank | Simpan rekening ditolak BE tampil "Bad Request" (pesan BE hilang); gagal memuat rekening (500/timeout) tampil "Belum ada rekening bank", bisa membuat seller mengira rekeningnya hilang | Sedang | SELESAI | Pesan BE tampil di form; `fetchBankAccount` hanya mengubah 404 jadi `null`, error lain tampil sebagai alert dengan tombol "Coba lagi". |
 
 | F-42 | Produk admin | Filter "Semua Status" di `/admin/product` mengirim `status=ALL`; BE memetakan `status` ke enum sehingga 400 dan daftar gagal dimuat setelah admin kembali dari filter lain | Sedang | SELESAI | `getAllProductsAdmin` tidak mengirim `status` bila `'ALL'` (pola F-07/F-30). Tes regresi di `admin-product-list.spec.ts`. Halaman admin lain sudah menangani `'ALL'`. |
-| F-43 | Produk admin | Halaman `/admin/product/create` dan `/admin/product/edit/[id]` tidak ditautkan dari mana pun dan memanggil `/product/create` & `/product/update/{id}` yang ber-`@CurrentSeller`; admin selalu ditolak 403. Halaman juga memakai `alert()` untuk validasi gambar | Rendah | PERLU KONFIRMASI | Hapus kedua halaman (admin tidak membuat/mengubah produk seller), atau buat endpoint admin bila memang dibutuhkan. |
+| F-43 | Produk admin | Halaman `/admin/product/create` dan `/admin/product/edit/[id]` tidak ditautkan dari mana pun dan memanggil `/product/create` & `/product/update/{id}` yang ber-`@CurrentSeller`; admin selalu ditolak 403. Halaman juga memakai `alert()` untuk validasi gambar | Rendah | TODO | Keputusan 2026-11-20: jangan dihapus dulu. Nanti: hapus kedua halaman, atau buat endpoint admin bila admin memang perlu membuat/mengubah produk seller. |
 | F-44 | Detail produk | Ulasan tidak pernah dimuat saat halaman produk dibuka: "( 0 ulasan )" dan tab ulasan kosong sampai pengunjung mengubah filter | Sedang | SELESAI | Fetch ulasan juga memantau `product.id`. Tes regresi di `catalog.spec.ts`. |
+| F-45 | Chat | Kirim pesan gagal (mis. ditolak BE) mengosongkan pesan yang diketik beserta lampirannya, di chat buyer, seller, dan admin | Rendah | SELESAI | Isian dikosongkan hanya saat terkirim. Tes regresi di `chat.spec.ts`. |
 ---
 
 ## F-01 — Kredensial bocor ke URL jika form ter-submit sebelum hidrasi
@@ -702,11 +703,12 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-43 — Halaman create/edit produk admin yatim dan tidak bisa dipakai
 
 - **Lokasi:** `app/pages/admin/product/create/index.vue`, `app/pages/admin/product/edit/[[id]].vue`
-- **Status:** PERLU KONFIRMASI
+- **Status:** TODO (keputusan 2026-11-20: halaman dibiarkan, jangan dihapus dulu)
 - **Gejala:** Tidak ada tautan ke kedua halaman (daftar, review, dan detail admin hanya menautkan `/admin/product/view`).
   Halaman memakai `createProduct`/`updateProduct` yang memanggil endpoint seller (`@CurrentSeller`), sehingga admin
   ditolak 403. Validasi gambar memakai `alert()`.
-- **Perlu dikonfirmasi:** Hapus kedua halaman? Bila admin memang perlu mengubah produk seller, butuh endpoint admin baru.
+- **Todo:** Putuskan nanti: hapus kedua halaman, atau buat endpoint admin (BE) bila admin perlu membuat/mengubah produk
+  seller. Sampai itu, jangan menautkan halaman ini dari menu karena admin akan selalu ditolak 403.
 
 ---
 ## F-44 — Ulasan produk tidak dimuat saat halaman dibuka
@@ -719,3 +721,16 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
   tidak pernah dipanggil: jumlah ulasan tampil 0 dan calon pembeli tidak melihat ulasan, padahal ulasan adalah
   bahan pertimbangan utama sebelum membeli.
 - **Tes:** `catalog.spec.ts` → "ulasan pembeli tampil; filter rating dikirim ke BE" (merah di kode lama).
+
+---
+## F-45 — Pesan chat hilang saat gagal dikirim
+
+- **Lokasi:** `sendChatHandler` di `app/pages/chat/index.vue`, `app/pages/seller/chat/index.vue`, `app/pages/admin/chat/index.vue`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-20):** Reset pesan, file, dan produk lampiran dipindah dari `finally` ke jalur sukses.
+- **Gejala:** Blok `finally` selalu mengosongkan kolom pesan, file, dan produk yang dilampirkan. Saat BE menolak
+  (mis. toko ditangguhkan) atau koneksi putus, toast error tampil tetapi pesan yang diketik hilang sehingga harus
+  diketik ulang. Pola sama dengan F-26 di diskusi pesanan.
+- **Catatan:** Cabang `message.trim() === ''` yang mengisi kolom dengan "Pesan wajib diisi" tidak bisa tercapai karena
+  tombol Kirim nonaktif untuk pesan kosong/spasi; dibiarkan sebagai kode mati.
+- **Tes:** `chat.spec.ts` → tiga tes "... (F-45)" (buyer, seller, admin; merah di kode lama).

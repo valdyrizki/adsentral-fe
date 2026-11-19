@@ -480,7 +480,11 @@ definePageMeta({
         icon: "material-symbols:check-circle-outline"
       })
 
+      // isian hanya dikosongkan bila terkirim; saat gagal, pesan & lampiran tetap untuk dicoba lagi (F-45)
       chatRequest.value.message = '' // reset textarea
+      chatRequest.value.file = null // reset file
+      chatRequest.value.productId = null // reset produk
+      attachedProduct.value = undefined
       await nextTick()
       scrollToBottom()
       
@@ -493,11 +497,7 @@ definePageMeta({
         duration: 3000
       })
     } finally {
-      chatRequest.value.message = '' // reset textarea
-      chatRequest.value.file = null // reset file
-      chatRequest.value.productId = null // reset file
       isSubmitting.value = false
-      attachedProduct.value = undefined
 
       await refreshConversations()
       await refreshChat()
