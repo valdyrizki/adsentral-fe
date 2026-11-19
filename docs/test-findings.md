@@ -9,7 +9,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## Rencana & catatan
 
 - **Cakupan tes** (modul yang sudah/belum dites, prioritas): lihat **`docs/test-progress.md`**. Dokumen ini hanya berisi bug.
-- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
+- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka. Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
   composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
   Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
 - **Setelah memperbaiki temuan:** ubah statusnya di sini menjadi `SELESAI`, hapus `test.fail` di spec, dan ubah 🐞 → ✅
@@ -28,17 +28,17 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-04 | Keranjang | Pengecekan saldo mengabaikan biaya aplikasi | Sedang | PERLU KONFIRMASI | Tanya BE: untuk SALDO, apakah biaya aplikasi ikut dipotong & voucher mengurangi potongan? Jika ya, bandingkan dengan `orderTotal`. |
 | F-05 | Pembayaran (buyer) | Nominal transfer di info rekening/WhatsApp ≠ Total Tagihan | Tinggi | PERLU KONFIRMASI | Hampir pasti harus `total_amount` (agar kode unik ikut ditransfer). Konfirmasi lalu ubah di instruksi transfer & link WA. |
 | F-06 | Pembayaran (admin) | "Tolak" memanggil `/payment/cancel`, bukan `/payment/reject` | Sedang | PERLU KONFIRMASI | Tanya: "Tolak" seharusnya `/payment/reject` + alasan? Tes lama mengunci perilaku `cancel`, ubah saat diperbaiki. `uploadPaymentProof` juga tidak dipakai. |
-| F-07 | Pembayaran (admin) | Filter "Semua Status" mengirim `status=ALL` ke BE | Sedang | TERBUKA | Fix satu baris: kirim kosong bila `ALL`. Ditandai `test.fail` di `payment.spec.ts`. |
+| F-07 | Pembayaran (admin) | Filter "Semua Status" mengirim `status=ALL` ke BE | Sedang | SELESAI | Filter "Semua Status" tidak lagi mengirim `status` (pola yang sama dengan F-30). |
 | F-08 | Pembayaran (buyer) | Deposit berstatus `PAID` tidak menampilkan keterangan apa pun | Rendah | PERLU KONFIRMASI | Tanya: status apa saja yang mungkin untuk deposit, dan apakah `DONE` masih dipakai BE? |
 | F-09 | Pesanan seller | Tombol "Batalkan" (PAID) memanggil placeholder `addToCart` | Tinggi | SELESAI | Tombol "Batalkan" placeholder dihapus; pembatalan lewat "Tolak Pesanan". Tes diubah jadi regresi. |
 | F-10 | Pesanan seller | Validasi pesan kosong memakai `window.alert()` | Rendah | SELESAI | Pesan kosong tampil sebagai toast, bukan `alert()`; sekaligus di halaman transaksi buyer (pesan kosong dan gagal kirim). |
-| F-11 | Pesanan seller & transaksi buyer | Countdown UNPAID/PAID langsung "habis" bila `expired_at`/`paid_at` null | Sedang | TERBUKA | Fix: pakai `getPaymentExpiry` & `getTxConfirmCountdown`. Ditandai `test.fail` di seller-order & transaction. |
+| F-11 | Pesanan seller & transaksi buyer | Countdown UNPAID/PAID langsung "habis" bila `expired_at`/`paid_at` null | Sedang | SELESAI | Countdown UNPAID di halaman seller & buyer memakai `getPaymentExpiry` (`expired_at`, atau `created_at` + 24 jam seperti scheduler BE); tombol bayar buyer tetap tampil. Countdown konfirmasi PAID tanpa `paid_at` tidak diubah (status PAID selalu punya `paid_at`). |
 | F-12 | Pesanan seller | Aksi permanen tanpa dialog konfirmasi (terima pesanan, terima pembatalan) | Sedang | PERLU KONFIRMASI | Tanya: perlu `useConfirm()`? Sekalian perjelas label "Setujui/Tolak Pembatalan" yang mudah tertukar. |
 | F-13 | Pesanan seller | Tolak 409 di halaman detail tidak menutup modal (daftar menutup) | Rendah | TERBUKA | Fix: tutup modal saat `isStaleActionError`, samakan dengan halaman daftar. |
 | F-14 | Pesanan seller | Tombol "Kirim Orderan" tetap muncul di DELIVERED/DONE/ARBITRAGE | Rendah | PERLU KONFIRMASI | Tanya: di status mana seller boleh kirim ulang orderan? (`REJECT` kemungkinan perlu.) |
 | F-15 | Pesanan seller | Kode mati di daftar pesanan (`handleReject`, tombol produk ACTIVE/INACTIVE) | Rendah | TERBUKA | Bersih-bersih: hapus `handleReject`, tombol status produk & `console.log`. |
 | F-16 | Transaksi buyer | Tombol "Batalkan", "Beli Lagi", "Tangguhkan" (daftar) memanggil placeholder `alert()` | Tinggi | SELESAI | "Beli Lagi" → halaman produk, "Tangguhkan" (daftar) → detail transaksi, "Batalkan" UNPAID dihapus (pembatalan dari halaman pembayaran, membatalkan seluruh isi pembayaran). Tes diubah jadi regresi. |
-| F-17 | Transaksi buyer | Form "Edit Penilaian" tidak terisi penilaian sebelumnya | Sedang | TERBUKA | Fix: isi form dari review lama lewat `watch`. Ditandai `test.fail`. |
+| F-17 | Transaksi buyer | Form "Edit Penilaian" tidak terisi penilaian sebelumnya | Sedang | SELESAI | Form "Edit Penilaian" diisi dari review BUYER (`reviews.find(r => r.user_type === 'BUYER')`); edit tanpa perubahan mengirim nilai lama. Validasi komentar kosong tidak ditambah karena komentar opsional di BE. |
 | F-18 | Transaksi buyer | Filter status buyer tidak punya `REJECT`, `REJECTED`, `CANCEL_REQUEST` | Rendah | PERLU KONFIRMASI | Tanya: sengaja disembunyikan? Apakah `/tx/buyer` menerima ketiga status itu? |
 | F-19 | Garansi buyer | `/guarantee` tidak dilindungi login (tidak ada di `authRequiredRoutes`) | Sedang | SELESAI | `/guarantee` dan `/penalty` masuk `authRequiredRoutes`: pengunjung diarahkan ke `/login?redirect=...` tanpa memanggil BE. |
 | F-20 | Garansi, withdrawal, penalty & deposit | Pesan error BE hilang (toast `[POST] "/backend/...": 409 Conflict` / "Conflict") & 409 tidak memuat ulang | Sedang | SELESAI | `useApi` memasang pesan BE ke `message` dan `statusMessage` error HTTP (status, `data`, `response` tetap); reload saat 403/409 ditambahkan di detail garansi seller dan batal deposit (penarikan sudah reload). |
@@ -150,7 +150,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-07 — Filter "Semua Status" mengirim `status=ALL` ke BE
 
 - **Lokasi:** `app/pages/admin/payment/index.vue:286` (`fetchAllPayments(..., filterStatus.value)`)
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Filter "Semua Status" tidak lagi mengirim `status` (pola yang sama dengan F-30).
 - **Gejala:** Nilai default filter `'ALL'` diteruskan apa adanya, dan `status || undefined` di composable tidak
   menyaringnya. Request menjadi `GET /payment/all?status=ALL`. Halaman admin lain (finance, payment-channel,
   unprocessed payments) sudah mengubah `'ALL'` menjadi `undefined`. Jika BE tidak mengenal `ALL`, daftar bisa
@@ -198,7 +199,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-11 — Countdown langsung "habis" bila `expired_at` / `paid_at` null
 
 - **Lokasi:** `app/pages/seller/order/[id].vue` → `updateCountdown` (UNPAID) dan `updateConfirmCountdown` (PAID)
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Countdown UNPAID di halaman seller & buyer memakai `getPaymentExpiry` (`expired_at`, atau `created_at` + 24 jam seperti scheduler BE); tombol bayar buyer tetap tampil. Countdown konfirmasi PAID tanpa `paid_at` tidak diubah (status PAID selalu punya `paid_at`).
 - **Gejala:** `countdownSeconds` diawali 0, dan `updateCountdown` langsung `return` jika `expired_at` null. Akibatnya
   transaksi UNPAID tanpa `expired_at` (data lama) langsung menampilkan **"Waktu Pembayaran Habis! Transaksi akan
   dibatalkan otomatis"**. Padahal menurut `docs/domain-glossary.md`, fallback-nya `created_at` + 24 jam (sudah
@@ -277,7 +279,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-17 — Form "Edit Penilaian" tidak terisi penilaian sebelumnya
 
 - **Lokasi:** `app/pages/transaction/[id].vue` → `reviewRequest`, `handleReviewUpdate`
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Form "Edit Penilaian" diisi dari review BUYER (`reviews.find(r => r.user_type === 'BUYER')`); edit tanpa perubahan mengirim nilai lama. Validasi komentar kosong tidak ditambah karena komentar opsional di BE.
 - **Gejala:** `reviewRequest` diinisialisasi `{ rating: 5, comment: '' }` dan tidak pernah diisi dari `reviews`. Jika
   buyer sudah memberi penilaian (misalnya ⭐3 "Lumayan"), form edit tetap menampilkan ⭐5 dengan komentar kosong. Klik
   "Edit Penilaian" tanpa mengubah apa pun akan menimpa penilaian lama dengan ⭐5 dan komentar kosong. Tidak ada validasi

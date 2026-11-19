@@ -282,20 +282,25 @@ test.describe('Detail transaksi buyer', () => {
     await expect(main(page).getByRole('button', { name: 'Edit Penilaian' })).toBeVisible()
   })
 
-  test('edit penilaian: form terisi penilaian sebelumnya', async ({ page, mockApi }) => {
-    // Bug diketahui: form edit memakai default (rating 5, komentar kosong) (docs/test-findings.md F-17).
-    test.fail()
+  test('edit penilaian: form terisi penilaian sebelumnya; simpan tanpa ubah tidak menimpa (F-17)', async ({ page, mockApi }) => {
     const tx = makeTx('TX-1', 'PAY-1', { status: 'COMPLETE', done_at: hoursAgo(30) })
     mockBuyerDetail(mockApi, () => tx, () => [makeReview({ rating: 3, comment: 'Lumayan' })])
+    let body: unknown = null
+    mockApi.on('PATCH', '/review/update', (route) => {
+      body = route.request().postDataJSON()
+      return ok(makeReview({ rating: 3, comment: 'Lumayan' }))
+    })
 
     await gotoHydrated(page, '/transaction/TX-1')
     await expect(main(page).getByRole('button', { name: 'Edit Penilaian' })).toBeVisible()
     await expect(main(page).getByText('Penilaian Kamu:').locator('..').getByRole('textbox')).toHaveValue('Lumayan', { timeout: 3000 })
+
+    await main(page).getByRole('button', { name: 'Edit Penilaian' }).click()
+    await expect(page.getByText('Penilaian terkirim').first()).toBeVisible()
+    expect(body).toEqual({ transaction_id: 'TX-1', rating: 3, comment: 'Lumayan' })
   })
 
   test('UNPAID tanpa expired_at: countdown created_at + 24 jam & tombol bayar tampil', async ({ page, mockApi }) => {
-    // Bug diketahui: langsung "Waktu Pembayaran Habis!" & tombol bayar hilang (docs/test-findings.md F-11).
-    test.fail()
     mockBuyerDetail(mockApi, () => makeTx('TX-1', 'PAY-1', { status: 'UNPAID', created_at: hoursAgo(1), expired_at: null }))
 
     await gotoHydrated(page, '/transaction/TX-1')

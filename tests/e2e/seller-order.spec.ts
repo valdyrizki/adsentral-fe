@@ -336,8 +336,6 @@ test.describe('Detail pesanan seller', () => {
   })
 
   test('UNPAID tanpa expired_at: countdown memakai created_at + 24 jam', async ({ page, mockApi }) => {
-    // Bug diketahui: langsung "Waktu Pembayaran Habis!" (docs/test-findings.md F-11). Hapus setelah diperbaiki.
-    test.fail()
     mockSellerDetail(mockApi, () => makeTx('TX-1', 'PAY-1', { status: 'UNPAID', created_at: hoursAgo(1), expired_at: null }))
 
     await gotoHydrated(page, '/seller/order/TX-1')

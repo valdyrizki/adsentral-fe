@@ -269,9 +269,6 @@ test.describe('Konfirmasi pembayaran (admin)', () => {
   })
 
   test('filter "Semua Status" tidak mengirim parameter status', async ({ page, mockApi }) => {
-    // Bug diketahui: saat ini `status=ALL` ikut terkirim (docs/test-findings.md F-07).
-    // Hapus baris di bawah setelah diperbaiki.
-    test.fail()
     const queries = mockAdminList(mockApi, () => [])
 
     await gotoHydrated(page, '/admin/payment')

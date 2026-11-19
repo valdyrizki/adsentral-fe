@@ -283,7 +283,7 @@ import type { StringIdRequest } from '~/types/StringIdRequest'
     refresh,
   } = await useAsyncData<PageResponse<PaymentResponse>>(
     'admin-payments',
-    () => fetchAllPayments(page.value, perPageValue.value, keyword.value, filterStatus.value),
+    () => fetchAllPayments(page.value, perPageValue.value, keyword.value, filterStatus.value === 'ALL' ? '' : filterStatus.value),
     { watch: [page, perPageValue, keyword, filterStatus], server: false }
   )
 

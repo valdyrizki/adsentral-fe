@@ -1254,8 +1254,9 @@ const isImage = (format?: string) => {
   let countdownTimer: ReturnType<typeof setInterval> | null = null
 
   const updateCountdown = () => {
-    if (!transaction.value?.expired_at) return
-    countdownSeconds.value = Math.max(0, dayjs(transaction.value.expired_at).diff(dayjs(), 'second'))
+    if (!transaction.value) return
+    // expired_at null (transaksi lama) -> created_at + 24 jam, sama dengan scheduler BE (F-11)
+    countdownSeconds.value = Math.max(0, getPaymentExpiry(transaction.value).diff(dayjs(), 'second'))
   }
 
   const countdownDisplay = computed(() => {

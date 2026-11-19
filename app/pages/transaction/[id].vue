@@ -1003,6 +1003,19 @@ const selectRating = ref<SelectItem[]>(
     }
   )
 
+  // Form "Edit Penilaian" diisi penilaian buyer yang sudah ada, agar edit tanpa perubahan tidak menimpanya (F-17)
+  watch(
+    reviews,
+    (list) => {
+      const mine = list?.find((r) => r.user_type === 'BUYER')
+      if (mine) {
+        reviewRequest.value.rating = mine.rating
+        reviewRequest.value.comment = mine.comment ?? ''
+      }
+    },
+    { immediate: true },
+  )
+
   const fileOrderPage = ref(0)
   const fileOrderSize = ref(1)
 
@@ -1322,8 +1335,9 @@ const isImage = (format?: string) => {
   let countdownTimer: ReturnType<typeof setInterval> | null = null
 
   const updateCountdown = () => {
-    if (!transaction.value?.expired_at) return
-    countdownSeconds.value = Math.max(0, dayjs(transaction.value.expired_at).diff(dayjs(), 'second'))
+    if (!transaction.value) return
+    // expired_at null (transaksi lama) -> created_at + 24 jam, sama dengan scheduler BE (F-11)
+    countdownSeconds.value = Math.max(0, getPaymentExpiry(transaction.value).diff(dayjs(), 'second'))
   }
 
   const countdownDisplay = computed(() => {
