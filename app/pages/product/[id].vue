@@ -600,7 +600,8 @@ const {
   },
   {
     server: false,
-    watch: [reviewPage, reviewRating, reviewKeywordDebounced],
+    // product.id: fetch pertama berjalan sebelum produk termuat (return null), jadi ulang saat id tersedia (F-44)
+    watch: [() => product.value?.id, reviewPage, reviewRating, reviewKeywordDebounced],
   }
 )
 

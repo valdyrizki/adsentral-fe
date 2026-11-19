@@ -25,7 +25,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 |---|---|---|---|---|---|
 | 1 | Auth: login & guard rute | `auth.spec.ts`, `session.spec.ts`, `register-logout.spec.ts` | ✅ | — | F-01 (kredensial bocor ke URL) sudah diperbaiki. F-02 selesai (tanpa peringatan hydration di `/login`). `/guarantee` & `/penalty` wajib login (F-19 selesai). |
 | 2 | Profil buyer | — | ⬜ | P2 | Halaman sederhana: tampil profil + `updateProfile`. |
-| 3 | Katalog publik (beranda, kategori, produk, merchant, pencarian) | — | ⬜ | P2 | Halaman SSR; data publik juga lewat mock BE SSR (`mock-backend.mjs`), bukan hanya `mockApi`. Detail produk adalah pintu masuk keranjang. |
+| 3 | Katalog publik (beranda, kategori, produk, merchant, pencarian) | `catalog.spec.ts` | ✅ | — | Data katalog dimuat di klien (`server: false`), cukup `mockApi`. Ulasan produk tidak pernah dimuat (F-44, selesai). |
 | 4 | Keranjang & checkout | `checkout.spec.ts` | ✅ | — | F-03 & F-04 selesai (saldo dibandingkan dengan total termasuk biaya aplikasi). Belum: ubah qty/hapus item, multi-merchant. |
 | 5 | Pembayaran buyer | `payment.spec.ts` | Sebagian | P2 (daftar `/payment`) | F-05 (nominal transfer = total tagihan) & F-08 (keterangan deposit PAID/EXPIRED) selesai. |
 | 6 | Transaksi buyer | `transaction.spec.ts` | ✅ | — | F-11, F-17, F-18 selesai. Tarik pengajuan batal lewat konfirmasi (F-12). |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **307 tes** di 33 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-19 dengan `npx playwright test --list`).
+Total saat ini: **321 tes** di 34 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-19 dengan `npx playwright test --list`).
 
 ---
 
@@ -101,12 +101,12 @@ Total saat ini: **307 tes** di 33 spec, tanpa tes `test.fail` (semua bug yang pu
 
 | Halaman / fungsi | Status | Catatan |
 |---|---|---|
-| Beranda `/`: daftar produk (`getProducts`), preview kategori | ⬜ P2 | |
-| `/category`, `/category/[id]` (`fetchCategories`, `fetchProductsByCategoryId`) | ⬜ P2 | |
-| `/product/[id]`: detail, ulasan (`fetchReviewByProduct`), tambah ke keranjang, info merchant | ⬜ P2 | Penting: pintu masuk keranjang |
-| `/merchant/[id]`: profil toko & produk (`fetchMerchantById`, `fetchProductsByMerchantId`) | ⬜ P2 | |
-| `/search`: kata kunci, filter, kosong | ⬜ P2 | |
-| Produk habis/nonaktif tidak bisa ditambah ke keranjang | ⬜ P2 | |
+| Beranda `/`: daftar produk (`getProducts`), preview kategori, stok habis, error BE | ✅ | |
+| `/category/[id]` (`fetchProductsByCategoryId`), kosong | ✅ | `/category` (semua kategori) belum |
+| `/product/[id]`: detail, ulasan & filter rating, tambah ke keranjang (cookie), Beli Sekarang, batas stok, info merchant | ✅ | F-44 (selesai) |
+| `/merchant/[id]`: profil toko & produk (`fetchMerchantById`, `fetchProductsByMerchantId`) | ✅ | |
+| `/search`: kata kunci, kosong | ✅ | Urutan (sort) belum |
+| Produk habis/nonaktif tidak bisa ditambah ke keranjang; AUTO stok 0 tetap bisa | ✅ | |
 
 ## 4. Keranjang & checkout — `checkout.spec.ts`
 
@@ -374,5 +374,5 @@ Cukup satu smoke test (halaman terbuka tanpa error) — ⬜ P3.
 ## Urutan pengerjaan yang disarankan
 
 1. **P1:** selesai 2026-11-19 (produk & stok seller, verifikasi seller + admin, daftar toko, rekening bank, unprocessed payment, register/logout, daftar & review produk admin).
-2. **P2:** katalog publik → chat → notifikasi → master data admin → keuangan admin → system settings → sisa (profil, `/payment`, diskusi buyer).
+2. **P2:** ~~katalog publik~~ (selesai) → chat → notifikasi → master data admin → keuangan admin → system settings → sisa (profil, `/payment`, diskusi buyer).
 3. **P3:** dashboard, `/admin/stock`, polling badge, smoke test halaman statis.

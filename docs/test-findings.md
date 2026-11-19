@@ -66,6 +66,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 
 | F-42 | Produk admin | Filter "Semua Status" di `/admin/product` mengirim `status=ALL`; BE memetakan `status` ke enum sehingga 400 dan daftar gagal dimuat setelah admin kembali dari filter lain | Sedang | SELESAI | `getAllProductsAdmin` tidak mengirim `status` bila `'ALL'` (pola F-07/F-30). Tes regresi di `admin-product-list.spec.ts`. Halaman admin lain sudah menangani `'ALL'`. |
 | F-43 | Produk admin | Halaman `/admin/product/create` dan `/admin/product/edit/[id]` tidak ditautkan dari mana pun dan memanggil `/product/create` & `/product/update/{id}` yang ber-`@CurrentSeller`; admin selalu ditolak 403. Halaman juga memakai `alert()` untuk validasi gambar | Rendah | PERLU KONFIRMASI | Hapus kedua halaman (admin tidak membuat/mengubah produk seller), atau buat endpoint admin bila memang dibutuhkan. |
+| F-44 | Detail produk | Ulasan tidak pernah dimuat saat halaman produk dibuka: "( 0 ulasan )" dan tab ulasan kosong sampai pengunjung mengubah filter | Sedang | SELESAI | Fetch ulasan juga memantau `product.id`. Tes regresi di `catalog.spec.ts`. |
 ---
 
 ## F-01 — Kredensial bocor ke URL jika form ter-submit sebelum hidrasi
@@ -706,3 +707,15 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
   Halaman memakai `createProduct`/`updateProduct` yang memanggil endpoint seller (`@CurrentSeller`), sehingga admin
   ditolak 403. Validasi gambar memakai `alert()`.
 - **Perlu dikonfirmasi:** Hapus kedua halaman? Bila admin memang perlu mengubah produk seller, butuh endpoint admin baru.
+
+---
+## F-44 — Ulasan produk tidak dimuat saat halaman dibuka
+
+- **Lokasi:** `app/pages/product/[id].vue` → `useAsyncData` ulasan
+- **Status:** SELESAI
+- **Perbaikan (2026-11-20):** `watch` ditambah `() => product.value?.id`.
+- **Gejala:** Produk dan ulasan sama-sama `server: false`. Fetch ulasan pertama berjalan saat produk belum termuat
+  sehingga mengembalikan `null`, dan `watch` hanya memantau halaman/rating/kata kunci. Akibatnya `/review/product/{id}`
+  tidak pernah dipanggil: jumlah ulasan tampil 0 dan calon pembeli tidak melihat ulasan, padahal ulasan adalah
+  bahan pertimbangan utama sebelum membeli.
+- **Tes:** `catalog.spec.ts` → "ulasan pembeli tampil; filter rating dikirim ke BE" (merah di kode lama).
