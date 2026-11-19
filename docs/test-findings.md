@@ -62,6 +62,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-38 | Stok seller | Badge "Aktif/Terkirim/Dikembalikan" di `/seller/stock` hanya menghitung item di halaman aktif, padahal tampil di sebelah total semua item | Rendah | TERBUKA | Pola sama dengan F-23: hitungan dari BE (ringkasan per status) atau beri label "di halaman ini". |
 | F-39 | Verifikasi (admin) | Setujui/tolak/edit verifikasi menampilkan "Bad Request", bukan pesan BE (NIK dipakai akun lain, sudah direview admin lain); status basi tidak memuat ulang; edit mengirim semua field walau tertulis "hanya field yang diubah" | Sedang | TERBUKA | `rethrowApiError` di `composables/api/verification.ts` + `apiErrorMessage` di halaman, muat ulang saat 400 "sudah direview". Ditandai `test.fail`. |
 | F-40 | Daftar toko | `/merchant/create`: logo tidak dicek padahal wajib di BE, nama kosong lolos, GIF diterima padahal BE menolak, pesan BE hilang ("Bad Request"/"Conflict"), pesan berbahasa Inggris, pengunjung tidak diarahkan ke login | Sedang | TERBUKA | Validasi FE disamakan dengan BE (logo wajib, nama 5–50, JPG/PNG/WEBP ≤ 2 MB), `rethrowApiError`, tambah `/merchant/create` ke rute wajib login. Ditandai `test.fail`. |
+| F-41 | Rekening bank | Simpan rekening ditolak BE tampil "Bad Request" (pesan BE hilang); gagal memuat rekening (500/timeout) tampil "Belum ada rekening bank", bisa membuat seller mengira rekeningnya hilang | Sedang | TERBUKA | `apiErrorMessage` di halaman; bedakan 404 (belum ada) dari error lain. Ditandai `test.fail`. |
 
 ---
 
@@ -631,3 +632,17 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
     setelah menekan Save.
 - **Usulan:** Samakan validasi dengan BE, `rethrowApiError`, teks Indonesia, tambahkan rute ke `authRequiredRoutes`.
 - **Tes:** `verification.spec.ts` → "F-40: ..." (`test.fail`).
+
+---
+## F-41 — Rekening bank: pesan BE hilang dan gagal muat tampil kosong
+
+- **Lokasi:** `app/pages/seller/bank-account/index.vue`, `app/composables/api/bank-account.ts`
+- **Status:** TERBUKA
+- **Gejala:**
+  - `handleSubmit` memakai `err.statusMessage` (teks status HTTP). Pesan BE, mis. "Nomor rekening tidak valid", hilang.
+  - Halaman tidak punya state error. BE membalas 404 bila rekening belum ada, jadi `fetchBankAccount` melempar dan
+    halaman menampilkan "Belum ada rekening bank". Karena semua error diperlakukan sama, 500/timeout juga tampil
+    sebagai "belum ada rekening", padahal rekening seller tersimpan.
+- **Usulan:** `apiErrorMessage(err)` di form; di `fetchBankAccount`, 404 → `null`, error lain dilempar dan halaman
+  menampilkan alert error dengan tombol muat ulang.
+- **Tes:** `bank-account.spec.ts` → dua tes "F-41: ..." (`test.fail`).

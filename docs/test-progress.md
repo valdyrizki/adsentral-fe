@@ -23,7 +23,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 
 | # | Modul | Spec | Status | Prioritas sisa | Catatan |
 |---|---|---|---|---|---|
-| 1 | Auth: login & guard rute | `auth.spec.ts`, `session.spec.ts` | Sebagian | P1 (register, logout) | F-01 (kredensial bocor ke URL) sudah diperbaiki. F-02 hydration mismatch `/login` belum dites. `/guarantee` lolos tanpa login (F-19). |
+| 1 | Auth: login & guard rute | `auth.spec.ts`, `session.spec.ts`, `register-logout.spec.ts` | ✅ | — | F-01 (kredensial bocor ke URL) sudah diperbaiki. F-02 hydration mismatch `/login` belum dites. `/guarantee` lolos tanpa login (F-19). |
 | 2 | Profil buyer | — | ⬜ | P2 | Halaman sederhana: tampil profil + `updateProfile`. |
 | 3 | Katalog publik (beranda, kategori, produk, merchant, pencarian) | — | ⬜ | P2 | Halaman SSR; data publik juga lewat mock BE SSR (`mock-backend.mjs`), bukan hanya `mockApi`. Detail produk adalah pintu masuk keranjang. |
 | 4 | Keranjang & checkout | `checkout.spec.ts` | ✅ | — | Cek saldo memakai nilai lama (F-03) dan mengabaikan biaya aplikasi (F-04, perlu konfirmasi). Belum: ubah qty/hapus item, multi-merchant. |
@@ -33,13 +33,13 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 8 | Saldo, deposit & transfer | `balance.spec.ts` | 🐞 | — | Metode default `'QRIS'` tidak valid (F-33). Riwayat gagal tampil "kosong" (F-34). Error BE hilang (F-20). |
 | 9 | Penalty (buyer, seller, admin) | `penalty.spec.ts` | 🐞 | P3 (`/admin/penalty-user`) | Normalisasi ID & form edit basi (F-29). `status=ALL` & WARNING tampil "Normal" (F-30). Slideover basi (F-31). Halaman yatim & rule BUYER bisa ke seller (F-32). |
 | 10 | Pesanan seller | `seller-order.spec.ts` | 🐞 | — | "Batalkan" PAID memanggil `addToCart` (F-09, tinggi). `alert()` pesan kosong (F-10). Belum: seller ajukan arbitrase, kirim via file/stok. |
-| 11 | Penarikan dana & rekening bank seller | `withdrawal.spec.ts` | Sebagian | P1 (rekening bank) | `WD_FEE` diam-diam jatuh ke Rp 2.500 (F-23). Batal basi 409 (F-20). Halaman `/seller/bank-account` belum dites. |
+| 11 | Penarikan dana & rekening bank seller | `withdrawal.spec.ts`, `bank-account.spec.ts` | 🐞 | — | `WD_FEE` diam-diam jatuh ke Rp 2.500 (F-23). Batal basi 409 (F-20). Rekening bank: pesan BE hilang & gagal muat tampil "belum ada rekening" (F-41). |
 | 12 | Produk seller | `seller-product.spec.ts` | 🐞 | P2 (REJECTED/SUSPEND detail) | Pesan error BE hilang (F-35). Edit produk Otomatis selalu minta unggah ulang file (F-36, tinggi). Teks menyesatkan (F-37). |
 | 13 | Stok seller | `seller-stock.spec.ts` | ✅ | P2 (detail & tambah ulang item RETURNED, import CSV) | Hitungan Aktif/Terkirim hanya halaman aktif (F-38, rendah). |
 | 14 | Verifikasi seller & daftar merchant | `verification.spec.ts`, `security.spec.ts`, `verification-photos-purged.spec.ts` | 🐞 | — | Form daftar toko tidak sesuai aturan BE dan pesan BE hilang (F-40). |
 | 15 | Dashboard & profil toko seller | — | ⬜ | P3 | Riwayat penalty di dashboard sudah tercakup `penalty.spec.ts`. |
 | 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | 🐞 | P3 (dashboard admin) | Refund 400 menutup modal (F-24). GET membuang pesan BE (F-26). `alert()` diskusi (F-27). Filter & teks Cancel Arbitrage (F-28). |
-| 17 | Pembayaran admin | `payment.spec.ts` | Sebagian | P1 (unprocessed payment) | "Tolak" memanggil `/payment/cancel` (F-06, perlu konfirmasi). Filter `status=ALL` (F-07). |
+| 17 | Pembayaran admin | `payment.spec.ts`, `admin-unprocessed-payment.spec.ts` | 🐞 | — | "Tolak" memanggil `/payment/cancel` (F-06, perlu konfirmasi). Filter `status=ALL` (F-07). |
 | 18 | Penarikan dana admin | `withdrawal.spec.ts` | 🐞 | — | Rumus "Potensi Anomali" ikut menghitung saldo deposit (F-22). Statistik hanya halaman aktif (F-23). |
 | 19 | Produk & stok admin (review, suspend) | `admin-product-reason.spec.ts`, `admin-product-status.spec.ts` | Sebagian | P1 | Halaman create/edit admin memakai ulang form produk seller; tes setelah modul 12. |
 | 20 | Verifikasi seller (admin) | `verification.spec.ts`, `admin-verification-revoke.spec.ts`, `admin-verification-badge.spec.ts` | 🐞 | — | Setujui/tolak/edit membuang pesan BE dan tidak memuat ulang saat status basi (F-39). |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **272 tes** di 29 spec, dengan 32 tes `test.fail` untuk bug yang sudah diketahui (dihitung 2026-11-19 dengan `npx playwright test --list`).
+Total saat ini: **288 tes** di 32 spec, dengan 34 tes `test.fail` untuk bug yang sudah diketahui (dihitung 2026-11-19 dengan `npx playwright test --list`).
 
 ---
 
@@ -74,8 +74,8 @@ Total saat ini: **272 tes** di 29 spec, dengan 32 tes `test.fail` untuk bug yang
 | User login tidak bisa buka `/login` | ✅ | |
 | Buyer ditolak masuk `/admin*` dan `/seller*` | ✅ | |
 | Hydration mismatch di `/login` | 🐞 | F-02 (dicatat, belum ada tes) |
-| Register (`registerUser`): validasi, body, error email terpakai | ⬜ P1 | |
-| Logout (`/user/logout`): sesi dibersihkan, redirect | ⬜ P1 | |
+| Register (`registerUser`): tombol nonaktif tanpa S&K, body + `accepted_terms`, validasi email & konfirmasi password, error email terpakai | ✅ | `register-logout.spec.ts` |
+| Logout (`/user/logout`): sesi dibersihkan, redirect, rute seller tertutup lagi; BE gagal tetap logout | ✅ | `register-logout.spec.ts` |
 | Refresh token: 401 `TOKEN_EXPIRED` → refresh → retry sekali, hasil retry sampai ke pemanggil | ✅ | `session.spec.ts` |
 | 401 serentak → satu refresh; dua tab → refresh diantrekan (Web Locks) | ✅ | `session.spec.ts` |
 | Refresh gagal (400/401/403) → `clearAuth()`, redirect `/login` + pesan "Sesi berakhir", tanpa loop | ✅ | `session.spec.ts` |
@@ -225,7 +225,8 @@ Total saat ini: **272 tes** di 29 spec, dengan 32 tes `test.fail` untuk bug yang
 | Ajukan penarikan: validasi, biaya, body; ditolak BE | ✅ | F-23 dicatat |
 | Belum ada rekening → form nonaktif | ✅ | |
 | Batalkan penarikan / batal basi (409) | ✅ / 🐞 | F-20 |
-| `/seller/bank-account`: lihat & simpan rekening (`saveBankAccount`), validasi, error BE | ⬜ P1 | |
+| `/seller/bank-account`: tambah (404 = belum ada), ubah dengan data lama, badge cocok nama KTP, validasi | ✅ | `bank-account.spec.ts` |
+| Rekening bank: pesan BE saat simpan ditolak, gagal muat (500) | 🐞 | F-41 |
 
 ## 12. Produk seller — `pages/seller/product/*`
 
@@ -282,7 +283,7 @@ Total saat ini: **272 tes** di 29 spec, dengan 32 tes `test.fail` untuk bug yang
 | Tombol konfirmasi hanya untuk UNPAID manual/deposit | ✅ | |
 | Konfirmasi dari daftar + 409; tolak dari detail; batal di dialog | ✅ | F-06 dicatat |
 | Filter "Semua Status" | 🐞 | F-07 |
-| `/admin/payments/unprocessed`: daftar & resolve (`resolveUnprocessedPayment`) | ⬜ P1 | |
+| `/admin/payments/unprocessed`: tab status, normalisasi camelCase, detail RESOLVED, tandai selesai (catatan wajib, ter-trim), 409 → muat ulang, error muat | ✅ | `admin-unprocessed-payment.spec.ts` |
 
 ## 18. Penarikan dana admin — `withdrawal.spec.ts`
 
@@ -371,6 +372,6 @@ Cukup satu smoke test (halaman terbuka tanpa error) — ⬜ P3.
 
 ## Urutan pengerjaan yang disarankan
 
-1. **P1:** produk & stok seller → review produk admin → verifikasi seller (seller + admin) → rekening bank → unprocessed payment → register/logout/refresh token.
+1. **P1:** selesai 2026-11-19 (produk & stok seller, verifikasi seller + admin, daftar toko, rekening bank, unprocessed payment, register/logout). Sisa P1 di modul 19: halaman create/edit produk admin.
 2. **P2:** katalog publik → chat → notifikasi → master data admin → keuangan admin → system settings → sisa (profil, `/payment`, diskusi buyer).
 3. **P3:** dashboard, `/admin/stock`, `/admin/penalty-user`, polling badge, smoke test halaman statis.
