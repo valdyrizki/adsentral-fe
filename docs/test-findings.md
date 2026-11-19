@@ -56,6 +56,10 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-32 | Penalty | Halaman `/admin/penalty-user` yatim (tanpa menu, duplikat `/admin/penalty`); statistik penalty user dihitung per halaman; rule target `BUYER` bisa dikenakan ke seller | Rendah | PERLU KONFIRMASI | Tanya: hapus `/admin/penalty-user`? Rule dibatasi sesuai role user? Kartu poin sebaiknya pakai `/user/penalty/stat`. |
 | F-33 | Deposit | Metode default `'QRIS'` bukan id metode mana pun → tombol "Deposit" nonaktif tanpa penjelasan | Rendah | TERBUKA | Fix: default `null` + petunjuk "Pilih metode pembayaran". Ditandai `test.fail`. |
 | F-34 | Deposit | Riwayat deposit gagal dimuat tampil "Belum ada riwayat deposit"; ref `error` tidak pernah diisi | Sedang | TERBUKA | Fix: tampilkan `errorDepositHistory` dengan `apiErrorMessage`. Ditandai `test.fail`. |
+| F-35 | Produk seller | Pesan error BE hilang saat buat/edit/tangguhkan/aktifkan produk (toast "Conflict" / "Bad Request") | Sedang | TERBUKA | Pola sama dengan F-20: `rethrowApiError` di `composables/api/product.ts`. Ditandai `test.fail`. |
+| F-36 | Produk seller | Edit produk Otomatis yang sudah punya file selalu ditolak "File lampiran otomatis wajib diupload" (cek field `auto_config_file_url` yang tidak ada) | Tinggi | TERBUKA | Fix: cek `product.auto_config?.file_url`. Ditandai `test.fail`. |
+| F-37 | Produk seller | Teks menyesatkan: aktifkan produk berkata "diaktifkan" padahal masuk review; edit produk aktif tidak memberi tahu produk kembali ke review dan toast berkata "membuat product"/"Simpan User"; pesan banding WA selalu menyebut NONACTIVE walau SUSPEND; petunjuk upload "SVG/GIF, 2MB, 1024px" berbeda dengan validasi (JPG/PNG/WEBP, 5MB, 1500px) | Rendah | TERBUKA | Perbaiki teks; validasi gambar memakai `alert()` (pola F-10). |
+| F-38 | Stok seller | Badge "Aktif/Terkirim/Dikembalikan" di `/seller/stock` hanya menghitung item di halaman aktif, padahal tampil di sebelah total semua item | Rendah | TERBUKA | Pola sama dengan F-23: hitungan dari BE (ringkasan per status) atau beri label "di halaman ini". |
 
 ---
 
@@ -553,3 +557,41 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 - **Usulan:** Pakai `errorDepositHistory` dengan `apiErrorMessage`, dan tambahkan state error untuk mutasi saldo.
 - **Tes:** `balance.spec.ts` → "riwayat deposit gagal dimuat..." (`test.fail`).
 
+---
+## F-35 — Pesan error BE hilang di aksi produk seller
+
+- **Lokasi:** `app/composables/api/product.ts` (`createProduct`, `updateProduct`, `deactivateProduct`, `activateProduct`)
+- **Status:** TERBUKA
+- **Gejala:** `catch` meneruskan `err.statusMessage`, yaitu teks status HTTP dari ofetch ("Conflict", "Bad Request"),
+  bukan `message` dari BE. Seller tidak tahu alasannya, mis. "Produk yg sudah di suspend/delete tidak bisa diedit",
+  "Category not found", atau "Qty maksimal tidak boleh lebih kecil dari qty minimal".
+- **Usulan:** Perbaiki bersama F-20/F-26 dengan `rethrowApiError`. Halaman create/edit juga menampilkan judul toast
+  "Gagal Simpan User".
+- **Tes:** `seller-product.spec.ts` → "F-35: gagal tangguhkan..." dan "F-35: error BE saat simpan..." (`test.fail`).
+
+---
+## F-36 — Edit produk Otomatis selalu meminta unggah ulang file
+
+- **Lokasi:** `app/pages/seller/product/edit/[[id]].vue`, `validateProduct`
+- **Status:** TERBUKA
+- **Gejala:** Validasi memeriksa `product.value?.auto_config_file_url`. Field itu tidak ada di `ProductResponse`
+  (file ada di `auto_config.file_url`), sehingga selalu `undefined`. Seller tidak bisa menyimpan perubahan apa pun
+  (harga, nama) pada produk Otomatis tanpa mengunggah ulang file lampiran. Tidak tertangkap `npm run build` karena
+  build tidak menjalankan pemeriksaan tipe.
+- **Usulan:** Ganti dengan `product.value?.auto_config?.file_url`.
+- **Tes:** `seller-product.spec.ts` → "F-36: edit produk Otomatis..." (`test.fail`).
+
+---
+## F-37 — Teks menyesatkan di halaman produk seller
+
+- **Lokasi:** `app/pages/seller/product/index.vue`, `create/index.vue`, `edit/[[id]].vue`
+- **Status:** TERBUKA
+- **Gejala:**
+  - "Aktifkan" pada produk INACTIVE menampilkan "Produk telah diaktifkan", padahal BE memindahkannya ke `REVIEW`.
+  - Edit produk `ACTIVE` mengembalikannya ke `REVIEW` (hilang dari katalog sampai disetujui admin), tanpa peringatan.
+    Toast sukses edit berbunyi "Berhasil membuat product", toast gagal "Gagal Simpan User".
+  - Pesan WA "Ajukan Banding" selalu menyebut status NONACTIVE, juga untuk produk SUSPEND.
+  - Petunjuk upload menyebut "SVG, PNG, JPG or GIF (max. 2MB)" dan "Resolusi max 1024x1024", sedangkan
+    `imageHelper` menerima JPG/PNG/WEBP, 5 MB, 1500×1500 (BE: JPG/PNG/WEBP, 5 MB). Validasi gagal memakai `alert()`.
+- **Usulan:** Sesuaikan teks; tampilkan catatan "Perubahan akan ditinjau admin" di form edit produk aktif; ganti
+  `alert()` dengan pesan di bawah field.

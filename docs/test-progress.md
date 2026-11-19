@@ -34,8 +34,8 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 9 | Penalty (buyer, seller, admin) | `penalty.spec.ts` | 🐞 | P3 (`/admin/penalty-user`) | Normalisasi ID & form edit basi (F-29). `status=ALL` & WARNING tampil "Normal" (F-30). Slideover basi (F-31). Halaman yatim & rule BUYER bisa ke seller (F-32). |
 | 10 | Pesanan seller | `seller-order.spec.ts` | 🐞 | — | "Batalkan" PAID memanggil `addToCart` (F-09, tinggi). `alert()` pesan kosong (F-10). Belum: seller ajukan arbitrase, kirim via file/stok. |
 | 11 | Penarikan dana & rekening bank seller | `withdrawal.spec.ts` | Sebagian | P1 (rekening bank) | `WD_FEE` diam-diam jatuh ke Rp 2.500 (F-23). Batal basi 409 (F-20). Halaman `/seller/bank-account` belum dites. |
-| 12 | Produk seller | — | ⬜ | P1 | Upload gambar perlu file fixture (maks 5 MB, JPG/PNG, ≤1500×1500). Form memakai rich text TipTap & setting publik. |
-| 13 | Stok seller | — | ⬜ | P1 | Bulk akun/file memakai alur cek `dryRun` lalu simpan; cek duplikat di `useStockDuplicateCheck`. |
+| 12 | Produk seller | `seller-product.spec.ts` | 🐞 | P2 (REJECTED/SUSPEND detail) | Pesan error BE hilang (F-35). Edit produk Otomatis selalu minta unggah ulang file (F-36, tinggi). Teks menyesatkan (F-37). |
+| 13 | Stok seller | `seller-stock.spec.ts` | ✅ | P2 (detail & tambah ulang item RETURNED, import CSV) | Hitungan Aktif/Terkirim hanya halaman aktif (F-38, rendah). |
 | 14 | Verifikasi seller & daftar merchant | — | ⬜ | P1 | `registerMerchant` & verifikasi dikirim sebagai FormData (upload dokumen). |
 | 15 | Dashboard & profil toko seller | — | ⬜ | P3 | Riwayat penalty di dashboard sudah tercakup `penalty.spec.ts`. |
 | 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | 🐞 | P3 (dashboard admin) | Refund 400 menutup modal (F-24). GET membuang pesan BE (F-26). `alert()` diskusi (F-27). Filter & teks Cancel Arbitrage (F-28). |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **189 tes** di 14 spec (termasuk `security.spec.ts`, `session.spec.ts`, `forgot-password.spec.ts` & `admin-user.spec.ts`), dengan 26 tes `test.fail` untuk bug yang sudah diketahui.
+Total saat ini: **255 tes** di 28 spec, dengan 29 tes `test.fail` untuk bug yang sudah diketahui (dihitung 2026-11-19 dengan `npx playwright test --list`).
 
 ---
 
@@ -231,21 +231,22 @@ Total saat ini: **189 tes** di 14 spec (termasuk `security.spec.ts`, `session.sp
 
 | Skenario | Status |
 |---|---|
-| Daftar produk + ringkasan (`getMyProducts`, `fetchProductSummary`), filter status | ⬜ P1 |
-| Buat produk (`createProduct`): validasi, upload gambar (`imageHelper`: ≤5 MB, JPG/PNG, ≤1500×1500), garansi, tipe akun, rich text | ⬜ P1 |
-| Edit produk (`fetchMyProductById`, `updateProduct`) | ⬜ P1 |
-| Aktifkan / nonaktifkan produk | ⬜ P1 |
+| Daftar produk + ringkasan (`fetchMyProduct`, `fetchProductSummary`), keterangan & aksi per status, pencarian | ✅ |
+| Buat produk (`createProduct`): validasi wajib, slug, estimasi pendapatan `TRX_FEE`, multipart MANUAL/STOCKING, wajib konfigurasi AUTO, tolak banner bukan gambar | ✅ (error BE: F-35) |
+| Edit produk (`fetchMyProductById`, `updateProduct`): form terisi, PATCH multipart, produk tidak ditemukan | ✅ (AUTO: F-36) |
+| Aktifkan / tangguhkan produk, daftar & ringkasan dimuat ulang | ✅ (error BE: F-35) |
 | Produk REJECTED / SUSPENDED: alasan tampil, aksi dibatasi | ⬜ P2 |
 
 ## 13. Stok seller — `pages/seller/stock/*`, `components/stock/*`
 
 | Skenario | Status |
 |---|---|
-| Daftar stok (`getMyAllStockItems`), filter status | ⬜ P1 |
-| Tambah stok satuan (`addProductStockItem`) & edit (`updateProductStockItem`) | ⬜ P1 |
-| Bulk akun: cek `dryRun` lalu simpan, deteksi duplikat (`useStockDuplicateCheck`) | ⬜ P1 |
-| Bulk file: cek `dryRun` lalu simpan | ⬜ P1 |
-| Hapus satu / bulk delete stok | ⬜ P1 |
+| Daftar stok (`getMyAllStockItems`): hitungan status, tautan transaksi, aksi hanya item ACTIVE, filter akun/status, reset | ✅ |
+| Tambah stok satuan (`addProductStockItem`): pilih produk STOCKING, tombol nonaktif bila kosong, multipart akun + catatan, UID dari nama file, 409 `ACCOUNT_DUPLICATE_SENT` → konfirmasi + `allowDuplicate`, 409 `ACCOUNT_DUPLICATE_ACTIVE` | ✅ |
+| Edit item (`updateProductStockItem`): hanya field berubah, 409 item sudah terkirim → muat ulang | ✅ |
+| Bulk akun: cek `dryRun` lalu simpan, pilihan per baris & `on_duplicate`, data berubah → cek ulang, baris INVALID, `STOCK_CHECK_OUTDATED` | ✅ |
+| Bulk file: mode biasa per file; mode UID dari nama file (cek kirim nama saja, simpan + `onDuplicates` berpasangan) | ✅ |
+| Hapus satu / bulk delete stok (item dilewati, 403 pesan BE & pilihan dipertahankan) | ✅ |
 
 ## 14. Verifikasi seller & daftar merchant
 
