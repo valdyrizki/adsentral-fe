@@ -158,7 +158,7 @@ test.describe('Deposit (top up) buyer', () => {
     await expect(dialog.getByRole('button', { name: 'Deposit' })).toBeEnabled({ timeout: 2000 })
   })
 
-  test.fail('deposit ditolak BE (400) menampilkan pesan BE (F-20)', async ({ page, mockApi }) => {
+  test('deposit ditolak BE (400) menampilkan pesan BE (F-20)', async ({ page, mockApi }) => {
     mockBuyerBalance(mockApi)
     mockApi.on('POST', '/balance/deposit', fail(400, 'Masih ada deposit yang belum dibayar'))
 
@@ -199,7 +199,7 @@ test.describe('Deposit (top up) buyer', () => {
     await expect(row.getByRole('link', { name: 'Lanjut Bayar' })).toHaveCount(0)
   })
 
-  test.fail('batalkan deposit yang sudah dibayar (409): pesan BE tampil & riwayat dimuat ulang (F-20)', async ({ page, mockApi }) => {
+  test('batalkan deposit yang sudah dibayar (409): pesan BE tampil & riwayat dimuat ulang (F-20)', async ({ page, mockApi }) => {
     let deposits = [makeDeposit('PAY-1')]
     mockBuyerBalance(mockApi, { getDeposits: () => deposits })
     mockApi.on('POST', '/balance/deposit/cancel/PAY-1', () => {
@@ -311,7 +311,7 @@ test.describe('Transfer saldo jualan ke saldo belanja', () => {
     await expect(main(page).getByRole('button', { name: 'Transfer dari Saldo Jualan' })).toBeDisabled()
   })
 
-  test.fail('transfer ditolak BE (400) menampilkan pesan BE di form (F-20)', async ({ page, mockApi }) => {
+  test('transfer ditolak BE (400) menampilkan pesan BE di form (F-20)', async ({ page, mockApi }) => {
     mockSellerBalance(mockApi, () => sellerBalance(300000))
     mockApi.on('POST', '/balance/transfer', fail(400, 'Saldo jualan sedang ditahan untuk penarikan'))
 

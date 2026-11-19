@@ -104,8 +104,6 @@ test.describe('Klaim garansi buyer (detail transaksi)', () => {
   })
 
   test('klaim ditolak BE: pesan BE tampil di toast', async ({ page, mockApi }) => {
-    // Bug diketahui: composable garansi tidak memakai rethrowApiError, pesan BE hilang (docs/test-findings.md F-20).
-    test.fail()
     mockBuyerTx(mockApi, doneTx(), () => null)
     mockApi.on('POST', '/guarantee', fail(400, 'Masa garansi produk sudah berakhir'))
 
@@ -249,8 +247,6 @@ test.describe('Klaim garansi seller', () => {
   })
 
   test('terima klaim basi (409): pesan BE tampil & data dimuat ulang', async ({ page, mockApi }) => {
-    // Bug diketahui: pesan BE hilang & tidak memuat ulang saat 409 (docs/test-findings.md F-20).
-    test.fail()
     let g = makeGuarantee('G-1')
     mockSellerGuarantee(mockApi, () => g)
     mockApi.on('POST', '/seller/guarantee/G-1/review', () => {

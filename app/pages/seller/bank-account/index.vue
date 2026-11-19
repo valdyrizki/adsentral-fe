@@ -14,6 +14,16 @@
     <!-- Loading -->
     <AppLoadingSkeleton v-if="pending" />
 
+    <UAlert
+      v-else-if="loadError"
+      title="Gagal memuat rekening bank"
+      :description="apiErrorMessage(loadError)"
+      icon="mdi:alert-circle"
+      color="error"
+      variant="subtle"
+      :actions="[{ label: 'Coba lagi', icon: 'mdi:refresh', color: 'error', variant: 'outline', onClick: () => refresh() }]"
+    />
+
     <template v-else>
 
       <!-- Info card jika sudah ada rekening -->
@@ -162,7 +172,7 @@ const form = ref<BankAccountRequest>({
   account_holder_name: '',
 })
 
-const { data: bankAccount, pending, refresh } = await useAsyncData<BankAccountResponse | null>(
+const { data: bankAccount, pending, error: loadError, refresh } = await useAsyncData<BankAccountResponse | null>(
   'seller-bank-account',
   () => fetchBankAccount(),
   { server: false }
@@ -210,7 +220,7 @@ async function handleSubmit() {
     isFormOpen.value = false
     await refresh()
   } catch (err: any) {
-    formError.value = err.statusMessage || 'Gagal menyimpan rekening bank.'
+    formError.value = apiErrorMessage(err, 'Gagal menyimpan rekening bank.')
   } finally {
     submitting.value = false
   }

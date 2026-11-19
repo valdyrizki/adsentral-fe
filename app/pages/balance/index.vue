@@ -417,9 +417,11 @@ const formatRupiah = (val:any) => {
       console.error('Cancel Deposit gagal:', err)
       toast.add({
         title: "Deposit Gagal dibatalkan ❌",
-        description: "Lakukan refresh, lalu coba lagi",
+        description: apiErrorMessage(err, "Lakukan refresh, lalu coba lagi"),
         color: "error"
       })
+      // 403/409 = deposit sudah dibayar/kedaluwarsa di BE → tampilkan status terbaru
+      if (isStaleActionError(err)) await refreshDepositHistory()
     } finally {
       // loadingDepositHistory.value = false
       close()  // tutup dialog setelah action selesai

@@ -87,7 +87,6 @@
           <UBadge icon="mdi:receipt-text" size="lg" class="font-medium text-white">#{{ transaction?.id }}</UBadge>
           <UButton icon="uiw:message" size="lg" color="primary" variant="outline" @click="isChatOpen = true">Chat Pembeli</UButton>
           <UButton v-if="transaction?.status === 'REJECT'" icon="material-symbols:help-outline-rounded" color="error" variant="solid" size="xs" @click="isArbitrageRequestModal = true">Tangguhkan</UButton>
-          <UButton v-if="transaction?.status === 'PAID'" icon="material-symbols:cancel" color="error" variant="soft" size="xs" @click="addToCart">Batalkan</UButton>
           <UButton icon="material-symbols:refresh" variant="outline" size="xs" @click="refreshHandler">Refresh</UButton>
         </div> 
       </div>
@@ -1116,15 +1115,6 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
     }finally {
       isSubmitting.value = false
     }
-  }
-
-  const addToCart = () => {
-    // Add to cart logic here
-    useToast().add({
-      title: 'Berhasil',
-      description: 'Produk berhasil ditambahkan ke keranjang',
-      color: 'success'
-    })
   }
 
   const submitDiscussion = async (discussionType: DiscussionType = DiscussionType.MESSAGE) => {

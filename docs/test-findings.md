@@ -9,7 +9,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## Rencana & catatan
 
 - **Cakupan tes** (modul yang sudah/belum dites, prioritas): lihat **`docs/test-progress.md`**. Dokumen ini hanya berisi bug.
-- **Rencana perbaikan:** dikerjakan setelah tes selesai. Mulai dari **F-20 + F-26** (pakai `rethrowApiError` di
+- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41; sebagian F-26, F-39, F-40). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
   composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
   Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
 - **Setelah memperbaiki temuan:** ubah statusnya di sini menjadi `SELESAI`, hapus `test.fail` di spec, dan ubah 🐞 → ✅
@@ -30,24 +30,24 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-06 | Pembayaran (admin) | "Tolak" memanggil `/payment/cancel`, bukan `/payment/reject` | Sedang | PERLU KONFIRMASI | Tanya: "Tolak" seharusnya `/payment/reject` + alasan? Tes lama mengunci perilaku `cancel`, ubah saat diperbaiki. `uploadPaymentProof` juga tidak dipakai. |
 | F-07 | Pembayaran (admin) | Filter "Semua Status" mengirim `status=ALL` ke BE | Sedang | TERBUKA | Fix satu baris: kirim kosong bila `ALL`. Ditandai `test.fail` di `payment.spec.ts`. |
 | F-08 | Pembayaran (buyer) | Deposit berstatus `PAID` tidak menampilkan keterangan apa pun | Rendah | PERLU KONFIRMASI | Tanya: status apa saja yang mungkin untuk deposit, dan apakah `DONE` masih dipakai BE? |
-| F-09 | Pesanan seller | Tombol "Batalkan" (PAID) memanggil placeholder `addToCart` | Tinggi | TERBUKA | Hapus tombol (sudah ada "Tolak Pesanan"). Ditandai `test.fail` di `seller-order.spec.ts`. |
+| F-09 | Pesanan seller | Tombol "Batalkan" (PAID) memanggil placeholder `addToCart` | Tinggi | SELESAI | Tombol "Batalkan" placeholder dihapus; pembatalan lewat "Tolak Pesanan". Tes diubah jadi regresi. |
 | F-10 | Pesanan seller | Validasi pesan kosong memakai `window.alert()` | Rendah | TERBUKA | Ganti dengan toast / nonaktifkan tombol kirim. Ditandai `test.fail`. Sama dengan F-27. |
 | F-11 | Pesanan seller & transaksi buyer | Countdown UNPAID/PAID langsung "habis" bila `expired_at`/`paid_at` null | Sedang | TERBUKA | Fix: pakai `getPaymentExpiry` & `getTxConfirmCountdown`. Ditandai `test.fail` di seller-order & transaction. |
 | F-12 | Pesanan seller | Aksi permanen tanpa dialog konfirmasi (terima pesanan, terima pembatalan) | Sedang | PERLU KONFIRMASI | Tanya: perlu `useConfirm()`? Sekalian perjelas label "Setujui/Tolak Pembatalan" yang mudah tertukar. |
 | F-13 | Pesanan seller | Tolak 409 di halaman detail tidak menutup modal (daftar menutup) | Rendah | TERBUKA | Fix: tutup modal saat `isStaleActionError`, samakan dengan halaman daftar. |
 | F-14 | Pesanan seller | Tombol "Kirim Orderan" tetap muncul di DELIVERED/DONE/ARBITRAGE | Rendah | PERLU KONFIRMASI | Tanya: di status mana seller boleh kirim ulang orderan? (`REJECT` kemungkinan perlu.) |
 | F-15 | Pesanan seller | Kode mati di daftar pesanan (`handleReject`, tombol produk ACTIVE/INACTIVE) | Rendah | TERBUKA | Bersih-bersih: hapus `handleReject`, tombol status produk & `console.log`. |
-| F-16 | Transaksi buyer | Tombol "Batalkan", "Beli Lagi", "Tangguhkan" (daftar) memanggil placeholder `alert()` | Tinggi | TERBUKA | Prioritas tinggi: tombol tampil ke buyer tapi tidak berfungsi. Ditandai `test.fail` di `transaction.spec.ts`. |
+| F-16 | Transaksi buyer | Tombol "Batalkan", "Beli Lagi", "Tangguhkan" (daftar) memanggil placeholder `alert()` | Tinggi | SELESAI | "Beli Lagi" → halaman produk, "Tangguhkan" (daftar) → detail transaksi, "Batalkan" UNPAID dihapus (pembatalan dari halaman pembayaran, membatalkan seluruh isi pembayaran). Tes diubah jadi regresi. |
 | F-17 | Transaksi buyer | Form "Edit Penilaian" tidak terisi penilaian sebelumnya | Sedang | TERBUKA | Fix: isi form dari review lama lewat `watch`. Ditandai `test.fail`. |
 | F-18 | Transaksi buyer | Filter status buyer tidak punya `REJECT`, `REJECTED`, `CANCEL_REQUEST` | Rendah | PERLU KONFIRMASI | Tanya: sengaja disembunyikan? Apakah `/tx/buyer` menerima ketiga status itu? |
 | F-19 | Garansi buyer | `/guarantee` tidak dilindungi login (tidak ada di `authRequiredRoutes`) | Sedang | TERBUKA | Fix satu baris: tambah `/guarantee` ke `authRequiredRoutes`. Ditandai `test.fail`. |
-| F-20 | Garansi, withdrawal, penalty & deposit | Pesan error BE hilang (toast `[POST] "/backend/...": 409 Conflict` / "Conflict") & 409 tidak memuat ulang | Sedang | TERBUKA | **Diperbaiki pertama** bersama F-26: `rethrowApiError` di composable + reload saat 409. Menutup banyak `test.fail` sekaligus. |
+| F-20 | Garansi, withdrawal, penalty & deposit | Pesan error BE hilang (toast `[POST] "/backend/...": 409 Conflict` / "Conflict") & 409 tidak memuat ulang | Sedang | SELESAI | `useApi` memasang pesan BE ke `message` dan `statusMessage` error HTTP (status, `data`, `response` tetap); reload saat 403/409 ditambahkan di detail garansi seller dan batal deposit (penarikan sudah reload). |
 | F-21 | Garansi | Label/warna status garansi diduplikasi di 5 tempat dengan teks berbeda | Rendah | TERBUKA | Buat `GuaranteeStatusBadge.vue` lalu pakai ulang di 5 tempat. |
 | F-22 | Withdrawal (admin) | Rumus "Potensi Anomali" menghitung saldo belanja (deposit) sebagai saldo yang bisa ditarik | Sedang | PERLU KONFIRMASI | Tanya BE rumus yang benar; opsi lebih sederhana: pakai `sales_balance` + `sales_held` dari BE. |
 | F-23 | Withdrawal | `WD_FEE` diam-diam jatuh ke Rp 2.500 bila setting gagal dimuat; kartu statistik admin hanya dari halaman aktif | Sedang | PERLU KONFIRMASI | Tanya: siapa sumber kebenaran `admin_fee` (FE/BE)? Ada endpoint ringkasan statistik withdrawal? |
 | F-24 | Pesanan admin | Refund/Selesaikan gagal (400) menutup modal, alasan yang diketik hilang | Sedang | TERBUKA | Fix: tutup modal hanya saat sukses atau `isStaleActionError`. Ditandai `test.fail`. |
 | F-25 | Pesanan admin | Tombol "Refund Transaksi"/"Selesaikan Transaksi" muncul di status final (REFUNDED, CANCELLED, REJECTED, EXPIRED) dan UNPAID | Sedang | SELESAI | Tombol hanya saat `ARBITRAGE`; BE menolak status lain (EP04-02). |
-| F-26 | API layer | Banyak composable GET membuang pesan BE (`err.message` → `[GET] "/backend/...": 400 Bad Request`); `fetchCreateOrderDiscussion` bisa crash di `err.response._data` | Sedang | TERBUKA | **Diperbaiki pertama** bersama F-20: ganti `catch` di composable GET dengan `rethrowApiError`. |
+| F-26 | API layer | Banyak composable GET membuang pesan BE (`err.message` → `[GET] "/backend/...": 400 Bad Request`); `fetchCreateOrderDiscussion` bisa crash di `err.response._data` | Sedang | TERBUKA | `useApi` memasang pesan BE ke `message` dan `statusMessage` error HTTP (status, `data`, `response` tetap), jadi GET menampilkan pesan BE. Sisa: `err.response._data` di `chat.ts`, `order-discussion.ts`, `review.ts`, `transaction.ts` masih crash saat gangguan jaringan. |
 | F-27 | Pesanan admin | Validasi pesan diskusi kosong memakai `window.alert()` (sama dengan F-10) | Rendah | TERBUKA | Sama dengan F-10; perbaiki bersamaan. Ditandai `test.fail`. |
 | F-28 | Pesanan admin | Filter status admin tidak lengkap; teks konfirmasi "Cancel Arbitrage" tidak formal & tujuan statusnya belum jelas | Rendah | PERLU KONFIRMASI | Tanya: status tujuan `PATCH /tx/cancel/arbitrage` & opsi filter yang dibutuhkan admin. Teks "lhooo" perlu diganti. |
 | F-29 | Penalty rule (admin) | Normalisasi Rule ID (kapital + underscore) tidak jalan; form edit menyimpan perubahan yang dibatalkan | Sedang | TERBUKA | Fix: normalisasi lewat `watch` + validasi regex; reset form saat modal dibuka. Ditandai `test.fail`. |
@@ -56,13 +56,13 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-32 | Penalty | Halaman `/admin/penalty-user` yatim (tanpa menu, duplikat `/admin/penalty`); statistik penalty user dihitung per halaman; rule target `BUYER` bisa dikenakan ke seller | Rendah | PERLU KONFIRMASI | Tanya: hapus `/admin/penalty-user`? Rule dibatasi sesuai role user? Kartu poin sebaiknya pakai `/user/penalty/stat`. |
 | F-33 | Deposit | Metode default `'QRIS'` bukan id metode mana pun → tombol "Deposit" nonaktif tanpa penjelasan | Rendah | TERBUKA | Fix: default `null` + petunjuk "Pilih metode pembayaran". Ditandai `test.fail`. |
 | F-34 | Deposit | Riwayat deposit gagal dimuat tampil "Belum ada riwayat deposit"; ref `error` tidak pernah diisi | Sedang | TERBUKA | Fix: tampilkan `errorDepositHistory` dengan `apiErrorMessage`. Ditandai `test.fail`. |
-| F-35 | Produk seller | Pesan error BE hilang saat buat/edit/tangguhkan/aktifkan produk (toast "Conflict" / "Bad Request") | Sedang | TERBUKA | Pola sama dengan F-20: `rethrowApiError` di `composables/api/product.ts`. Ditandai `test.fail`. |
-| F-36 | Produk seller | Edit produk Otomatis yang sudah punya file selalu ditolak "File lampiran otomatis wajib diupload" (cek field `auto_config_file_url` yang tidak ada) | Tinggi | TERBUKA | Fix: cek `product.auto_config?.file_url`. Ditandai `test.fail`. |
+| F-35 | Produk seller | Pesan error BE hilang saat buat/edit/tangguhkan/aktifkan produk (toast "Conflict" / "Bad Request") | Sedang | SELESAI | `useApi` memasang pesan BE ke `message` dan `statusMessage` error HTTP (status, `data`, `response` tetap). |
+| F-36 | Produk seller | Edit produk Otomatis yang sudah punya file selalu ditolak "File lampiran otomatis wajib diupload" (cek field `auto_config_file_url` yang tidak ada) | Tinggi | SELESAI | Cek `product.auto_config?.file_url`. |
 | F-37 | Produk seller | Teks menyesatkan: aktifkan produk berkata "diaktifkan" padahal masuk review; edit produk aktif tidak memberi tahu produk kembali ke review dan toast berkata "membuat product"/"Simpan User"; pesan banding WA selalu menyebut NONACTIVE walau SUSPEND; petunjuk upload "SVG/GIF, 2MB, 1024px" berbeda dengan validasi (JPG/PNG/WEBP, 5MB, 1500px) | Rendah | TERBUKA | Perbaiki teks; validasi gambar memakai `alert()` (pola F-10). |
 | F-38 | Stok seller | Badge "Aktif/Terkirim/Dikembalikan" di `/seller/stock` hanya menghitung item di halaman aktif, padahal tampil di sebelah total semua item | Rendah | TERBUKA | Pola sama dengan F-23: hitungan dari BE (ringkasan per status) atau beri label "di halaman ini". |
-| F-39 | Verifikasi (admin) | Setujui/tolak/edit verifikasi menampilkan "Bad Request", bukan pesan BE (NIK dipakai akun lain, sudah direview admin lain); status basi tidak memuat ulang; edit mengirim semua field walau tertulis "hanya field yang diubah" | Sedang | TERBUKA | `rethrowApiError` di `composables/api/verification.ts` + `apiErrorMessage` di halaman, muat ulang saat 400 "sudah direview". Ditandai `test.fail`. |
-| F-40 | Daftar toko | `/merchant/create`: logo tidak dicek padahal wajib di BE, nama kosong lolos, GIF diterima padahal BE menolak, pesan BE hilang ("Bad Request"/"Conflict"), pesan berbahasa Inggris, pengunjung tidak diarahkan ke login | Sedang | TERBUKA | Validasi FE disamakan dengan BE (logo wajib, nama 5–50, JPG/PNG/WEBP ≤ 2 MB), `rethrowApiError`, tambah `/merchant/create` ke rute wajib login. Ditandai `test.fail`. |
-| F-41 | Rekening bank | Simpan rekening ditolak BE tampil "Bad Request" (pesan BE hilang); gagal memuat rekening (500/timeout) tampil "Belum ada rekening bank", bisa membuat seller mengira rekeningnya hilang | Sedang | TERBUKA | `apiErrorMessage` di halaman; bedakan 404 (belum ada) dari error lain. Ditandai `test.fail`. |
+| F-39 | Verifikasi (admin) | Setujui/tolak/edit verifikasi menampilkan "Bad Request", bukan pesan BE (NIK dipakai akun lain, sudah direview admin lain); status basi tidak memuat ulang; edit mengirim semua field walau tertulis "hanya field yang diubah" | Sedang | TERBUKA | Pesan BE sudah tampil (`useApi` memasang pesan BE ke `message` dan `statusMessage` error HTTP (status, `data`, `response` tetap)). Sisa: reload saat status basi, edit mengirim semua field. |
+| F-40 | Daftar toko | `/merchant/create`: logo tidak dicek padahal wajib di BE, nama kosong lolos, GIF diterima padahal BE menolak, pesan BE hilang ("Bad Request"/"Conflict"), pesan berbahasa Inggris, pengunjung tidak diarahkan ke login | Sedang | TERBUKA | Pesan BE sudah tampil (`useApi` memasang pesan BE ke `message` dan `statusMessage` error HTTP (status, `data`, `response` tetap)). Sisa: logo wajib, nama kosong, GIF, teks Inggris, rute wajib login. |
+| F-41 | Rekening bank | Simpan rekening ditolak BE tampil "Bad Request" (pesan BE hilang); gagal memuat rekening (500/timeout) tampil "Belum ada rekening bank", bisa membuat seller mengira rekeningnya hilang | Sedang | SELESAI | Pesan BE tampil di form; `fetchBankAccount` hanya mengubah 404 jadi `null`, error lain tampil sebagai alert dengan tombol "Coba lagi". |
 
 ---
 
@@ -174,7 +174,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-09 — Tombol "Batalkan" pada pesanan PAID memanggil placeholder `addToCart`
 
 - **Lokasi:** `app/pages/seller/order/[id].vue:90` (tombol) dan fungsi `addToCart` (sekitar baris 1118)
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Tombol "Batalkan" placeholder dihapus; pembatalan lewat "Tolak Pesanan". Tes diubah jadi regresi.
 - **Gejala:** Di header detail pesanan berstatus `PAID` ada tombol merah "Batalkan". Saat diklik, yang muncul hanya
   toast sukses "Produk berhasil ditambahkan ke keranjang", tanpa request ke BE. Seller bisa mengira pesanan sudah
   dibatalkan padahal tidak terjadi apa-apa, lalu batas 24 jam konfirmasi terlewat.
@@ -257,7 +258,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-16 — Tombol aksi buyer memanggil placeholder `alert()`
 
 - **Lokasi:** `app/pages/transaction/index.vue` → `addToCart`; `app/pages/transaction/[id].vue` → `addToCart`
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** "Beli Lagi" → halaman produk, "Tangguhkan" (daftar) → detail transaksi, "Batalkan" UNPAID dihapus (pembatalan dari halaman pembayaran, membatalkan seluruh isi pembayaran). Tes diubah jadi regresi.
 - **Gejala:** Fungsi `addToCart` hanya berisi `alert('Add to cart clicked!')`, tetapi dipakai oleh:
   - daftar transaksi: "Beli Lagi" (DONE/COMPLETE), **"Batalkan"** (UNPAID), dan **"Tangguhkan"** (DELIVERED/DONE);
   - detail transaksi: "Beli Lagi" dan **"Batalkan"** (UNPAID).
@@ -313,7 +315,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 
 - **Lokasi:** `app/composables/api/guarantee.ts` (semua mutasi: `fetchCreateGuarantee`, `fetchReviewGuarantee`,
   `fetchSendGuarantee`, `sendGuaranteeViaStock`); `app/pages/seller/guarantee/[id].vue`, `app/pages/transaction/[id].vue`
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** `useApi` memasang pesan BE ke `message` dan `statusMessage` error HTTP (status, `data`, `response` tetap); reload saat 403/409 ditambahkan di detail garansi seller dan batal deposit (penarikan sudah reload).
 - **Gejala:** Mutasi garansi tidak memakai `.catch(rethrowApiError(...))`, dan halaman menampilkan `err.message`. Untuk
   respons 4xx, isi toast menjadi teks teknis ofetch, misalnya **`Gagal [POST] "/backend/seller/guarantee/G-1/review": 409
   Conflict`**. Pesan BE (misalnya "Masa garansi produk sudah berakhir" atau "Klaim sudah diproses") tidak tampil. Selain
@@ -420,6 +423,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 - **Lokasi:** `app/composables/api/transaction.ts` (`fetchBuyerTransactions`, `fetchTxSeller`, `fetchAllTx`),
   `order-discussion.ts`, `review.ts`, `product.ts`, `chat.ts`, `merchant.ts`, `system-setting.ts`, `auth.ts`
 - **Status:** TERBUKA
+- **Perbaikan (2026-11-19):** `useApi` memasang pesan BE ke `message` dan `statusMessage` error HTTP (status, `data`, `response` tetap), jadi GET menampilkan pesan BE. Sisa: `err.response._data` di `chat.ts`, `order-discussion.ts`, `review.ts`, `transaction.ts` masih crash saat gangguan jaringan.
 - **Gejala:**
   - Pola `catch (err) { throw createError({ statusMessage: err.message }) }` memakai pesan ofetch, bukan pesan BE.
     Contoh di `/admin/order` saat BE membalas 400 "Status tidak valid": alert tampil
@@ -564,7 +568,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-35 — Pesan error BE hilang di aksi produk seller
 
 - **Lokasi:** `app/composables/api/product.ts` (`createProduct`, `updateProduct`, `deactivateProduct`, `activateProduct`)
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** `useApi` memasang pesan BE ke `message` dan `statusMessage` error HTTP (status, `data`, `response` tetap).
 - **Gejala:** `catch` meneruskan `err.statusMessage`, yaitu teks status HTTP dari ofetch ("Conflict", "Bad Request"),
   bukan `message` dari BE. Seller tidak tahu alasannya, mis. "Produk yg sudah di suspend/delete tidak bisa diedit",
   "Category not found", atau "Qty maksimal tidak boleh lebih kecil dari qty minimal".
@@ -576,7 +581,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-36 — Edit produk Otomatis selalu meminta unggah ulang file
 
 - **Lokasi:** `app/pages/seller/product/edit/[[id]].vue`, `validateProduct`
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Cek `product.auto_config?.file_url`.
 - **Gejala:** Validasi memeriksa `product.value?.auto_config_file_url`. Field itu tidak ada di `ProductResponse`
   (file ada di `auto_config.file_url`), sehingga selalu `undefined`. Seller tidak bisa menyimpan perubahan apa pun
   (harga, nama) pada produk Otomatis tanpa mengunggah ulang file lampiran. Tidak tertangkap `npm run build` karena
@@ -605,6 +611,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 - **Lokasi:** `app/composables/api/verification.ts` (`approveVerification`, `rejectVerification`, `editVerifiedUser`),
   `app/pages/admin/verification/[id].vue`
 - **Status:** TERBUKA
+- **Perbaikan (2026-11-19):** Pesan BE sudah tampil (`useApi` memasang pesan BE ke `message` dan `statusMessage` error HTTP (status, `data`, `response` tetap)). Sisa: reload saat status basi, edit mengirim semua field.
 - **Gejala:**
   - Composable tidak menangkap error, halaman memakai `err.statusMessage` (teks status HTTP). Admin melihat
     "Bad Request" untuk "NIK ini sudah terverifikasi pada akun lain", "Pengajuan ini sudah direview sebelumnya",
@@ -622,6 +629,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 - **Lokasi:** `app/pages/merchant/create/index.vue`, `app/composables/api/merchant.ts` (`registerMerchant`),
   `app/middleware/auth-redirect.global.ts`
 - **Status:** TERBUKA
+- **Perbaikan (2026-11-19):** Pesan BE sudah tampil (`useApi` memasang pesan BE ke `message` dan `statusMessage` error HTTP (status, `data`, `response` tetap)). Sisa: logo wajib, nama kosong, GIF, teks Inggris, rute wajib login.
 - **Gejala:**
   - Logo wajib di BE (`Logo tidak boleh null`) tetapi tidak dicek di FE; nama kosong juga lolos (cek hanya
     `name && length < 5`). Hasilnya 400 dari BE dengan toast "Bad Request".
@@ -637,7 +645,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-41 — Rekening bank: pesan BE hilang dan gagal muat tampil kosong
 
 - **Lokasi:** `app/pages/seller/bank-account/index.vue`, `app/composables/api/bank-account.ts`
-- **Status:** TERBUKA
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** Pesan BE tampil di form; `fetchBankAccount` hanya mengubah 404 jadi `null`, error lain tampil sebagai alert dengan tombol "Coba lagi".
 - **Gejala:**
   - `handleSubmit` memakai `err.statusMessage` (teks status HTTP). Pesan BE, mis. "Nomor rekening tidak valid", hilang.
   - Halaman tidak punya state error. BE membalas 404 bila rekening belum ada, jadi `fetchBankAccount` melempar dan

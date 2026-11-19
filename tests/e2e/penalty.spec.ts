@@ -138,7 +138,7 @@ test.describe('Penalty rule (admin)', () => {
     await expect(input).toHaveValue('SELLER_LATE', { timeout: 2000 })
   })
 
-  test.fail('tambah rule dengan ID duplikat (409) menampilkan pesan BE (F-20)', async ({ page, mockApi }) => {
+  test('tambah rule dengan ID duplikat (409) menampilkan pesan BE (F-20)', async ({ page, mockApi }) => {
     mockRules(mockApi, () => [])
     mockApi.on('POST', '/admin/penalty/rules', fail(409, 'Rule ID sudah dipakai'))
 

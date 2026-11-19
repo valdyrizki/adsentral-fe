@@ -75,8 +75,7 @@
             <div class="flex sm:flex-col gap-2 items-end">
               <UBadge icon="mdi:receipt-text" size="lg" class="font-medium text-white">#{{ transaction?.id }}</UBadge>
               <UButton icon="uiw:message" size="lg" color="primary" variant="outline" @click="isChatOpen = true">Chat Penjual</UButton>
-              <UButton v-if="transaction?.status === 'DONE' || transaction?.status === 'COMPLETE'" icon="mdi:cart-outline" color="primary" variant="soft" size="xs" @click="addToCart">Beli Lagi</UButton>
-              <UButton v-if="transaction?.status === 'UNPAID'" icon="material-symbols:cancel" color="error" variant="soft" size="xs" @click="addToCart">Batalkan</UButton>
+              <UButton v-if="transaction?.status === 'DONE' || transaction?.status === 'COMPLETE'" icon="mdi:cart-outline" color="primary" variant="soft" size="xs" :to="`/product/${transaction?.product_id}`">Beli Lagi</UButton>
               <UButton v-if="transaction?.status === 'DELIVERED' || transaction?.status === 'DONE' " icon="material-symbols:help-outline-rounded" color="error" variant="solid" size="xs" @click="isArbitrageRequestModal = true">Tangguhkan</UButton>
               <UButton v-if="transaction?.status === 'IN_PROGRESS' " icon="material-symbols:help-outline-rounded" color="error" variant="outline" size="xs" @click="isCancelRequestModal = true">Ajukan Pembatalan</UButton>
               <UButton icon="material-symbols:refresh" variant="outline" size="xs" @click="refreshHandler">Refresh</UButton>
@@ -1261,10 +1260,6 @@ const isImage = (format?: string) => {
   if (!format) return false
   return ['jpg', 'jpeg', 'png', 'webp'].includes(format.toLowerCase())
 }
-
-  const addToCart = () => {
-    alert('Add to cart clicked!')
-  }
 
   const handleReviewSubmit = async() => {
     try {

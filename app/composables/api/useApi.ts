@@ -19,6 +19,19 @@
 // Beberapa request yang gagal bersamaan cukup memunculkan satu pesan "sesi berakhir"
 let lastSessionEndedToastAt = 0
 
+// Error HTTP ofetch hanya membawa teks status di `statusMessage` ("Bad Request") dan teks teknis di `message`
+// (`[POST] "/backend/...": 409 Conflict`), padahal banyak halaman menampilkan salah satunya. Pesan BE dipasang
+// ke keduanya; status, `data` (termasuk `data.code`), dan `response` tetap diteruskan.
+const withBackendMessage = (err: any): any => {
+  const message = err?.data?.message
+  if (!err?.response || typeof message !== 'string' || !message) return err
+  const e: any = new Error(message, { cause: err })
+  e.name = 'FetchError'
+  e.statusMessage = message
+  for (const key of ['data', 'status', 'statusCode', 'statusText', 'response', 'request', 'options']) e[key] = err[key]
+  return e
+}
+
 export const useApi = () => {
   const authStore = useAuthStore();
   const config = useRuntimeConfig();
@@ -48,7 +61,7 @@ export const useApi = () => {
    * Tidak memakai hook onResponseError: nilai balik hook diabaikan ofetch, jadi hasil retry
    * di sana terbuang dan pemanggil tetap menerima error 401 walau aksinya sudah sukses.
    */
-  const api = async <T = any>(request: string, options: Parameters<typeof apiFetch>[1] = {}): Promise<T> => {
+  const fetchWithRefresh = async <T = any>(request: string, options: Parameters<typeof apiFetch>[1] = {}): Promise<T> => {
     const sentToken = authStore.accessToken;
     try {
       return await apiFetch<T>(request, options);
@@ -94,6 +107,9 @@ export const useApi = () => {
       }
     }
   };
+
+  const api = <T = any>(request: string, options: Parameters<typeof apiFetch>[1] = {}): Promise<T> =>
+    fetchWithRefresh<T>(request, options).catch((err) => { throw withBackendMessage(err) })
 
   /**
    * Helper: clear auth state & redirect ke halaman login.

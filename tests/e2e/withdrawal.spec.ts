@@ -215,8 +215,6 @@ test.describe('Penarikan dana seller', () => {
   })
 
   test('batalkan penarikan basi (409): pesan BE tampil & riwayat dimuat ulang', async ({ page, mockApi }) => {
-    // Bug diketahui: cancelWithdrawal tanpa rethrowApiError → toast "Conflict" (docs/test-findings.md F-20).
-    test.fail()
     let history = [makeWd('WD-1')]
     mockSellerBalance(mockApi, { getHistory: () => history })
     mockApi.on('PATCH', '/seller/withdrawal/WD-1/cancel', () => {
@@ -317,8 +315,6 @@ test.describe('Penarikan dana admin', () => {
   })
 
   test('tandai selesai basi (409): pesan BE tampil', async ({ page, mockApi }) => {
-    // Bug diketahui: approveWithdrawal tanpa rethrowApiError → pesan "Conflict" (docs/test-findings.md F-20).
-    test.fail()
     mockAdminList(mockApi, () => [makeWd('WD-1')])
     mockApi.on('PATCH', '/admin/withdrawal/WD-1/complete', fail(409, 'Penarikan sudah dibatalkan seller'))
 

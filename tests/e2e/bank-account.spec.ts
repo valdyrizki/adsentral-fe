@@ -79,7 +79,6 @@ test.describe('Seller: rekening bank', () => {
   })
 
   test('F-41: pesan BE tampil saat simpan ditolak', async ({ page, mockApi }) => {
-    test.fail()
     mockApi.asRole('SELLER')
       .on('GET', '/seller/bank-account', NOT_SAVED)
       .on('POST', '/seller/bank-account', fail(400, 'Nomor rekening tidak valid'))
@@ -96,7 +95,6 @@ test.describe('Seller: rekening bank', () => {
   })
 
   test('F-41: gagal memuat rekening (500) tidak tampil sebagai "Belum ada rekening"', async ({ page, mockApi }) => {
-    test.fail()
     mockApi.asRole('SELLER').on('GET', '/seller/bank-account', fail(500, 'Internal Server Error'))
 
     await gotoHydrated(page, '/seller/bank-account')

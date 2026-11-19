@@ -76,7 +76,7 @@ test.describe('Daftar pesanan admin', () => {
     await expect(page).toHaveURL(/\/admin\/order\/TX-1$/)
   })
 
-  test.fail('error BE pada daftar menampilkan pesan BE (F-26)', async ({ page, mockApi }) => {
+  test('error BE pada daftar menampilkan pesan BE (F-26)', async ({ page, mockApi }) => {
     mockApi
       .asRole('ADMIN')
       .on('GET', '/tx/all', fail(400, 'Status tidak valid'))

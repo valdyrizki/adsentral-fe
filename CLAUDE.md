@@ -113,7 +113,7 @@ export const useXxxApi = () => {
 
 - Path API **tanpa** prefix `/api` (proxy yang menambahkannya). Pagination 0-based.
 - Di halaman/komponen: GET memakai `useAsyncData(key, () => xxxApi.fetch...())`; mutasi memanggil fungsi composable langsung. Jangan memanggil `$fetch` mentah dari halaman.
-- Error: tampilkan pesan BE dengan `apiErrorMessage(err, 'fallback')` lewat `useToast()`. Untuk aksi pesanan/pembayaran, `isStaleActionError(err)` (403/409) berarti status sudah berubah di BE → tampilkan pesan lalu reload data, jangan retry. `rethrowApiError` tersedia untuk `.catch()`.
+- Error: tampilkan pesan BE dengan `apiErrorMessage(err, 'fallback')` lewat `useToast()`. `useApi` sudah memasang pesan BE ke `err.message`/`err.statusMessage` (status, `data`, `response` tetap), jadi kode lama yang menampilkan salah satunya ikut benar. Untuk aksi pesanan/pembayaran, `isStaleActionError(err)` (403/409) berarti status sudah berubah di BE → tampilkan pesan lalu reload data, jangan retry. `rethrowApiError` tersedia untuk `.catch()`.
 
 ### Autentikasi & otorisasi
 

@@ -245,7 +245,6 @@ test.describe('Admin: review verifikasi KTP', () => {
   })
 
   test('F-39: setujui ditolak BE (NIK dipakai akun lain) menampilkan pesan BE', async ({ page, mockApi }) => {
-    test.fail()
     adminDetail(mockApi, {})
       .on('PATCH', '/admin/verification/req-1/approve', fail(400, 'NIK ini sudah terverifikasi pada akun lain'))
 
@@ -257,7 +256,6 @@ test.describe('Admin: review verifikasi KTP', () => {
   })
 
   test('F-39: tolak pengajuan yang sudah direview admin lain menampilkan pesan BE', async ({ page, mockApi }) => {
-    test.fail()
     adminDetail(mockApi, {})
       .on('PATCH', '/admin/verification/req-1/reject', fail(400, 'Pengajuan ini sudah direview sebelumnya'))
 
@@ -305,7 +303,6 @@ test.describe('Daftar toko (jadi seller)', () => {
   })
 
   test('F-40: logo wajib dicek di FE dan pesan BE tampil', async ({ page, mockApi }) => {
-    test.fail()
     mockApi.asRole('BUYER').on('POST', '/merchant/create', fail(409, 'Nama toko sedang dipakai, coba lagi'))
 
     await gotoHydrated(page, '/merchant/create')

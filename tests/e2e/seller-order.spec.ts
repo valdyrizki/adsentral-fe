@@ -317,17 +317,12 @@ test.describe('Detail pesanan seller', () => {
     })
   }
 
-  test('tombol "Batalkan" pada pesanan PAID tidak menampilkan pesan keranjang', async ({ page, mockApi }) => {
-    // Bug diketahui: tombol memanggil placeholder addToCart (docs/test-findings.md F-09). Hapus setelah diperbaiki.
-    test.fail()
+  test('pesanan PAID: tidak ada tombol "Batalkan" placeholder, pembatalan lewat "Tolak Pesanan" (F-09)', async ({ page, mockApi }) => {
     mockSellerDetail(mockApi, () => paidTx('TX-1'))
 
     await gotoHydrated(page, '/seller/order/TX-1')
-    await main(page).getByRole('button', { name: 'Batalkan', exact: true }).click()
-
-    // toHaveCount(0) langsung lolos sebelum toast sempat muncul → tunggu dulu, baru hitung
-    await page.waitForTimeout(2000)
-    expect(await page.getByText('Produk berhasil ditambahkan ke keranjang').count()).toBe(0)
+    await expect(main(page).getByRole('button', { name: 'Tolak Pesanan' })).toBeVisible()
+    await expect(main(page).getByRole('button', { name: 'Batalkan', exact: true })).toHaveCount(0)
   })
 
   test('UNPAID tanpa expired_at: countdown memakai created_at + 24 jam', async ({ page, mockApi }) => {

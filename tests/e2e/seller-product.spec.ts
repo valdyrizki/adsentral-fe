@@ -90,7 +90,6 @@ test.describe('Produk seller: daftar & aksi status', () => {
   })
 
   test('F-35: gagal tangguhkan menampilkan pesan BE', async ({ page, mockApi }) => {
-    test.fail()
     mockApi
       .asRole('SELLER')
       .on('GET', '/seller/products/summary', ok({ active: 1, in_review: 0, blocked: 0 }))
@@ -230,7 +229,6 @@ test.describe('Produk seller: buat produk', () => {
   })
 
   test('F-35: error BE saat simpan menampilkan pesan BE', async ({ page, mockApi }) => {
-    test.fail()
     mockApi.on('POST', '/product/create', fail(400, 'Category not found'))
 
     await openCreateForm(page)
@@ -283,7 +281,6 @@ test.describe('Produk seller: edit produk', () => {
   })
 
   test('F-36: edit produk Otomatis yang sudah punya file tidak wajib unggah ulang', async ({ page, mockApi }) => {
-    test.fail()
     let calls = 0
     mockApi
       .on('GET', '/product/my/8', ok(makeProduct(8, {

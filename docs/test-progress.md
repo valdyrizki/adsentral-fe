@@ -28,21 +28,21 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 3 | Katalog publik (beranda, kategori, produk, merchant, pencarian) | — | ⬜ | P2 | Halaman SSR; data publik juga lewat mock BE SSR (`mock-backend.mjs`), bukan hanya `mockApi`. Detail produk adalah pintu masuk keranjang. |
 | 4 | Keranjang & checkout | `checkout.spec.ts` | ✅ | — | Cek saldo memakai nilai lama (F-03) dan mengabaikan biaya aplikasi (F-04, perlu konfirmasi). Belum: ubah qty/hapus item, multi-merchant. |
 | 5 | Pembayaran buyer | `payment.spec.ts` | Sebagian | P2 (daftar `/payment`) | Nominal transfer ≠ Total Tagihan (F-05, prioritas tinggi, perlu konfirmasi). Deposit `PAID` tanpa keterangan (F-08). |
-| 6 | Transaksi buyer | `transaction.spec.ts` | 🐞 | — | Tombol daftar memanggil `alert()` placeholder (F-16, tinggi). Edit penilaian kosong (F-17). Countdown `expired_at` null (F-11). Filter status kurang (F-18). |
-| 7 | Garansi (buyer & seller) | `guarantee.spec.ts` | 🐞 | — | Pesan error BE hilang & 409 tidak reload (F-20). `/guarantee` tanpa guard (F-19). Label status diduplikasi di 5 tempat (F-21). |
-| 8 | Saldo, deposit & transfer | `balance.spec.ts` | 🐞 | — | Metode default `'QRIS'` tidak valid (F-33). Riwayat gagal tampil "kosong" (F-34). Error BE hilang (F-20). |
+| 6 | Transaksi buyer | `transaction.spec.ts` | 🐞 | — | Edit penilaian kosong (F-17). Countdown `expired_at` null (F-11). Filter status kurang (F-18). |
+| 7 | Garansi (buyer & seller) | `guarantee.spec.ts` | 🐞 | — | `/guarantee` tanpa guard (F-19). Label status diduplikasi di 5 tempat (F-21). |
+| 8 | Saldo, deposit & transfer | `balance.spec.ts` | 🐞 | — | Metode default `'QRIS'` tidak valid (F-33). Riwayat gagal tampil "kosong" (F-34). |
 | 9 | Penalty (buyer, seller, admin) | `penalty.spec.ts` | 🐞 | P3 (`/admin/penalty-user`) | Normalisasi ID & form edit basi (F-29). `status=ALL` & WARNING tampil "Normal" (F-30). Slideover basi (F-31). Halaman yatim & rule BUYER bisa ke seller (F-32). |
-| 10 | Pesanan seller | `seller-order.spec.ts` | 🐞 | — | "Batalkan" PAID memanggil `addToCart` (F-09, tinggi). `alert()` pesan kosong (F-10). Belum: seller ajukan arbitrase, kirim via file/stok. |
-| 11 | Penarikan dana & rekening bank seller | `withdrawal.spec.ts`, `bank-account.spec.ts` | 🐞 | — | `WD_FEE` diam-diam jatuh ke Rp 2.500 (F-23). Batal basi 409 (F-20). Rekening bank: pesan BE hilang & gagal muat tampil "belum ada rekening" (F-41). |
-| 12 | Produk seller | `seller-product.spec.ts` | 🐞 | P2 (REJECTED/SUSPEND detail) | Pesan error BE hilang (F-35). Edit produk Otomatis selalu minta unggah ulang file (F-36, tinggi). Teks menyesatkan (F-37). |
+| 10 | Pesanan seller | `seller-order.spec.ts` | 🐞 | — | `alert()` pesan kosong (F-10). Belum: seller ajukan arbitrase, kirim via file/stok. |
+| 11 | Penarikan dana & rekening bank seller | `withdrawal.spec.ts`, `bank-account.spec.ts` | 🐞 | — | `WD_FEE` diam-diam jatuh ke Rp 2.500 (F-23). |
+| 12 | Produk seller | `seller-product.spec.ts` | 🐞 | P2 (REJECTED/SUSPEND detail) | Teks menyesatkan (F-37). |
 | 13 | Stok seller | `seller-stock.spec.ts` | ✅ | P2 (detail & tambah ulang item RETURNED, import CSV) | Hitungan Aktif/Terkirim hanya halaman aktif (F-38, rendah). |
-| 14 | Verifikasi seller & daftar merchant | `verification.spec.ts`, `security.spec.ts`, `verification-photos-purged.spec.ts` | 🐞 | — | Form daftar toko tidak sesuai aturan BE dan pesan BE hilang (F-40). |
+| 14 | Verifikasi seller & daftar merchant | `verification.spec.ts`, `security.spec.ts`, `verification-photos-purged.spec.ts` | 🐞 | — | Validasi form daftar toko tidak sesuai aturan BE (F-40). |
 | 15 | Dashboard & profil toko seller | — | ⬜ | P3 | Riwayat penalty di dashboard sudah tercakup `penalty.spec.ts`. |
-| 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | 🐞 | P3 (dashboard admin) | Refund 400 menutup modal (F-24). GET membuang pesan BE (F-26). `alert()` diskusi (F-27). Filter & teks Cancel Arbitrage (F-28). |
+| 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | 🐞 | P3 (dashboard admin) | Refund 400 menutup modal (F-24). `alert()` diskusi (F-27). Filter & teks Cancel Arbitrage (F-28). |
 | 17 | Pembayaran admin | `payment.spec.ts`, `admin-unprocessed-payment.spec.ts` | 🐞 | — | "Tolak" memanggil `/payment/cancel` (F-06, perlu konfirmasi). Filter `status=ALL` (F-07). |
 | 18 | Penarikan dana admin | `withdrawal.spec.ts` | 🐞 | — | Rumus "Potensi Anomali" ikut menghitung saldo deposit (F-22). Statistik hanya halaman aktif (F-23). |
 | 19 | Produk & stok admin (review, suspend) | `admin-product-reason.spec.ts`, `admin-product-status.spec.ts` | Sebagian | P1 | Halaman create/edit admin memakai ulang form produk seller; tes setelah modul 12. |
-| 20 | Verifikasi seller (admin) | `verification.spec.ts`, `admin-verification-revoke.spec.ts`, `admin-verification-badge.spec.ts` | 🐞 | — | Setujui/tolak/edit membuang pesan BE dan tidak memuat ulang saat status basi (F-39). |
+| 20 | Verifikasi seller (admin) | `verification.spec.ts`, `admin-verification-revoke.spec.ts`, `admin-verification-badge.spec.ts` | 🐞 | — | Tidak memuat ulang saat status basi, edit mengirim semua field (F-39). |
 | 21 | Master data admin (kategori, tipe akun, voucher, metode/channel bayar) | — | ⬜ | P2 | Pola CRUD serupa; cocok satu spec per halaman. Sinkron Tripay memanggil gateway lewat BE. |
 | 22 | Keuangan admin (ringkasan, jurnal, kategori, failed journal) | — | ⬜ | P2 | Total per kategori diagregasi di FE (loop semua halaman jurnal, abaikan void) — perlu dicek kebenarannya. |
 | 23 | System settings | — | ⬜ | P2 | Setting publik dipakai checkout & withdrawal (biaya aplikasi, `WD_FEE`); salah ubah berdampak luas. |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **288 tes** di 32 spec, dengan 34 tes `test.fail` untuk bug yang sudah diketahui (dihitung 2026-11-19 dengan `npx playwright test --list`).
+Total saat ini: **288 tes** di 32 spec, dengan 15 tes `test.fail` untuk bug yang sudah diketahui (dihitung 2026-11-19 dengan `npx playwright test --list`).
 
 ---
 
@@ -144,7 +144,7 @@ Total saat ini: **288 tes** di 32 spec, dengan 34 tes `test.fail` untuk bug yang
 | Daftar, tombol bayar UNPAID | ✅ | |
 | Filter status dari URL & pencarian ID | ✅ | F-18 dicatat |
 | Status ditolak BE (400) → filter kembali "Semua" | ✅ | |
-| Tombol "Batalkan"/"Tangguhkan" di daftar | 🐞 | F-16 |
+| Tombol daftar: tanpa placeholder, "Tangguhkan" ke detail | ✅ | F-16 (selesai) |
 | Tombol aksi sesuai status | ✅ | |
 | Selesaikan pesanan (`fetchAcceptOrder`) + 409 | ✅ | |
 | Tolak hasil kiriman (`fetchRejectOrder`) | ✅ | |
@@ -160,7 +160,7 @@ Total saat ini: **288 tes** di 32 spec, dengan 34 tes `test.fail` untuk bug yang
 | Skenario | Status | Catatan |
 |---|---|---|
 | Ajukan klaim: validasi, body, status | ✅ | |
-| Klaim ditolak BE | 🐞 | F-20 |
+| Klaim ditolak BE | ✅ | F-20 (selesai) |
 | Masa garansi habis / produk tanpa garansi | ✅ | |
 | Garansi DONE: balasan & file pengganti | ✅ | |
 | File garansi presigned: URL berlaku dibuka langsung; kedaluwarsa → "memuat ulang" + URL baru; tetap kedaluwarsa → tidak membuka error R2 | ✅ | `security.spec.ts` |
@@ -168,7 +168,7 @@ Total saat ini: **288 tes** di 32 spec, dengan 34 tes `test.fail` untuk bug yang
 | `/guarantee` tanpa login | 🐞 | F-19 |
 | Seller: daftar + countdown review | ✅ | |
 | Seller: terima / tolak klaim | ✅ | |
-| Seller: terima klaim basi (409) | 🐞 | F-20 |
+| Seller: terima klaim basi (409) | ✅ | F-20 (selesai) |
 | Seller: kirim garansi manual & via stok | ✅ | |
 
 ## 8. Saldo, deposit & transfer — `balance.spec.ts`
@@ -178,13 +178,13 @@ Total saat ini: **288 tes** di 32 spec, dengan 34 tes `test.fail` untuk bug yang
 | Saldo, riwayat deposit, mutasi saldo | ✅ | |
 | Deposit payment gateway / transfer manual | ✅ | |
 | Deposit tanpa metode default | 🐞 | F-33 |
-| Deposit ditolak BE (400) | 🐞 | F-20 |
-| Batalkan deposit / batal basi (409) | ✅ / 🐞 | F-20 |
+| Deposit ditolak BE (400) | ✅ | F-20 (selesai) |
+| Batalkan deposit / batal basi (409) | ✅ | F-20 (selesai) |
 | Riwayat deposit gagal dimuat | 🐞 | F-34 |
 | Pengunjung → `/login` | ✅ | |
 | Transfer saldo jualan ke belanja: validasi, body, kartu saldo | ✅ | |
 | Catatan kosong tidak dikirim / saldo 0 → tombol nonaktif | ✅ | |
-| Transfer ditolak BE | 🐞 | F-20 |
+| Transfer ditolak BE | ✅ | F-20 (selesai) |
 
 ## 9. Penalty — `penalty.spec.ts`
 
@@ -192,7 +192,7 @@ Total saat ini: **288 tes** di 32 spec, dengan 34 tes `test.fail` untuk bug yang
 |---|---|---|
 | Rule: daftar, tambah, edit, nonaktifkan | ✅ | |
 | Rule: normalisasi ID, edit dibatalkan | 🐞 | F-29 |
-| Rule: ID duplikat (409) | 🐞 | F-20 |
+| Rule: ID duplikat (409) | ✅ | F-20 (selesai) |
 | Manage: daftar user, kenakan penalty, batalkan penalty | ✅ | |
 | Manage: filter "Semua", label WARNING | 🐞 | F-30 |
 | Manage: header slideover basi | 🐞 | F-31 |
@@ -211,7 +211,7 @@ Total saat ini: **288 tes** di 32 spec, dengan 34 tes `test.fail` untuk bug yang
 | Pesan kosong | 🐞 | F-10 |
 | Terima / tolak pengajuan batal | ✅ | F-12 dicatat |
 | Countdown pengajuan batal dari `cancel_requested_at` | ✅ | EP04-04 |
-| Tombol "Batalkan" PAID | 🐞 | F-09 |
+| PAID tanpa tombol "Batalkan" placeholder | ✅ | F-09 (selesai) |
 | Countdown UNPAID tanpa `expired_at` | 🐞 | F-11 |
 | Seller ajukan arbitrase (`fetchArbitrageRequest`) | ⬜ P2 | |
 | Kirim orderan via file / stok otomatis | ⬜ P2 | |
@@ -224,18 +224,18 @@ Total saat ini: **288 tes** di 32 spec, dengan 34 tes `test.fail` untuk bug yang
 | Rincian dana tertahan (escrow / penarikan) + fallback BE lama | ✅ | EP04-07 |
 | Ajukan penarikan: validasi, biaya, body; ditolak BE | ✅ | F-23 dicatat |
 | Belum ada rekening → form nonaktif | ✅ | |
-| Batalkan penarikan / batal basi (409) | ✅ / 🐞 | F-20 |
+| Batalkan penarikan / batal basi (409) | ✅ | F-20 (selesai) |
 | `/seller/bank-account`: tambah (404 = belum ada), ubah dengan data lama, badge cocok nama KTP, validasi | ✅ | `bank-account.spec.ts` |
-| Rekening bank: pesan BE saat simpan ditolak, gagal muat (500) | 🐞 | F-41 |
+| Rekening bank: pesan BE saat simpan ditolak, gagal muat (500) | ✅ | F-41 (selesai) |
 
 ## 12. Produk seller — `pages/seller/product/*`
 
 | Skenario | Status |
 |---|---|
 | Daftar produk + ringkasan (`fetchMyProduct`, `fetchProductSummary`), keterangan & aksi per status, pencarian | ✅ |
-| Buat produk (`createProduct`): validasi wajib, slug, estimasi pendapatan `TRX_FEE`, multipart MANUAL/STOCKING, wajib konfigurasi AUTO, tolak banner bukan gambar | ✅ (error BE: F-35) |
-| Edit produk (`fetchMyProductById`, `updateProduct`): form terisi, PATCH multipart, produk tidak ditemukan | ✅ (AUTO: F-36) |
-| Aktifkan / tangguhkan produk, daftar & ringkasan dimuat ulang | ✅ (error BE: F-35) |
+| Buat produk (`createProduct`): validasi wajib, slug, estimasi pendapatan `TRX_FEE`, multipart MANUAL/STOCKING, wajib konfigurasi AUTO, tolak banner bukan gambar | ✅ |
+| Edit produk (`fetchMyProductById`, `updateProduct`): form terisi, PATCH multipart, produk tidak ditemukan | ✅ (AUTO: F-36 selesai) |
+| Aktifkan / tangguhkan produk, daftar & ringkasan dimuat ulang | ✅ |
 | Produk REJECTED / SUSPENDED: alasan tampil, aksi dibatasi | ⬜ P2 |
 
 ## 13. Stok seller — `pages/seller/stock/*`, `components/stock/*`
@@ -269,7 +269,7 @@ Total saat ini: **288 tes** di 32 spec, dengan 34 tes `test.fail` untuk bug yang
 | Skenario | Status | Catatan |
 |---|---|---|
 | Daftar: filter ARBITRAGE dari badge, link detail | ✅ | F-28 dicatat |
-| Error daftar | 🐞 | F-26 |
+| Error daftar | ✅ | F-26 (pesan BE) |
 | Cancel arbitrage, refund, selesaikan paksa, refund 409 | ✅ | |
 | Refund 400 | 🐞 | F-24 |
 | Tombol refund/selesaikan hanya saat `ARBITRAGE` | ✅ | F-25 selesai (EP04-02) |
@@ -290,7 +290,7 @@ Total saat ini: **288 tes** di 32 spec, dengan 34 tes `test.fail` untuk bug yang
 | Skenario | Status | Catatan |
 |---|---|---|
 | Daftar: estimasi pakai `WD_FEE`, filter | ✅ | F-23 dicatat |
-| Tandai selesai / tolak; selesai basi (409) | ✅ / 🐞 | F-20 |
+| Tandai selesai / tolak; selesai basi (409) | ✅ | F-20 (selesai) |
 | Detail: peringatan anomali, biaya admin COMPLETED | ✅ | F-22 dicatat |
 
 ## 19. Produk & stok admin
@@ -310,7 +310,7 @@ Total saat ini: **288 tes** di 32 spec, dengan 34 tes `test.fail` untuk bug yang
 | Skenario | Status |
 |---|---|
 | `/admin/verification`: daftar default PENDING, filter status & email | ✅ |
-| Detail: setujui / tolak (alasan wajib, ter-trim) / edit user terverifikasi (NIK kosong tidak dikirim) / cabut | ✅ (pesan BE: F-39) |
+| Detail: setujui / tolak (alasan wajib, ter-trim) / edit user terverifikasi (NIK kosong tidak dikirim) / cabut | ✅ |
 
 ## 21. Master data admin
 

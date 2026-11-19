@@ -6,8 +6,13 @@ import type { BankAccountResponse } from '~/types/bank-account/BankAccountRespon
 export const useBankAccountApi = () => {
   const api = useApi()
 
+  // 404 = rekening belum disimpan (null); error lain dilempar agar halaman tidak menampilkan "belum ada rekening"
   const fetchBankAccount = async (): Promise<BankAccountResponse | null> => {
-    const res = await api<WebResponse<BankAccountResponse>>('seller/bank-account')
+    const res = await api<WebResponse<BankAccountResponse>>('seller/bank-account').catch((err) => {
+      if (apiErrorStatus(err) === 404) return null
+      throw err
+    })
+    if (!res) return null
     if (res.status !== 'success') return null
     return res.data ?? null
   }

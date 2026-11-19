@@ -696,7 +696,7 @@ const validateProduct = (): boolean => {
       errors.auto_config_description = 'Deskripsi pesan otomatis wajib diisi'
     }
     // file hanya wajib jika belum ada file sebelumnya
-    if (!productRequest.auto_config_file && !product.value?.auto_config_file_url) {
+    if (!productRequest.auto_config_file && !product.value?.auto_config?.file_url) {
       errors.auto_config_file = 'File lampiran otomatis wajib diupload'
     }
   }

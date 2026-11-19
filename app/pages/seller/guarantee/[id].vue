@@ -427,6 +427,7 @@ async function handleAccept() {
     await refresh()
   } catch (err: any) {
     toast.add({ title: 'Gagal', description: err.message || 'Gagal menerima klaim', color: 'error' })
+    if (isStaleActionError(err)) await refresh()
   } finally {
     isSubmitting.value = false
   }
@@ -445,6 +446,10 @@ async function handleReject() {
   } catch (err: any) {
     rejectError.value = err.message || 'Gagal menolak klaim'
     toast.add({ title: 'Gagal', description: err.message || 'Gagal menolak klaim', color: 'error' })
+    if (isStaleActionError(err)) {
+      isRejectModal.value = false
+      await refresh()
+    }
   } finally {
     isSubmitting.value = false
   }
@@ -466,6 +471,7 @@ async function handleDone() {
   } catch (err: any) {
     doneError.value = err.message || 'Gagal mengirim akun garansi'
     toast.add({ title: 'Gagal', description: err.message || 'Gagal mengirim akun garansi', color: 'error' })
+    if (isStaleActionError(err)) await refresh()
   } finally {
     isSubmitting.value = false
   }
@@ -499,6 +505,7 @@ async function handleDoneViaStock() {
   } catch (err: any) {
     doneError.value = err.data?.message || err.statusMessage || err.message || 'Gagal mengirim garansi via stok'
     toast.add({ title: 'Gagal', description: doneError.value ?? '', color: 'error' })
+    if (isStaleActionError(err)) await refresh()
   } finally {
     isSubmitting.value = false
   }

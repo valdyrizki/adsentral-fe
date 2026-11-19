@@ -105,9 +105,7 @@ test.describe('Daftar transaksi buyer', () => {
     await expect(page).not.toHaveURL(/status=/)
   })
 
-  test('tombol "Batalkan" & "Tangguhkan" di daftar tidak memunculkan alert placeholder', async ({ page, mockApi }) => {
-    // Bug diketahui: tombol memanggil placeholder alert('Add to cart clicked!') (docs/test-findings.md F-16).
-    test.fail()
+  test('daftar: tanpa tombol placeholder; "Tangguhkan" ke detail, UNPAID dibatalkan dari halaman pembayaran (F-16)', async ({ page, mockApi }) => {
     mockBuyerList(mockApi, () => [makeTx('TX-1', 'PAY-1', { status: 'UNPAID' }), deliveredTx('TX-2')])
     const dialogs: string[] = []
     page.on('dialog', (d) => {
@@ -116,10 +114,9 @@ test.describe('Daftar transaksi buyer', () => {
     })
 
     await gotoHydrated(page, '/transaction')
-    await main(page).getByRole('button', { name: 'Batalkan', exact: true }).click()
-    await main(page).getByRole('button', { name: 'Tangguhkan', exact: true }).click()
-    await page.waitForTimeout(500)
-
+    await expect(main(page).getByRole('link', { name: 'Lakukan Pembayaran' })).toHaveAttribute('href', '/payment/PAY-1')
+    await expect(main(page).getByRole('button', { name: 'Batalkan', exact: true })).toHaveCount(0)
+    await expect(main(page).getByRole('link', { name: 'Tangguhkan', exact: true })).toHaveAttribute('href', '/transaction/TX-2')
     expect(dialogs).toEqual([])
   })
 })
