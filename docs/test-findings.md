@@ -9,7 +9,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## Rencana & catatan
 
 - **Cakupan tes** (modul yang sudah/belum dites, prioritas): lihat **`docs/test-progress.md`**. Dokumen ini hanya berisi bug.
-- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45 (selesai), F-43 (todo). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
+- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45, F-46, F-47 (selesai), F-43 (todo). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
   composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
   Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
 - **Setelah memperbaiki temuan:** ubah statusnya di sini menjadi `SELESAI`, hapus `test.fail` di spec, dan ubah 🐞 → ✅
@@ -68,6 +68,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-43 | Produk admin | Halaman `/admin/product/create` dan `/admin/product/edit/[id]` tidak ditautkan dari mana pun dan memanggil `/product/create` & `/product/update/{id}` yang ber-`@CurrentSeller`; admin selalu ditolak 403. Halaman juga memakai `alert()` untuk validasi gambar | Rendah | TODO | Keputusan 2026-11-20: jangan dihapus dulu. Nanti: hapus kedua halaman, atau buat endpoint admin bila admin memang perlu membuat/mengubah produk seller. |
 | F-44 | Detail produk | Ulasan tidak pernah dimuat saat halaman produk dibuka: "( 0 ulasan )" dan tab ulasan kosong sampai pengunjung mengubah filter | Sedang | SELESAI | Fetch ulasan juga memantau `product.id`. Tes regresi di `catalog.spec.ts`. |
 | F-45 | Chat | Kirim pesan gagal (mis. ditolak BE) mengosongkan pesan yang diketik beserta lampirannya, di chat buyer, seller, dan admin | Rendah | SELESAI | Isian dikosongkan hanya saat terkirim. Tes regresi di `chat.spec.ts`. |
+| F-46 | Notifikasi (admin) | Modal Broadcast menawarkan tipe `ORDER_UPDATE`, `PAYMENT_INFO`, `PENALTY_NOTICE` yang tidak ada di enum `NotificationType` BE; broadcast dengan tipe itu ditolak 400 | Sedang | SELESAI | Opsi disamakan dengan enum BE (INFO, SYSTEM_INFO, WARNING, URGENT, PROMOTION). Tes `notification.spec.ts` mengirim tiap opsi dan mencocokkannya dengan enum BE. |
+| F-47 | Notifikasi (buyer) | Setelah "Tandai Semua Dibaca", penanda belum dibaca dan tombol "Tandai Dibaca" tetap tampil sampai halaman dimuat ulang | Rendah | SELESAI | `data` dari `useAsyncData` (shallowRef) diganti objeknya, bukan diubah item di dalamnya. Halaman seller/admin memakai `ref` biasa dan tidak terkena. |
 ---
 
 ## F-01 — Kredensial bocor ke URL jika form ter-submit sebelum hidrasi
@@ -734,3 +736,27 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 - **Catatan:** Cabang `message.trim() === ''` yang mengisi kolom dengan "Pesan wajib diisi" tidak bisa tercapai karena
   tombol Kirim nonaktif untuk pesan kosong/spasi; dibiarkan sebagai kode mati.
 - **Tes:** `chat.spec.ts` → tiga tes "... (F-45)" (buyer, seller, admin; merah di kode lama).
+
+---
+## F-46 — Tipe broadcast notifikasi tidak dikenal BE
+
+- **Lokasi:** `app/components/form/BroadcastNotificationModal.vue` → `notificationTypeOptions`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-20):** Opsi diganti dengan nilai enum BE: INFO, SYSTEM_INFO, WARNING, URGENT, PROMOTION (sama dengan modal kirim ke user).
+- **Gejala:** Tiga dari lima opsi (`ORDER_UPDATE`, `PAYMENT_INFO`, `PENALTY_NOTICE`) tidak ada di `NotificationType`
+  (`USER_INFO`, `SELLER_INFO`, `ADMIN_INFO`, `SYSTEM_INFO`, `INFO`, `URGENT`, `WARNING`, `PROMOTION`). Jackson gagal
+  membaca body sehingga BE membalas 400 dan broadcast tidak terkirim.
+- **Ringan (belum diubah):** Ikon di daftar notifikasi memetakan `ORDER`/`PAYMENT`/`PENALTY`, yang juga tidak ada di enum
+  BE, sehingga semua notifikasi memakai ikon bawaan.
+- **Tes:** `notification.spec.ts` → "broadcast: semua opsi tipe ada di enum BE (F-46)" (merah di kode lama).
+
+---
+## F-47 — "Tandai Semua Dibaca" tidak memperbarui daftar notifikasi buyer
+
+- **Lokasi:** `app/pages/notification/index.vue` → `handleReadAll`, `handleRead`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-20):** Helper `setReadAt` mengganti `data.value` dengan objek baru.
+- **Gejala:** `data` dari `useAsyncData` di Nuxt 4 berupa `shallowRef`. Mengubah `n.read_at` langsung tidak memicu
+  render ulang, sehingga setelah "Tandai Semua Dibaca" (BE sukses, toast tampil) titik belum dibaca dan tombol per item
+  tetap ada. "Tandai Dibaca" satu item kebetulan tampak berfungsi karena `readingId` ikut berubah.
+- **Tes:** `notification.spec.ts` → "daftar: belum dibaca ditandai; tandai dibaca & tandai semua memanggil BE" (merah di kode lama).

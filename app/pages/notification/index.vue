@@ -167,12 +167,21 @@ const {
 
 const hasUnread = computed(() => data.value?.content?.some(n => !n.read_at) ?? false)
 
+// data useAsyncData berupa shallowRef: ganti objeknya, bukan mengubah item di dalamnya (F-47)
+function setReadAt(ids: number[] | 'all', at: string) {
+  if (!data.value) return
+  data.value = {
+    ...data.value,
+    content: data.value.content.map(n => (ids === 'all' || ids.includes(n.id)) && !n.read_at ? { ...n, read_at: at } : n),
+  }
+}
+
 async function handleRead(notif: NotificationResponse) {
   readingId.value = notif.id
   try {
     const wasUnread = !notif.read_at
     await markAsRead(notif.id)
-    notif.read_at = new Date().toISOString()
+    setReadAt([notif.id], new Date().toISOString())
     if (wasUnread) {
       alertsStore.refresh()
     }
@@ -188,7 +197,7 @@ async function handleReadAll() {
   try {
     await markAllAsRead()
     const now = new Date().toISOString()
-    data.value?.content?.forEach(n => { n.read_at = now })
+    setReadAt('all', now)
     alertsStore.refresh()
     toast.add({ title: 'Semua notifikasi ditandai dibaca', color: 'success' })
   } catch {

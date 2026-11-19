@@ -112,10 +112,11 @@ const roleOptions = [
 ]
 
 const notificationTypeOptions = [
+  // Harus nilai enum NotificationType di BE; nilai lain ditolak 400 (F-46)
+  { label: 'Informasi', value: 'INFO' },
   { label: 'Informasi Sistem', value: 'SYSTEM_INFO' },
-  { label: 'Update Order', value: 'ORDER_UPDATE' },
-  { label: 'Informasi Pembayaran', value: 'PAYMENT_INFO' },
-  { label: 'Pemberitahuan Penalty', value: 'PENALTY_NOTICE' },
+  { label: 'Peringatan', value: 'WARNING' },
+  { label: 'Darurat', value: 'URGENT' },
   { label: 'Promosi', value: 'PROMOTION' },
 ]
 

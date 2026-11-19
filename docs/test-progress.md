@@ -47,7 +47,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 22 | Keuangan admin (ringkasan, jurnal, kategori, failed journal) | — | ⬜ | P2 | Total per kategori diagregasi di FE (loop semua halaman jurnal, abaikan void) — perlu dicek kebenarannya. |
 | 23 | System settings | — | ⬜ | P2 | Setting publik dipakai checkout & withdrawal (biaya aplikasi, `WD_FEE`); salah ubah berdampak luas. |
 | 24 | Chat (buyer, seller, admin) | `chat.spec.ts` | ✅ | — | Admin memakai endpoint percakapan seller. Pesan hilang saat gagal kirim (F-45, selesai). Chat dari halaman produk (`ChatModalBuyer`) belum. |
-| 25 | Notifikasi (buyer, seller, admin, broadcast) | — | ⬜ | P2 | Kirim ke user memakai pencarian `/admin/users` (sama dengan modal penalty). |
+| 25 | Notifikasi (buyer, seller, admin, broadcast) | `notification.spec.ts` | ✅ | — | Tipe broadcast tidak dikenal BE (F-46) & tandai semua tidak memperbarui daftar buyer (F-47), keduanya selesai. |
 | 26 | Badge/alerts sidebar & header | — (tersirat di beberapa tes) | Sebagian | P3 | Refresh badge setelah aksi sudah dicek di payment & withdrawal. Polling 45 detik & field `null` belum. |
 | 28 | Pengguna admin: daftar & buka kunci login | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk `locked_until` di masa depan; alasan ≥ 5 karakter; `LOGIN_NOT_LOCKED` menutup modal & memuat ulang; akun ADMIN/SUPER_ADMIN hanya bisa dibuka super admin; 403 BE tampil di modal. |
 | 29 | Super admin: kode reset password | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk super admin; alasan ≥ 5 karakter dikirim ter-trim; kode tampil lalu hilang saat modal ditutup; `NO_ACTIVE_RESET_CODE` memberi petunjuk di modal. |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **328 tes** di 35 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-19 dengan `npx playwright test --list`).
+Total saat ini: **335 tes** di 36 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-19 dengan `npx playwright test --list`).
 
 ---
 
@@ -352,8 +352,8 @@ Total saat ini: **328 tes** di 35 spec, tanpa tes `test.fail` (semua bug yang pu
 
 | Skenario | Status |
 |---|---|
-| Buyer/seller/admin: daftar, tandai dibaca, tandai semua dibaca | ⬜ P2 |
-| Admin: kirim notifikasi ke user (`createNotification`) & broadcast | ⬜ P2 |
+| Buyer: daftar, tandai dibaca, tandai semua dibaca, error; seller: daftar | ✅ |
+| Admin: kirim notifikasi ke user (validasi, cari user, body) & broadcast (tipe sesuai enum BE, pesan BE) | ✅ |
 
 ## 26. Badge / alerts
 
@@ -374,5 +374,5 @@ Cukup satu smoke test (halaman terbuka tanpa error) — ⬜ P3.
 ## Urutan pengerjaan yang disarankan
 
 1. **P1:** selesai 2026-11-19 (produk & stok seller, verifikasi seller + admin, daftar toko, rekening bank, unprocessed payment, register/logout, daftar & review produk admin).
-2. **P2:** ~~katalog publik~~, ~~chat~~ (selesai) → notifikasi → master data admin → keuangan admin → system settings → sisa (profil, `/payment`, diskusi buyer).
+2. **P2:** ~~katalog publik~~, ~~chat~~, ~~notifikasi~~ (selesai) → master data admin → keuangan admin → system settings → sisa (profil, `/payment`, diskusi buyer).
 3. **P3:** dashboard, `/admin/stock`, polling badge, smoke test halaman statis.
