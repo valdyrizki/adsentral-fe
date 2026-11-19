@@ -374,6 +374,16 @@ function openReject() {
   isRejectOpen.value = true
 }
 
+// Gagal setujui/tolak bisa berarti pengajuan sudah direview admin lain (BE membalas 400 tanpa kode error):
+// muat ulang detail; bila sudah tidak PENDING, modal ditutup dan pesan BE dipindah ke toast.
+async function reloadAfterActionError(message: string) {
+  await refresh()
+  if (detail.value?.status === 'PENDING') return
+  isApproveOpen.value = false
+  isRejectOpen.value = false
+  toast.add({ title: 'Gagal', description: message, color: 'error' })
+}
+
 async function handleApprove() {
   if (!detail.value) return
   try {
@@ -389,7 +399,8 @@ async function handleApprove() {
     isApproveOpen.value = false
     await refresh()
   } catch (err: any) {
-    actionError.value = err.statusMessage || 'Gagal menyetujui verifikasi.'
+    actionError.value = apiErrorMessage(err, 'Gagal menyetujui verifikasi.')
+    await reloadAfterActionError(actionError.value)
   } finally {
     actionLoading.value = false
   }
@@ -414,7 +425,8 @@ async function handleReject() {
     isRejectOpen.value = false
     await refresh()
   } catch (err: any) {
-    actionError.value = err.statusMessage || 'Gagal menolak verifikasi.'
+    actionError.value = apiErrorMessage(err, 'Gagal menolak verifikasi.')
+    await reloadAfterActionError(actionError.value)
   } finally {
     actionLoading.value = false
   }
@@ -423,11 +435,12 @@ async function handleReject() {
 // ===== EDIT (setelah VERIFIED) =====
 const isEditOpen = ref(false)
 const editForm = reactive<VerificationEditRequest>({})
+let editInitial: Record<string, unknown> = {}
 
 function openEdit() {
   if (!detail.value) return
   actionError.value = null
-  Object.assign(editForm, {
+  const initial: VerificationEditRequest = {
     full_name_ktp: detail.value.full_name_ktp,
     place_of_birth: detail.value.place_of_birth,
     date_of_birth: detail.value.date_of_birth,
@@ -444,7 +457,9 @@ function openEdit() {
     province: detail.value.province,
     postal_code: detail.value.postal_code ?? '',
     nik: '',
-  })
+  }
+  editInitial = { ...initial }
+  Object.assign(editForm, initial)
   isEditOpen.value = true
 }
 
@@ -454,9 +469,14 @@ async function handleEdit() {
     actionLoading.value = true
     actionError.value = null
 
-    // Hanya kirim field yang terisi (nik kosong artinya tidak diubah)
-    const payload: VerificationEditRequest = { ...editForm }
-    if (!payload.nik) delete payload.nik
+    // Hanya field yang berbeda dari data awal yang dikirim; NIK kosong artinya tidak diubah
+    const payload = Object.fromEntries(
+      Object.entries(editForm).filter(([key, value]) => (key === 'nik' ? !!value : value !== editInitial[key])),
+    ) as VerificationEditRequest
+    if (Object.keys(payload).length === 0) {
+      actionError.value = 'Tidak ada perubahan.'
+      return
+    }
 
     await editVerifiedUser(detail.value.user_id, payload)
     toast.add({
@@ -468,7 +488,7 @@ async function handleEdit() {
     isEditOpen.value = false
     await refresh()
   } catch (err: any) {
-    actionError.value = err.statusMessage || 'Gagal memperbarui data verifikasi.'
+    actionError.value = apiErrorMessage(err, 'Gagal memperbarui data verifikasi.')
   } finally {
     actionLoading.value = false
   }

@@ -87,9 +87,9 @@
           <UBadge icon="mdi:receipt-text" size="lg" class="font-medium text-white">#{{ transaction?.id }}</UBadge>
           <UButton icon="material-symbols:refresh" variant="outline" size="xs" @click="refreshHandler">Refresh</UButton>
           <!-- refund/selesaikan paksa hanya untuk memutus arbitrase (T-02) -->
-          <UButton v-if="transaction?.status === 'ARBITRAGE'" icon="material-symbols:cancel" color="error" variant="outline" size="xs" @click="isRefundingTxModal = true">Refund Transaksi</UButton>
+          <UButton v-if="transaction?.status === 'ARBITRAGE'" icon="material-symbols:cancel" color="error" variant="outline" size="xs" @click="refundTxError = null; isRefundingTxModal = true">Refund Transaksi</UButton>
           <UButton v-if="transaction?.status === 'ARBITRAGE'" icon="material-symbols:arrow-forward" color="primary" variant="outline" size="xs" :loading="loadingCancelArbitrage" @click="handleCancelArbitrage">Cancel Arbitrage</UButton>
-          <UButton v-if="transaction?.status === 'ARBITRAGE'" icon="material-symbols:check" color="primary" variant="solid" size="xs" @click="isCompleteTxModal = true">Selesaikan Transaksi</UButton>
+          <UButton v-if="transaction?.status === 'ARBITRAGE'" icon="material-symbols:check" color="primary" variant="solid" size="xs" @click="completexError = null; isCompleteTxModal = true">Selesaikan Transaksi</UButton>
         </div> 
       </div>
     </div>
@@ -840,6 +840,7 @@ const selectRating = ref<SelectItem[]>(
 
     try {
       loadingRefundingModal.value = true
+      refundTxError.value = null
       await fetchRefundTx(transaction.value?.id, reason)
 
       useToast().add({
@@ -849,17 +850,23 @@ const selectRating = ref<SelectItem[]>(
       })
 
 
+      isRefundingTxModal.value = false
       await refreshTransaction()
 
     } catch (err: any) {
-      if (isStaleActionError(err)) refreshTransaction()
+      // Modal hanya ditutup bila status sudah berubah; error lain tetap di modal agar alasan tidak perlu diketik ulang
+      if (isStaleActionError(err)) {
+        isRefundingTxModal.value = false
+        refreshTransaction()
+      } else {
+        refundTxError.value = apiErrorMessage(err, 'Gagal refund pesanan')
+      }
       useToast().add({
         title: 'Gagal',
-        description: err.message || 'Gagal refund pesanan',
+        description: apiErrorMessage(err, 'Gagal refund pesanan'),
         color: 'error'
       })
     } finally {
-      isRefundingTxModal.value = false
       loadingRefundingModal.value = false
 
     }
@@ -913,6 +920,7 @@ const selectRating = ref<SelectItem[]>(
 
     try {
       loadingCompleteModal.value = true
+      completexError.value = null
       await fetchCompleteTx(transaction.value?.id, reason)
 
       useToast().add({
@@ -922,18 +930,23 @@ const selectRating = ref<SelectItem[]>(
       })
 
 
+      isCompleteTxModal.value = false
       await refreshTransaction()
 
     } catch (err: any) {
-      if (isStaleActionError(err)) refreshTransaction()
+      if (isStaleActionError(err)) {
+        isCompleteTxModal.value = false
+        refreshTransaction()
+      } else {
+        completexError.value = apiErrorMessage(err, 'Gagal menyelesaikan pesanan')
+      }
       useToast().add({
         title: 'Gagal',
-        description: err.message || 'Gagal menyelesaikan pesanan',
+        description: apiErrorMessage(err, 'Gagal menyelesaikan pesanan'),
         color: 'error'
       })
     } finally {
       loadingCompleteModal.value = false
-      isCompleteTxModal.value = false
     }
   }
 

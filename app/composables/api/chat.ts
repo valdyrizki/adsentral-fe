@@ -19,10 +19,8 @@ export const useChatApi = () => {
       }
       return res.data
     } catch (err: any) {
-      throw createError({
-        statusCode: err.statusCode || 500,
-        statusMessage: err.response._data.message || 'Transaction failed, server error',
-      })
+      // gangguan jaringan tidak punya `response`: ambil pesan lewat apiErrorMessage, jangan err.response._data
+      return rethrowApiError('Gagal mengirim pesan')(err)
     }
   }
 

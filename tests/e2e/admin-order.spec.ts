@@ -202,7 +202,7 @@ test.describe('Arbitrase & refund admin', () => {
     await expect(main(page).getByRole('button', { name: 'Refund Transaksi' })).toHaveCount(0)
   })
 
-  test.fail('refund 400: modal tetap terbuka dengan pesan BE & alasan tidak hilang (F-24)', async ({ page, mockApi }) => {
+  test('refund 400: modal tetap terbuka dengan pesan BE & alasan tidak hilang (F-24)', async ({ page, mockApi }) => {
     mockAdminDetail(mockApi, () => arbitrageTx('TX-1'))
     mockApi.on('PATCH', '/tx/refund/TX-1', fail(400, 'Saldo escrow seller tidak mencukupi'))
 

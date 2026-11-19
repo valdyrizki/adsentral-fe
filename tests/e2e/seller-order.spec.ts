@@ -271,6 +271,18 @@ test.describe('Detail pesanan seller', () => {
     expect(txFetches).toBe(fetchesBefore) // transaksi tidak perlu dimuat ulang
   })
 
+  test('kirim pesan saat koneksi putus: pesan koneksi tampil, tidak crash (F-26)', async ({ page, mockApi }) => {
+    mockSellerDetail(mockApi, () => makeTx('TX-1', 'PAY-1', { status: 'IN_PROGRESS', confirmed_at: hoursAgo(1) }))
+    await gotoHydrated(page, '/seller/order/TX-1')
+    await page.route('**/backend/order/discussion/create', (route) => route.abort('internetdisconnected'))
+
+    await main(page).getByPlaceholder('Tulis pesan disini...').fill('Halo')
+    await main(page).getByRole('button', { name: 'Kirim Pesan' }).click()
+
+    await expect(page.getByText('Tidak dapat terhubung ke server', { exact: false }).first()).toBeVisible()
+    await expect(main(page).getByPlaceholder('Tulis pesan disini...')).toHaveValue('Halo')
+  })
+
   test('kirim pesan kosong ditolak lewat toast, bukan alert browser', async ({ page, mockApi }) => {
     // Bug diketahui: saat ini memakai window.alert() (docs/test-findings.md F-10). Hapus setelah diperbaiki.
     test.fail()

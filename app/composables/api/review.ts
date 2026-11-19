@@ -73,11 +73,8 @@ export const useReviewApi = () => {
       }
       return res.data
     } catch (err: any) {
-      console.log(err)
-      throw createError({
-        statusCode: err.statusCode || 500,
-        statusMessage: err.response._data.message || 'Transaction failed, server error',
-      })
+      // gangguan jaringan tidak punya `response`: ambil pesan lewat apiErrorMessage, jangan err.response._data
+      return rethrowApiError('Gagal menyimpan penilaian')(err)
     }
   }
 
@@ -92,11 +89,8 @@ export const useReviewApi = () => {
       }
       return res.data
     } catch (err: any) {
-      console.log(err)
-      throw createError({
-        statusCode: err.statusCode || 500,
-        statusMessage: err.response._data.message || 'Transaction failed, server error',
-      })
+      // gangguan jaringan tidak punya `response`: ambil pesan lewat apiErrorMessage, jangan err.response._data
+      return rethrowApiError('Gagal menyimpan penilaian')(err)
     }
   }
 

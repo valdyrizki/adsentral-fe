@@ -434,11 +434,13 @@ test.describe('Penalty milik user', () => {
   })
 
   // /penalty tidak ada di authRequiredRoutes; redirect terjadi karena useApi menangani 401 dari BE (lihat F-19)
-  test('pengunjung yang membuka /penalty diarahkan ke login (lewat 401 BE)', async ({ page, mockApi }) => {
-    mockApi.on('GET', '/user/penalty', fail(401, 'Unauthorized'))
+  test('pengunjung yang membuka /penalty diarahkan ke login dengan redirect, tanpa memanggil BE (F-19)', async ({ page, mockApi }) => {
+    let calls = 0
+    mockApi.on('GET', '/user/penalty', () => { calls++; return fail(401, 'Unauthorized') })
 
     await gotoHydrated(page, '/penalty')
-    await expect(page).toHaveURL(/\/login/, { timeout: 3000 })
+    await expect(page).toHaveURL((url) => url.pathname === '/login' && url.searchParams.get('redirect') === '/penalty', { timeout: 5000 })
+    expect(calls).toBe(0)
   })
 
   test('seller: riwayat penalty di dashboard seller', async ({ page, mockApi }) => {

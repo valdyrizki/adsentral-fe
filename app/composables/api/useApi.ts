@@ -23,8 +23,11 @@ let lastSessionEndedToastAt = 0
 // (`[POST] "/backend/...": 409 Conflict`), padahal banyak halaman menampilkan salah satunya. Pesan BE dipasang
 // ke keduanya; status, `data` (termasuk `data.code`), dan `response` tetap diteruskan.
 const withBackendMessage = (err: any): any => {
-  const message = err?.data?.message
-  if (!err?.response || typeof message !== 'string' || !message) return err
+  // Tanpa respons (offline, server mati, CORS): ganti teks teknis "<no response> Failed to fetch"
+  const message = err?.name === 'FetchError' && !err?.response
+    ? 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda, lalu coba lagi.'
+    : err?.data?.message
+  if (typeof message !== 'string' || !message) return err
   const e: any = new Error(message, { cause: err })
   e.name = 'FetchError'
   e.statusMessage = message

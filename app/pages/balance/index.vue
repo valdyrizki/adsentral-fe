@@ -81,12 +81,13 @@
           </div>
 
           <!-- ERROR -->
-          <div v-else-if="error" class="p-6">
+          <div v-else-if="errorDepositHistory" class="p-6">
             <UAlert
               title="Terjadi Kesalahan"
-              :description="error"
-              icon="mdi:alert-circle:error"
+              :description="apiErrorMessage(errorDepositHistory, 'Gagal memuat riwayat deposit')"
+              icon="mdi:alert-circle"
               color="error"
+              :actions="[{ label: 'Coba lagi', icon: 'mdi:refresh', color: 'error', variant: 'outline', onClick: () => refreshDepositHistory() }]"
             />
           </div>
 
@@ -195,6 +196,17 @@
           <AppLoadingSkeleton />
         </div>
 
+        <!-- ERROR -->
+        <div v-else-if="errorBalanceLog" class="p-6">
+          <UAlert
+            title="Terjadi Kesalahan"
+            :description="apiErrorMessage(errorBalanceLog, 'Gagal memuat mutasi saldo')"
+            icon="mdi:alert-circle"
+            color="error"
+            :actions="[{ label: 'Coba lagi', icon: 'mdi:refresh', color: 'error', variant: 'outline', onClick: () => refreshBalanceLog() }]"
+          />
+        </div>
+
         <!-- EMPTY -->
         <div v-else-if="!balanceLogPagination?.content?.length" class="p-6">
           <UAlert
@@ -291,7 +303,6 @@ import { walletSourceLabel, getBalanceLogBucket } from '~/utils/walletSource'
   const paymentNow = usePaymentNow()
 
   // Reactive state
-  const error =ref<string | null | any >(null)
   const isDepositOpen = ref(false)
   const submittingDeposit = ref(false)
   const toast = useToast()
@@ -362,6 +373,7 @@ import { walletSourceLabel, getBalanceLogBucket } from '~/utils/walletSource'
   const {
     data: balanceLogPagination,
     pending: loadingBalanceLog,
+    error: errorBalanceLog,
     refresh: refreshBalanceLog,
   } = await useAsyncData<PageResponse<BalanceLogResponse>>(
     () => `balance-log-${logPage.value}-${logPerPageValue.value}`,

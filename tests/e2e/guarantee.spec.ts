@@ -173,9 +173,7 @@ test.describe('Halaman klaim garansi buyer', () => {
   })
 
   test('pengunjung yang membuka /guarantee diarahkan ke login', async ({ page }) => {
-    // Bug diketahui: /guarantee belum ada di authRequiredRoutes (docs/test-findings.md F-19).
-    test.fail()
-    await page.goto('/guarantee')
+    await gotoHydrated(page, '/guarantee')
     await expect(page).toHaveURL((url) => url.pathname === '/login' && url.searchParams.get('redirect') === '/guarantee', { timeout: 5000 })
   })
 })

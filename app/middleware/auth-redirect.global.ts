@@ -39,6 +39,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
     '/profile',
     '/chat',
     '/payment',
+    '/merchant/create',
+    '/guarantee',
+    '/penalty',
   ]
   
   const requiresAuth = authRequiredRoutes.some(route =>

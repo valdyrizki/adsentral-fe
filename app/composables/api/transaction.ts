@@ -19,11 +19,8 @@ export const useTransactionApi = () => {
       }
       return res.data
     } catch (err: any) {
-      console.log(err.response._data.message)
-      throw createError({
-        statusCode: err.statusCode || 500,
-        statusMessage: err.response._data.message || 'Transaction failed, server error',
-      })
+      // gangguan jaringan tidak punya `response`: ambil pesan lewat apiErrorMessage, jangan err.response._data
+      return rethrowApiError('Gagal membuat transaksi')(err)
     }
   }
 

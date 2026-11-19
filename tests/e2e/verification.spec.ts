@@ -227,7 +227,7 @@ test.describe('Admin: review verifikasi KTP', () => {
     await expect(main(page).getByText('Foto KTP buram')).toBeVisible()
   })
 
-  test('edit data terverifikasi: NIK kosong tidak dikirim', async ({ page, mockApi }) => {
+  test('edit data terverifikasi: hanya field yang diubah dikirim, NIK kosong tidak dikirim (F-39)', async ({ page, mockApi }) => {
     let body: any = null
     adminDetail(mockApi, { status: 'APPROVED', active_verification: true })
       .on('PATCH', '/admin/verification/user/42', (route) => { body = route.request().postDataJSON(); return ok({ user_id: 42 }) })
@@ -240,8 +240,20 @@ test.describe('Admin: review verifikasi KTP', () => {
     await dialog(page).getByRole('button', { name: /Simpan/ }).click()
 
     await expect(page.getByText('Data verifikasi berhasil diperbarui.').first()).toBeVisible()
-    expect(body.full_name_ktp).toBe('Budi Santosa')
-    expect('nik' in body).toBe(false)
+    expect(body).toEqual({ full_name_ktp: 'Budi Santosa' })
+  })
+
+  test('edit tanpa perubahan: tidak memanggil BE', async ({ page, mockApi }) => {
+    let calls = 0
+    adminDetail(mockApi, { status: 'APPROVED', active_verification: true })
+      .on('PATCH', '/admin/verification/user/42', () => { calls++; return ok({ user_id: 42 }) })
+
+    await gotoHydrated(page, '/admin/verification/req-1')
+    await main(page).getByRole('button', { name: 'Edit' }).click()
+    await dialog(page).getByRole('button', { name: /Simpan/ }).click()
+
+    await expect(dialog(page).getByText('Tidak ada perubahan.')).toBeVisible()
+    expect(calls).toBe(0)
   })
 
   test('F-39: setujui ditolak BE (NIK dipakai akun lain) menampilkan pesan BE', async ({ page, mockApi }) => {
@@ -266,6 +278,21 @@ test.describe('Admin: review verifikasi KTP', () => {
 
     await expect(dialog(page).getByText('Pengajuan ini sudah direview sebelumnya')).toBeVisible({ timeout: 3000 })
   })
+
+  test('F-39: setujui pengajuan yang sudah ditolak admin lain: detail dimuat ulang, modal ditutup, pesan BE di toast', async ({ page, mockApi }) => {
+    let reviewed = false
+    adminDetail(mockApi, () => (reviewed ? { status: 'REJECTED', rejection_reason: 'Foto KTP buram' } : {}))
+      .on('PATCH', '/admin/verification/req-1/approve', () => { reviewed = true; return fail(400, 'Pengajuan ini sudah direview sebelumnya') })
+
+    await gotoHydrated(page, '/admin/verification/req-1')
+    await main(page).getByRole('button', { name: 'Setujui & Verifikasi' }).click()
+    await dialog(page).getByRole('button', { name: 'Setujui & Verifikasi' }).click()
+
+    await expect(page.getByText('Pengajuan ini sudah direview sebelumnya').first()).toBeVisible()
+    await expect(dialog(page)).toHaveCount(0)
+    await expect(main(page).getByText('Foto KTP buram')).toBeVisible()
+    await expect(main(page).getByRole('button', { name: 'Setujui & Verifikasi' })).toHaveCount(0)
+  })
 })
 
 test.describe('Daftar toko (jadi seller)', () => {
@@ -282,7 +309,7 @@ test.describe('Daftar toko (jadi seller)', () => {
     await m.locator('#description').fill('Jual akun game')
     // profil sesudah daftar: role menjadi SELLER
     mockApi.on('GET', '/user/profile', ok({ id: 1, email: 'buyer@test.local', username: 'buyer_test', full_name: 'Tes', role: 'SELLER' }))
-    await m.getByRole('button', { name: 'Save' }).click()
+    await m.getByRole('button', { name: 'Simpan' }).click()
 
     await expect(page).toHaveURL(/\/seller\/dashboard/)
     expect(formField(req!, 'name')).toBe('Toko Budi')
@@ -296,20 +323,42 @@ test.describe('Daftar toko (jadi seller)', () => {
 
     await gotoHydrated(page, '/merchant/create')
     await main(page).locator('#name').fill('Tok')
-    await main(page).getByRole('button', { name: 'Save' }).click()
+    await main(page).getByRole('button', { name: 'Simpan' }).click()
 
-    await expect(page.getByText('Name must be at least 5 characters').first()).toBeVisible()
+    await expect(page.getByText('Nama toko harus 5–50 karakter').first()).toBeVisible()
     expect(calls).toBe(0)
   })
 
-  test('F-40: logo wajib dicek di FE dan pesan BE tampil', async ({ page, mockApi }) => {
+  test('pesan BE tampil saat daftar toko ditolak (F-40)', async ({ page, mockApi }) => {
     mockApi.asRole('BUYER').on('POST', '/merchant/create', fail(409, 'Nama toko sedang dipakai, coba lagi'))
 
     await gotoHydrated(page, '/merchant/create')
     await main(page).locator('input[type="file"]').first().setInputFiles(png('logo.png'))
     await main(page).locator('#name').fill('Toko Budi')
-    await main(page).getByRole('button', { name: 'Save' }).click()
+    await main(page).getByRole('button', { name: 'Simpan' }).click()
 
     await expect(page.getByText('Nama toko sedang dipakai, coba lagi').first()).toBeVisible({ timeout: 3000 })
+  })
+
+  test('logo wajib, nama kosong, dan GIF ditolak sebelum dikirim (F-40)', async ({ page, mockApi }) => {
+    let calls = 0
+    mockApi.asRole('BUYER').on('POST', '/merchant/create', () => { calls++; return ok({}) })
+
+    await gotoHydrated(page, '/merchant/create')
+    await main(page).getByRole('button', { name: 'Simpan' }).click()
+    await expect(page.getByText('Logo toko wajib diunggah').first()).toBeVisible()
+    await expect(page.getByText('Nama toko harus 5–50 karakter').first()).toBeVisible()
+
+    await main(page).locator('input[type="file"]').first()
+      .setInputFiles({ name: 'logo.gif', mimeType: 'image/gif', buffer: Buffer.from('GIF89a') })
+    await main(page).locator('#name').fill('Toko Budi')
+    await main(page).getByRole('button', { name: 'Simpan' }).click()
+    await expect(page.getByText('Logo harus berformat JPG, PNG, atau WEBP').first()).toBeVisible()
+    expect(calls).toBe(0)
+  })
+
+  test('pengunjung yang membuka /merchant/create diarahkan ke login (F-40)', async ({ page }) => {
+    await gotoHydrated(page, '/merchant/create')
+    await expect(page).toHaveURL(/\/login\?redirect=(\/|%2F)merchant(\/|%2F)create/)
   })
 })

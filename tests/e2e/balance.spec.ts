@@ -149,12 +149,11 @@ test.describe('Deposit (top up) buyer', () => {
     expect(body).toEqual({ amount: 75000, payment_method: 'MANUAL_BANK', channel_code: null })
   })
 
-  test.fail('deposit tanpa metode terpilih: ada metode default atau petunjuk memilih (F-33)', async ({ page, mockApi }) => {
+  test('form deposit dibuka: metode pertama terpilih otomatis sehingga tombol Deposit aktif (F-33)', async ({ page, mockApi }) => {
     mockBuyerBalance(mockApi)
 
     await gotoHydrated(page, '/balance')
     const dialog = await openDepositForm(page)
-    // Default `selectedPayment = 'QRIS'` bukan id metode mana pun → tombol nonaktif tanpa penjelasan
     await expect(dialog.getByRole('button', { name: 'Deposit' })).toBeEnabled({ timeout: 2000 })
   })
 
@@ -217,13 +216,16 @@ test.describe('Deposit (top up) buyer', () => {
     await expect(row.getByText('Berhasil')).toBeVisible({ timeout: 2000 })
   })
 
-  test.fail('riwayat deposit gagal dimuat: tampil error, bukan "Belum ada riwayat" (F-34)', async ({ page, mockApi }) => {
+  test('riwayat deposit & mutasi saldo gagal dimuat: tampil error, bukan kosong (F-34)', async ({ page, mockApi }) => {
     mockBuyerBalance(mockApi)
     mockApi.on('GET', '/balance/deposit/history', fail(500, 'Server error'))
+    mockApi.on('GET', '/balance/log', fail(500, 'Mutasi gagal dimuat'))
 
     await gotoHydrated(page, '/balance')
-    await expect(main(page).getByText('Terjadi Kesalahan')).toBeVisible({ timeout: 3000 })
+    await expect(main(page).getByText('Server error')).toBeVisible({ timeout: 3000 })
     await expect(main(page).getByText('Belum ada riwayat deposit')).toHaveCount(0)
+    await expect(main(page).getByText('Mutasi gagal dimuat')).toBeVisible()
+    await expect(main(page).getByText('Belum ada mutasi saldo')).toHaveCount(0)
   })
 
   test('pengunjung yang membuka /balance diarahkan ke login', async ({ page }) => {

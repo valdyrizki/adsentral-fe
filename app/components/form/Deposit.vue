@@ -95,7 +95,7 @@ const { fetchPaymentMethod, paymentMethod } = usePaymentMethodApi()
 
 // Form state
 const amount = ref<number>(200000)
-const selectedPayment = ref<string>('QRIS')
+const selectedPayment = ref<string | null>(null)
 const selectedChannel = ref<string | null>(null)
 
 // Validation errors (local, untuk field error display)
@@ -152,7 +152,7 @@ function handleSubmit() {
 
   const form: DepositRequest = {
     amount: amount.value,
-    payment_method: selectedPayment.value,
+    payment_method: selectedPayment.value!, // validate() memastikan terisi
     channel_code: selectedChannel.value,
   }
 
@@ -161,5 +161,14 @@ function handleSubmit() {
 
 onMounted(async () => {
   await fetchPaymentMethod()
+  // Pilih otomatis metode deposit pertama beserta channel aktif pertamanya, supaya tombol Deposit tidak nonaktif
+  // tanpa penjelasan (dulu default 'QRIS', padahal itu kode channel, bukan id metode)
+  if (!selectedPayment.value) {
+    const first = (paymentMethod.value ?? []).find(m => m.id !== 'SALDO')
+    if (first) {
+      selectedPayment.value = first.id
+      selectedChannel.value = first.channels?.find(c => c.status === 'ACTIVE')?.code ?? null
+    }
+  }
 })
 </script>
