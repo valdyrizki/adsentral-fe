@@ -320,7 +320,8 @@ export const useProductsApi = () => {
     try {
       const query: Record<string, any> = { page, size, sort }
       if (keyword) query.keyword = keyword
-      if (status) query.status = status
+      // BE memetakan `status` ke enum: opsi "Semua Status" ('ALL') berarti tanpa parameter (F-42)
+      if (status && status !== 'ALL') query.status = status
       if (merchantId) query.merchant_id = merchantId // semua produk satu toko (EP06-08)
       const res = await api<WebResponse<PageResponse<ProductResponse>>>('/products/all', { query })
       if (res.status !== 'success' || !res.data) {

@@ -64,6 +64,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-40 | Daftar toko | `/merchant/create`: logo tidak dicek padahal wajib di BE, nama kosong lolos, GIF diterima padahal BE menolak, pesan BE hilang ("Bad Request"/"Conflict"), pesan berbahasa Inggris, pengunjung tidak diarahkan ke login | Sedang | SELESAI | Validasi disamakan dengan BE (logo wajib, nama 5–50 setelah trim, deskripsi ≤ 1000, JPG/PNG/WEBP ≤ 2 MB), teks Indonesia, pesan BE di toast, `/merchant/create` wajib login. |
 | F-41 | Rekening bank | Simpan rekening ditolak BE tampil "Bad Request" (pesan BE hilang); gagal memuat rekening (500/timeout) tampil "Belum ada rekening bank", bisa membuat seller mengira rekeningnya hilang | Sedang | SELESAI | Pesan BE tampil di form; `fetchBankAccount` hanya mengubah 404 jadi `null`, error lain tampil sebagai alert dengan tombol "Coba lagi". |
 
+| F-42 | Produk admin | Filter "Semua Status" di `/admin/product` mengirim `status=ALL`; BE memetakan `status` ke enum sehingga 400 dan daftar gagal dimuat setelah admin kembali dari filter lain | Sedang | SELESAI | `getAllProductsAdmin` tidak mengirim `status` bila `'ALL'` (pola F-07/F-30). Tes regresi di `admin-product-list.spec.ts`. Halaman admin lain sudah menangani `'ALL'`. |
+| F-43 | Produk admin | Halaman `/admin/product/create` dan `/admin/product/edit/[id]` tidak ditautkan dari mana pun dan memanggil `/product/create` & `/product/update/{id}` yang ber-`@CurrentSeller`; admin selalu ditolak 403. Halaman juga memakai `alert()` untuk validasi gambar | Rendah | PERLU KONFIRMASI | Hapus kedua halaman (admin tidak membuat/mengubah produk seller), atau buat endpoint admin bila memang dibutuhkan. |
 ---
 
 ## F-01 — Kredensial bocor ke URL jika form ter-submit sebelum hidrasi
@@ -683,3 +685,24 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 - **Usulan:** `apiErrorMessage(err)` di form; di `fetchBankAccount`, 404 → `null`, error lain dilempar dan halaman
   menampilkan alert error dengan tombol muat ulang.
 - **Tes:** `bank-account.spec.ts` → dua tes "F-41: ..." (`test.fail`).
+
+---
+## F-42 — Filter "Semua Status" produk admin mengirim `status=ALL`
+
+- **Lokasi:** `app/composables/api/product.ts` → `getAllProductsAdmin`, `app/pages/admin/product/index.vue`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-19):** `status` tidak dikirim bila `'ALL'`.
+- **Gejala:** Nilai awal filter `''` (tidak dikirim), tetapi setelah admin memilih status lain lalu kembali ke
+  "Semua Status", nilai `'ALL'` terkirim. `GET /api/products/all` memetakan `status` ke enum `Status`, jadi BE
+  membalas 400 dan daftar produk tidak tampil.
+- **Tes:** `admin-product-list.spec.ts` → "filter status: ... (F-42)" (merah di kode lama: `status=ALL`).
+
+---
+## F-43 — Halaman create/edit produk admin yatim dan tidak bisa dipakai
+
+- **Lokasi:** `app/pages/admin/product/create/index.vue`, `app/pages/admin/product/edit/[[id]].vue`
+- **Status:** PERLU KONFIRMASI
+- **Gejala:** Tidak ada tautan ke kedua halaman (daftar, review, dan detail admin hanya menautkan `/admin/product/view`).
+  Halaman memakai `createProduct`/`updateProduct` yang memanggil endpoint seller (`@CurrentSeller`), sehingga admin
+  ditolak 403. Validasi gambar memakai `alert()`.
+- **Perlu dikonfirmasi:** Hapus kedua halaman? Bila admin memang perlu mengubah produk seller, butuh endpoint admin baru.
