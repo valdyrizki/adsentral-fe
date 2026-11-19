@@ -60,6 +60,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-36 | Produk seller | Edit produk Otomatis yang sudah punya file selalu ditolak "File lampiran otomatis wajib diupload" (cek field `auto_config_file_url` yang tidak ada) | Tinggi | TERBUKA | Fix: cek `product.auto_config?.file_url`. Ditandai `test.fail`. |
 | F-37 | Produk seller | Teks menyesatkan: aktifkan produk berkata "diaktifkan" padahal masuk review; edit produk aktif tidak memberi tahu produk kembali ke review dan toast berkata "membuat product"/"Simpan User"; pesan banding WA selalu menyebut NONACTIVE walau SUSPEND; petunjuk upload "SVG/GIF, 2MB, 1024px" berbeda dengan validasi (JPG/PNG/WEBP, 5MB, 1500px) | Rendah | TERBUKA | Perbaiki teks; validasi gambar memakai `alert()` (pola F-10). |
 | F-38 | Stok seller | Badge "Aktif/Terkirim/Dikembalikan" di `/seller/stock` hanya menghitung item di halaman aktif, padahal tampil di sebelah total semua item | Rendah | TERBUKA | Pola sama dengan F-23: hitungan dari BE (ringkasan per status) atau beri label "di halaman ini". |
+| F-39 | Verifikasi (admin) | Setujui/tolak/edit verifikasi menampilkan "Bad Request", bukan pesan BE (NIK dipakai akun lain, sudah direview admin lain); status basi tidak memuat ulang; edit mengirim semua field walau tertulis "hanya field yang diubah" | Sedang | TERBUKA | `rethrowApiError` di `composables/api/verification.ts` + `apiErrorMessage` di halaman, muat ulang saat 400 "sudah direview". Ditandai `test.fail`. |
+| F-40 | Daftar toko | `/merchant/create`: logo tidak dicek padahal wajib di BE, nama kosong lolos, GIF diterima padahal BE menolak, pesan BE hilang ("Bad Request"/"Conflict"), pesan berbahasa Inggris, pengunjung tidak diarahkan ke login | Sedang | TERBUKA | Validasi FE disamakan dengan BE (logo wajib, nama 5–50, JPG/PNG/WEBP ≤ 2 MB), `rethrowApiError`, tambah `/merchant/create` ke rute wajib login. Ditandai `test.fail`. |
 
 ---
 
@@ -595,3 +597,37 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
     `imageHelper` menerima JPG/PNG/WEBP, 5 MB, 1500×1500 (BE: JPG/PNG/WEBP, 5 MB). Validasi gagal memakai `alert()`.
 - **Usulan:** Sesuaikan teks; tampilkan catatan "Perubahan akan ditinjau admin" di form edit produk aktif; ganti
   `alert()` dengan pesan di bawah field.
+
+---
+## F-39 — Pesan error BE hilang di review verifikasi admin
+
+- **Lokasi:** `app/composables/api/verification.ts` (`approveVerification`, `rejectVerification`, `editVerifiedUser`),
+  `app/pages/admin/verification/[id].vue`
+- **Status:** TERBUKA
+- **Gejala:**
+  - Composable tidak menangkap error, halaman memakai `err.statusMessage` (teks status HTTP). Admin melihat
+    "Bad Request" untuk "NIK ini sudah terverifikasi pada akun lain", "Pengajuan ini sudah direview sebelumnya",
+    atau "Verifikasi dengan NIK ini pernah dicabut admin".
+  - Pengajuan yang sudah direview admin lain tidak memuat ulang detail, jadi tombol Setujui/Tolak tetap tampil.
+  - Modal edit berkata "Hanya field yang diubah yang akan dikirim", padahal semua field dikirim (field opsional
+    kosong dikirim sebagai `""`).
+- **Usulan:** `rethrowApiError` + `apiErrorMessage`; muat ulang detail saat 400/409 status basi; kirim hanya field
+  yang berbeda dari data awal.
+- **Tes:** `verification.spec.ts` → dua tes "F-39: ..." (`test.fail`).
+
+---
+## F-40 — Form daftar toko tidak sesuai aturan BE
+
+- **Lokasi:** `app/pages/merchant/create/index.vue`, `app/composables/api/merchant.ts` (`registerMerchant`),
+  `app/middleware/auth-redirect.global.ts`
+- **Status:** TERBUKA
+- **Gejala:**
+  - Logo wajib di BE (`Logo tidak boleh null`) tetapi tidak dicek di FE; nama kosong juga lolos (cek hanya
+    `name && length < 5`). Hasilnya 400 dari BE dengan toast "Bad Request".
+  - FE menerima GIF, BE hanya JPG/PNG/WEBP. Petunjuk upload menyebut SVG/GIF.
+  - Error BE (mis. 409 "Nama toko sedang dipakai, coba lagi", 403 "Admin tidak dapat membuat toko") tampil sebagai
+    teks status HTTP. Judul toast "Gagal Simpan User", pesan validasi berbahasa Inggris.
+  - `/merchant/create` tidak termasuk rute wajib login: pengunjung melihat form dan baru dilempar ke `/login`
+    setelah menekan Save.
+- **Usulan:** Samakan validasi dengan BE, `rethrowApiError`, teks Indonesia, tambahkan rute ke `authRequiredRoutes`.
+- **Tes:** `verification.spec.ts` → "F-40: ..." (`test.fail`).

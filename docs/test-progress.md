@@ -36,13 +36,13 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 11 | Penarikan dana & rekening bank seller | `withdrawal.spec.ts` | Sebagian | P1 (rekening bank) | `WD_FEE` diam-diam jatuh ke Rp 2.500 (F-23). Batal basi 409 (F-20). Halaman `/seller/bank-account` belum dites. |
 | 12 | Produk seller | `seller-product.spec.ts` | 🐞 | P2 (REJECTED/SUSPEND detail) | Pesan error BE hilang (F-35). Edit produk Otomatis selalu minta unggah ulang file (F-36, tinggi). Teks menyesatkan (F-37). |
 | 13 | Stok seller | `seller-stock.spec.ts` | ✅ | P2 (detail & tambah ulang item RETURNED, import CSV) | Hitungan Aktif/Terkirim hanya halaman aktif (F-38, rendah). |
-| 14 | Verifikasi seller & daftar merchant | — | ⬜ | P1 | `registerMerchant` & verifikasi dikirim sebagai FormData (upload dokumen). |
+| 14 | Verifikasi seller & daftar merchant | `verification.spec.ts`, `security.spec.ts`, `verification-photos-purged.spec.ts` | 🐞 | — | Form daftar toko tidak sesuai aturan BE dan pesan BE hilang (F-40). |
 | 15 | Dashboard & profil toko seller | — | ⬜ | P3 | Riwayat penalty di dashboard sudah tercakup `penalty.spec.ts`. |
 | 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | 🐞 | P3 (dashboard admin) | Refund 400 menutup modal (F-24). GET membuang pesan BE (F-26). `alert()` diskusi (F-27). Filter & teks Cancel Arbitrage (F-28). |
 | 17 | Pembayaran admin | `payment.spec.ts` | Sebagian | P1 (unprocessed payment) | "Tolak" memanggil `/payment/cancel` (F-06, perlu konfirmasi). Filter `status=ALL` (F-07). |
 | 18 | Penarikan dana admin | `withdrawal.spec.ts` | 🐞 | — | Rumus "Potensi Anomali" ikut menghitung saldo deposit (F-22). Statistik hanya halaman aktif (F-23). |
 | 19 | Produk & stok admin (review, suspend) | `admin-product-reason.spec.ts`, `admin-product-status.spec.ts` | Sebagian | P1 | Halaman create/edit admin memakai ulang form produk seller; tes setelah modul 12. |
-| 20 | Verifikasi seller (admin) | — | ⬜ | P1 | Termasuk edit user terverifikasi (`editVerifiedUser`). |
+| 20 | Verifikasi seller (admin) | `verification.spec.ts`, `admin-verification-revoke.spec.ts`, `admin-verification-badge.spec.ts` | 🐞 | — | Setujui/tolak/edit membuang pesan BE dan tidak memuat ulang saat status basi (F-39). |
 | 21 | Master data admin (kategori, tipe akun, voucher, metode/channel bayar) | — | ⬜ | P2 | Pola CRUD serupa; cocok satu spec per halaman. Sinkron Tripay memanggil gateway lewat BE. |
 | 22 | Keuangan admin (ringkasan, jurnal, kategori, failed journal) | — | ⬜ | P2 | Total per kategori diagregasi di FE (loop semua halaman jurnal, abaikan void) — perlu dicek kebenarannya. |
 | 23 | System settings | — | ⬜ | P2 | Setting publik dipakai checkout & withdrawal (biaya aplikasi, `WD_FEE`); salah ubah berdampak luas. |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **255 tes** di 28 spec, dengan 29 tes `test.fail` untuk bug yang sudah diketahui (dihitung 2026-11-19 dengan `npx playwright test --list`).
+Total saat ini: **272 tes** di 29 spec, dengan 32 tes `test.fail` untuk bug yang sudah diketahui (dihitung 2026-11-19 dengan `npx playwright test --list`).
 
 ---
 
@@ -252,9 +252,9 @@ Total saat ini: **255 tes** di 28 spec, dengan 29 tes `test.fail` untuk bug yang
 
 | Skenario | Status |
 |---|---|
-| `/merchant/create`: daftar jadi seller (`registerMerchant`, FormData) | ⬜ P1 |
-| `/seller/verification`: status & ajukan verifikasi (`submitVerification`) | ⬜ P1 |
-| `/seller/verification/history` | ⬜ P2 |
+| `/merchant/create`: daftar jadi seller (`registerMerchant`, FormData), nama < 5 karakter | ✅ (F-40) |
+| `/seller/verification`: UNVERIFIED (termasuk setelah dicabut), validasi form, multipart tanpa agama, foto bukan gambar, pesan BE, REJECTED + Submit Ulang, PENDING, VERIFIED | ✅ |
+| `/seller/verification/history` | ✅ |
 
 ## 15. Dashboard & profil toko seller
 
@@ -308,8 +308,8 @@ Total saat ini: **255 tes** di 28 spec, dengan 29 tes `test.fail` untuk bug yang
 
 | Skenario | Status |
 |---|---|
-| `/admin/verification`: daftar & filter | ⬜ P1 |
-| Detail: setujui / tolak (alasan) / edit user terverifikasi | ⬜ P1 |
+| `/admin/verification`: daftar default PENDING, filter status & email | ✅ |
+| Detail: setujui / tolak (alasan wajib, ter-trim) / edit user terverifikasi (NIK kosong tidak dikirim) / cabut | ✅ (pesan BE: F-39) |
 
 ## 21. Master data admin
 
