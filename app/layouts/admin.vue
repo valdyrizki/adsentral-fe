@@ -127,9 +127,7 @@ const items = computed<NavigationMenuItem[][]>(() => [[
     label: 'Settings',
     icon: 'i-lucide-settings',
     children: [
-      { label: 'System Parameter', to: '/admin/settings/system' },
-      { label: 'Members', to: '/admin/settings/members' },
-      { label: 'Notifications', to: '/admin/settings/notifications' }
+      { label: 'System Parameter', to: '/admin/settings/system' }
     ]
   }
 ], [

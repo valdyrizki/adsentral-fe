@@ -39,6 +39,14 @@
         <AppLoadingSkeleton />
       </div>
 
+      <UAlert
+        v-else-if="loadError"
+        title="Gagal memuat system setting"
+        :description="loadError.message"
+        icon="mdi:alert-circle"
+        color="error"
+      />
+
       <div v-else-if="!systemSettings.length">
         <UAlert
           title="Belum ada system setting"
@@ -175,7 +183,7 @@ const {
 } = useSystemSettingApi()
 
 
-useAsyncData('system-settings-data', () => fetchAllSystemSetting(), { server: false })
+const { error: loadError, refresh } = useAsyncData('system-settings-data', () => fetchAllSystemSetting(), { server: false })
 
 const isFormModalOpen = ref(false)
 const editingId = ref<string | null>(null)
@@ -191,7 +199,7 @@ function openCreateModal() {
     value: '',
     description: '',
     group:'',
-    is_public: true,
+    is_public: false,
   }
   isFormModalOpen.value = true
 }
@@ -246,7 +254,7 @@ async function handleSubmitFromModal(form: SystemSettingRequest) {
       })
     }
     isFormModalOpen.value = false
-    await fetchAllSystemSetting()
+    await refresh()
   } catch (err: any) {
     toast.add({
       title: 'Gagal',
@@ -270,7 +278,7 @@ async function handleDelete(setting: SystemSettingResponse) {
       description: 'System setting berhasil dihapus.',
       color: 'success',
     })
-    await fetchAllSystemSetting()
+    await refresh()
   } catch (err: any) {
     toast.add({
       title: 'Gagal',
@@ -294,6 +302,6 @@ const formatDate = (value?: string) => {
 }
 
 async function handleRefresh() {
-  await fetchAllSystemSetting()
+  await refresh()
 }
 </script>

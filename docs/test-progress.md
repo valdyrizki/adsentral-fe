@@ -45,7 +45,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 20 | Verifikasi seller (admin) | `verification.spec.ts`, `admin-verification-revoke.spec.ts`, `admin-verification-badge.spec.ts` | ✅ | — | F-39 selesai. |
 | 21 | Master data admin (kategori, tipe akun, voucher, metode/channel bayar) | `master-data.spec.ts` | ✅ | — | Status `SUSPENDED` vs enum BE `SUSPEND` di voucher (F-50) & metode pembayaran (F-51). Suspend kategori lewat Edit oleh ADMIN biasa (F-52, disengaja). |
 | 22 | Keuangan admin (ringkasan, jurnal, kategori, failed journal) | `finance.spec.ts`, `admin-metrics.spec.ts` | ✅ | — | Total per kategori kini dari `category.balance` BE (F-48, termasuk perbaikan race condition di BE). Kategori otomatis di form jurnal (F-49). |
-| 23 | System settings | — | ⬜ | P2 | Setting publik dipakai checkout & withdrawal (biaya aplikasi, `WD_FEE`); salah ubah berdampak luas. |
+| 23 | System settings | `settings.spec.ts` | ✅ | — | Tautan dashboard ke salinan chat (F-53), default publik (F-54), gagal muat tampak kosong (F-55); key duplikat kini 409 di BE. |
 | 24 | Chat (buyer, seller, admin) | `chat.spec.ts` | ✅ | — | Admin memakai endpoint percakapan seller. Pesan hilang saat gagal kirim (F-45, selesai). Chat dari halaman produk (`ChatModalBuyer`) belum. |
 | 25 | Notifikasi (buyer, seller, admin, broadcast) | `notification.spec.ts` | ✅ | — | Tipe broadcast tidak dikenal BE (F-46) & tandai semua tidak memperbarui daftar buyer (F-47), keduanya selesai. |
 | 26 | Badge/alerts sidebar & header | — (tersirat di beberapa tes) | Sebagian | P3 | Refresh badge setelah aksi sudah dicek di payment & withdrawal. Polling 45 detik & field `null` belum. |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **352 tes** di 38 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-20 dengan `npx playwright test --list`).
+Total saat ini: **356 tes** di 39 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-20 dengan `npx playwright test --list`).
 
 ---
 
@@ -337,7 +337,7 @@ Total saat ini: **352 tes** di 38 spec, tanpa tes `test.fail` (semua bug yang pu
 
 | Skenario | Status |
 |---|---|
-| Daftar, tambah, edit, hapus setting | ⬜ P2 |
+| Tambah (default privat, pesan duplikat BE), edit (key terkunci), hapus dengan konfirmasi, gagal muat | ✅ |
 | Setting publik dipakai FE (biaya aplikasi, `WD_FEE`, kontak) | Sebagian (tersirat di checkout & withdrawal) |
 
 ## 24. Chat
@@ -374,5 +374,5 @@ Cukup satu smoke test (halaman terbuka tanpa error) — ⬜ P3.
 ## Urutan pengerjaan yang disarankan
 
 1. **P1:** selesai 2026-11-19 (produk & stok seller, verifikasi seller + admin, daftar toko, rekening bank, unprocessed payment, register/logout, daftar & review produk admin).
-2. **P2:** ~~katalog publik~~, ~~chat~~, ~~notifikasi~~, ~~keuangan admin~~, ~~master data admin~~ (selesai) → system settings → sisa (profil, `/payment`, diskusi buyer).
+2. **P2:** ~~katalog publik~~, ~~chat~~, ~~notifikasi~~, ~~keuangan admin~~, ~~master data admin~~, ~~system settings~~ (selesai) → sisa (profil, `/payment`, diskusi buyer).
 3. **P3:** dashboard, `/admin/stock`, polling badge, smoke test halaman statis.

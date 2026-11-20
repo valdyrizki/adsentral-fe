@@ -85,7 +85,8 @@ const defaultForm = (): SystemSettingRequest => ({
   value: '',
   description: '',
   group: '',
-  is_public: true,
+  // privat kecuali admin sengaja mencentang: setting publik terbaca anonim lewat /system/settings/public
+  is_public: false,
 })
 
 const localForm = ref<SystemSettingRequest>(defaultForm())

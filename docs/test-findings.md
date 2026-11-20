@@ -9,7 +9,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## Rencana & catatan
 
 - **Cakupan tes** (modul yang sudah/belum dites, prioritas): lihat **`docs/test-progress.md`**. Dokumen ini hanya berisi bug.
-- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45, F-46, F-47, F-48, F-49, F-50, F-51 (selesai), F-43 (todo), F-52 (disengaja). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
+- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45, F-46, F-47, F-48, F-49, F-50, F-51, F-53, F-54, F-55 (selesai), F-43 (todo), F-52 (disengaja). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
   composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
   Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
 - **Setelah memperbaiki temuan:** ubah statusnya di sini menjadi `SELESAI`, hapus `test.fail` di spec, dan ubah 🐞 → ✅
@@ -75,6 +75,9 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-50 | Voucher (admin) | Filter "Suspended" mengirim `status=SUSPENDED`, padahal enum BE `SUSPEND`: BE menjawab 400 dan daftar voucher tidak bisa disaring ke voucher yang disuspend | Rendah | SELESAI | Nilai filter & tipe `VoucherStatus` memakai `SUSPEND`. Tes regresi di `master-data.spec.ts`. |
 | F-51 | Metode pembayaran (admin) | Halaman memakai `SUSPENDED`, padahal BE `SUSPEND`: filter & kartu "Suspended" selalu kosong/0, dan mengubah status ke Suspended lewat Edit ditolak BE | Rendah | SELESAI | Pilihan status, filter, kartu, dan tipe memakai `SUSPEND`. Tes regresi di `master-data.spec.ts`. |
 | F-52 | Kategori produk (admin) | Suspend kategori khusus SUPER_ADMIN (`/category/suspend`), tetapi ADMIN biasa bisa memilih status Suspend (dan membatalkannya) lewat Edit (`/category/update`) | Rendah | DITERIMA | Disengaja (keputusan 2026-11-20): batas SUPER_ADMIN hanya pada tombol suspend; dicatat di BE `test-scenarios/09-category.md` CAT-AUTHZ-04. |
+| F-53 | Navigasi admin | Tautan "System Settings" & "Kelola" di dashboard membuka `/admin/settings`, yang berisi salinan lama halaman chat; menu Settings → Members & Notifications mengarah ke halaman yang tidak ada (404) | Rendah | SELESAI | Tautan ke `/admin/settings/system`, halaman salinan dihapus, dua menu 404 dihapus. Tes regresi di `settings.spec.ts`. |
+| F-54 | System settings (admin) | Form tambah setting mencentang "Tampilkan ke publik" secara default, sehingga setting baru langsung terbaca anonim bila admin lupa mencabutnya | Rendah | SELESAI | Default privat. Tes regresi di `settings.spec.ts`. |
+| F-55 | System settings (admin) | Gagal memuat daftar setting ditampilkan sebagai "Belum ada system setting" | Rendah | SELESAI | Pesan error ditampilkan; Reload & simpan memakai `refresh()` agar status error ikut diperbarui. Tes regresi di `settings.spec.ts`. |
 ---
 
 ## F-01 — Kredensial bocor ke URL jika form ter-submit sebelum hidrasi
@@ -824,3 +827,35 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
   padahal komentar halaman menyebut tidak ada jalan untuk mengaktifkan kembali.
 - **Keputusan:** dibiarkan. ADMIN boleh mengubah status kategori (termasuk Suspend) lewat Edit; tombol suspend tetap khusus
   SUPER_ADMIN.
+
+---
+## F-53 — Tautan System Settings membuka salinan halaman chat
+
+- **Lokasi:** `app/pages/admin/dashboard/index.vue` (kartu System Settings, `quickActions`), `app/layouts/admin.vue`,
+  `app/pages/admin/settings/index.vue` (dihapus)
+- **Status:** SELESAI
+- **Perbaikan (2026-11-20):** Tautan ke `/admin/settings/system`; halaman salinan chat (label "Chat") dihapus; menu
+  Members & Notifications (tanpa halaman) dihapus dari sidebar.
+- **Tes:** `settings.spec.ts` → "dashboard: tautan System Settings membuka halaman setting ... (F-53)" (merah di kode lama).
+
+---
+## F-54 — Setting baru default publik
+
+- **Lokasi:** `app/components/form/FormSystemSettingModal.vue`, `app/pages/admin/settings/system/index.vue` → `openCreateModal`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-20):** `is_public` default `false`.
+- **Gejala:** Setting publik dikembalikan `/system/settings/public` ke siapa pun; dengan default tercentang, setting internal
+  (mis. batas atau kunci konfigurasi) bisa terbuka tanpa disadari.
+- **Tes:** `settings.spec.ts` → "tambah setting: default privat ..." (merah di kode lama).
+
+---
+## F-55 — Gagal memuat system setting tampak seperti daftar kosong
+
+- **Lokasi:** `app/pages/admin/settings/system/index.vue`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-20):** Error `useAsyncData` ditampilkan; Reload dan simpan/hapus memakai `refresh()`.
+- **Gejala:** Bila BE gagal, halaman menampilkan "Belum ada system setting", sehingga admin bisa mengira setting hilang lalu
+  membuat ulang.
+- **Tes:** `settings.spec.ts` → "gagal memuat: pesan error tampil ..." (merah di kode lama).
+- **Terkait (BE):** key duplikat dulu dijawab 500 "Internal server error"; kini 409 `Key "X" sudah dipakai setting lain`
+  (SETTING-EDGE-01, repo BE).

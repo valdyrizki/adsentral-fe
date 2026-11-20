@@ -228,7 +228,7 @@
         <template #header>
           <div class="flex items-center justify-between">
             <p class="font-semibold text-gray-800">System Settings</p>
-            <UButton to="/admin/settings" size="sm" variant="ghost" trailing-icon="i-heroicons-arrow-right">Kelola</UButton>
+            <UButton to="/admin/settings/system" size="sm" variant="ghost" trailing-icon="i-heroicons-arrow-right">Kelola</UButton>
           </div>
         </template>
         <AppLoadingSkeleton v-if="settingPending" />
@@ -416,7 +416,7 @@ const chartData = computed(() => {
 const quickActions = [
   { label: 'Kelola Pesanan',  to: '/admin/order',    icon: 'i-lucide-shopping-cart', bgColor: 'bg-primary-50',   iconColor: 'text-primary-500' },
   { label: 'Kelola Produk',   to: '/admin/product',  icon: 'i-lucide-box',           bgColor: 'bg-purple-50', iconColor: 'text-purple-500' },
-  { label: 'System Settings', to: '/admin/settings', icon: 'i-lucide-settings',      bgColor: 'bg-green-50',  iconColor: 'text-green-500' },
+  { label: 'System Settings', to: '/admin/settings/system', icon: 'i-lucide-settings',      bgColor: 'bg-green-50',  iconColor: 'text-green-500' },
   { label: 'Chat',            to: '/admin/chat',     icon: 'mdi:chat',               bgColor: 'bg-yellow-50', iconColor: 'text-yellow-500' },
 ]
 </script>
