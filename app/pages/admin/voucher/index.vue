@@ -303,7 +303,7 @@ const discountTypeOptions = [
 const statusFilterOptions = [
   { label: 'Semua Status', value: 'ALL' },
   { label: 'Aktif', value: 'ACTIVE' },
-  { label: 'Suspended', value: 'SUSPENDED' },
+  { label: 'Suspended', value: 'SUSPEND' },
 ]
 
 // ===== FILTER & PAGINATION =====

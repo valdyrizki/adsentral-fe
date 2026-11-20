@@ -9,7 +9,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## Rencana & catatan
 
 - **Cakupan tes** (modul yang sudah/belum dites, prioritas): lihat **`docs/test-progress.md`**. Dokumen ini hanya berisi bug.
-- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45, F-46, F-47, F-48, F-49 (selesai), F-43 (todo). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
+- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45, F-46, F-47, F-48, F-49, F-50, F-51 (selesai), F-43 (todo), F-52 (disengaja). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
   composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
   Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
 - **Setelah memperbaiki temuan:** ubah statusnya di sini menjadi `SELESAI`, hapus `test.fail` di spec, dan ubah 🐞 → ✅
@@ -72,6 +72,9 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-47 | Notifikasi (buyer) | Setelah "Tandai Semua Dibaca", penanda belum dibaca dan tombol "Tandai Dibaca" tetap tampil sampai halaman dimuat ulang | Rendah | SELESAI | `data` dari `useAsyncData` (shallowRef) diganti objeknya, bukan diubah item di dalamnya. Halaman seller/admin memakai `ref` biasa dan tidak terkena. |
 | F-48 | Keuangan (admin) | Nominal saldo per kategori dihitung FE dengan menelusuri seluruh jurnal (hingga 100 request) dan diam-diam terpotong setelah 20.000 entri; di BE saldo kategori bisa meleset karena pembaruan baca-ubah-tulis tanpa lock | Sedang | SELESAI | BE: UPDATE atomik + `@DynamicUpdate` + SQL hitung ulang. FE memakai `category.balance`. Tes regresi di `finance.spec.ts` dan BE `FinanceCategoryBalanceConcurrencyIntegrationTest`. |
 | F-49 | Keuangan (admin) | Form jurnal manual menawarkan kategori otomatis sistem, yang selalu ditolak BE (403) | Rendah | SELESAI | Kategori `is_auto` disaring dari pilihan. Tes regresi di `finance.spec.ts`. |
+| F-50 | Voucher (admin) | Filter "Suspended" mengirim `status=SUSPENDED`, padahal enum BE `SUSPEND`: BE menjawab 400 dan daftar voucher tidak bisa disaring ke voucher yang disuspend | Rendah | SELESAI | Nilai filter & tipe `VoucherStatus` memakai `SUSPEND`. Tes regresi di `master-data.spec.ts`. |
+| F-51 | Metode pembayaran (admin) | Halaman memakai `SUSPENDED`, padahal BE `SUSPEND`: filter & kartu "Suspended" selalu kosong/0, dan mengubah status ke Suspended lewat Edit ditolak BE | Rendah | SELESAI | Pilihan status, filter, kartu, dan tipe memakai `SUSPEND`. Tes regresi di `master-data.spec.ts`. |
+| F-52 | Kategori produk (admin) | Suspend kategori khusus SUPER_ADMIN (`/category/suspend`), tetapi ADMIN biasa bisa memilih status Suspend (dan membatalkannya) lewat Edit (`/category/update`) | Rendah | DITERIMA | Disengaja (keputusan 2026-11-20): batas SUPER_ADMIN hanya pada tombol suspend; dicatat di BE `test-scenarios/09-category.md` CAT-AUTHZ-04. |
 ---
 
 ## F-01 — Kredensial bocor ke URL jika form ter-submit sebelum hidrasi
@@ -789,3 +792,35 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 - **Gejala:** BE menolak jurnal manual ke kategori otomatis ("Category ini hanya untuk pencatatan otomatis sistem"), tetapi
   kategori itu tetap ditawarkan di form, sehingga admin baru tahu setelah menekan simpan.
 - **Tes:** `finance.spec.ts` → "form tambah jurnal tidak menawarkan kategori otomatis sistem (F-49)" (merah di kode lama).
+
+---
+## F-50 — Filter voucher Suspended ditolak BE
+
+- **Lokasi:** `app/pages/admin/voucher/index.vue` → `statusFilterOptions`, `app/types/voucher/VoucherResponse.ts`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-20):** Nilai filter `SUSPEND` sesuai enum `Status` BE.
+- **Gejala:** Memilih "Suspended" mengirim `status=SUSPENDED`; BE `parseStatus` menjawab 400 "Status tidak valid: SUSPENDED".
+- **Tes:** `master-data.spec.ts` → "filter Suspended mengirim status SUSPEND sesuai enum BE (F-50)" (merah di kode lama).
+
+---
+## F-51 — Status SUSPENDED di halaman metode pembayaran
+
+- **Lokasi:** `app/pages/admin/payment-method/index.vue`, `app/types/payment-method/PaymentMethod{Request,Response}.ts`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-20):** Semua nilai status memakai `SUSPEND`.
+- **Gejala:** BE menyimpan status `SUSPEND`, sedangkan FE menyaring dan menghitung `SUSPENDED`: filter "Suspended" kosong,
+  kartu "Suspended" selalu 0, dan memilih Suspended di form Edit mengirim nilai yang tidak dikenal enum BE (ditolak).
+- **Tes:** `master-data.spec.ts` → "metode berstatus SUSPEND dari BE ikut filter ... (F-51)" dan "edit status ke Suspended
+  mengirim SUSPEND (F-51)" (keduanya merah di kode lama).
+
+---
+## F-52 — ADMIN biasa bisa men-suspend kategori lewat Edit
+
+- **Lokasi:** BE `CategoryService.updateCategory` (`ALLOWED_STATUS` termasuk `SUSPEND`, endpoint `@CurrentAdmin`);
+  FE `app/pages/admin/category/index.vue` → `statusItems`
+- **Status:** DITERIMA (disengaja, keputusan 2026-11-20); dicatat di BE `docs/test-scenarios/09-category.md` CAT-AUTHZ-04
+- **Gejala:** Tombol nonaktifkan (`PATCH /category/suspend/{id}`) khusus SUPER_ADMIN (CAT-AUTHZ-02), tetapi form Edit
+  menawarkan status Suspend ke semua admin dan BE menerimanya. Kategori yang disuspend juga bisa diaktifkan lagi lewat Edit,
+  padahal komentar halaman menyebut tidak ada jalan untuk mengaktifkan kembali.
+- **Keputusan:** dibiarkan. ADMIN boleh mengubah status kategori (termasuk Suspend) lewat Edit; tombol suspend tetap khusus
+  SUPER_ADMIN.

@@ -5,6 +5,6 @@ export interface PaymentMethodResponse {
   name: string;
   description: string;
   icon_url: string | null;
-  status: 'ACTIVE' | 'SUSPENDED';
+  status: 'ACTIVE' | 'SUSPEND';
   channels: PaymentChannelResponse[];
 }

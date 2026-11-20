@@ -3,5 +3,5 @@ export interface PaymentMethodRequest {
   name: string
   description: string
   icon_url: string | null
-  status: 'ACTIVE' | 'SUSPENDED'
+  status: 'ACTIVE' | 'SUSPEND'
 }

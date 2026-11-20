@@ -43,7 +43,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 18 | Penarikan dana admin | `withdrawal.spec.ts` | ✅ | — | F-22 & F-23 selesai (kartu statistik dari `GET /admin/withdrawal/summary`, biaya admin dari data penarikan). |
 | 19 | Produk & stok admin (review, suspend) | `admin-product-reason.spec.ts`, `admin-product-status.spec.ts`, `admin-product-list.spec.ts` | ✅ | P2 (detail), P3 (`/admin/stock`) | F-42 selesai. Halaman create/edit admin yatim & ditolak BE (F-43, todo). |
 | 20 | Verifikasi seller (admin) | `verification.spec.ts`, `admin-verification-revoke.spec.ts`, `admin-verification-badge.spec.ts` | ✅ | — | F-39 selesai. |
-| 21 | Master data admin (kategori, tipe akun, voucher, metode/channel bayar) | — | ⬜ | P2 | Pola CRUD serupa; cocok satu spec per halaman. Sinkron Tripay memanggil gateway lewat BE. |
+| 21 | Master data admin (kategori, tipe akun, voucher, metode/channel bayar) | `master-data.spec.ts` | ✅ | — | Status `SUSPENDED` vs enum BE `SUSPEND` di voucher (F-50) & metode pembayaran (F-51). Suspend kategori lewat Edit oleh ADMIN biasa (F-52, disengaja). |
 | 22 | Keuangan admin (ringkasan, jurnal, kategori, failed journal) | `finance.spec.ts`, `admin-metrics.spec.ts` | ✅ | — | Total per kategori kini dari `category.balance` BE (F-48, termasuk perbaikan race condition di BE). Kategori otomatis di form jurnal (F-49). |
 | 23 | System settings | — | ⬜ | P2 | Setting publik dipakai checkout & withdrawal (biaya aplikasi, `WD_FEE`); salah ubah berdampak luas. |
 | 24 | Chat (buyer, seller, admin) | `chat.spec.ts` | ✅ | — | Admin memakai endpoint percakapan seller. Pesan hilang saat gagal kirim (F-45, selesai). Chat dari halaman produk (`ChatModalBuyer`) belum. |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **343 tes** di 37 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-19 dengan `npx playwright test --list`).
+Total saat ini: **352 tes** di 38 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-20 dengan `npx playwright test --list`).
 
 ---
 
@@ -317,11 +317,11 @@ Total saat ini: **343 tes** di 37 spec, tanpa tes `test.fail` (semua bug yang pu
 
 | Halaman | Skenario | Status |
 |---|---|---|
-| `/admin/category` | Daftar, tambah, edit, suspend | ⬜ P2 |
-| `/admin/account-type` | Daftar, tambah, edit | ⬜ P2 |
-| `/admin/voucher` | Daftar, tambah, edit, suspend/aktifkan, validasi tanggal & nominal | ⬜ P2 |
-| `/admin/payment-method` | Daftar, tambah, edit, suspend/aktifkan | ⬜ P2 |
-| `/admin/payment-channel` | Daftar, edit channel, sinkron Tripay | ⬜ P2 |
+| `/admin/category` | Suspend: terkunci untuk ADMIN, SUPER_ADMIN dengan konfirmasi | ✅ (tambah/edit belum) |
+| `/admin/account-type` | Tipe default tanpa tombol ubah, tambah (nama di-trim) + pesan duplikat BE | ✅ |
+| `/admin/voucher` | Filter status (F-50), tambah persen + pesan BE, suspend/aktifkan | ✅ (edit & validasi tanggal belum) |
+| `/admin/payment-method` | Filter Suspended, edit status (F-51) | ✅ (tambah & toggle belum) |
+| `/admin/payment-channel` | Sinkron Tripay, edit fee | ✅ |
 
 ## 22. Keuangan admin — `pages/admin/finance/*`
 
@@ -374,5 +374,5 @@ Cukup satu smoke test (halaman terbuka tanpa error) — ⬜ P3.
 ## Urutan pengerjaan yang disarankan
 
 1. **P1:** selesai 2026-11-19 (produk & stok seller, verifikasi seller + admin, daftar toko, rekening bank, unprocessed payment, register/logout, daftar & review produk admin).
-2. **P2:** ~~katalog publik~~, ~~chat~~, ~~notifikasi~~, ~~keuangan admin~~ (selesai) → master data admin → system settings → sisa (profil, `/payment`, diskusi buyer).
+2. **P2:** ~~katalog publik~~, ~~chat~~, ~~notifikasi~~, ~~keuangan admin~~, ~~master data admin~~ (selesai) → system settings → sisa (profil, `/payment`, diskusi buyer).
 3. **P3:** dashboard, `/admin/stock`, polling badge, smoke test halaman statis.

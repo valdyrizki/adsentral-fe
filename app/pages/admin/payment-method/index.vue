@@ -187,12 +187,12 @@ const {
 
 const statusOptions = [
   { label: 'Aktif', value: 'ACTIVE' },
-  { label: 'Suspended', value: 'SUSPENDED' },
+  { label: 'Suspended', value: 'SUSPEND' },
 ]
 
 // ===== FILTER =====
 const search = ref('')
-const filterStatus = ref<'ALL' | 'ACTIVE' | 'SUSPENDED'>('ALL')
+const filterStatus = ref<'ALL' | 'ACTIVE' | 'SUSPEND'>('ALL')
 
 const debouncedSearch = ref('')
 let searchTimer: ReturnType<typeof setTimeout> | null = null
@@ -235,7 +235,7 @@ const statsCards = computed(() => {
   const list = data.value ?? []
   const total = list.length
   const active = list.filter(m => m.status === 'ACTIVE').length
-  const suspended = list.filter(m => m.status === 'SUSPENDED').length
+  const suspended = list.filter(m => m.status === 'SUSPEND').length
 
   return [
     { label: 'Total Metode', value: total.toString(), icon: 'mdi:credit-card-multiple-outline', bgColor: 'bg-primary-50', iconColor: 'text-primary-500' },

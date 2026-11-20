@@ -1,5 +1,5 @@
 export type DiscountType = 'PERCENT' | 'NOMINAL'
-export type VoucherStatus = 'ACTIVE' | 'SUSPENDED'
+export type VoucherStatus = 'ACTIVE' | 'SUSPEND'
 
 export interface VoucherResponse {
   code: string
