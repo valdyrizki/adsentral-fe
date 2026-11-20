@@ -6,5 +6,7 @@ export interface FinanceCategoryResponse {
   notes: string | null
   is_active: boolean
   is_auto: boolean
+  /** Total nominal jurnal non-void kategori ini, dijaga BE */
+  balance: number
   created_at: string
 }

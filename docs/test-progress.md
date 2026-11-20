@@ -44,7 +44,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 19 | Produk & stok admin (review, suspend) | `admin-product-reason.spec.ts`, `admin-product-status.spec.ts`, `admin-product-list.spec.ts` | ✅ | P2 (detail), P3 (`/admin/stock`) | F-42 selesai. Halaman create/edit admin yatim & ditolak BE (F-43, todo). |
 | 20 | Verifikasi seller (admin) | `verification.spec.ts`, `admin-verification-revoke.spec.ts`, `admin-verification-badge.spec.ts` | ✅ | — | F-39 selesai. |
 | 21 | Master data admin (kategori, tipe akun, voucher, metode/channel bayar) | — | ⬜ | P2 | Pola CRUD serupa; cocok satu spec per halaman. Sinkron Tripay memanggil gateway lewat BE. |
-| 22 | Keuangan admin (ringkasan, jurnal, kategori, failed journal) | — | ⬜ | P2 | Total per kategori diagregasi di FE (loop semua halaman jurnal, abaikan void) — perlu dicek kebenarannya. |
+| 22 | Keuangan admin (ringkasan, jurnal, kategori, failed journal) | `finance.spec.ts`, `admin-metrics.spec.ts` | ✅ | — | Total per kategori kini dari `category.balance` BE (F-48, termasuk perbaikan race condition di BE). Kategori otomatis di form jurnal (F-49). |
 | 23 | System settings | — | ⬜ | P2 | Setting publik dipakai checkout & withdrawal (biaya aplikasi, `WD_FEE`); salah ubah berdampak luas. |
 | 24 | Chat (buyer, seller, admin) | `chat.spec.ts` | ✅ | — | Admin memakai endpoint percakapan seller. Pesan hilang saat gagal kirim (F-45, selesai). Chat dari halaman produk (`ChatModalBuyer`) belum. |
 | 25 | Notifikasi (buyer, seller, admin, broadcast) | `notification.spec.ts` | ✅ | — | Tipe broadcast tidak dikenal BE (F-46) & tandai semua tidak memperbarui daftar buyer (F-47), keduanya selesai. |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **335 tes** di 36 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-19 dengan `npx playwright test --list`).
+Total saat ini: **343 tes** di 37 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-19 dengan `npx playwright test --list`).
 
 ---
 
@@ -327,11 +327,11 @@ Total saat ini: **335 tes** di 36 spec, tanpa tes `test.fail` (semua bug yang pu
 
 | Skenario | Status |
 |---|---|
-| Ringkasan & saldo (`fetchSummary`, `fetchBalance`) | ⬜ P2 |
+| Ringkasan & saldo (`fetchSummary`, `fetchBalance`) | ✅ |
 | Metrik bulanan (`fetchMonthlyMetrics`): kartu + perubahan, rincian & rasio, ganti rentang, error BE | ✅ `admin-metrics.spec.ts` |
-| Kategori: tambah, edit, toggle, total per kategori | ⬜ P2 |
-| Jurnal: daftar, tambah, void | ⬜ P2 |
-| Failed journal: daftar, retry, dismiss | ⬜ P2 |
+| Kategori: tambah, nominal saldo dari BE | ✅ (edit/toggle belum) |
+| Jurnal: daftar (void dicoret, SYSTEM tanpa Void), kategori form tanpa otomatis, void dengan alasan | ✅ (simpan jurnal baru belum) |
+| Failed journal: catat ulang, abaikan (catatan wajib), pesan BE | ✅ |
 
 ## 23. System settings — `pages/admin/settings/*`
 
@@ -374,5 +374,5 @@ Cukup satu smoke test (halaman terbuka tanpa error) — ⬜ P3.
 ## Urutan pengerjaan yang disarankan
 
 1. **P1:** selesai 2026-11-19 (produk & stok seller, verifikasi seller + admin, daftar toko, rekening bank, unprocessed payment, register/logout, daftar & review produk admin).
-2. **P2:** ~~katalog publik~~, ~~chat~~, ~~notifikasi~~ (selesai) → master data admin → keuangan admin → system settings → sisa (profil, `/payment`, diskusi buyer).
+2. **P2:** ~~katalog publik~~, ~~chat~~, ~~notifikasi~~, ~~keuangan admin~~ (selesai) → master data admin → system settings → sisa (profil, `/payment`, diskusi buyer).
 3. **P3:** dashboard, `/admin/stock`, polling badge, smoke test halaman statis.

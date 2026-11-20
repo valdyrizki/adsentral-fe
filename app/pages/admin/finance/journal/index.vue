@@ -283,7 +283,8 @@ const allCategoryOptions = computed(() => [
 const categoryOptions = computed(() =>
   categories.value
     .filter(c => !form.db_cr || c.db_cr === form.db_cr)
-    .filter(c => c.is_active)
+    // kategori otomatis sistem ditolak BE untuk jurnal manual (403) (F-49)
+    .filter(c => c.is_active && !c.is_auto)
     .map(c => ({ label: c.name, value: c.id }))
 )
 

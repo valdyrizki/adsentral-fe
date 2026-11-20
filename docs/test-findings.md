@@ -9,7 +9,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## Rencana & catatan
 
 - **Cakupan tes** (modul yang sudah/belum dites, prioritas): lihat **`docs/test-progress.md`**. Dokumen ini hanya berisi bug.
-- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45, F-46, F-47 (selesai), F-43 (todo). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
+- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45, F-46, F-47, F-48, F-49 (selesai), F-43 (todo). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
   composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
   Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
 - **Setelah memperbaiki temuan:** ubah statusnya di sini menjadi `SELESAI`, hapus `test.fail` di spec, dan ubah 🐞 → ✅
@@ -70,6 +70,8 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-45 | Chat | Kirim pesan gagal (mis. ditolak BE) mengosongkan pesan yang diketik beserta lampirannya, di chat buyer, seller, dan admin | Rendah | SELESAI | Isian dikosongkan hanya saat terkirim. Tes regresi di `chat.spec.ts`. |
 | F-46 | Notifikasi (admin) | Modal Broadcast menawarkan tipe `ORDER_UPDATE`, `PAYMENT_INFO`, `PENALTY_NOTICE` yang tidak ada di enum `NotificationType` BE; broadcast dengan tipe itu ditolak 400 | Sedang | SELESAI | Opsi disamakan dengan enum BE (INFO, SYSTEM_INFO, WARNING, URGENT, PROMOTION). Tes `notification.spec.ts` mengirim tiap opsi dan mencocokkannya dengan enum BE. |
 | F-47 | Notifikasi (buyer) | Setelah "Tandai Semua Dibaca", penanda belum dibaca dan tombol "Tandai Dibaca" tetap tampil sampai halaman dimuat ulang | Rendah | SELESAI | `data` dari `useAsyncData` (shallowRef) diganti objeknya, bukan diubah item di dalamnya. Halaman seller/admin memakai `ref` biasa dan tidak terkena. |
+| F-48 | Keuangan (admin) | Nominal saldo per kategori dihitung FE dengan menelusuri seluruh jurnal (hingga 100 request) dan diam-diam terpotong setelah 20.000 entri; di BE saldo kategori bisa meleset karena pembaruan baca-ubah-tulis tanpa lock | Sedang | SELESAI | BE: UPDATE atomik + `@DynamicUpdate` + SQL hitung ulang. FE memakai `category.balance`. Tes regresi di `finance.spec.ts` dan BE `FinanceCategoryBalanceConcurrencyIntegrationTest`. |
+| F-49 | Keuangan (admin) | Form jurnal manual menawarkan kategori otomatis sistem, yang selalu ditolak BE (403) | Rendah | SELESAI | Kategori `is_auto` disaring dari pilihan. Tes regresi di `finance.spec.ts`. |
 ---
 
 ## F-01 — Kredensial bocor ke URL jika form ter-submit sebelum hidrasi
@@ -760,3 +762,30 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
   render ulang, sehingga setelah "Tandai Semua Dibaca" (BE sukses, toast tampil) titik belum dibaca dan tombol per item
   tetap ada. "Tandai Dibaca" satu item kebetulan tampak berfungsi karena `readingId` ikut berubah.
 - **Tes:** `notification.spec.ts` → "daftar: belum dibaca ditandai; tandai dibaca & tandai semua memanggil BE" (merah di kode lama).
+
+---
+## F-48 — Nominal saldo kategori keuangan
+
+- **Lokasi:** FE `app/composables/api/finance.ts` (`fetchCategoryTotals`, dihapus), `app/pages/admin/finance/category/index.vue`;
+  BE `FinanceService.adjustCategoryBalance`, `FinanceCategory`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-20):** FE menampilkan `category.balance` dari BE. BE memperbarui saldo dengan
+  `UPDATE ... SET balance = balance + :amount` dan `@DynamicUpdate`; `docs/migration-finance-category-balance.sql` (repo BE)
+  menghitung ulang saldo yang sudah meleset. Urutan rilis: BE → SQL → FE.
+- **Gejala:**
+  - FE menjumlah sendiri seluruh jurnal non-void per kategori dengan menelusuri `/admin/finance/journal` (200 per halaman,
+    maks. 100 halaman) setiap kali halaman dibuka. Setelah 20.000 entri jurnal, total diam-diam terpotong.
+  - BE sebenarnya menyimpan `balance` per kategori, tetapi pembaruannya baca-ubah-tulis tanpa lock: di tes BE, 12
+    pencatatan otomatis bersamaan @Rp 1.000 hanya menyisakan saldo Rp 1.000. Edit/toggle kategori juga menulis ulang
+    saldo lama.
+- **Tes:** `finance.spec.ts` → "nominal saldo dari balance kategori di BE ... (F-48)" (merah di kode lama).
+
+---
+## F-49 — Kategori otomatis muncul di form jurnal manual
+
+- **Lokasi:** `app/pages/admin/finance/journal/index.vue` → `categoryOptions`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-20):** Pilihan kategori disaring `is_active && !is_auto`.
+- **Gejala:** BE menolak jurnal manual ke kategori otomatis ("Category ini hanya untuk pencatatan otomatis sistem"), tetapi
+  kategori itu tetap ditawarkan di form, sehingga admin baru tahu setelah menekan simpan.
+- **Tes:** `finance.spec.ts` → "form tambah jurnal tidak menawarkan kategori otomatis sistem (F-49)" (merah di kode lama).
