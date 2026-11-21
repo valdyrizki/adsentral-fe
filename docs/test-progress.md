@@ -24,7 +24,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | # | Modul | Spec | Status | Prioritas sisa | Catatan |
 |---|---|---|---|---|---|
 | 1 | Auth: login & guard rute | `auth.spec.ts`, `session.spec.ts`, `register-logout.spec.ts` | ✅ | — | F-01 (kredensial bocor ke URL) sudah diperbaiki. F-02 selesai (tanpa peringatan hydration di `/login`). `/guarantee` & `/penalty` wajib login (F-19 selesai). |
-| 2 | Profil buyer | — | ⬜ | P2 | Halaman sederhana: tampil profil + `updateProfile`. |
+| 2 | Profil buyer | `profile.spec.ts` | ✅ | — | Label password lama (F-56), username diabaikan BE (F-57), HP/alamat tak bisa dikosongkan (F-58), format avatar (F-59), gagal muat (F-60). |
 | 3 | Katalog publik (beranda, kategori, produk, merchant, pencarian) | `catalog.spec.ts` | ✅ | — | Data katalog dimuat di klien (`server: false`), cukup `mockApi`. Ulasan produk tidak pernah dimuat (F-44, selesai). |
 | 4 | Keranjang & checkout | `checkout.spec.ts` | ✅ | — | F-03 & F-04 selesai (saldo dibandingkan dengan total termasuk biaya aplikasi). Belum: ubah qty/hapus item, multi-merchant. |
 | 5 | Pembayaran buyer | `payment.spec.ts` | Sebagian | P2 (daftar `/payment`) | F-05 (nominal transfer = total tagihan) & F-08 (keterangan deposit PAID/EXPIRED) selesai. |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
 
-Total saat ini: **356 tes** di 39 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-20 dengan `npx playwright test --list`).
+Total saat ini: **364 tes** di 40 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-20 dengan `npx playwright test --list`).
 
 ---
 
@@ -92,8 +92,8 @@ Total saat ini: **356 tes** di 39 spec, tanpa tes `test.fail` (semua bug yang pu
 
 | Skenario | Status |
 |---|---|
-| Profil tampil (`fetchMe`) | ⬜ P2 |
-| Ubah profil (`updateProfile`): validasi, body, error BE | ⬜ P2 |
+| Profil tampil (`fetchMe`), gagal muat | ✅ |
+| Ubah profil (`updateProfile`): validasi, body multipart, kosongkan HP/alamat, ganti password, avatar, error BE | ✅ |
 | Ganti password 403 `ACCOUNT_LOCKED`: pesan tampil, tidak logout (`security.spec.ts`) | ✅ |
 | Ganti password sukses: tetap login, pesan perangkat lain dikeluarkan, isian dikosongkan (`session.spec.ts`) | ✅ |
 
@@ -374,5 +374,5 @@ Cukup satu smoke test (halaman terbuka tanpa error) — ⬜ P3.
 ## Urutan pengerjaan yang disarankan
 
 1. **P1:** selesai 2026-11-19 (produk & stok seller, verifikasi seller + admin, daftar toko, rekening bank, unprocessed payment, register/logout, daftar & review produk admin).
-2. **P2:** ~~katalog publik~~, ~~chat~~, ~~notifikasi~~, ~~keuangan admin~~, ~~master data admin~~, ~~system settings~~ (selesai) → sisa (profil, `/payment`, diskusi buyer).
+2. **P2:** ~~katalog publik~~, ~~chat~~, ~~notifikasi~~, ~~keuangan admin~~, ~~master data admin~~, ~~system settings~~ (selesai) → ~~profil~~ (selesai) → sisa (`/payment`, diskusi buyer).
 3. **P3:** dashboard, `/admin/stock`, polling badge, smoke test halaman statis.

@@ -10,6 +10,15 @@
         />
       </div>  
 
+      <UAlert
+        v-if="error"
+        class="mt-4"
+        title="Gagal memuat profil"
+        :description="error.message"
+        icon="mdi:alert-circle"
+        color="error"
+      />
+
       <div class="mx-auto w-full border rounded-2xl border-primary-200 bg-gray-100 p-4 mt-4">
         <form>
           <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
@@ -25,7 +34,7 @@
                   <UFileUpload 
                   v-model="userRequest.avatar" 
                   label="Drop your image here"
-                  description="SVG, PNG, JPG or GIF (max. 2MB)"
+                  description="JPG, PNG, atau WEBP (maks. 2MB)"
                   class="w-96 min-h-48" />
                 </div>
 
@@ -36,7 +45,7 @@
             <div class="">
               <label for="username" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Username</label>
               <div class="mt-2">
-                  <UInput name="username" id="username" v-model="userRequest.username" class="block  text-base text-gray-900" placeholder="username"/>
+                  <UInput name="username" id="username" v-model="userRequest.username" class="block  text-base text-gray-900" placeholder="username" :disabled="true"/>
               </div>
             </div>
 
@@ -76,7 +85,7 @@
             </div>
 
             <div class="">
-              <label for="new_password" class="block text-sm/6 font-medium text-gray-900 dark:text-white">New Password</label>
+              <label for="new_password" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Password Baru</label>
               <div class="mt-2">
                 <UInput
                     v-model="userRequest.new_password"
@@ -102,11 +111,11 @@
             </div>
 
             <div v-if="userRequest.new_password" class="">
-              <label for="old_password" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Confirm Password</label>
+              <label for="old_password" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Password Lama</label>
               <div class="mt-2">
                 <UInput
                     v-model="userRequest.old_password"
-                    placeholder="Password"
+                    placeholder="Password saat ini"
                     type="password"
                     class="block  text-base text-gray-900"
                   >
@@ -117,7 +126,7 @@
           </div>
 
           <div class="mt-6 flex justify-end">
-            <UButton type="submit" size="lg" @click.prevent="onSubmit">Save</UButton>
+            <UButton type="submit" size="lg" :disabled="!!error || !profile" @click.prevent="onSubmit">Save</UButton>
           </div>
         </form>
       </div>
@@ -242,14 +251,14 @@ import type { UserResponse } from '~/types/UserResponse';
   if (userRequest.avatar) {
     const file = userRequest.avatar as File
     const maxSize = 2 * 1024 * 1024 // 2 MB
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"] // sama dengan BE
 
     if (file.size > maxSize) {
       errors.value.push("Avatar size must be less than 2MB")
     }
 
     if (!allowedTypes.includes(file.type)) {
-      errors.value.push("Avatar must be JPG, PNG, WEBP, or GIF")
+      errors.value.push("Avatar harus JPG, PNG, atau WEBP")
     }
   }
 
@@ -293,10 +302,10 @@ import type { UserResponse } from '~/types/UserResponse';
     loading.value = true
 
     const formData = new FormData()
-    if (userRequest.username) formData.append("username", userRequest.username)
     if (userRequest.full_name) formData.append("fullName", userRequest.full_name)
-    if (userRequest.phone_number) formData.append("phoneNumber", userRequest.phone_number)
-    if (userRequest.address) formData.append("address", userRequest.address)
+    // string kosong tetap dikirim agar HP/alamat bisa dikosongkan; null/undefined = tidak diubah
+    if (typeof userRequest.phone_number === 'string') formData.append("phoneNumber", userRequest.phone_number)
+    if (typeof userRequest.address === 'string') formData.append("address", userRequest.address)
     if (userRequest.birth_date) formData.append("birthDate", userRequest.birth_date)
     if (userRequest.new_password) formData.append("newPassword", userRequest.new_password)
     if (userRequest.old_password) formData.append("oldPassword", userRequest.old_password)
