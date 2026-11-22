@@ -412,3 +412,92 @@ test.describe('Diskusi pesanan (seller): gagal muat & pesan baru', () => {
     await expect(main(page).getByText('Belum ada diskusi', { exact: false })).toHaveCount(0)
   })
 })
+
+test.describe('Seller ajukan arbitrase (penangguhan)', () => {
+  async function fillReason(page: Page, reason: string) {
+    const dialog = page.getByRole('dialog', { name: 'Ajukan Penangguhan Pesanan' })
+    await expect(dialog).toBeVisible()
+    const submit = dialog.getByRole('button', { name: 'Ajukan Penangguhan Pesanan' })
+    await dialog.getByRole('textbox').fill('pendek')
+    await expect(submit).toBeDisabled()
+    await dialog.getByRole('textbox').fill(reason)
+    await submit.click()
+  }
+
+  test('REJECT: Tangguhkan mengirim alasan → ARBITRAGE, tombol hilang', async ({ page, mockApi }) => {
+    let tx = makeTx('TX-1', 'PAY-1', { status: 'REJECT', confirmed_at: hoursAgo(5), delivered_at: hoursAgo(3), rejected_at: hoursAgo(1) })
+    mockSellerDetail(mockApi, () => tx)
+    let body: any = null
+    mockApi.on('PATCH', '/tx/arbitrage/TX-1', (route) => {
+      body = route.request().postDataJSON()
+      tx = { ...tx, status: 'ARBITRAGE' }
+      return ok(tx)
+    })
+
+    await gotoHydrated(page, '/seller/order/TX-1')
+    await main(page).getByRole('button', { name: 'Tangguhkan' }).click()
+    await fillReason(page, 'Akun sudah sesuai pesanan, pembeli salah login')
+
+    await expect(page.getByText('Penangguhan berhasil diajukan').first()).toBeVisible()
+    expect(body).toEqual({ reason: 'Akun sudah sesuai pesanan, pembeli salah login' })
+    await expect(main(page).getByRole('button', { name: 'Tangguhkan' })).toHaveCount(0)
+  })
+
+  test('tolakan BE (status berubah) tampil dan data dimuat ulang', async ({ page, mockApi }) => {
+    let tx = makeTx('TX-1', 'PAY-1', { status: 'REJECT', confirmed_at: hoursAgo(5), rejected_at: hoursAgo(1) })
+    mockSellerDetail(mockApi, () => tx)
+    mockApi.on('PATCH', '/tx/arbitrage/TX-1', () => {
+      tx = { ...tx, status: 'REFUNDED' }
+      return fail(409, 'Arbitrase tidak bisa diajukan pada status REFUNDED')
+    })
+
+    await gotoHydrated(page, '/seller/order/TX-1')
+    await main(page).getByRole('button', { name: 'Tangguhkan' }).click()
+    await fillReason(page, 'Pembeli menolak tanpa alasan jelas')
+
+    await expect(page.getByText('Arbitrase tidak bisa diajukan pada status REFUNDED').first()).toBeVisible()
+    await expect(main(page).getByRole('button', { name: 'Tangguhkan' })).toHaveCount(0)
+  })
+})
+
+test.describe('Kirim orderan via file & kiriman otomatis', () => {
+  test('kirim orderan dengan file: file ikut multipart, tipe ORDER_DELIVERY', async ({ page, mockApi }) => {
+    let tx = makeTx('TX-1', 'PAY-1', { status: 'IN_PROGRESS', paid_at: hoursAgo(3), confirmed_at: hoursAgo(2) })
+    mockSellerDetail(mockApi, () => tx)
+    let raw = ''
+    mockApi.on('POST', '/order/discussion/create', (route) => {
+      raw = route.request().postDataBuffer()?.toString('latin1') ?? ''
+      tx = { ...tx, status: 'DELIVERED', delivered_at: new Date().toISOString() }
+      return ok({ id: 'D-1' })
+    })
+
+    await gotoHydrated(page, '/seller/order/TX-1')
+    await main(page).getByPlaceholder('Tulis pesan disini...').fill('Akun ada di file terlampir')
+    await main(page).locator('input[type="file"]').last()
+      .setInputFiles({ name: 'akun.txt', mimeType: 'text/plain', buffer: Buffer.from('user1:pass1') })
+    await main(page).getByRole('button', { name: 'Kirim Orderan' }).click()
+    await page.getByRole('dialog', { name: 'Konfirmasi Kirim Orderan' }).getByRole('button', { name: 'Ya, Kirim Orderan' }).click()
+
+    await expect(page.getByText('Pesanan terkirim ke pembeli').first()).toBeVisible()
+    expect(raw).toContain('name="file"; filename="akun.txt"')
+    expect(raw).toMatch(/name="discussionType"\r\n\r\nORDER_DELIVERY/)
+    await expect(main(page).getByText('Menunggu Konfirmasi Pembeli')).toBeVisible()
+  })
+
+  test('kiriman otomatis dari stok tampil di diskusi & ringkasan "Order sudah dikirim"', async ({ page, mockApi }) => {
+    const delivery = {
+      id: 'D-9', transaction_id: 'TX-1', username: 'sistem', sender_role: 'SELLER',
+      message: 'UID: akun-777', discussion_type: 'STOCK_DELIVERY', file: null, created_at: hoursAgo(1),
+    }
+    mockSellerDetail(mockApi, () => makeTx('TX-1', 'PAY-1', { status: 'DELIVERED', paid_at: hoursAgo(2), delivered_at: hoursAgo(1) }))
+    mockApi
+      .on('GET', '/order/discussion/transaction/TX-1', ok(page1([delivery])))
+      .on('GET', '/order/file/transaction/TX-1', ok(page1([delivery])))
+
+    await gotoHydrated(page, '/seller/order/TX-1')
+    await expect(main(page).getByText('Order sudah dikirim penjual!')).toBeVisible()
+    await expect(main(page).getByText('Otomatis Kirim Akun (Stocking)')).toBeVisible()
+    await expect(main(page).getByText('akun-777').first()).toBeVisible()
+    await expect(main(page).getByRole('button', { name: 'Kirim Orderan' })).toHaveCount(0)
+  })
+})

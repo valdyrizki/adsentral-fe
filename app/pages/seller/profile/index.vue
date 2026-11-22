@@ -103,7 +103,7 @@
               <UFileUpload
                 v-model="form.logo"
                 label="Upload Logo"
-                description="JPG, PNG, GIF (maks. 2MB)"
+                description="JPG, PNG, atau WEBP (maks. 2MB)"
                 class="w-full min-h-36"
                 @update:model-value="onLogoChange"
               />
@@ -113,7 +113,7 @@
               <UFileUpload
                 v-model="form.banner"
                 label="Upload Banner"
-                description="JPG, PNG, GIF (maks. 2MB)"
+                description="JPG, PNG, atau WEBP (maks. 2MB)"
                 class="w-full min-h-36"
                 @update:model-value="onBannerChange"
               />
@@ -279,8 +279,9 @@ const validate = (): boolean => {
   const fileRules = (file: File | undefined, label: string) => {
     if (!file) return
     if (file.size > 2 * 1024 * 1024) errors.value.push(`${label} maksimal 2MB`)
-    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type))
-      errors.value.push(`${label} harus JPG, PNG, WEBP, atau GIF`)
+    // sama dengan BE validateMerchantImage
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type))
+      errors.value.push(`${label} harus JPG, PNG, atau WEBP`)
   }
 
   fileRules(form.logo as File | undefined, 'Logo')

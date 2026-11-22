@@ -366,6 +366,25 @@ const balanceStore = useBalanceStore()
 
 const toast = useToast()
 
+// Diskon dihitung BE dari subtotal: jumlah/item berubah → cek ulang, supaya total yang ditampilkan sama dengan yang ditagih
+// dan voucher yang tidak lagi memenuhi syarat (mis. minimal transaksi) dilepas sebelum checkout (F-72)
+let voucherRecheck = 0
+watch(() => cartStore.subTotal, async (amount) => {
+  const code = appliedVoucherCode.value
+  if (!code) return
+  const seq = ++voucherRecheck
+  try {
+    const result = await checkVoucher(code, amount)
+    if (seq !== voucherRecheck || appliedVoucherCode.value !== code) return
+    voucherDiscount.value = result.discount_amount
+  } catch (err: any) {
+    if (seq !== voucherRecheck || appliedVoucherCode.value !== code) return
+    voucherDiscount.value = 0
+    appliedVoucherCode.value = null
+    voucherError.value = err.message || 'Voucher tidak berlaku lagi'
+  }
+})
+
 
 const deleteCartItem = (cartItem:CartItem) =>{
   cartStore.items = cartStore.items.filter(item => item !== cartItem)

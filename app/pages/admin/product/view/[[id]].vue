@@ -323,11 +323,7 @@ const { data: publicSystemSettings } = await useAsyncData<SystemSettingResponse[
   { server: false }
 )
 
-const trxFeePercent = computed(() => {
-  const setting = (publicSystemSettings.value ?? []).find(s => s.key === 'TRX_FEE')
-  const parsed = Number(setting?.value)
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 5
-})
+const trxFeePercent = computed(() => trxFeePercentFor(publicSystemSettings.value, !!product.value?.verified_seller))
 
 const adminFeeAmount = computed(() => Math.round((product.value?.sell_price || 0) * trxFeePercent.value / 100))
 const estimatedIncome = computed(() => Math.max(0, (product.value?.sell_price || 0) - adminFeeAmount.value))

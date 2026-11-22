@@ -145,7 +145,8 @@
               </template>
               <!-- Keterangan NONACTIVE -->
               <p v-else-if="product.status === 'NONACTIVE'" class="text-xs text-red-400 mt-1">
-                Produk ditolak / dinonaktifkan admin. Hubungi admin untuk mengajukan banding.
+                Produk ditolak / dinonaktifkan admin. Alasan ada di notifikasi. Silakan perbaiki lewat Edit untuk diajukan
+                review ulang, atau ajukan banding ke admin.
               </p>
               <!-- Keterangan INACTIVE -->
               <p v-else-if="product.status === 'INACTIVE'" class="text-xs text-amber-500 mt-1">
@@ -153,13 +154,16 @@
               </p>
               <!-- Keterangan SUSPEND -->
               <p v-else-if="product.status === 'SUSPEND'" class="text-xs text-gray-500 mt-1">
-                Produk disuspend karena melanggar ketentuan.
+                Produk disuspend karena melanggar ketentuan dan tidak bisa diedit. Alasan ada di notifikasi; hubungi admin
+                untuk banding.
               </p>
             </div>
 
             <!-- Actions -->
             <div class="ml-auto flex-none flex flex-col gap-2 items-end justify-start">
+              <!-- BE menolak edit produk SUSPEND (409); NONACTIVE yang diedit kembali ke REVIEW -->
               <UButton
+                v-if="product.status !== 'SUSPEND'"
                 :to="`/seller/product/edit/${product.id}`"
                 icon="mdi:edit"
                 size="xs"

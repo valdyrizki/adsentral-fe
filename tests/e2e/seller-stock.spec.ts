@@ -479,3 +479,84 @@ test.describe('Stok seller: banyak file', () => {
     expect(formField(saveReq!, 'dryRun')).toBeNull()
   })
 })
+
+test.describe('Stok seller: import CSV akun massal', () => {
+  const csvInput = (page: Page) => main(page).locator('input[type="file"][accept=".csv,text/csv"]')
+  const okCheck = (n: number) => ok({
+    summary: { total: n, new: n, duplicate_sent: 0, duplicate_active: 0, duplicate_in_file: 0, invalid: 0 },
+    rows: Array.from({ length: n }, (_, i) => ({ row: i + 1, status: 'NEW' })),
+  })
+
+  test('BOM, header beda urutan/huruf besar, cookie berkoma & berkutip, tipe akun dari nama → body BE benar', async ({ page, mockApi }) => {
+    let checkBody: any = null
+    sellerWithStockProduct(mockApi)
+      .on('POST', '/product/5/stock/accounts/bulk', (route) => { checkBody = route.request().postDataJSON(); return okCheck(2) })
+
+    await gotoHydrated(page, '/seller/stock/add/5')
+    const m = main(page)
+    await m.getByText('Akun Massal', { exact: true }).click()
+    await m.getByRole('button', { name: 'Import CSV' }).click()
+    const csv = '﻿Username,Password,UID,Cookie,Type,Notes\r\n'
+      + 'user1,pass1,111,"sid=a,b; tok=""x""",Mobile Legends,Rank Mythic\r\n'
+      + 'user2,pass2,222,,,\r\n'
+    await csvInput(page).setInputFiles({ name: 'akun.csv', mimeType: 'text/csv', buffer: Buffer.from(csv, 'utf8') })
+    await expect(m.getByText('(2 akun)')).toBeVisible()
+    await m.getByRole('button', { name: 'Cek Akun' }).click()
+
+    await expect.poll(() => checkBody?.items?.length).toBe(2)
+    expect(checkBody.items[0]).toMatchObject({
+      account_uid: '111', account_username: 'user1', account_password: 'pass1',
+      account_cookie: 'sid=a,b; tok="x"', account_type_id: 2, description: 'Rank Mythic',
+    })
+    expect(checkBody.items[1]).toEqual({ account_uid: '222', account_username: 'user2', account_password: 'pass2' })
+  })
+
+  test('tipe akun tak dikenal memblokir cek; header salah ditolak dengan pesan', async ({ page, mockApi }) => {
+    let calls = 0
+    sellerWithStockProduct(mockApi)
+      .on('POST', '/product/5/stock/accounts/bulk', () => { calls++; return okCheck(1) })
+
+    await gotoHydrated(page, '/seller/stock/add/5')
+    const m = main(page)
+    await m.getByText('Akun Massal', { exact: true }).click()
+    await m.getByRole('button', { name: 'Import CSV' }).click()
+
+    await csvInput(page).setInputFiles({ name: 'a.csv', mimeType: 'text/csv', buffer: Buffer.from('type,uid,username\nGame Antah,111,user1\n') })
+    await expect(m.getByText('Tipe akun "Game Antah" tidak dikenal')).toBeVisible()
+    await expect(m.getByRole('button', { name: 'Cek Akun' })).toBeDisabled()
+
+    await csvInput(page).setInputFiles({ name: 'b.csv', mimeType: 'text/csv', buffer: Buffer.from('nama,sandi\nuser1,pass1\n') })
+    await expect(m.getByText(/Header CSV tidak dikenali/)).toBeVisible()
+    expect(calls).toBe(0)
+  })
+})
+
+test.describe('Stok seller: detail & tambah ulang item RETURNED', () => {
+  test('detail RETURNED → Tambah ulang: form terisi data lama, password baru dikirim sebagai item baru, daftar dimuat ulang', async ({ page, mockApi }) => {
+    let listCalls = 0
+    let req: Request | null = null
+    sellerWithStockProduct(mockApi)
+      .on('GET', '/stock/my/summary', ok({ active: 0, sent: 0, returned: 1, restocked: 0 }))
+      .on('GET', '/stock/my', () => { listCalls++; return ok(pageOf([makeStockItem(3, { status: 'RETURNED', account_username: 'lama', account_password: 'pass-lama', transaction_id: 'TX9' })])) })
+      .on('POST', '/product/5/stock', (route) => { req = route.request(); return ok(null, 'Stock item berhasil ditambahkan') })
+
+    await gotoHydrated(page, '/seller/stock')
+    const m = main(page)
+    await m.getByRole('button', { name: 'Detail' }).first().click()
+    await page.getByRole('button', { name: 'Tambah ulang ke stok' }).click()
+
+    const dialog = page.getByRole('dialog', { name: 'Tambah Ulang ke Stok' })
+    await expect(dialog.getByText('Pastikan akun sudah aman')).toBeVisible()
+    await expect(dialog.getByPlaceholder('Contoh: 123456789')).toHaveValue('uid-3')
+    await expect(dialog.getByPlaceholder('Username akun')).toHaveValue('lama')
+    const before = listCalls
+    await dialog.locator('input[type="password"]').first().fill('pass-baru')
+    await dialog.getByRole('button', { name: 'Tambah Stok' }).click()
+
+    await expect.poll(() => req && formField(req, 'accountPassword')).toBe('pass-baru')
+    expect(formField(req!, 'accountUid')).toBe('uid-3')
+    expect(formField(req!, 'accountUsername')).toBe('lama')
+    await expect(dialog).toHaveCount(0)
+    await expect.poll(() => listCalls).toBeGreaterThan(before)
+  })
+})

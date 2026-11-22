@@ -308,3 +308,74 @@ test.describe('Voucher publik di keranjang', () => {
     expect(txBody.voucher_code).toBe('HEMAT5')
   })
 })
+
+test.describe('Keranjang: ubah jumlah, hapus, banyak toko', () => {
+  test('ubah jumlah memperbarui total; hapus item; dua toko dikirim dalam satu checkout', async ({ page, context, mockApi }) => {
+    const a = makeProduct(1, { sell_price: 10000, merchant_id: 1, merchant_name: 'Toko A' })
+    const b = makeProduct(2, { sell_price: 20000, merchant_id: 2, merchant_name: 'Toko B' })
+    const c = makeProduct(3, { sell_price: 5000, merchant_id: 2, merchant_name: 'Toko B' })
+    await seedCart(context, [{ product: a, quantity: 1 }, { product: b, quantity: 1 }, { product: c, quantity: 1 }])
+    mockCartPage(mockApi, [a, b, c])
+    let txBody: any = null
+    mockApi.on('POST', '/tx/create', (route) => {
+      txBody = route.request().postDataJSON()
+      return ok({ paymentId: 'PAY-7', referenceId: 'REF-7', checkoutUrl: '', qrUrl: '' })
+    })
+
+    await gotoHydrated(page, '/cart')
+    const m = page.getByRole('main')
+    await expect(m.getByText('Rp 35.000', { exact: true }).first()).toBeVisible()
+
+    const rowA = m.locator('li').filter({ hasText: 'Produk Tes 1' })
+    await rowA.getByRole('button', { name: 'Increment' }).click()
+    await expect(rowA.getByText('Total : Rp 20.000')).toBeVisible()
+    await expect(m.getByText('Rp 45.000', { exact: true }).first()).toBeVisible()
+
+    await m.locator('li').filter({ hasText: 'Produk Tes 3' }).getByRole('button', { name: 'Remove' }).click()
+    await expect(m.getByText('Produk Tes 3')).toHaveCount(0)
+    await expect(m.getByText('Rp 40.000', { exact: true }).first()).toBeVisible()
+
+    await confirmCheckout(page)
+    await expect(page).toHaveURL(/\/transaction$/)
+    expect(txBody.transaction_details).toEqual([
+      { product_id: 1, qty: 2, order_request: null },
+      { product_id: 2, qty: 1, order_request: null },
+    ])
+  })
+
+  test('voucher dicek ulang saat jumlah berubah: diskon persen ikut naik; tidak lagi memenuhi syarat → dilepas (F-72)', async ({ page, context, mockApi }) => {
+    const product = makeProduct(1, { sell_price: 50000 })
+    await seedCart(context, [{ product, quantity: 2 }])
+    mockCartPage(mockApi, [product])
+    const checked: number[] = []
+    mockApi.on('GET', '/voucher/check', (_r, url) => {
+      const amount = Number(url.searchParams.get('amount'))
+      checked.push(amount)
+      return amount < 100000 ? fail(400, 'Minimal transaksi Rp100.000') : ok({ discount_amount: amount / 10, code: 'PERSEN10' })
+    })
+    let txBody: any = null
+    mockApi.on('POST', '/tx/create', (route) => {
+      txBody = route.request().postDataJSON()
+      return ok({ paymentId: 'PAY-8', referenceId: 'REF-8', checkoutUrl: '', qrUrl: '' })
+    })
+
+    await gotoHydrated(page, '/cart')
+    const m = page.getByRole('main')
+    await m.getByPlaceholder('Kode voucher...').fill('persen10')
+    await m.getByRole('button', { name: 'Pakai' }).click()
+    await expect(m.getByText('- Rp 10.000')).toBeVisible()
+
+    await m.getByRole('button', { name: 'Increment' }).click()
+    await expect(m.getByText('- Rp 15.000')).toBeVisible()
+    expect(checked.at(-1)).toBe(150000)
+
+    await m.getByRole('button', { name: 'Decrement' }).click()
+    await m.getByRole('button', { name: 'Decrement' }).click()
+    await expect(m.getByText('Minimal transaksi Rp100.000').first()).toBeVisible()
+    await expect(m.getByText(/- Rp \d/)).toHaveCount(0)
+
+    await confirmCheckout(page)
+    await expect(page).toHaveURL(/\/transaction$/)
+    expect(txBody.voucher_code).toBeNull()
+  })
+})

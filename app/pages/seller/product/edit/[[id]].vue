@@ -540,11 +540,10 @@ const { data: publicSystemSettings } = await useAsyncData<SystemSettingResponse[
   { server: false }
 )
 
-const trxFeePercent = computed(() => {
-  const setting = (publicSystemSettings.value ?? []).find(s => s.key === 'TRX_FEE')
-  const parsed = Number(setting?.value)
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 5
-})
+// status verifikasi dimuat ulang dari BE (cookie merchant bisa basi setelah KTP disetujui)
+const merchantStore = useMerchantStore()
+useAsyncData('seller-product-edit-merchant', () => merchantStore.refreshMerchant().then(() => true).catch(() => false), { server: false })
+const trxFeePercent = computed(() => trxFeePercentFor(publicSystemSettings.value, !!merchantStore.merchant?.verified_seller))
 
 const adminFeeAmount = computed(() => Math.round((productRequest.sell_price || 0) * trxFeePercent.value / 100))
 const estimatedIncome = computed(() => Math.max(0, (productRequest.sell_price || 0) - adminFeeAmount.value))

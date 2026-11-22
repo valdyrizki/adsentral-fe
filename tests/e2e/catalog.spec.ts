@@ -200,3 +200,66 @@ test.describe('Kategori, toko & pencarian', () => {
     await expect(main(page).getByText('Tidak ada produk yang cocok dengan', { exact: false })).toBeVisible()
   })
 })
+
+test.describe('Chat penjual dari halaman produk & toko', () => {
+  const field = (raw: string, name: string) => raw.match(new RegExp(`name="${name}"\r\n\r\n([^\r]*)`))?.[1] ?? null
+
+  test('produk: pesan < 5 karakter ditolak; kirim membawa productId & merchantId lalu ke /chat', async ({ page, mockApi }) => {
+    mockApi.asRole('BUYER')
+    mockProductPage(mockApi, makeProduct(1))
+    let raw = ''
+    mockApi
+      .on('POST', '/chat/send', (route) => { raw = route.request().postDataBuffer()?.toString('latin1') ?? ''; return ok({ id: 1 }) })
+      .on('GET', '/chat/buyer/conversation', ok(pageOf([])))
+
+    await gotoHydrated(page, '/product/1')
+    await main(page).getByRole('button', { name: 'Chat Penjual' }).first().click()
+    const dialog = page.getByRole('dialog', { name: 'Kirim pesan ke penjual' })
+    const send = dialog.getByRole('button', { name: /Kirim/ }).last()
+    await dialog.getByPlaceholder('Tulis pesanmu untuk penjual disini...').fill('halo')
+    await expect(send).toBeDisabled()
+    await dialog.getByPlaceholder('Tulis pesanmu untuk penjual disini...').fill('Masih ada stok kak?')
+    await send.click()
+
+    await expect(page.getByText('Pesan terkirim').first()).toBeVisible()
+    await expect(page).toHaveURL(/\/chat$/)
+    expect(field(raw, 'productId')).toBe('1')
+    expect(field(raw, 'merchantId')).toBe('10')
+    expect(field(raw, 'senderType')).toBe('BUYER')
+    expect(field(raw, 'message')).toBe('Masih ada stok kak?')
+  })
+
+  test('tamu: diarahkan ke login dengan redirect, tidak mengirim', async ({ page, mockApi }) => {
+    mockProductPage(mockApi, makeProduct(1))
+    let calls = 0
+    mockApi.on('POST', '/chat/send', () => { calls++; return ok({ id: 1 }) })
+
+    await gotoHydrated(page, '/product/1')
+    await main(page).getByRole('button', { name: 'Chat Penjual' }).first().click()
+    const dialog = page.getByRole('dialog', { name: 'Kirim pesan ke penjual' })
+    await dialog.getByPlaceholder('Tulis pesanmu untuk penjual disini...').fill('Masih ada stok kak?')
+    await dialog.getByRole('button', { name: /Kirim/ }).last().click()
+
+    await expect(page).toHaveURL(/\/login\?redirect=(\/|%2F)product(\/|%2F)1$/)
+    expect(calls).toBe(0)
+  })
+
+  test('toko: kirim tanpa productId; tolakan BE tampil', async ({ page, mockApi }) => {
+    mockApi.asRole('BUYER')
+      .on('GET', '/merchant/get/10', ok(MERCHANT))
+      .on('GET', '/products/merchant/10', ok(pageOf([makeProduct(8, { name: 'Akun Canva' })])))
+    let raw = ''
+    mockApi.on('POST', '/chat/send', (route) => { raw = route.request().postDataBuffer()?.toString('latin1') ?? ''; return fail(400, 'Tidak bisa chat ke toko sendiri') })
+
+    await gotoHydrated(page, '/merchant/10')
+    await main(page).getByRole('button', { name: 'Chat Penjual' }).first().click()
+    const dialog = page.getByRole('dialog', { name: 'Kirim pesan ke penjual' })
+    await dialog.getByPlaceholder('Tulis pesanmu untuk penjual disini...').fill('Halo, buka sampai jam berapa?')
+    await dialog.getByRole('button', { name: /Kirim/ }).last().click()
+
+    await expect(page.getByText('Tidak bisa chat ke toko sendiri').first()).toBeVisible()
+    expect(field(raw, 'productId')).toBeNull()
+    expect(field(raw, 'merchantId')).toBe('10')
+    await expect(page).toHaveURL(/\/merchant\/10$/)
+  })
+})

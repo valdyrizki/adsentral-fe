@@ -9,7 +9,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## Rencana & catatan
 
 - **Cakupan tes** (modul yang sudah/belum dites, prioritas): lihat **`docs/test-progress.md`**. Dokumen ini hanya berisi bug.
-- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45, F-46, F-47, F-48, F-49, F-50, F-51, F-53, F-54, F-55, F-56, F-57, F-58, F-59, F-60, F-61, F-62, F-63, F-64, F-65 (selesai); dari P3: F-66, F-67, F-68, F-69, F-70, F-71 (selesai), F-43 (todo), F-52 (disengaja). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
+- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45, F-46, F-47, F-48, F-49, F-50, F-51, F-53, F-54, F-55, F-56, F-57, F-58, F-59, F-60, F-61, F-62, F-63, F-64, F-65 (selesai); dari P3: F-66, F-67, F-68, F-69, F-70, F-71 (selesai); sisa P2: F-72, F-73, F-74, F-75 (selesai), F-43 (todo), F-52 (disengaja). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
   composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
   Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
 - **Setelah memperbaiki temuan:** ubah statusnya di sini menjadi `SELESAI`, hapus `test.fail` di spec, dan ubah 🐞 → ✅
@@ -94,6 +94,10 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-69 | Dashboard admin | Semua angka dari 20 transaksi terbaru tanpa keterangan: "Perlu Ditinjau" (arbitrase) bisa 0 padahal ada kasus lama, "Total Pendapatan" & grafik hanya dari 20 baris | Sedang | SELESAI | Arbitrase dari `/admin/alerts` (`arbitrage_pending`), GMV & grafik dari `/admin/metrics/monthly`, rincian status berlabel "20 transaksi terbaru"; null → "-". Tes regresi di `admin-dashboard.spec.ts`. |
 | F-70 | Stok admin (`/admin/stock`) | Badge Aktif/Terkirim/... dihitung dari halaman aktif, di samping total semua item | Rendah | SELESAI | Endpoint BE baru `GET /admin/stock/summary` (filter sama dengan daftar). Tes regresi di `admin-stock.spec.ts`. |
 | F-71 | Halaman statis | Konten contoh: statistik karangan di Tentang Kami (10K+ produk, 99% kepuasan), 6 artikel blog contoh, 4 lowongan contoh; kontak hardcoded di header & Tentang Kami (`085855558813`, `support@adsentral.id`) berbeda dengan setting | Sedang | SELESAI | Statistik dihapus, blog & lowongan kosong, kontak dari setting `CONTACT` (`useContactSettings`). Tes regresi di `static-pages.spec.ts`. |
+| F-72 | Keranjang | Diskon voucher tidak dicek ulang saat jumlah/item berubah: total yang ditampilkan beda dengan tagihan BE, voucher yang tidak lagi memenuhi minimal transaksi tetap terpasang lalu ditolak saat checkout | Sedang | SELESAI | Subtotal berubah → `checkVoucher` ulang (respons basi diabaikan); gagal → voucher dilepas dengan pesan BE. Tes regresi di `checkout.spec.ts`. |
+| F-73 | Produk seller | Produk SUSPEND masih punya tombol Edit (BE menolak 409); keterangan NONACTIVE tidak menyebut bahwa perbaikan lewat Edit masuk review ulang dan alasan ada di notifikasi | Rendah | SELESAI | Edit disembunyikan untuk SUSPEND; keterangan diperbarui. Tes regresi di `seller-product.spec.ts`. |
+| F-74 | Profil toko seller | Logo/banner: teks "JPG, PNG, GIF" dan validasi klien menerima GIF, padahal BE hanya JPG/PNG/WEBP | Rendah | SELESAI | Teks & validasi mengikuti BE. Tes regresi di `seller-profile.spec.ts`. |
+| F-75 | Estimasi pendapatan produk | Biaya admin selalu dari `TRX_FEE` (fallback 5%), padahal BE memakai `TRX_FEE_VERIFIED` untuk seller terverifikasi KTP dan default `TRX_FEE` 10% | Sedang | SELESAI | `trxFeePercentFor` (sama dengan BE `resolveTrxFeePercent`) di detail produk admin, buat & edit produk seller; status verifikasi dimuat ulang dari BE. Tes regresi di `seller-product.spec.ts`, `admin-product-view.spec.ts`. |
 ---
 
 ## F-01 — Kredensial bocor ke URL jika form ter-submit sebelum hidrasi
@@ -1029,3 +1033,51 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 - **Tes:** `static-pages.spec.ts` → "Konten statis tanpa data contoh" (merah di kode lama).
 - **Catatan:** link `wa.me` memakai `WA_NUMBER` apa adanya tanpa awalan negara; nilai dev `+6283818213645` benar, tetapi
   isian `08...` akan membuka nomor yang salah. Menu `items` di `Header.vue` (salinan contoh Nuxt UI) tidak dipakai (kode mati).
+
+---
+## F-72 — Diskon voucher basi setelah jumlah barang berubah
+
+- **Lokasi:** `app/pages/cart/index.vue`
+- **Status:** SELESAI
+- **Gejala:** Voucher persen 10% dipakai pada subtotal Rp 100.000 (diskon Rp 10.000); jumlah dinaikkan ke Rp 150.000 → tetap
+  tampil diskon Rp 10.000, padahal BE menghitung Rp 15.000. Jumlah diturunkan di bawah minimal transaksi → voucher tetap
+  terpasang, checkout ditolak BE.
+- **Perbaikan (2026-11-22):** `watch(subTotal)` memanggil `checkVoucher` ulang; respons yang sudah basi diabaikan; gagal →
+  voucher dilepas dan pesan BE tampil.
+- **Tes:** `checkout.spec.ts` → "voucher dicek ulang saat jumlah berubah ..." (merah di kode lama).
+
+---
+## F-73 — Produk suspend masih bisa dibuka form edit
+
+- **Lokasi:** `app/pages/seller/product/index.vue`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-22):** Tombol Edit tidak tampil untuk SUSPEND (BE `updateProduct` 409); keterangan NONACTIVE: alasan ada
+  di notifikasi, perbaiki lewat Edit untuk review ulang (BE: NONACTIVE → REVIEW saat diedit). Alasan tolak/suspend tidak
+  disimpan di produk (hanya notifikasi & `audit_logs`), jadi tidak bisa ditampilkan di daftar tanpa perubahan BE.
+- **Tes:** `seller-product.spec.ts` → "Produk ditolak / suspend" (merah di kode lama).
+
+---
+## F-74 — Format logo/banner toko berbeda dengan BE
+
+- **Lokasi:** `app/pages/seller/profile/index.vue`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-22):** "JPG, PNG, atau WEBP (maks. 2MB)", validasi tanpa GIF (BE `validateMerchantImage`).
+- **Catatan:** BE mengabaikan nilai kosong saat update toko, jadi deskripsi tidak bisa dikosongkan dan jam operasional tidak
+  bisa dikembalikan ke "24 Jam" dari form (butuh perubahan kontrak BE).
+- **Tes:** `seller-profile.spec.ts` (merah di kode lama).
+
+---
+## F-75 — Estimasi pendapatan memakai persen biaya yang salah
+
+- **Lokasi:** `app/pages/admin/product/view/[[id]].vue`, `app/pages/seller/product/create/index.vue`,
+  `app/pages/seller/product/edit/[[id]].vue`
+- **Status:** SELESAI
+- **Gejala:** Seller terverifikasi melihat biaya `TRX_FEE` (dev: 10%) padahal dipotong `TRX_FEE_VERIFIED` (5%); bila setting
+  tidak terbaca, FE memakai 5% sementara default BE 10%.
+- **Perbaikan (2026-11-22):** `app/utils/trxFee.ts` → `trxFeePercentFor(settings, verified)`; status verifikasi dari
+  `product.verified_seller` (admin) atau merchant yang dimuat ulang (seller). Halaman create/edit admin tidak diubah (yatim, F-43).
+- **Tes:** `seller-product.spec.ts` & `admin-product-view.spec.ts` → "... (F-75)" (merah di kode lama).
+- **Catatan lain dari tes P2:** `ChatProductModal.isValid` selalu benar (membandingkan ref), tidak berdampak karena tombol
+  dinonaktifkan tanpa pilihan; `TransactionItem.vue` tidak dipakai (tombol tanpa aksi, kode mati); tombol Tangguhkan seller hanya
+  di status REJECT walau BE mengizinkan PAID/IN_PROGRESS/DELIVERED/CANCEL_REQUEST/DONE (pilihan UX, BE tetap penjaga);
+  impor CSV/paste stok men-trim nilai, jadi password berawalan/berakhiran spasi berubah.

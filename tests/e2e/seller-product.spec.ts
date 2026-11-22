@@ -44,7 +44,7 @@ test.describe('Produk seller: daftar & aksi status', () => {
     await expect(m.getByText('Menunggu persetujuan admin.')).toBeVisible()
     await expect(m.getByText('Produk ditolak / dinonaktifkan admin.', { exact: false })).toBeVisible()
     await expect(m.getByText('Produk ditangguhkan oleh Anda.')).toBeVisible()
-    await expect(m.getByText('Produk disuspend karena melanggar ketentuan.')).toBeVisible()
+    await expect(m.getByText('Produk disuspend karena melanggar ketentuan', { exact: false })).toBeVisible()
     await expect(m.getByText('Produk diblokir')).toBeVisible()
 
     // aksi sesuai status: Tangguhkan hanya ACTIVE, Aktifkan hanya INACTIVE, Kelola Stok hanya STOCKING
@@ -146,6 +146,26 @@ test.describe('Produk seller: buat produk', () => {
     await expect(m.getByText('Harga jual minimal Rp.1.000')).toBeVisible()
     await expect(m.getByText('Estimasi pengiriman wajib diisi')).toBeVisible()
     expect(calls).toBe(0)
+  })
+
+  test('seller terverifikasi: estimasi memakai TRX_FEE_VERIFIED, bukan TRX_FEE (F-75)', async ({ page, mockApi }) => {
+    mockApi
+      .on('GET', '/system/settings/public', ok([{ key: 'TRX_FEE', value: '10' }, { key: 'TRX_FEE_VERIFIED', value: '5' }]))
+      .on('GET', '/merchant/my', ok({ id: 10, name: 'Toko Tes', verified_seller: true }))
+    await openCreateForm(page)
+    await main(page).locator('#sell_price').fill('20000')
+    await expect(main(page).getByText('Biaya Admin (5%)')).toBeVisible()
+    await expect(main(page).getByText('Rp 19.000')).toBeVisible()
+  })
+
+  test('seller belum terverifikasi: TRX_FEE; tanpa setting default BE 10% (F-75)', async ({ page, mockApi }) => {
+    mockApi
+      .on('GET', '/system/settings/public', ok([]))
+      .on('GET', '/merchant/my', ok({ id: 10, name: 'Toko Tes', verified_seller: false }))
+    await openCreateForm(page)
+    await main(page).locator('#sell_price').fill('20000')
+    await expect(main(page).getByText('Biaya Admin (10%)')).toBeVisible()
+    await expect(main(page).getByText('Rp 18.000')).toBeVisible()
   })
 
   test('estimasi pendapatan memakai TRX_FEE; slug dibuat dari nama', async ({ page }) => {
@@ -305,5 +325,31 @@ test.describe('Produk seller: edit produk', () => {
     await main(page).getByRole('button', { name: 'Edit Product' }).click()
 
     await expect.poll(() => calls, { timeout: 3000 }).toBe(1)
+  })
+})
+
+test.describe('Produk ditolak / suspend', () => {
+  test('NONACTIVE: arahan perbaiki lewat Edit & alasan di notifikasi; SUSPEND: tanpa Edit (BE menolak 409) (F-73)', async ({ page, mockApi }) => {
+    mockApi
+      .asRole('SELLER')
+      .on('GET', '/seller/products/summary', ok({ active: 0, in_review: 0, blocked: 2 }))
+      .on('GET', '/products/my', ok(pageOf([
+        makeProduct(3, { name: 'Akun Ditolak', status: 'NONACTIVE' }),
+        makeProduct(5, { name: 'Akun Suspend', status: 'SUSPEND' }),
+      ])))
+
+    await gotoHydrated(page, '/seller/product')
+    const m = main(page)
+    const row = (name: string) => m.locator('div.flex.flex-row.gap-4').filter({ hasText: name })
+
+    const rejected = row('Akun Ditolak')
+    await expect(rejected.getByText(/Alasan ada di notifikasi/)).toBeVisible()
+    await expect(rejected.getByText(/perbaiki lewat Edit/)).toBeVisible()
+    await expect(rejected.getByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/seller/product/edit/3')
+
+    const suspended = row('Akun Suspend')
+    await expect(suspended.getByText(/Alasan ada di notifikasi/)).toBeVisible()
+    await expect(suspended.getByRole('link', { name: 'Edit' })).toHaveCount(0)
+    await expect(suspended.getByRole('button', { name: 'Ajukan Banding' })).toBeVisible()
   })
 })
