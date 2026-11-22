@@ -86,11 +86,11 @@
               <div class="space-y-1 text-sm text-gray-600 pl-14">
                 <div class="flex justify-between">
                   <span>Senin – Jumat</span>
-                  <span class="font-medium text-gray-800">{{ operationalWeekday || '-' }}</span>
+                  <span class="font-medium text-gray-800">{{ operationalWeekday || CS_HOURS }}</span>
                 </div>
                 <div class="flex justify-between">
                   <span>Sabtu – Minggu</span>
-                  <span class="font-medium text-gray-800">{{ operationalWeekend || '-' }}</span>
+                  <span class="font-medium text-gray-800">{{ operationalWeekend || CS_HOURS }}</span>
                 </div>
               </div>
             </div>
@@ -123,6 +123,7 @@
 
 <script lang="ts" setup>
 import { useSystemSettingApi } from '~/composables/api/system-setting'
+import { CS_SLA_TEXT } from '~/legal/config'
 
 definePageMeta({ layout: 'default' })
 
@@ -193,6 +194,8 @@ const getSetting = (key: string) => contactSettings.value.find(s => s.key === ke
 const waNumber = computed(() => getSetting('WA_NUMBER'))
 const email = computed(() => getSetting('EMAIL'))
 const address = computed(() => getSetting('ADDRESS'))
+// jam CS di PRD (setiap hari) dipakai bila setting belum diisi
+const CS_HOURS = '11.00–21.00 WIB'
 const operationalWeekday = computed(() => getSetting('OPERATIONAL_HOURS_WEEKDAY'))
 const operationalWeekend = computed(() => getSetting('OPERATIONAL_HOURS_WEEKEND'))
 
@@ -214,7 +217,7 @@ const contactInfos = computed(() => [
     icon: 'i-heroicons-envelope',
     label: 'Email',
     value: email.value || '-',
-    note: 'Balas dalam 1×24 jam',
+    note: CS_SLA_TEXT,
     href: null,
   },
   {
@@ -238,9 +241,12 @@ const socials = computed(() => [
 ])
 
 onMounted(async () => {
-  [contactSettings.value, socialSettings.value] = await Promise.all([
+  // satu grup gagal tidak boleh menyembunyikan grup lain (kontak tetap tampil walau media sosial gagal)
+  const [contact, social] = await Promise.allSettled([
     fetchPublicSystemSettingByGroup('CONTACT'),
     fetchPublicSystemSettingByGroup('SOCIAL_MEDIA'),
   ])
+  if (contact.status === 'fulfilled') contactSettings.value = contact.value
+  if (social.status === 'fulfilled') socialSettings.value = social.value
 })
 </script>

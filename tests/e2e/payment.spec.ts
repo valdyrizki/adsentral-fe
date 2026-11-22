@@ -235,7 +235,7 @@ test.describe('Konfirmasi pembayaran (admin)', () => {
 
     await expect(page.getByText('Gagal konfirmasi').first()).toBeVisible()
     await expect(page.getByText('Transaksi sudah expired').first()).toBeVisible()
-    await expect(page.getByText('Transaksi Expired').first()).toBeVisible()
+    await expect(page.getByText('Kedaluwarsa', { exact: true }).first()).toBeVisible()
   })
 
   test('tolak pembayaran transaksi dari halaman detail', async ({ page, mockApi }) => {
@@ -285,5 +285,100 @@ test.describe('Konfirmasi pembayaran (admin)', () => {
     await expect(page.getByText('Tidak ada data pembayaran.')).toBeVisible()
 
     expect(queries.at(-1)!.get('status')).toBeNull()
+  })
+})
+
+test.describe('Daftar pembayaran (buyer) /payment', () => {
+  /** Halaman BE palsu: 25 payment, dipotong sesuai page & size yang diminta */
+  function mockMyPayments(mockApi: MockApi, all: MockPayment[]) {
+    const queries: URLSearchParams[] = []
+    mockApi.asRole('BUYER').on('GET', '/payment', (route) => {
+      const q = new URL(route.request().url()).searchParams
+      queries.push(q)
+      const size = Number(q.get('size') ?? 20)
+      const pageNo = Number(q.get('page') ?? 0)
+      const kw = q.get('keyword') ?? ''
+      const rows = all.filter((p) => p.id.includes(kw))
+      const total_pages = Math.ceil(rows.length / size)
+      return ok({ page: pageNo, size, total_elements: rows.length, total_pages, last: pageNo >= total_pages - 1,
+        content: rows.slice(pageNo * size, pageNo * size + size) })
+    })
+    return queries
+  }
+
+  test('baris: total tagihan (bukan subtotal), jenis, metode, status, batas bayar, tautan detail (F-61, F-62)', async ({ page, mockApi }) => {
+    mockMyPayments(mockApi, [
+      makePayment('PAY-UNPAID'),
+      makePayment('DEP-CANCEL', { payment_type: 'DEPOSIT', status: 'CANCELLED', total_amount: 100123, amount: 100000 }),
+      makePayment('PAY-EXP', { status: 'EXPIRED', total_amount: 75500, amount: 75000 }),
+    ])
+
+    await gotoHydrated(page, '/payment')
+    const row = (id: string) => page.getByRole('main').locator('div.rounded-2xl.bg-white').filter({ hasText: `#${id}` })
+
+    const unpaid = row('PAY-UNPAID')
+    await expect(unpaid.getByText('Rp 51.123')).toBeVisible()
+    await expect(unpaid.getByText('Rp 50.000')).toHaveCount(0)
+    await expect(unpaid.getByText('Transaksi', { exact: true })).toBeVisible()
+    await expect(unpaid.getByText('Transfer Bank Manual')).toBeVisible()
+    await expect(unpaid.getByText('Menunggu Pembayaran')).toBeVisible()
+    await expect(unpaid.getByText(/Bayar sebelum .*sisa/)).toBeVisible()
+    await expect(unpaid.getByRole('link', { name: 'Detail' })).toHaveAttribute('href', '/payment/PAY-UNPAID')
+
+    const dep = row('DEP-CANCEL')
+    await expect(dep.getByText('Rp 100.123')).toBeVisible()
+    await expect(dep.getByText('Deposit', { exact: true })).toBeVisible()
+    await expect(dep.getByText('Dibatalkan', { exact: true })).toBeVisible()
+    await expect(dep.getByText(/Bayar sebelum/)).toHaveCount(0)
+
+    const exp = row('PAY-EXP')
+    await expect(exp.getByText('Rp 75.500')).toBeVisible()
+    await expect(exp.getByText('Kedaluwarsa', { exact: true })).toBeVisible()
+  })
+
+  test('cari ID: keyword dikirim, kembali ke halaman pertama', async ({ page, mockApi }) => {
+    const all = Array.from({ length: 25 }, (_, i) => makePayment(`PAY-${String(i + 1).padStart(2, '0')}`))
+    const queries = mockMyPayments(mockApi, all)
+
+    await gotoHydrated(page, '/payment')
+    await expect(page.getByText('#PAY-01')).toBeVisible()
+    await page.getByRole('main').getByRole('button', { name: /^(Page )?2$/ }).click()
+    await expect(page.getByText('#PAY-21')).toBeVisible()
+    expect(queries.at(-1)!.get('page')).toBe('1')
+
+    await page.getByPlaceholder('Cari ID pembayaran...').fill('PAY-0')
+    await page.getByPlaceholder('Cari ID pembayaran...').press('Enter')
+    await expect(page.getByText('#PAY-09')).toBeVisible()
+    await expect(page.getByText('#PAY-21')).toHaveCount(0)
+    expect(queries.at(-1)!.get('keyword')).toBe('PAY-0')
+    expect(queries.at(-1)!.get('page')).toBe('0')
+  })
+
+  test('ganti jumlah per halaman dari halaman 2: kembali ke halaman pertama, bukan daftar kosong (F-63)', async ({ page, mockApi }) => {
+    const all = Array.from({ length: 25 }, (_, i) => makePayment(`PAY-${String(i + 1).padStart(2, '0')}`))
+    const queries = mockMyPayments(mockApi, all)
+
+    await gotoHydrated(page, '/payment')
+    await page.getByRole('main').getByRole('button', { name: /^(Page )?2$/ }).click()
+    await expect(page.getByText('#PAY-21')).toBeVisible()
+
+    await page.getByRole('main').getByRole('combobox').click()
+    await page.getByRole('option', { name: '50' }).click()
+
+    await expect(page.getByText('#PAY-01')).toBeVisible()
+    await expect(page.getByText('Belum ada pembayaran')).toHaveCount(0)
+    expect(queries.at(-1)!.get('size')).toBe('50')
+    expect(queries.at(-1)!.get('page')).toBe('0')
+  })
+
+  test('kosong dan gagal muat dibedakan', async ({ page, mockApi }) => {
+    mockApi.asRole('BUYER').on('GET', '/payment', ok(emptyPage()))
+    await gotoHydrated(page, '/payment')
+    await expect(page.getByText('Belum ada pembayaran')).toBeVisible()
+
+    mockApi.on('GET', '/payment', fail(500, 'Gagal memuat payment dari server'))
+    await gotoHydrated(page, '/payment')
+    await expect(page.getByText('Terjadi Kesalahan')).toBeVisible()
+    await expect(page.getByText('Belum ada pembayaran')).toHaveCount(0)
   })
 })

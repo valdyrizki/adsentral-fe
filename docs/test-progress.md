@@ -27,7 +27,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 2 | Profil buyer | `profile.spec.ts` | ✅ | — | Label password lama (F-56), username diabaikan BE (F-57), HP/alamat tak bisa dikosongkan (F-58), format avatar (F-59), gagal muat (F-60). |
 | 3 | Katalog publik (beranda, kategori, produk, merchant, pencarian) | `catalog.spec.ts` | ✅ | — | Data katalog dimuat di klien (`server: false`), cukup `mockApi`. Ulasan produk tidak pernah dimuat (F-44, selesai). |
 | 4 | Keranjang & checkout | `checkout.spec.ts` | ✅ | — | F-03 & F-04 selesai (saldo dibandingkan dengan total termasuk biaya aplikasi). Belum: ubah qty/hapus item, multi-merchant. |
-| 5 | Pembayaran buyer | `payment.spec.ts` | Sebagian | P2 (daftar `/payment`) | F-05 (nominal transfer = total tagihan) & F-08 (keterangan deposit PAID/EXPIRED) selesai. |
+| 5 | Pembayaran buyer | `payment.spec.ts` | ✅ | — | F-05 (nominal transfer = total tagihan) & F-08 (keterangan deposit PAID/EXPIRED) selesai. Daftar `/payment`: nominal subtotal (F-61), label status (F-62), ganti per halaman (F-63). |
 | 6 | Transaksi buyer | `transaction.spec.ts` | ✅ | — | F-11, F-17, F-18 selesai. Tarik pengajuan batal lewat konfirmasi (F-12). |
 | 7 | Garansi (buyer & seller) | `guarantee.spec.ts` | ✅ | — | F-21 selesai (`GuaranteeStatusBadge`). |
 | 8 | Saldo, deposit & transfer | `balance.spec.ts` | ✅ | — | F-20, F-33, F-34 selesai. |
@@ -37,27 +37,27 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 12 | Produk seller | `seller-product.spec.ts` | ✅ | P2 (REJECTED/SUSPEND detail) | Teks menyesatkan (F-37) selesai. |
 | 13 | Stok seller | `seller-stock.spec.ts` | ✅ | P2 (detail & tambah ulang item RETURNED, import CSV) | F-38 selesai (hitungan dari `GET /stock/my/summary`). |
 | 14 | Verifikasi seller & daftar merchant | `verification.spec.ts`, `security.spec.ts`, `verification-photos-purged.spec.ts` | ✅ | — | F-40 selesai. |
-| 15 | Dashboard & profil toko seller | — | ⬜ | P3 | Riwayat penalty di dashboard sudah tercakup `penalty.spec.ts`. |
-| 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | ✅ | P3 (dashboard admin) | F-27 & F-28 selesai. |
+| 15 | Dashboard & profil toko seller | `seller-dashboard.spec.ts` | Sebagian | P2 (`/seller/profile`) | Dashboard: ringkasan dari endpoint, error per kartu. Riwayat penalty di `penalty.spec.ts`. |
+| 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | ✅ | — | F-27 & F-28 selesai. Dashboard admin di `admin-dashboard.spec.ts` (F-69). |
 | 17 | Pembayaran admin | `payment.spec.ts`, `admin-unprocessed-payment.spec.ts` | ✅ | — | F-06 ditutup (sesuai BE), F-07 selesai. |
 | 18 | Penarikan dana admin | `withdrawal.spec.ts` | ✅ | — | F-22 & F-23 selesai (kartu statistik dari `GET /admin/withdrawal/summary`, biaya admin dari data penarikan). |
-| 19 | Produk & stok admin (review, suspend) | `admin-product-reason.spec.ts`, `admin-product-status.spec.ts`, `admin-product-list.spec.ts` | ✅ | P2 (detail), P3 (`/admin/stock`) | F-42 selesai. Halaman create/edit admin yatim & ditolak BE (F-43, todo). |
+| 19 | Produk & stok admin (review, suspend) | `admin-product-reason.spec.ts`, `admin-product-status.spec.ts`, `admin-product-list.spec.ts` | ✅ | P2 (detail) | F-42 selesai. `/admin/stock` di `admin-stock.spec.ts` (F-70). Halaman create/edit admin yatim & ditolak BE (F-43, todo). |
 | 20 | Verifikasi seller (admin) | `verification.spec.ts`, `admin-verification-revoke.spec.ts`, `admin-verification-badge.spec.ts` | ✅ | — | F-39 selesai. |
 | 21 | Master data admin (kategori, tipe akun, voucher, metode/channel bayar) | `master-data.spec.ts` | ✅ | — | Status `SUSPENDED` vs enum BE `SUSPEND` di voucher (F-50) & metode pembayaran (F-51). Suspend kategori lewat Edit oleh ADMIN biasa (F-52, disengaja). |
 | 22 | Keuangan admin (ringkasan, jurnal, kategori, failed journal) | `finance.spec.ts`, `admin-metrics.spec.ts` | ✅ | — | Total per kategori kini dari `category.balance` BE (F-48, termasuk perbaikan race condition di BE). Kategori otomatis di form jurnal (F-49). |
 | 23 | System settings | `settings.spec.ts` | ✅ | — | Tautan dashboard ke salinan chat (F-53), default publik (F-54), gagal muat tampak kosong (F-55); key duplikat kini 409 di BE. |
 | 24 | Chat (buyer, seller, admin) | `chat.spec.ts` | ✅ | — | Admin memakai endpoint percakapan seller. Pesan hilang saat gagal kirim (F-45, selesai). Chat dari halaman produk (`ChatModalBuyer`) belum. |
 | 25 | Notifikasi (buyer, seller, admin, broadcast) | `notification.spec.ts` | ✅ | — | Tipe broadcast tidak dikenal BE (F-46) & tandai semua tidak memperbarui daftar buyer (F-47), keduanya selesai. |
-| 26 | Badge/alerts sidebar & header | — (tersirat di beberapa tes) | Sebagian | P3 | Refresh badge setelah aksi sudah dicek di payment & withdrawal. Polling 45 detik & field `null` belum. |
+| 26 | Badge/alerts sidebar & header | `alerts.spec.ts` | ✅ | — | Null/0 disembunyikan, 99+, polling 45 detik & jeda saat tab tersembunyi. Refresh setelah aksi di payment & withdrawal. |
 | 28 | Pengguna admin: daftar & buka kunci login | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk `locked_until` di masa depan; alasan ≥ 5 karakter; `LOGIN_NOT_LOCKED` menutup modal & memuat ulang; akun ADMIN/SUPER_ADMIN hanya bisa dibuka super admin; 403 BE tampil di modal. |
 | 29 | Super admin: kode reset password | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk super admin; alasan ≥ 5 karakter dikirim ter-trim; kode tampil lalu hilang saat modal ditutup; `NO_ACTIVE_RESET_CODE` memberi petunjuk di modal. |
 | 30 | Super admin: pencairan refund tunai | `admin-user.spec.ts` | ✅ | — | Tombol hanya untuk super admin; nominal & catatan wajib; konfirmasi sebelum potong; body `{ amount, notes }`; sisa saldo tampil; error BE tampil di modal (EP04-16); klik ganda hanya satu request; 409 `DUPLICATE_PAYOUT` tampil sebagai peringatan. |
 | 31 | Admin: aktifkan kembali akun nonaktif (EP06-06) | `admin-user-activate.spec.ts` | ✅ | — | Label "Nonaktif (oleh pemilik)" dari `account_status = DEACTIVATED`; tombol Aktifkan + alasan ≥ 10 karakter (body `{ reason }` ter-trim) lalu daftar dimuat ulang; tombol disembunyikan untuk akun ADMIN/SUPER_ADMIN bila bukan super admin; 409 `ACCOUNT_NOT_DEACTIVATED` → peringatan, modal ditutup, daftar dimuat ulang. |
 | 32 | Super admin: audit log aksi admin (EP06-05) | `admin-audit-log.spec.ts` | ✅ | — | Pelaku, aksi, dan detail payload tampil; filter aksi (huruf besar), email pelaku, ID user target dikirim sebagai query; menu hanya untuk super admin. |
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
-| 27 | Halaman statis | — | ➖ | P3 (smoke test) | Cukup cek halaman terbuka tanpa error; `hubungi-kami` memuat setting publik. |
+| 27 | Halaman statis | `static-pages.spec.ts`, `help-pages.spec.ts`, `legal.spec.ts` | ✅ | — | SLA & jam CS (F-66), muat sebagian (F-67), konten contoh & kontak hardcoded (F-71). |
 
-Total saat ini: **364 tes** di 40 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-20 dengan `npx playwright test --list`).
+Total saat ini: **396 tes** di 45 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-22 dengan `npx playwright test --list`).
 
 ---
 
@@ -121,7 +121,7 @@ Total saat ini: **364 tes** di 40 spec, tanpa tes `test.fail` (semua bug yang pu
 | Sinkron stok (`getProductsByIds`): produk nonaktif, harga berubah, qty dikurangi | ✅ | |
 | Checkout gagal di BE → pesan & keranjang tetap | ✅ | |
 | Pengunjung tidak bisa checkout | ✅ | |
-| Daftar voucher publik (`fetchPublicVouchers`) | ⬜ P3 | |
+| Daftar voucher publik (`fetchPublicVouchers`): format diskon, pilih/lepas, tolakan BE | ✅ | F-68 (format Rupiah) |
 | Ubah qty / hapus item / keranjang multi-merchant | ⬜ P2 | |
 
 ## 5. Pembayaran buyer — `payment.spec.ts`
@@ -134,7 +134,7 @@ Total saat ini: **364 tes** di 40 spec, tanpa tes `test.fail` (semua bug yang pu
 | Sudah dibayar: instruksi disembunyikan; deposit PAID/EXPIRED berketerangan | ✅ | F-08 (selesai) |
 | Batalkan deposit + 409 | ✅ | |
 | Payment tidak ditemukan | ✅ | |
-| Daftar pembayaran `/payment` (`fetchMyPayments`) | ⬜ P2 | |
+| Daftar pembayaran `/payment` (`fetchMyPayments`): total tagihan, status, batas bayar, cari, pagination | ✅ | F-61, F-62, F-63 |
 | Upload bukti bayar (`uploadPaymentProof`) | ➖ | Belum dipakai di UI |
 
 ## 6. Transaksi buyer — `transaction.spec.ts`
@@ -153,7 +153,7 @@ Total saat ini: **364 tes** di 40 spec, tanpa tes `test.fail` (semua bug yang pu
 | Kirim penilaian (`fetchCreateReview`) | ✅ | |
 | Edit penilaian (`fetchUpdateReview`): form terisi, simpan tanpa ubah tidak menimpa | ✅ | F-17 (selesai) |
 | Countdown UNPAID tanpa / dengan `expired_at` | ✅ | F-11 (selesai) |
-| Diskusi order sisi buyer (`fetchCreateOrderDiscussion`, file order) | ⬜ P2 | Sisi seller & admin sudah |
+| Diskusi order sisi buyer: tampil per peran, kirim pesan + file, pesan kosong, tolakan BE, pesan baru di halaman terakhir, gagal muat | ✅ | F-64, F-65 (juga di seller & admin) |
 
 ## 7. Garansi — `guarantee.spec.ts`
 
@@ -261,7 +261,7 @@ Total saat ini: **364 tes** di 40 spec, tanpa tes `test.fail` (semua bug yang pu
 
 | Skenario | Status |
 |---|---|
-| `/seller/dashboard`: ringkasan order/produk/keuangan, banner penalty | ⬜ P3 (penalty sudah) |
+| `/seller/dashboard`: ringkasan order/produk/keuangan, banner penalty | ✅ `seller-dashboard.spec.ts` (penalty di `penalty.spec.ts`) |
 | `/seller/profile`: ubah merchant (`updateMerchant`) | ⬜ P2 |
 
 ## 16. Pesanan admin — `admin-order.spec.ts`
@@ -274,7 +274,7 @@ Total saat ini: **364 tes** di 40 spec, tanpa tes `test.fail` (semua bug yang pu
 | Refund 400: modal tetap terbuka dengan pesan BE | ✅ | F-24 (selesai) |
 | Tombol refund/selesaikan hanya saat `ARBITRAGE` | ✅ | F-25 selesai (EP04-02) |
 | Diskusi admin: kirim pesan / pesan kosong | ✅ | F-27 (selesai) |
-| `/admin/dashboard`: statistik & ringkasan | ⬜ P3 | |
+| `/admin/dashboard`: statistik & ringkasan | ✅ `admin-dashboard.spec.ts` | F-69 |
 
 ## 17. Pembayaran admin
 
@@ -304,7 +304,7 @@ Total saat ini: **364 tes** di 40 spec, tanpa tes `test.fail` (semua bug yang pu
 | `/admin/product/review`: hanya REVIEW, setujui lewat konfirmasi, daftar dimuat ulang | ✅ `admin-product-list.spec.ts` |
 | `/admin/product/view/[id]` | ⬜ P2 |
 | `/admin/product/create`, `edit` | — | Yatim & ditolak BE (F-43, todo: jangan dihapus dulu) |
-| `/admin/stock`: daftar stok semua seller | ⬜ P3 |
+| `/admin/stock`: daftar stok semua seller, filter, badge ringkasan | ✅ `admin-stock.spec.ts` (F-70) |
 
 ## 20. Verifikasi seller (admin)
 
@@ -362,17 +362,17 @@ Total saat ini: **364 tes** di 40 spec, tanpa tes `test.fail` (semua bug yang pu
 | Badge sidebar admin/seller & header buyer dari `/admin/alerts`, `/seller/alerts`, `/alerts` | Sebagian (refresh setelah aksi sudah dicek di payment & withdrawal) |
 | Badge Verifikasi Akun (`pending_verifications`), null disembunyikan | ✅ `admin-verification-badge.spec.ts` |
 | Cabut verifikasi aktif dengan alasan; tombol Cabut/Edit hanya untuk `active_verification`; 404 tampil + muat ulang (EP06-07) | ✅ `admin-verification-revoke.spec.ts` |
-| Field `null` → badge disembunyikan; polling 45 detik | ⬜ P3 |
+| Field `null` → badge disembunyikan; polling 45 detik | ✅ `alerts.spec.ts` |
 
 ## 27. Halaman statis
 
 `tentang-kami`, `karir`, `syarat-ketentuan`, `kebijakan-privasi`, `pusat-bantuan`, `panduan-belanja`, `panduan-berjualan`, `hubungi-kami` (pakai `fetchPublicSystemSettingByGroup`), `blog`.
-Cukup satu smoke test (halaman terbuka tanpa error) — ⬜ P3.
+Smoke test + isi `hubungi-kami`, Tentang Kami, Blog, Karir — ✅ `static-pages.spec.ts`.
 
 ---
 
 ## Urutan pengerjaan yang disarankan
 
 1. **P1:** selesai 2026-11-19 (produk & stok seller, verifikasi seller + admin, daftar toko, rekening bank, unprocessed payment, register/logout, daftar & review produk admin).
-2. **P2:** ~~katalog publik~~, ~~chat~~, ~~notifikasi~~, ~~keuangan admin~~, ~~master data admin~~, ~~system settings~~ (selesai) → ~~profil~~ (selesai) → sisa (`/payment`, diskusi buyer).
-3. **P3:** dashboard, `/admin/stock`, polling badge, smoke test halaman statis.
+2. **P2:** ~~katalog publik~~, ~~chat~~, ~~notifikasi~~, ~~keuangan admin~~, ~~master data admin~~, ~~system settings~~, ~~profil~~, ~~`/payment`~~, ~~diskusi buyer~~ (selesai).
+3. **P3:** ~~dashboard~~, ~~`/admin/stock`~~, ~~polling badge~~, ~~smoke test halaman statis~~ (selesai).

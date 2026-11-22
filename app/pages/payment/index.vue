@@ -102,7 +102,8 @@
 
               <!-- Amount & Status -->
               <div class="flex sm:flex-col items-center sm:items-end gap-3 sm:gap-1">
-                <p class="text-base font-bold text-gray-800">Rp {{ payment.amount.toLocaleString('id-ID') }}</p>
+                <!-- yang dibayar buyer: termasuk biaya & kode unik, dikurangi diskon (sama dengan halaman detail) -->
+                <p class="text-base font-bold text-gray-800">Rp {{ (payment.total_amount ?? payment.amount).toLocaleString('id-ID') }}</p>
                 <PaymentStatusBadge :status="payment.status" />
               </div>
 
@@ -208,6 +209,9 @@ function handleSearch() {
   page.value = 0
   refresh()
 }
+
+// halaman lama bisa melewati jumlah halaman baru → daftar kosong
+watch(perPageValue, () => { page.value = 0 })
 
 function onPageChange(newPage: number) {
   page.value = newPage - 1

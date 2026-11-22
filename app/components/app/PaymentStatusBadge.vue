@@ -16,11 +16,11 @@ const statusMap = {
   },
   EXPIRED: {
     color: 'error',
-    label: 'Transaksi Expired'
+    label: 'Kedaluwarsa'
   },
   CANCELLED: {
     color: 'error',
-    label: 'Deposit Dibatalkan'
+    label: 'Dibatalkan'
   },
   REJECTED: {
     color: 'error',

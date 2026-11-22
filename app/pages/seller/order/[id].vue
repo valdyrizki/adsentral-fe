@@ -638,7 +638,15 @@
         </div>
         <div>
 
-          <div v-if="!orderDiscussions?.content?.length" class="text-center text-gray-600">
+          <UAlert
+            v-if="errorOrderDiscussion"
+            title="Gagal memuat diskusi"
+            :description="errorOrderDiscussion.message"
+            icon="mdi:alert-circle"
+            color="error"
+          />
+
+          <div v-else-if="!orderDiscussions?.content?.length" class="text-center text-gray-600">
             <UCard>
               <div class="flex flex-col gap-2 items-center justify-center p-4">
                 <UIcon name="mdi:message-text-outline" class="size-6 text-gray-400" />
@@ -1177,6 +1185,9 @@ import RequestArbitrageModal from '~/components/form/RequestArbitrageModal.vue'
       discussionMessage.value = '' // reset textarea
       fileDiscussion.value = null // reset file input
       await refreshOrderDiscussion() // refreshTransaction transaction / discussion list
+      // diskusi urut lama → baru: pesan baru ada di halaman terakhir
+      const lastPage = Math.max(0, (orderDiscussions.value?.total_pages ?? 1) - 1)
+      if (discussionPage.value !== lastPage) discussionPage.value = lastPage
 
     } catch (err:any) {
       console.error(err.message || err)

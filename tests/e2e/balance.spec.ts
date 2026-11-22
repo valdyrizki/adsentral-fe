@@ -193,7 +193,7 @@ test.describe('Deposit (top up) buyer', () => {
 
     await expect(page.getByText('Deposit Anda telah berhasil dibatalkan.').first()).toBeVisible()
     expect(calls).toBe(1)
-    await expect(row.getByText('Deposit Dibatalkan')).toBeVisible()
+    await expect(row.getByText('Dibatalkan', { exact: true })).toBeVisible()
     await expect(row.getByRole('button', { name: 'Batalkan' })).toHaveCount(0)
     await expect(row.getByRole('link', { name: 'Lanjut Bayar' })).toHaveCount(0)
   })

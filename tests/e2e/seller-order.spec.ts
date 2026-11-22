@@ -370,3 +370,45 @@ test.describe('Detail pesanan seller', () => {
     await expect(main(page).getByText(/^2[23]:\d{2}:\d{2}$/)).toBeVisible({ timeout: 3000 })
   })
 })
+
+test.describe('Diskusi pesanan (seller): gagal muat & pesan baru', () => {
+  const discMsg = (id: number, role: string, message: string) => ({
+    id, transaction_id: 'TX-1', username: `${role.toLowerCase()}_test`, sender_role: role,
+    message, discussion_type: 'MESSAGE', file: null, created_at: hoursAgo(2),
+  })
+  const discPage = (all: unknown[], pageNo: number, size: number) => ({
+    page: pageNo, size, total_elements: all.length, total_pages: Math.max(1, Math.ceil(all.length / size)),
+    last: (pageNo + 1) * size >= all.length, content: all.slice(pageNo * size, pageNo * size + size),
+  })
+  const sentMessage = (raw: string) => raw.match(/name="message"\r\n\r\n([^\r]*)/)?.[1] ?? ''
+
+  test('lebih dari satu halaman: pesan yang baru dikirim terlihat (F-65)', async ({ page, mockApi }) => {
+    const discussions: unknown[] = Array.from({ length: 20 }, (_, i) => discMsg(i + 1, i % 2 ? 'BUYER' : 'SELLER', `Pesan lama ${i + 1}`))
+    mockSellerDetail(mockApi, () => makeTx('TX-1', 'PAY-1', { status: 'IN_PROGRESS', confirmed_at: hoursAgo(1) }))
+    mockApi
+      .on('GET', '/order/discussion/transaction/TX-1', (_r, url) =>
+        ok(discPage(discussions, Number(url.searchParams.get('page') ?? 0), Number(url.searchParams.get('size') ?? 20))))
+      .on('POST', '/order/discussion/create', (route) => {
+        discussions.push(discMsg(21, 'SELLER', sentMessage(route.request().postDataBuffer()?.toString('latin1') ?? '')))
+        return ok(null)
+      })
+
+    await gotoHydrated(page, '/seller/order/TX-1')
+    await expect(main(page).getByText('Pesan lama 1', { exact: true })).toBeVisible()
+    await main(page).getByPlaceholder('Tulis pesan disini...').fill('Pesan paling baru')
+    await main(page).getByRole('button', { name: 'Kirim Pesan', exact: true }).click()
+
+    await expect(page.getByText('Pesan terkirim').first()).toBeVisible()
+    await expect(main(page).getByText('Pesan paling baru')).toBeVisible()
+  })
+
+  test('gagal memuat diskusi: pesan error, bukan "Belum ada diskusi" (F-64)', async ({ page, mockApi }) => {
+    mockSellerDetail(mockApi, () => makeTx('TX-1', 'PAY-1', { status: 'IN_PROGRESS', confirmed_at: hoursAgo(1) }))
+    mockApi.on('GET', '/order/discussion/transaction/TX-1', fail(500, 'Internal server error'))
+
+    await gotoHydrated(page, '/seller/order/TX-1')
+    await expect(main(page).getByText('#TX-1').first()).toBeVisible()
+    await expect(main(page).getByText('Gagal memuat diskusi')).toBeVisible()
+    await expect(main(page).getByText('Belum ada diskusi', { exact: false })).toHaveCount(0)
+  })
+})

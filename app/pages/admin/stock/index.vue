@@ -225,7 +225,7 @@ import { STOCK_CONTENT_ICON, STOCK_CONTENT_LABEL, STOCK_STATUS_FILTER_OPTIONS, s
 
 definePageMeta({ layout: 'admin', label: 'Stok Akun', ssr: false })
 
-const { getAdminAllStockItems } = useProductsApi()
+const { getAdminAllStockItems, getAdminStockSummary } = useProductsApi()
 
 const page = ref(0)
 const perPageValue = ref(20)
@@ -282,10 +282,18 @@ const {
 // URL file stok presigned (kedaluwarsa 1 jam); modal detail juga memakai sumber ini
 const openSignedFile = provideSignedFileSource(refresh, () => stockData.value)
 
-const countActive = computed(() => stockData.value?.content.filter(i => i.status === 'ACTIVE').length ?? 0)
-const countSent = computed(() => stockData.value?.content.filter(i => i.status === 'SENT').length ?? 0)
-const countReturned = computed(() => stockData.value?.content.filter(i => i.status === 'RETURNED').length ?? 0)
-const countRestocked = computed(() => stockData.value?.content.filter(i => i.status === 'RESTOCKED').length ?? 0)
+// Badge dari BE untuk seluruh item yang cocok filter, bukan dari halaman yang sedang tampil (F-70)
+const { data: stockSummary, refresh: refreshSummary } = useAsyncData(
+  'admin-stock-summary',
+  () => getAdminStockSummary({ ...appliedFilters, merchantId: merchantFilter.value }),
+  { server: false }
+)
+watch(stockData, () => { refreshSummary() })
+
+const countActive = computed(() => stockSummary.value?.active ?? 0)
+const countSent = computed(() => stockSummary.value?.sent ?? 0)
+const countReturned = computed(() => stockSummary.value?.returned ?? 0)
+const countRestocked = computed(() => stockSummary.value?.restocked ?? 0)
 
 function handleFilter() {
   if (debounceTimer) clearTimeout(debounceTimer)

@@ -188,7 +188,7 @@
           <dl class="mt-4 space-y-4">
             <div class="flex items-center justify-between">
               <dt class="text-sm text-gray-600">Subtotal</dt>
-              <dd class="text-sm font-medium text-gray-900">Rp {{ cartStore.subTotal.toLocaleString() ?? 0 }}</dd>
+              <dd class="text-sm font-medium text-gray-900">Rp {{ cartStore.subTotal.toLocaleString('id-ID') }}</dd>
             </div>
             <div class="flex items-center justify-between border-t border-gray-200 pt-4">
               <dt class="flex items-center text-sm text-gray-600">

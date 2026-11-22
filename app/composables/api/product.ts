@@ -391,6 +391,14 @@ export const useProductsApi = () => {
   }
 
   // Jumlah seluruh stok seller per status untuk badge /seller/stock (F-38)
+  // Admin: jumlah per status untuk filter yang sama dengan daftar (status ikut, page/size tidak dipakai BE)
+  const getAdminStockSummary = async (filters: StockListFilters = {}): Promise<StockSummaryResponse> => {
+    const { page: _p, size: _s, ...query } = buildStockQuery(0, 0, filters)
+    const res = await api<WebResponse<StockSummaryResponse>>('/admin/stock/summary', { query })
+    if (res.status !== 'success' || !res.data) throw new Error(res.message)
+    return res.data
+  }
+
   const getMyStockSummary = async (): Promise<StockSummaryResponse> => {
     const res = await api<WebResponse<StockSummaryResponse>>('/stock/my/summary')
     if (res.status !== 'success' || !res.data) throw new Error(res.message)
@@ -619,6 +627,7 @@ export const useProductsApi = () => {
     getAllProductsAdmin,
     adminActivateProduct,
     getAdminAllStockItems,
+    getAdminStockSummary,
     getMyAllStockItems,
     getMyStockSummary,
     getProductStockItems,

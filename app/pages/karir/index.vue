@@ -63,8 +63,11 @@
         <div class="bg-primary/10 border border-primary/30 rounded-2xl p-6 text-center">
           <p class="text-gray-700 font-semibold text-lg mb-1">Tidak menemukan posisi yang cocok?</p>
           <p class="text-gray-500 text-sm mb-4">Kirimkan CV Anda dan kami akan menghubungi jika ada posisi yang sesuai.</p>
-          <UButton color="primary" size="lg" icon="i-heroicons-envelope">
-            Kirim CV ke careers@adsentral.id
+          <UButton v-if="contactEmail" color="primary" size="lg" icon="i-heroicons-envelope" :to="`mailto:${contactEmail}?subject=Lamaran`" external>
+            Kirim CV ke {{ contactEmail }}
+          </UButton>
+          <UButton v-else color="primary" size="lg" icon="i-heroicons-envelope" to="/hubungi-kami">
+            Hubungi Kami
           </UButton>
         </div>
 
@@ -95,10 +98,8 @@ const perks = [
   { icon: 'i-heroicons-rocket-launch', title: 'Dampak Nyata', description: 'Pekerjaan Anda langsung dirasakan jutaan pengguna.' },
 ]
 
-const openings = [
-  { id: 1, title: 'Frontend Engineer (Vue/Nuxt)', department: 'Engineering', type: 'Full-time', location: 'Remote — Indonesia' },
-  { id: 2, title: 'Backend Engineer (Spring Boot)', department: 'Engineering', type: 'Full-time', location: 'Remote — Indonesia' },
-  { id: 3, title: 'Product Designer (UI/UX)', department: 'Design', type: 'Full-time', location: 'Jakarta / Remote' },
-  { id: 4, title: 'Digital Marketing Specialist', department: 'Marketing', type: 'Full-time', location: 'Jakarta' },
-]
+// Lowongan contoh dihapus sebelum go-live (F-71); isi saat ada lowongan asli
+const openings: { id: number, title: string, department: string, type: string, location: string }[] = []
+
+const { email: contactEmail } = useContactSettings()
 </script>

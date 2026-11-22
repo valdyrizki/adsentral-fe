@@ -9,7 +9,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## Rencana & catatan
 
 - **Cakupan tes** (modul yang sudah/belum dites, prioritas): lihat **`docs/test-progress.md`**. Dokumen ini hanya berisi bug.
-- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45, F-46, F-47, F-48, F-49, F-50, F-51, F-53, F-54, F-55, F-56, F-57, F-58, F-59, F-60 (selesai), F-43 (todo), F-52 (disengaja). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
+- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45, F-46, F-47, F-48, F-49, F-50, F-51, F-53, F-54, F-55, F-56, F-57, F-58, F-59, F-60, F-61, F-62, F-63, F-64, F-65 (selesai); dari P3: F-66, F-67, F-68, F-69, F-70, F-71 (selesai), F-43 (todo), F-52 (disengaja). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
   composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
   Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
 - **Setelah memperbaiki temuan:** ubah statusnya di sini menjadi `SELESAI`, hapus `test.fail` di spec, dan ubah 🐞 → ✅
@@ -83,6 +83,17 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-58 | Profil buyer | Mengosongkan nomor HP/alamat tidak dikirim (`if (value)`), sehingga data lama tetap tersimpan padahal toast "berhasil" | Sedang | SELESAI | String kosong dikirim; BE menyimpannya kosong (tes BE `updateUser_emptyPhoneAndAddress_clearsThem`). Tes regresi di `profile.spec.ts`. |
 | F-59 | Profil buyer | Avatar: teks "SVG, PNG, JPG or GIF" dan validasi klien menerima GIF, padahal BE hanya JPG/PNG/WEBP | Rendah | SELESAI | Teks & validasi klien mengikuti BE. Tes regresi di `profile.spec.ts`. |
 | F-60 | Profil buyer | Gagal memuat profil menampilkan form kosong tanpa pesan | Rendah | SELESAI | Pesan error tampil dan tombol Save dinonaktifkan sampai profil termuat. Tes regresi di `profile.spec.ts`. |
+| F-61 | Pembayaran buyer (`/payment`) | Daftar menampilkan `amount` (subtotal), bukan `total_amount` yang dibayar (biaya, kode unik, diskon), sehingga beda dengan halaman detail dan nominal transfer | Sedang | SELESAI | Memakai `total_amount ?? amount`. Tes regresi di `payment.spec.ts`. |
+| F-62 | Badge status pembayaran | `PaymentStatusBadge` (dipakai deposit & transaksi) menampilkan "Deposit Dibatalkan" untuk payment transaksi dan "Transaksi Expired" untuk deposit | Rendah | SELESAI | Label netral "Dibatalkan" & "Kedaluwarsa". Tes di `payment.spec.ts`, `balance.spec.ts` disesuaikan. |
+| F-63 | Pembayaran buyer (`/payment`) | Ganti jumlah per halaman saat di halaman 2+ tetap meminta halaman itu, sehingga tampil "Belum ada pembayaran" | Rendah | SELESAI | Halaman kembali ke 1 saat jumlah per halaman diganti. Tes regresi di `payment.spec.ts`. |
+| F-64 | Diskusi pesanan (buyer) | Gagal memuat diskusi tampil sebagai "Belum ada diskusi antara pembeli dan penjual" | Rendah | SELESAI | Pesan error tampil di halaman buyer, seller, dan admin. Tes regresi di `transaction.spec.ts`, `seller-order.spec.ts`, `admin-order.spec.ts`. |
+| F-65 | Diskusi pesanan (buyer) | Diskusi urut lama → baru, 20 per halaman; setelah lebih dari 20 pesan, pesan yang baru dikirim ada di halaman berikutnya sehingga tampak tidak terkirim | Rendah | SELESAI | Setelah kirim, pindah ke halaman terakhir (buyer, seller, admin). Tes regresi di `transaction.spec.ts`, `seller-order.spec.ts`, `admin-order.spec.ts`. |
+| F-66 | Hubungi Kami | Catatan email "Balas dalam 1×24 jam" (PRD: 1×24 jam **kerja**); jam layanan kosong di setting tampil "-" | Rendah | SELESAI | Memakai `CS_SLA_TEXT`; jam kosong → jam CS PRD (11.00–21.00 WIB). Tes di `static-pages.spec.ts`. |
+| F-67 | Hubungi Kami | Kontak & media sosial dimuat dengan `Promise.all`: satu grup gagal → semua kontak tampil "-" | Rendah | SELESAI | `Promise.allSettled`. Tes regresi di `static-pages.spec.ts`. |
+| F-68 | Keranjang | Subtotal & saldo di pilihan metode memakai `toLocaleString()` tanpa locale: di browser berbahasa Inggris tampil "Rp 50,000" / "Rp1,000,000" | Rendah | SELESAI | `toLocaleString('id-ID')`. Tes regresi di `checkout.spec.ts`. |
+| F-69 | Dashboard admin | Semua angka dari 20 transaksi terbaru tanpa keterangan: "Perlu Ditinjau" (arbitrase) bisa 0 padahal ada kasus lama, "Total Pendapatan" & grafik hanya dari 20 baris | Sedang | SELESAI | Arbitrase dari `/admin/alerts` (`arbitrage_pending`), GMV & grafik dari `/admin/metrics/monthly`, rincian status berlabel "20 transaksi terbaru"; null → "-". Tes regresi di `admin-dashboard.spec.ts`. |
+| F-70 | Stok admin (`/admin/stock`) | Badge Aktif/Terkirim/... dihitung dari halaman aktif, di samping total semua item | Rendah | SELESAI | Endpoint BE baru `GET /admin/stock/summary` (filter sama dengan daftar). Tes regresi di `admin-stock.spec.ts`. |
+| F-71 | Halaman statis | Konten contoh: statistik karangan di Tentang Kami (10K+ produk, 99% kepuasan), 6 artikel blog contoh, 4 lowongan contoh; kontak hardcoded di header & Tentang Kami (`085855558813`, `support@adsentral.id`) berbeda dengan setting | Sedang | SELESAI | Statistik dihapus, blog & lowongan kosong, kontak dari setting `CONTACT` (`useContactSettings`). Tes regresi di `static-pages.spec.ts`. |
 ---
 
 ## F-01 — Kredensial bocor ke URL jika form ter-submit sebelum hidrasi
@@ -912,3 +923,109 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 - **Status:** SELESAI
 - **Perbaikan (2026-11-21):** Pesan "Gagal memuat profil" dan tombol Save nonaktif sampai profil termuat.
 - **Tes:** `profile.spec.ts` → "gagal memuat profil ..." (merah di kode lama).
+
+---
+## F-61 — Daftar pembayaran menampilkan subtotal
+
+- **Lokasi:** `app/pages/payment/index.vue`
+- **Status:** SELESAI
+- **Gejala:** Payment transfer manual Rp 50.000 dengan biaya aplikasi & kode unik tampil Rp 50.000 di daftar, padahal
+  tagihannya Rp 51.123 (halaman detail sudah benar sejak F-05).
+- **Perbaikan (2026-11-22):** `total_amount ?? amount`.
+- **Tes:** `payment.spec.ts` → "baris: total tagihan (bukan subtotal) ..." (merah di kode lama).
+
+---
+## F-62 — Label status pembayaran menyebut jenis yang salah
+
+- **Lokasi:** `app/components/app/PaymentStatusBadge.vue` (dipakai `/payment`, `/payment/[id]`, `/balance`, admin payment)
+- **Status:** SELESAI
+- **Perbaikan (2026-11-22):** `CANCELLED` → "Dibatalkan", `EXPIRED` → "Kedaluwarsa".
+- **Tes:** `payment.spec.ts` → "baris: ..."; assertion lama di `balance.spec.ts` & `payment.spec.ts` disesuaikan.
+
+---
+## F-63 — Ganti jumlah per halaman menampilkan daftar kosong
+
+- **Lokasi:** `app/pages/payment/index.vue`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-22):** `page` di-reset ke 0 saat jumlah per halaman berubah.
+- **Tes:** `payment.spec.ts` → "ganti jumlah per halaman dari halaman 2 ..." (merah di kode lama).
+- **Catatan:** tombol "Lihat Bukti" di daftar tidak pernah tampil: BE tidak punya `payment_proof_url` (kode mati, lihat F-06).
+
+---
+## F-64 — Gagal memuat diskusi tampak seperti belum ada diskusi
+
+- **Lokasi:** `app/pages/transaction/[id].vue`; pola sama di `app/pages/seller/order/[id].vue` dan `app/pages/admin/order/[id].vue`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-22):** Ketiga halaman: `UAlert` "Gagal memuat diskusi" dari error `useAsyncData`.
+- **Tes:** `transaction.spec.ts`, `seller-order.spec.ts`, `admin-order.spec.ts` → "gagal memuat diskusi ..." (merah di kode lama).
+
+---
+## F-65 — Pesan baru tidak terlihat setelah dikirim
+
+- **Lokasi:** `app/pages/transaction/[id].vue` → `submitDiscussion`; pola sama di halaman seller & admin
+- **Status:** SELESAI
+- **Gejala:** BE mengurutkan diskusi lama → baru (`createdAt ASC`). Dengan 20+ pesan, setelah kirim halaman 1 di-refresh dan
+  pesan baru ada di halaman 2; buyer bisa mengira pesan gagal lalu mengirim ulang.
+- **Perbaikan (2026-11-22):** Setelah kirim, pindah ke halaman terakhir.
+- **Tes:** `transaction.spec.ts`, `seller-order.spec.ts`, `admin-order.spec.ts` → "lebih dari satu halaman ..." (merah di kode lama).
+
+---
+## F-66 — SLA dan jam layanan di Hubungi Kami tidak sesuai PRD
+
+- **Lokasi:** `app/pages/hubungi-kami/index.vue`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-22):** Catatan email memakai `CS_SLA_TEXT` ("Diproses maks. 1×24 jam kerja (setiap hari 11.00–21.00 WIB)");
+  setting `OPERATIONAL_HOURS_*` kosong → "11.00–21.00 WIB".
+- **Data dev (perlu dicek di prod):** `OPERATIONAL_HOURS_WEEKDAY` = "08.00 - 20.00 WIB", `OPERATIONAL_HOURS_WEEKEND` = "13.00 - 18.00 WIB",
+  berbeda dengan jam CS di PRD §3 (setiap hari 11.00–21.00 WIB). Setting menang atas fallback, jadi nilainya perlu disamakan.
+- **Tes:** `static-pages.spec.ts` → "kontak & media sosial dari setting publik ..." (merah di kode lama).
+
+---
+## F-67 — Satu grup setting gagal menyembunyikan semua kontak
+
+- **Lokasi:** `app/pages/hubungi-kami/index.vue`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-22):** `Promise.allSettled`; grup yang berhasil tetap tampil.
+- **Tes:** `static-pages.spec.ts` → "media sosial gagal dimuat ..." (merah di kode lama).
+
+---
+## F-68 — Format Rupiah mengikuti bahasa browser
+
+- **Lokasi:** `app/pages/cart/index.vue` (Subtotal), `app/components/u/PaymentMethodSelector.vue` (saldo)
+- **Status:** SELESAI
+- **Perbaikan (2026-11-22):** `toLocaleString('id-ID')`, sama dengan tempat lain.
+- **Tes:** `checkout.spec.ts` → "Voucher publik di keranjang" (merah di kode lama).
+
+---
+## F-69 — Dashboard admin menghitung dari 20 transaksi terbaru
+
+- **Lokasi:** `app/pages/admin/dashboard/index.vue`
+- **Status:** SELESAI
+- **Gejala:** `fetchAllTx(0, 20)` dipakai untuk kartu "Total Pendapatan", "Perlu Ditinjau", rincian status, dan grafik 6 bulan.
+  Arbitrase di luar 20 transaksi terbaru tidak terhitung, jadi kartu bisa 0 padahal ada sengketa menunggu.
+- **Perbaikan (2026-11-22):** "Perlu Ditinjau" = `arbitrage_pending` dari `/admin/alerts`; kartu "GMV 6 Bulan" & grafik dari
+  `/admin/metrics/monthly` (`gmv`); rincian status diberi label "20 transaksi terbaru"; data belum/gagal dimuat → "-".
+- **Tes:** `admin-dashboard.spec.ts` (merah di kode lama).
+
+---
+## F-70 — Badge stok admin dari halaman aktif
+
+- **Lokasi:** `app/pages/admin/stock/index.vue`
+- **Status:** SELESAI
+- **Perbaikan (2026-11-22):** BE `GET /api/admin/stock/summary` (filter sama dengan `/api/admin/stock`, termasuk `status` &
+  `merchant_id`; DELETED tidak dihitung) dan FE `getAdminStockSummary`, dimuat ulang tiap daftar berubah (pola F-38).
+- **Tes:** `admin-stock.spec.ts` → "badge status dari ringkasan BE ..." (merah di kode lama); BE `AdminStockSummaryEndpointTest`.
+
+---
+## F-71 — Konten contoh dan kontak hardcoded di halaman statis
+
+- **Lokasi:** `app/pages/tentang-kami`, `app/pages/blog`, `app/pages/karir`, `app/components/app/Header.vue`
+- **Status:** SELESAI
+- **Gejala:** Angka "10K+ Produk / 1K+ Seller / 50K+ Transaksi / 99% Kepuasan" tanpa dasar (klaim menyesatkan saat go-live);
+  artikel blog contoh bertanggal 2025 dengan "Baca selengkapnya" tanpa tujuan; lowongan contoh dengan tombol "Lamar" tanpa aksi;
+  nomor header `085855558813` dan email `support@adsentral.id`/`careers@adsentral.id` berbeda dengan setting `CONTACT`.
+- **Perbaikan (2026-11-22):** Statistik dihapus; blog & lowongan kosong (pesan "Belum ada ..."); kontak header, Tentang Kami, dan
+  tombol kirim CV dari setting `CONTACT` lewat `useContactSettings` (satu request, di-cache).
+- **Tes:** `static-pages.spec.ts` → "Konten statis tanpa data contoh" (merah di kode lama).
+- **Catatan:** link `wa.me` memakai `WA_NUMBER` apa adanya tanpa awalan negara; nilai dev `+6283818213645` benar, tetapi
+  isian `08...` akan membuka nomor yang salah. Menu `items` di `Header.vue` (salinan contoh Nuxt UI) tidak dipakai (kode mati).

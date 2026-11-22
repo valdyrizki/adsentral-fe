@@ -59,17 +59,6 @@
           </div>
         </div>
 
-        <!-- Stats -->
-        <div class="bg-gradient-to-r from-primary-50 to-primary-50 rounded-2xl p-6 mb-10">
-          <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Adsentral dalam Angka</h2>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div v-for="stat in stats" :key="stat.label">
-              <p class="text-3xl font-bold text-primary">{{ stat.value }}</p>
-              <p class="text-sm text-gray-500 mt-1">{{ stat.label }}</p>
-            </div>
-          </div>
-        </div>
-
         <!-- Kontak -->
         <h2 class="text-2xl font-bold text-gray-800 mb-4">Hubungi Kami</h2>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -111,16 +100,11 @@ const values = [
   { icon: 'i-heroicons-bolt', title: 'Kecepatan' },
 ]
 
-const stats = [
-  { value: '10K+', label: 'Produk Terdaftar' },
-  { value: '1K+', label: 'Seller Aktif' },
-  { value: '50K+', label: 'Transaksi Selesai' },
-  { value: '99%', label: 'Kepuasan Pembeli' },
-]
-
-const contacts = [
-  { icon: 'i-heroicons-phone', label: 'Telepon', value: '085855558813' },
-  { icon: 'i-heroicons-envelope', label: 'Email', value: 'support@adsentral.id' },
-  { icon: 'i-heroicons-map-pin', label: 'Alamat', value: 'Jakarta, Indonesia' },
-]
+// Kontak dari setting CONTACT, sama dengan halaman Hubungi Kami (F-71)
+const { waNumber, email, address } = useContactSettings()
+const contacts = computed(() => [
+  { icon: 'i-heroicons-phone', label: 'Telepon / WhatsApp', value: waNumber.value || '-' },
+  { icon: 'i-heroicons-envelope', label: 'Email', value: email.value || '-' },
+  { icon: 'i-heroicons-map-pin', label: 'Alamat', value: address.value || '-' },
+])
 </script>

@@ -56,7 +56,7 @@
         <template #header>
           <div class="flex items-center justify-between">
             <p class="font-semibold text-gray-800">Grafik Transaksi Platform</p>
-            <span class="text-xs text-gray-400">6 bulan terakhir</span>
+            <span class="text-xs text-gray-400">GMV 6 bulan terakhir</span>
           </div>
         </template>
         <div class="h-64">
@@ -79,7 +79,10 @@
       <!-- Status Breakdown -->
       <UCard class="shadow-sm">
         <template #header>
-          <p class="font-semibold text-gray-800">Status Transaksi</p>
+          <div class="flex items-center justify-between">
+            <p class="font-semibold text-gray-800">Status Transaksi</p>
+            <span class="text-xs text-gray-400">20 transaksi terbaru</span>
+          </div>
         </template>
         <div class="space-y-3">
           <div v-for="s in statusBreakdown" :key="s.label" class="flex items-center justify-between">
@@ -274,6 +277,7 @@ import { useTransactionApi } from '~/composables/api/transaction'
 import { useProductsApi } from '~/composables/api/product'
 import { useCategoryApi } from '~/composables/api/category'
 import { useSystemSettingApi } from '~/composables/api/system-setting'
+import { useFinanceApi } from '~/composables/api/finance'
 import type { PageResponse } from '~/types/PageResponse'
 import type { TransactionResponse } from '~/types/TransactionResponse'
 import type { ProductResponse } from '~/types/product/ProductResponse'
@@ -287,6 +291,11 @@ const { fetchAllTx } = useTransactionApi()
 const { getProducts } = useProductsApi()
 const { fetchCategories } = useCategoryApi()
 const { fetchAllSystemSetting } = useSystemSettingApi()
+const { fetchMonthlyMetrics } = useFinanceApi()
+const alertsStore = useAlertsStore()
+
+// Angka platform dari BE (F-69): daftar transaksi di bawah hanya 20 terbaru, jadi tidak dipakai untuk total/grafik
+const { data: metrics } = useAsyncData('admin-dashboard-metrics', () => fetchMonthlyMetrics(6), { server: false })
 
 // ===== FETCH ALL IN PARALLEL =====
 const [
@@ -321,20 +330,16 @@ const [
 const recentTx = computed(() => txData.value?.content?.slice(0, 8) ?? [])
 const recentProducts = computed(() => productData.value?.content?.slice(0, 5) ?? [])
 
-const arbitrageCount = computed(() =>
-  txData.value?.content?.filter(t => t.status === 'ARBITRAGE').length ?? 0
-)
+// Semua transaksi ARBITRAGE menunggu keputusan, dari /admin/alerts (null = belum dimuat/gagal)
+const arbitrageCount = computed(() => alertsStore.admin?.arbitrage_pending ?? null)
 
 // ===== STATS CARDS =====
 const statsCards = computed(() => {
-  const list = txData.value?.content ?? []
   const totalTx = txData.value?.total_elements ?? 0
   const totalProduct = productData.value?.total_elements ?? 0
   const totalCategory = categories.value?.length ?? 0
 
-  const totalRevenue = list
-    .filter(t => ['DONE', 'COMPLETE'].includes(t.status))
-    .reduce((sum, t) => sum + t.total_price, 0)
+  const gmv = metrics.value ? metrics.value.reduce((sum, m) => sum + m.gmv, 0) : null
 
   return [
     {
@@ -346,9 +351,9 @@ const statsCards = computed(() => {
       iconColor: 'text-primary-500',
     },
     {
-      label: 'Total Pendapatan',
-      value: 'Rp ' + totalRevenue.toLocaleString('id-ID'),
-      sub: 'Dari transaksi selesai',
+      label: 'GMV 6 Bulan',
+      value: gmv === null ? '-' : 'Rp ' + gmv.toLocaleString('id-ID'),
+      sub: 'Nilai transaksi selesai',
       icon: 'i-heroicons-banknotes',
       bgColor: 'bg-green-50',
       iconColor: 'text-green-500',
@@ -363,11 +368,11 @@ const statsCards = computed(() => {
     },
     {
       label: 'Perlu Ditinjau',
-      value: arbitrageCount.value.toString(),
-      sub: 'Status ARBITRAGE',
+      value: arbitrageCount.value === null ? '-' : arbitrageCount.value.toString(),
+      sub: 'Arbitrase menunggu keputusan',
       icon: 'i-heroicons-exclamation-triangle',
-      bgColor: arbitrageCount.value > 0 ? 'bg-red-50' : 'bg-gray-50',
-      iconColor: arbitrageCount.value > 0 ? 'text-red-500' : 'text-gray-400',
+      bgColor: (arbitrageCount.value ?? 0) > 0 ? 'bg-red-50' : 'bg-gray-50',
+      iconColor: (arbitrageCount.value ?? 0) > 0 ? 'text-red-500' : 'text-gray-400',
     },
   ]
 })
@@ -388,22 +393,15 @@ const statusBreakdown = computed(() => {
 })
 
 // ===== CHART =====
+// GMV per bulan dari metrik BE (urut terlama → terbaru)
 const chartData = computed(() => {
-  const list = txData.value?.content ?? []
-  const months = Array.from({ length: 6 }, (_, i) => dayjs().subtract(5 - i, 'month'))
-  const labels = months.map(m => m.format('MMM YYYY'))
-  const data = months.map(m =>
-    list
-      .filter(t =>
-        ['DONE', 'COMPLETE'].includes(t.status) &&
-        dayjs(t.created_at).format('MMM YYYY') === m.format('MMM YYYY')
-      )
-      .reduce((sum, t) => sum + t.total_price, 0)
-  )
+  if (!metrics.value) return null
+  const labels = metrics.value.map(m => dayjs(`${m.year}-${String(m.month).padStart(2, '0')}-01`).format('MMM YYYY'))
+  const data = metrics.value.map(m => m.gmv)
   return {
     labels,
     datasets: [{
-      label: 'Pendapatan',
+      label: 'GMV',
       data,
       backgroundColor: 'rgba(14, 165, 233, 0.7)',
       borderColor: '#01909E',

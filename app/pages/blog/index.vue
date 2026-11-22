@@ -10,7 +10,7 @@
         </p>
 
         <!-- Filter Kategori -->
-        <div class="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide">
+        <div v-if="posts.length" class="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide">
           <button
             v-for="cat in blogCategories"
             :key="cat"
@@ -49,7 +49,7 @@
         </div>
 
         <div v-if="filteredPosts.length === 0" class="text-center py-16 text-gray-400">
-          Belum ada artikel di kategori ini.
+          {{ posts.length ? 'Belum ada artikel di kategori ini.' : 'Belum ada artikel.' }}
         </div>
 
       </div>
@@ -74,14 +74,8 @@ const blogCategories = ['Semua', 'Tips Belanja', 'Tips Berjualan', 'Produk Pilih
 
 const activeCategory = ref('Semua')
 
-const posts = [
-  { id: 1, category: 'Tips Belanja', icon: 'i-heroicons-shopping-bag', title: '5 Tips Belanja Online Agar Tidak Tertipu', excerpt: 'Belanja online kini semakin mudah, namun tetap perlu waspada. Berikut 5 tips agar pengalaman belanja Anda lebih aman.', date: '20 Apr 2025' },
-  { id: 2, category: 'Tips Berjualan', icon: 'i-heroicons-chart-bar', title: 'Cara Meningkatkan Penjualan dengan Foto Produk Berkualitas', excerpt: 'Foto produk adalah elemen pertama yang dilihat pembeli. Pelajari cara mengambil foto yang menarik dengan smartphone.', date: '15 Apr 2025' },
-  { id: 3, category: 'Produk Pilihan', icon: 'i-heroicons-star', title: 'Produk Trending di Adsentral Bulan Ini', excerpt: 'Temukan produk-produk yang paling banyak dicari dan dibeli oleh pengguna Adsentral bulan ini.', date: '10 Apr 2025' },
-  { id: 4, category: 'Berita', icon: 'i-heroicons-megaphone', title: 'Adsentral Luncurkan Fitur Chat Terintegrasi', excerpt: 'Kini pembeli dan seller bisa berkomunikasi langsung melalui fitur chat yang ada di setiap halaman produk.', date: '5 Apr 2025' },
-  { id: 5, category: 'Tips Belanja', icon: 'i-heroicons-tag', title: 'Cara Mendapatkan Harga Terbaik di Adsentral', excerpt: 'Gunakan filter harga, bandingkan produk, dan manfaatkan promo seller untuk mendapatkan penawaran terbaik.', date: '1 Apr 2025' },
-  { id: 6, category: 'Tips Berjualan', icon: 'i-heroicons-light-bulb', title: 'Strategi Deskripsi Produk yang Menarik Pembeli', excerpt: 'Deskripsi yang detail dan menarik dapat meningkatkan konversi toko Anda secara signifikan.', date: '28 Mar 2025' },
-]
+// Artikel contoh dihapus sebelum go-live (F-71); isi saat artikel asli tersedia
+const posts: { id: number, category: string, icon: string, title: string, excerpt: string, date: string }[] = []
 
 const filteredPosts = computed(() =>
   activeCategory.value === 'Semua'

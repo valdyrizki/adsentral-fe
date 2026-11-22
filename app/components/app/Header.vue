@@ -7,7 +7,7 @@
         <div class="hidden md:flex w-3/4 mx-auto justify-between items-center py-2 ">
           <div class="basis-1/4">
             <ULink to="/hubungi-kami" class="text-xs mx-2 text-white/90 hover:text-white transition-colors">
-              Hubungi Kami : 085855558813
+              Hubungi Kami<template v-if="contactWa"> : {{ contactWa }}</template>
             </ULink>
           </div>
           <div></div>
@@ -90,6 +90,8 @@
 </template>
 
 <script setup lang="ts">
+// nomor dari setting WA_NUMBER, bukan hardcoded (F-71)
+const { waNumber: contactWa } = useContactSettings()
 import type { NavigationMenuItem } from '@nuxt/ui'
 
 const router = useRouter()

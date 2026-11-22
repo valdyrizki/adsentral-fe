@@ -251,3 +251,60 @@ test.describe('Checkout keranjang', () => {
     expect(txCalled).toBe(false)
   })
 })
+
+test.describe('Voucher publik di keranjang', () => {
+  const voucher = (code: string, over: Record<string, unknown> = {}) => ({
+    id: code, code, name: null, discount_type: 'NOMINAL', discount_value: 5000, max_discount_amount: null,
+    min_transaction_amount: null, status: 'ACTIVE', is_public: true, ...over,
+  })
+
+  test('daftar tampil dengan format diskon; pilih → dicek & dipakai, pilih lagi → dilepas; tolakan BE tampil', async ({ page, context, mockApi }) => {
+    const product = makeProduct(1, { sell_price: 50000 })
+    await seedCart(context, [{ product, quantity: 1 }])
+    mockCartPage(mockApi, [product])
+    mockApi.on('GET', '/voucher/public', ok([
+      voucher('HEMAT5', { name: 'Hemat Lima Ribu', min_transaction_amount: 20000 }),
+      voucher('PERSEN10', { discount_type: 'PERCENTAGE', discount_value: 10, max_discount_amount: 15000 }),
+    ]))
+    const checked: string[] = []
+    mockApi.on('GET', '/voucher/check', (_r, url) => {
+      const code = url.searchParams.get('code')!
+      checked.push(`${code}@${url.searchParams.get('amount')}`)
+      return code === 'PERSEN10' ? fail(400, 'Kuota voucher habis') : ok({ discount_amount: 5000, code })
+    })
+    let txBody: any = null
+    mockApi.on('POST', '/tx/create', (route) => {
+      txBody = route.request().postDataJSON()
+      return ok({ paymentId: 'PAY-9', referenceId: 'REF-9', checkoutUrl: '', qrUrl: '' })
+    })
+
+    await gotoHydrated(page, '/cart')
+    const m = page.getByRole('main')
+    const hemat = m.getByRole('button', { name: /HEMAT5/ })
+    await expect(hemat).toContainText('Hemat Lima Ribu')
+    await expect(hemat).toContainText('Diskon Rp5.000')
+    await expect(hemat).toContainText('Min. Rp20.000')
+    await expect(m.getByRole('button', { name: /PERSEN10/ })).toContainText('Diskon 10% (maks. Rp15.000)')
+
+    // format Rupiah Indonesia, tidak bergantung bahasa browser (F-68)
+    await expect(m.getByText('Rp 50.000', { exact: true }).first()).toBeVisible()
+    await expect(m.getByText(/Saldo: Rp1\.000\.000/)).toBeVisible()
+    await expect(m.getByText(/Rp ?50,000|Rp1,000,000/)).toHaveCount(0)
+
+    await hemat.click()
+    await expect(m.getByText('Rp 46.000').first()).toBeVisible()
+    expect(checked).toEqual(['HEMAT5@50000'])
+
+    await hemat.click()
+    await expect(m.getByText('Rp 46.000')).toHaveCount(0)
+
+    await m.getByRole('button', { name: /PERSEN10/ }).click()
+    await expect(page.getByText('Kuota voucher habis').first()).toBeVisible()
+
+    await hemat.click()
+    await expect(m.getByText('Rp 46.000').first()).toBeVisible()
+    await confirmCheckout(page)
+    await expect(page).toHaveURL(/\/transaction$/)
+    expect(txBody.voucher_code).toBe('HEMAT5')
+  })
+})
