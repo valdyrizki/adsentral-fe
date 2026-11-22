@@ -43,3 +43,20 @@ test.describe('Admin: detail produk (/admin/product/view/[id])', () => {
     await expect(main(page).getByText('Produk yang Anda cari tidak ditemukan atau tidak dapat diakses.')).toBeVisible()
   })
 })
+
+test.describe('Halaman create/edit produk admin dihapus (F-43)', () => {
+  for (const path of ['/admin/product/create', '/admin/product/edit/7']) {
+    test(`${path} → 404 (admin tidak membuat/mengubah produk seller)`, async ({ page, mockApi }) => {
+      let writes = 0
+      mockApi.asRole('ADMIN')
+        .on('GET', '/system/settings/public', ok(FEES))
+        .on('GET', '/product/my/7', ok(makeProduct(7)))
+        .on('POST', '/product/create', () => { writes++; return fail(403, 'Forbidden') })
+        .on('PATCH', '/product/update/7', () => { writes++; return fail(403, 'Forbidden') })
+
+      await page.goto(path)
+      await expect(page.getByText(`Page not found: ${path}`)).toBeVisible()
+      expect(writes).toBe(0)
+    })
+  }
+})

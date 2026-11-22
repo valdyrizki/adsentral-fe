@@ -80,9 +80,9 @@ Seller:
 | Fungsi | Endpoint | Dipakai di |
 |---|---|---|
 | `fetchMyProduct` / `getMyProducts` | `/products/my` | `pages/seller/product`, `pages/seller/stock/add` |
-| `fetchMyProductById` | `/product/my/{id}` | `pages/seller/product/edit`, `pages/seller/stock/add/[id].vue`, `pages/admin/product/edit` |
-| `createProduct` | POST `/product/create` | `pages/seller/product/create`, `pages/admin/product/create` |
-| `updateProduct` | PATCH `/product/update/{id}` | `pages/seller/product/edit`, `pages/admin/product/edit` |
+| `fetchMyProductById` | `/product/my/{id}` | `pages/seller/product/edit`, `pages/seller/stock/add/[id].vue` |
+| `createProduct` | POST `/product/create` | `pages/seller/product/create` |
+| `updateProduct` | PATCH `/product/update/{id}` | `pages/seller/product/edit` |
 | `activateProduct` / `deactivateProduct` | PATCH `/product/activate/{id}` · `/product/deactivate/{id}` | `pages/seller/product` |
 
 Admin:

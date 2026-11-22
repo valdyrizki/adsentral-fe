@@ -175,24 +175,25 @@ test.describe('Master data admin: kategori produk', () => {
   const suspendButton = (page: Page, name: string) =>
     main(page).locator('div.divide-gray-100 > div').filter({ hasText: name }).locator('button[title*="menonaktifkan"], button[title="Nonaktifkan kategori"]')
 
-  test('admin biasa: tombol nonaktifkan terkunci', async ({ page, mockApi }) => {
-    mockApi.asRole('ADMIN').on('GET', '/categories/all', ok(CATS))
-    await gotoHydrated(page, '/admin/category')
-    await expect(suspendButton(page, 'Top Up Game')).toBeDisabled()
-    // kategori yang sudah SUSPEND tidak punya tombol nonaktifkan
-    await expect(suspendButton(page, 'Akun Lama')).toHaveCount(0)
-  })
+  // Suspend kategori level ADMIN sejak 2026-11-22 (F-52), sama dengan create/update kategori
+  for (const role of ['ADMIN', 'SUPER_ADMIN'] as const) {
+    test(`${role}: nonaktifkan setelah konfirmasi memanggil endpoint suspend (F-52)`, async ({ page, mockApi }) => {
+      let suspended = false
+      const dialogs: string[] = []
+      mockApi.asRole(role)
+        .on('GET', '/categories/all', ok(CATS))
+        .on('PATCH', '/category/suspend/1', () => (suspended = true, ok(null)))
+      page.on('dialog', d => { dialogs.push(d.message()); d.accept() })
 
-  test('super admin: nonaktifkan setelah konfirmasi memanggil endpoint suspend', async ({ page, mockApi }) => {
-    let suspended = false
-    mockApi.asRole('SUPER_ADMIN')
-      .on('GET', '/categories/all', ok(CATS))
-      .on('PATCH', '/category/suspend/1', () => (suspended = true, ok(null)))
-    page.on('dialog', d => d.accept())
+      await gotoHydrated(page, '/admin/category')
+      // kategori yang sudah SUSPEND tidak punya tombol nonaktifkan
+      await expect(suspendButton(page, 'Akun Lama')).toHaveCount(0)
+      await expect(suspendButton(page, 'Top Up Game')).toBeEnabled()
+      await suspendButton(page, 'Top Up Game').click()
+      await expect(page.getByText('Kategori dinonaktifkan').first()).toBeVisible()
+      expect(suspended).toBe(true)
+      expect(dialogs[0]).toContain('lewat Edit')
+    })
+  }
 
-    await gotoHydrated(page, '/admin/category')
-    await suspendButton(page, 'Top Up Game').click()
-    await expect(page.getByText('Kategori dinonaktifkan').first()).toBeVisible()
-    expect(suspended).toBe(true)
-  })
 })

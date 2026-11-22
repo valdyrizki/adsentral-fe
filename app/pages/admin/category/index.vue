@@ -147,8 +147,7 @@
                 variant="outline"
                 icon="mdi:cancel"
                 :loading="suspendingId === cat.id"
-                :disabled="!authStore.isSuperAdmin"
-                :title="authStore.isSuperAdmin ? 'Nonaktifkan kategori' : 'Hanya SUPER_ADMIN yang dapat menonaktifkan'"
+                title="Nonaktifkan kategori"
                 @click="handleSuspend(cat)"
               />
             </div>
@@ -181,7 +180,6 @@ import type { CategoryStatus } from '~/types/CategoryRequest'
 definePageMeta({ layout: 'admin', label: 'Kategori Produk' })
 
 const toast = useToast()
-const authStore = useAuthStore()
 const { fetchCategoriesAdmin, createCategory, updateCategory, suspendCategory } = useCategoryApi()
 
 const statusItems = [
@@ -226,12 +224,11 @@ const paged = computed(() => {
 
 watch(search, () => { page.value = 0 })
 
-// ===== SUSPEND (soft delete, hanya SUPER_ADMIN, tidak ada endpoint untuk activate kembali) =====
+// ===== SUSPEND (level ADMIN sejak 2026-11-22; aktifkan kembali lewat Edit → status Aktif) =====
 const suspendingId = ref<number | null>(null)
 
 async function handleSuspend(cat: CategoryResponse) {
-  if (!authStore.isSuperAdmin) return
-  const ok = confirm(`Nonaktifkan kategori "${cat.name}"? Tindakan ini tidak bisa dibatalkan dari sini.`)
+  const ok = confirm(`Nonaktifkan kategori "${cat.name}"? Kategori bisa diaktifkan lagi lewat Edit.`)
   if (!ok) return
 
   suspendingId.value = cat.id

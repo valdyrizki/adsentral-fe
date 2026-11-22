@@ -9,7 +9,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## Rencana & catatan
 
 - **Cakupan tes** (modul yang sudah/belum dites, prioritas): lihat **`docs/test-progress.md`**. Dokumen ini hanya berisi bug.
-- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45, F-46, F-47, F-48, F-49, F-50, F-51, F-53, F-54, F-55, F-56, F-57, F-58, F-59, F-60, F-61, F-62, F-63, F-64, F-65 (selesai); dari P3: F-66, F-67, F-68, F-69, F-70, F-71 (selesai); sisa P2: F-72, F-73, F-74, F-75 (selesai), F-43 (todo), F-52 (disengaja). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
+- **Rencana perbaikan:** tahap 1 selesai 2026-11-19 (F-09, F-16, F-20, F-35, F-36, F-41); tahap 2 (F-19, F-24, F-26, F-33, F-34, F-39, F-40); tahap 3 (F-10, F-27, F-29, F-30, F-31); tahap 4 (F-07, F-11, F-17), semua `test.fail` sudah dibuka; tahap 5 (F-03, F-13, F-37); tahap 6, setelah konfirmasi (F-04, F-05, F-06, F-08, F-12, F-14, F-18, F-22, F-28, F-32); tahap 7 (F-23, dengan endpoint BE baru); tahap 8 (F-02, F-21, F-38 dengan endpoint BE baru, sisa F-32). Dari tes P1/P2: F-42, F-44, F-45, F-46, F-47, F-48, F-49, F-50, F-51, F-53, F-54, F-55, F-56, F-57, F-58, F-59, F-60, F-61, F-62, F-63, F-64, F-65 (selesai); dari P3: F-66, F-67, F-68, F-69, F-70, F-71 (selesai); sisa P2: F-72, F-73, F-74, F-75 (selesai), F-43 (selesai, halaman dihapus), F-52 (selesai, suspend kategori level ADMIN). Awalnya dimulai dari **F-20 + F-26** (pakai `rethrowApiError` di
   composable + `isStaleActionError` → reload di halaman), karena satu pola ini menutup banyak tes `test.fail`.
   Temuan `PERLU KONFIRMASI` ditanyakan dulu ke tim BE/bisnis sebelum diubah.
 - **Setelah memperbaiki temuan:** ubah statusnya di sini menjadi `SELESAI`, hapus `test.fail` di spec, dan ubah 🐞 → ✅
@@ -65,7 +65,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-41 | Rekening bank | Simpan rekening ditolak BE tampil "Bad Request" (pesan BE hilang); gagal memuat rekening (500/timeout) tampil "Belum ada rekening bank", bisa membuat seller mengira rekeningnya hilang | Sedang | SELESAI | Pesan BE tampil di form; `fetchBankAccount` hanya mengubah 404 jadi `null`, error lain tampil sebagai alert dengan tombol "Coba lagi". |
 
 | F-42 | Produk admin | Filter "Semua Status" di `/admin/product` mengirim `status=ALL`; BE memetakan `status` ke enum sehingga 400 dan daftar gagal dimuat setelah admin kembali dari filter lain | Sedang | SELESAI | `getAllProductsAdmin` tidak mengirim `status` bila `'ALL'` (pola F-07/F-30). Tes regresi di `admin-product-list.spec.ts`. Halaman admin lain sudah menangani `'ALL'`. |
-| F-43 | Produk admin | Halaman `/admin/product/create` dan `/admin/product/edit/[id]` tidak ditautkan dari mana pun dan memanggil `/product/create` & `/product/update/{id}` yang ber-`@CurrentSeller`; admin selalu ditolak 403. Halaman juga memakai `alert()` untuk validasi gambar | Rendah | TODO | Keputusan 2026-11-20: jangan dihapus dulu. Nanti: hapus kedua halaman, atau buat endpoint admin bila admin memang perlu membuat/mengubah produk seller. |
+| F-43 | Produk admin | Halaman `/admin/product/create` dan `/admin/product/edit/[id]` tidak ditautkan dari mana pun dan memanggil `/product/create` & `/product/update/{id}` yang ber-`@CurrentSeller`; admin selalu ditolak 403. Halaman juga memakai `alert()` untuk validasi gambar | Rendah | SELESAI | Kedua halaman dihapus (2026-11-22, sesuai PRD FR-2.5: admin hanya meninjau produk). Tes regresi di `admin-product-view.spec.ts`. |
 | F-44 | Detail produk | Ulasan tidak pernah dimuat saat halaman produk dibuka: "( 0 ulasan )" dan tab ulasan kosong sampai pengunjung mengubah filter | Sedang | SELESAI | Fetch ulasan juga memantau `product.id`. Tes regresi di `catalog.spec.ts`. |
 | F-45 | Chat | Kirim pesan gagal (mis. ditolak BE) mengosongkan pesan yang diketik beserta lampirannya, di chat buyer, seller, dan admin | Rendah | SELESAI | Isian dikosongkan hanya saat terkirim. Tes regresi di `chat.spec.ts`. |
 | F-46 | Notifikasi (admin) | Modal Broadcast menawarkan tipe `ORDER_UPDATE`, `PAYMENT_INFO`, `PENALTY_NOTICE` yang tidak ada di enum `NotificationType` BE; broadcast dengan tipe itu ditolak 400 | Sedang | SELESAI | Opsi disamakan dengan enum BE (INFO, SYSTEM_INFO, WARNING, URGENT, PROMOTION). Tes `notification.spec.ts` mengirim tiap opsi dan mencocokkannya dengan enum BE. |
@@ -74,7 +74,7 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-49 | Keuangan (admin) | Form jurnal manual menawarkan kategori otomatis sistem, yang selalu ditolak BE (403) | Rendah | SELESAI | Kategori `is_auto` disaring dari pilihan. Tes regresi di `finance.spec.ts`. |
 | F-50 | Voucher (admin) | Filter "Suspended" mengirim `status=SUSPENDED`, padahal enum BE `SUSPEND`: BE menjawab 400 dan daftar voucher tidak bisa disaring ke voucher yang disuspend | Rendah | SELESAI | Nilai filter & tipe `VoucherStatus` memakai `SUSPEND`. Tes regresi di `master-data.spec.ts`. |
 | F-51 | Metode pembayaran (admin) | Halaman memakai `SUSPENDED`, padahal BE `SUSPEND`: filter & kartu "Suspended" selalu kosong/0, dan mengubah status ke Suspended lewat Edit ditolak BE | Rendah | SELESAI | Pilihan status, filter, kartu, dan tipe memakai `SUSPEND`. Tes regresi di `master-data.spec.ts`. |
-| F-52 | Kategori produk (admin) | Suspend kategori khusus SUPER_ADMIN (`/category/suspend`), tetapi ADMIN biasa bisa memilih status Suspend (dan membatalkannya) lewat Edit (`/category/update`) | Rendah | DITERIMA | Disengaja (keputusan 2026-11-20): batas SUPER_ADMIN hanya pada tombol suspend; dicatat di BE `test-scenarios/09-category.md` CAT-AUTHZ-04. |
+| F-52 | Kategori produk (admin) | Suspend kategori khusus SUPER_ADMIN (`/category/suspend`), tetapi ADMIN biasa bisa memilih status Suspend (dan membatalkannya) lewat Edit (`/category/update`) | Rendah | SELESAI | Keputusan 2026-11-22: suspend kategori cukup level ADMIN (BE `@CurrentAdmin`), tombol nonaktifkan terbuka untuk semua admin. Tes di `master-data.spec.ts`; BE `CategorySuspendEndpointTest`. |
 | F-53 | Navigasi admin | Tautan "System Settings" & "Kelola" di dashboard membuka `/admin/settings`, yang berisi salinan lama halaman chat; menu Settings → Members & Notifications mengarah ke halaman yang tidak ada (404) | Rendah | SELESAI | Tautan ke `/admin/settings/system`, halaman salinan dihapus, dua menu 404 dihapus. Tes regresi di `settings.spec.ts`. |
 | F-54 | System settings (admin) | Form tambah setting mencentang "Tampilkan ke publik" secara default, sehingga setting baru langsung terbaca anonim bila admin lupa mencabutnya | Rendah | SELESAI | Default privat. Tes regresi di `settings.spec.ts`. |
 | F-55 | System settings (admin) | Gagal memuat daftar setting ditampilkan sebagai "Belum ada system setting" | Rendah | SELESAI | Pesan error ditampilkan; Reload & simpan memakai `refresh()` agar status error ikut diperbarui. Tes regresi di `settings.spec.ts`. |
@@ -733,12 +733,15 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 ## F-43 — Halaman create/edit produk admin yatim dan tidak bisa dipakai
 
 - **Lokasi:** `app/pages/admin/product/create/index.vue`, `app/pages/admin/product/edit/[[id]].vue`
-- **Status:** TODO (keputusan 2026-11-20: halaman dibiarkan, jangan dihapus dulu)
+- **Status:** SELESAI
 - **Gejala:** Tidak ada tautan ke kedua halaman (daftar, review, dan detail admin hanya menautkan `/admin/product/view`).
   Halaman memakai `createProduct`/`updateProduct` yang memanggil endpoint seller (`@CurrentSeller`), sehingga admin
   ditolak 403. Validasi gambar memakai `alert()`.
-- **Todo:** Putuskan nanti: hapus kedua halaman, atau buat endpoint admin (BE) bila admin perlu membuat/mengubah produk
-  seller. Sampai itu, jangan menautkan halaman ini dari menu karena admin akan selalu ditolak 403.
+- **Perbaikan (2026-11-22):** Kedua halaman dihapus. PRD FR-2.5 hanya meminta admin meninjau produk (setujui, tolak,
+  nonaktifkan, tangguhkan); membuat/mengubah produk tetap hak seller. Bila kelak dibutuhkan, perlu endpoint admin di BE
+  (dengan alasan & audit log) lebih dulu.
+- **Tes:** `admin-product-view.spec.ts` → "Halaman create/edit produk admin dihapus (F-43)": kedua rute 404 dan tidak ada
+  request tulis (merah di kode lama).
 
 ---
 ## F-44 — Ulasan produk tidak dimuat saat halaman dibuka
@@ -841,12 +844,14 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 
 - **Lokasi:** BE `CategoryService.updateCategory` (`ALLOWED_STATUS` termasuk `SUSPEND`, endpoint `@CurrentAdmin`);
   FE `app/pages/admin/category/index.vue` → `statusItems`
-- **Status:** DITERIMA (disengaja, keputusan 2026-11-20); dicatat di BE `docs/test-scenarios/09-category.md` CAT-AUTHZ-04
+- **Status:** SELESAI (2026-11-22); sebelumnya DITERIMA (2026-11-20). BE `docs/test-scenarios/09-category.md` CAT-AUTHZ-02/04
 - **Gejala:** Tombol nonaktifkan (`PATCH /category/suspend/{id}`) khusus SUPER_ADMIN (CAT-AUTHZ-02), tetapi form Edit
   menawarkan status Suspend ke semua admin dan BE menerimanya. Kategori yang disuspend juga bisa diaktifkan lagi lewat Edit,
   padahal komentar halaman menyebut tidak ada jalan untuk mengaktifkan kembali.
-- **Keputusan:** dibiarkan. ADMIN boleh mengubah status kategori (termasuk Suspend) lewat Edit; tombol suspend tetap khusus
-  SUPER_ADMIN.
+- **Keputusan (2026-11-22):** suspend kategori tidak perlu sampai SUPER_ADMIN. BE `PATCH /api/category/suspend/{id}` jadi
+  `@CurrentAdmin`; FE tombol nonaktifkan tidak lagi dikunci, konfirmasi menyebut kategori bisa diaktifkan lagi lewat Edit.
+- **Tes:** `master-data.spec.ts` → "ADMIN/SUPER_ADMIN: nonaktifkan ... (F-52)" (ADMIN merah di kode lama);
+  BE `CategorySuspendEndpointTest` (ADMIN 200, SELLER 403; merah di kode lama).
 
 ---
 ## F-53 — Tautan System Settings membuka salinan halaman chat

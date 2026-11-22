@@ -41,7 +41,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 16 | Pesanan admin (arbitrase, refund) | `admin-order.spec.ts` | ✅ | — | F-27 & F-28 selesai. Dashboard admin di `admin-dashboard.spec.ts` (F-69). |
 | 17 | Pembayaran admin | `payment.spec.ts`, `admin-unprocessed-payment.spec.ts` | ✅ | — | F-06 ditutup (sesuai BE), F-07 selesai. |
 | 18 | Penarikan dana admin | `withdrawal.spec.ts` | ✅ | — | F-22 & F-23 selesai (kartu statistik dari `GET /admin/withdrawal/summary`, biaya admin dari data penarikan). |
-| 19 | Produk & stok admin (review, suspend) | `admin-product-reason.spec.ts`, `admin-product-status.spec.ts`, `admin-product-list.spec.ts`, `admin-product-view.spec.ts` | ✅ | — | F-42 selesai. Detail produk (F-75). `/admin/stock` di `admin-stock.spec.ts` (F-70). Halaman create/edit admin yatim & ditolak BE (F-43, todo). |
+| 19 | Produk & stok admin (review, suspend) | `admin-product-reason.spec.ts`, `admin-product-status.spec.ts`, `admin-product-list.spec.ts`, `admin-product-view.spec.ts` | ✅ | — | F-42 selesai. Detail produk (F-75). `/admin/stock` di `admin-stock.spec.ts` (F-70). Halaman create/edit admin dihapus (F-43). |
 | 20 | Verifikasi seller (admin) | `verification.spec.ts`, `admin-verification-revoke.spec.ts`, `admin-verification-badge.spec.ts` | ✅ | — | F-39 selesai. |
 | 21 | Master data admin (kategori, tipe akun, voucher, metode/channel bayar) | `master-data.spec.ts` | ✅ | — | Status `SUSPENDED` vs enum BE `SUSPEND` di voucher (F-50) & metode pembayaran (F-51). Suspend kategori lewat Edit oleh ADMIN biasa (F-52, disengaja). |
 | 22 | Keuangan admin (ringkasan, jurnal, kategori, failed journal) | `finance.spec.ts`, `admin-metrics.spec.ts` | ✅ | — | Total per kategori kini dari `category.balance` BE (F-48, termasuk perbaikan race condition di BE). Kategori otomatis di form jurnal (F-49). |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | `static-pages.spec.ts`, `help-pages.spec.ts`, `legal.spec.ts` | ✅ | — | SLA & jam CS (F-66), muat sebagian (F-67), konten contoh & kontak hardcoded (F-71). |
 
-Total saat ini: **418 tes** di 47 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-22 dengan `npx playwright test --list`).
+Total saat ini: **420 tes** di 47 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-22 dengan `npx playwright test --list`).
 
 ---
 
@@ -303,7 +303,7 @@ Total saat ini: **418 tes** di 47 spec, tanpa tes `test.fail` (semua bug yang pu
 | Aktifkan/suspend ditolak 409 (status basi, EP06-03): pesan BE tampil, dialog ditutup, daftar dimuat ulang | ✅ `admin-product-status.spec.ts` |
 | `/admin/product/review`: hanya REVIEW, setujui lewat konfirmasi, daftar dimuat ulang | ✅ `admin-product-list.spec.ts` |
 | `/admin/product/view/[id]` | ✅ `admin-product-view.spec.ts` (F-75) |
-| `/admin/product/create`, `edit` | — | Yatim & ditolak BE (F-43, todo: jangan dihapus dulu) |
+| `/admin/product/create`, `edit` | ✅ dihapus (F-43), rute 404 di `admin-product-view.spec.ts` |
 | `/admin/stock`: daftar stok semua seller, filter, badge ringkasan | ✅ `admin-stock.spec.ts` (F-70) |
 
 ## 20. Verifikasi seller (admin)
