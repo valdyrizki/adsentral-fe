@@ -291,7 +291,7 @@ Filter list: hanya **satu** nilai `status` per request (`'ALL'` = tanpa paramete
 |---|---|---|
 | `fetchAllWithdrawals` | `/admin/withdrawal` | `pages/admin/withdrawal` |
 | `fetchWithdrawalDetail` | `/admin/withdrawal/{id}` | `pages/admin/withdrawal/[id].vue` |
-| `approveWithdrawal` | PATCH `/admin/withdrawal/{id}/complete` | `pages/admin/withdrawal/*` |
+| `approveWithdrawal` | PATCH `/admin/withdrawal/{id}/complete` (body `{ admin_notes }` = referensi transfer, F-78) | `pages/admin/withdrawal/*` |
 | `rejectWithdrawal` | PATCH `/admin/withdrawal/{id}/reject` | idem |
 | `fetchSellerTransactionSum` | `/tx/admin/seller/{sellerId}/sum` | `pages/admin/withdrawal/[id].vue` |
 | `fetchSellerDepositSum` | `/balance/admin/deposit/{userId}/sum` | idem |

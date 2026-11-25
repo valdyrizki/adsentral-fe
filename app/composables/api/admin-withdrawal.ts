@@ -120,11 +120,12 @@ export const useAdminWithdrawalApi = () => {
     return res.data
   }
 
-  // Biaya admin ditetapkan BE saat withdrawal dibuat (WD_FEE saat itu); BE tidak membaca admin_fee dari request
-  const approveWithdrawal = async (id: string): Promise<void> => {
+  // Biaya admin ditetapkan BE saat withdrawal dibuat (WD_FEE saat itu); BE tidak membaca admin_fee dari request.
+  // admin_notes = referensi transfer (SOP S4), tersimpan di withdrawal dan audit (F-78)
+  const approveWithdrawal = async (id: string, transferRef: string): Promise<void> => {
     const res = await api<WebResponse>(`/admin/withdrawal/${id}/complete`, {
       method: 'PATCH',
-      body: {},
+      body: { admin_notes: transferRef },
     })
 
     if (res.status !== 'success') {

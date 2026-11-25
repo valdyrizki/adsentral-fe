@@ -263,7 +263,7 @@ test.describe('Penarikan dana admin', () => {
     expect(queries.at(-1)?.get('status')).toBe('PENDING')
   })
 
-  test('tandai transfer selesai: tanpa admin_fee, daftar, ringkasan & badge dimuat ulang', async ({ page, mockApi }) => {
+  test('tandai transfer selesai: referensi transfer wajib, body admin_notes tanpa admin_fee, daftar, ringkasan & badge dimuat ulang (F-78)', async ({ page, mockApi }) => {
     let wds = [makeWd('WD-1', { admin_fee: 5000, amount_received: 95000 })]
     let summaryFetches = 0
     mockAdminList(mockApi, () => wds, () => (summaryFetches++, SUMMARY))
@@ -272,7 +272,7 @@ test.describe('Penarikan dana admin', () => {
     let body: unknown = null
     mockApi.on('PATCH', '/admin/withdrawal/WD-1/complete', (route) => {
       body = route.request().postDataJSON()
-      wds = [{ ...wds[0]!, status: 'COMPLETED', admin_fee: 5000, amount_received: 95000, processed_at: hoursAgo(0), processed_by: 'admin_test' }]
+      wds = [{ ...wds[0]!, status: 'COMPLETED', admin_fee: 5000, amount_received: 95000, processed_at: hoursAgo(0), processed_by: 'admin_test', admin_notes: 'BCA REF 123456' }]
       return ok(null)
     })
 
@@ -283,16 +283,23 @@ test.describe('Penarikan dana admin', () => {
     await expect(dialog.getByText('Rp 95.000')).toBeVisible()
     const alertsBefore = alertFetches
     const summaryBefore = summaryFetches
+    // SOP S4: referensi transfer wajib dicatat sebelum ditandai selesai
+    await dialog.getByRole('button', { name: 'Tandai Transfer Selesai' }).click()
+    await expect(dialog.getByText('Referensi transfer harus diisi.')).toBeVisible()
+    expect(body).toBeNull()
+
+    await dialog.getByLabel('Referensi Transfer').fill('  BCA REF 123456  ')
     await dialog.getByRole('button', { name: 'Tandai Transfer Selesai' }).click()
 
     await expect(page.getByText('Seller menerima Rp 95.000.').first()).toBeVisible()
     // BE tidak membaca admin_fee dari request (biaya ditetapkan saat pengajuan)
-    expect(body).toEqual({})
+    expect(body).toEqual({ admin_notes: 'BCA REF 123456' })
     await expect.poll(() => summaryFetches).toBeGreaterThan(summaryBefore)
     await expect(dialog).toHaveCount(0)
     const row = adminRow(page, 'Tes SELLER')
     await expect(row.getByText('Diterima: Rp 95.000')).toBeVisible()
     await expect(row.getByText('Oleh: admin_test')).toBeVisible()
+    await expect(row.getByText('Ref: BCA REF 123456')).toBeVisible()
     await expect(row.getByRole('button', { name: 'Tandai Selesai' })).toHaveCount(0)
     await expect.poll(() => alertFetches).toBeGreaterThan(alertsBefore)
   })
@@ -342,6 +349,7 @@ test.describe('Penarikan dana admin', () => {
     await gotoHydrated(page, '/admin/withdrawal')
     await adminRow(page, 'Tes SELLER').getByRole('button', { name: 'Tandai Selesai' }).click()
     const dialog = page.getByRole('dialog', { name: 'Konfirmasi Transfer Selesai' })
+    await dialog.getByLabel('Referensi Transfer').fill('BCA REF 1')
     await dialog.getByRole('button', { name: 'Tandai Transfer Selesai' }).click()
 
     await expect(dialog.getByText('Penarikan sudah dibatalkan seller')).toBeVisible({ timeout: 5000 })
@@ -387,6 +395,7 @@ test.describe('Penarikan dana admin', () => {
       .on('GET', '/system/settings/all', ok([setting('WD_FEE', '7500')]))
       .on('GET', '/admin/withdrawal/WD-1', ok(makeWd('WD-1', {
         status: 'COMPLETED', admin_fee: 5000, amount_received: 95000, processed_at: hoursAgo(1), processed_by: 'admin_test',
+        admin_notes: 'BCA REF 777',
       })))
       .on('GET', `/tx/admin/seller/${seller.id}/sum`, ok({ seller_id: seller.id, seller_username: '', seller_email: '', total_transactions: 0, total_amount: 500000 }))
       .on('GET', `/balance/admin/deposit/${seller.id}/sum`, ok({ user_id: seller.id, username: '', email: '', total_deposits: 0, total_amount: 0 }))
@@ -397,5 +406,40 @@ test.describe('Penarikan dana admin', () => {
     await expect(page.getByText('Rp 95.000')).toBeVisible()
     await expect(page.getByText('Rp 7.500')).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Tandai Transfer Selesai' })).toHaveCount(0)
+    // F-78: referensi transfer yang dicatat admin tampil di Info Proses
+    await expect(page.getByText('Referensi Transfer', { exact: true })).toBeVisible()
+    await expect(page.getByText('BCA REF 777')).toBeVisible()
+  })
+
+  test('detail: tandai transfer selesai mewajibkan referensi & mengirim admin_notes (F-78)', async ({ page, mockApi }) => {
+    const seller = makeUser('SELLER')
+    let wd = makeWd('WD-1', { admin_fee: 5000, amount_received: 95000 })
+    let body: unknown = null
+    mockApi
+      .asRole('ADMIN')
+      .on('GET', '/system/settings/all', ok(WD_FEE_5000))
+      .on('GET', '/admin/withdrawal/WD-1', () => ok(wd))
+      .on('GET', `/tx/admin/seller/${seller.id}/sum`, ok({ seller_id: seller.id, seller_username: '', seller_email: '', total_transactions: 1, total_amount: 500000 }))
+      .on('GET', `/balance/admin/deposit/${seller.id}/sum`, ok({ user_id: seller.id, username: '', email: '', total_deposits: 0, total_amount: 0 }))
+      .on('GET', `/admin/withdrawal/${seller.id}/sum`, ok({ user_id: seller.id, username: '', email: '', total_withdrawals: 0, total_amount: 0, total_amount_received: 0 }))
+      .on('PATCH', '/admin/withdrawal/WD-1/complete', (route) => {
+        body = route.request().postDataJSON()
+        wd = { ...wd, status: 'COMPLETED', processed_at: hoursAgo(0), processed_by: 'admin_test', admin_notes: 'Mandiri 998877' }
+        return ok(null)
+      })
+
+    await gotoHydrated(page, '/admin/withdrawal/WD-1')
+    await page.getByRole('button', { name: 'Tandai Transfer Selesai' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Konfirmasi Transfer Selesai' })
+    await dialog.getByRole('button', { name: 'Tandai Transfer Selesai' }).click()
+    await expect(dialog.getByText('Referensi transfer harus diisi.')).toBeVisible()
+    expect(body).toBeNull()
+
+    await dialog.getByLabel('Referensi Transfer').fill(' Mandiri 998877 ')
+    await dialog.getByRole('button', { name: 'Tandai Transfer Selesai' }).click()
+
+    await expect(page.getByText('Seller menerima Rp 95.000.').first()).toBeVisible()
+    expect(body).toEqual({ admin_notes: 'Mandiri 998877' })
+    await expect(page.getByText('Mandiri 998877')).toBeVisible()
   })
 })

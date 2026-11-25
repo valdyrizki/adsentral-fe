@@ -305,6 +305,10 @@
             <span class="text-gray-400">Waktu Proses</span>
             <span class="text-gray-600">{{ withdrawal.processed_at ? dayjs(withdrawal.processed_at).format('DD MMM YYYY, HH:mm') : '-' }}</span>
           </div>
+          <div v-if="withdrawal.status === 'COMPLETED' && withdrawal.admin_notes" class="flex justify-between text-sm">
+            <span class="text-gray-400">Referensi Transfer</span>
+            <span class="text-gray-800 text-right max-w-[60%] break-words">{{ withdrawal.admin_notes }}</span>
+          </div>
           <div v-if="withdrawal.status === 'REJECTED' && withdrawal.admin_notes" class="pt-1">
             <p class="text-xs text-gray-400 mb-1">Alasan Penolakan</p>
             <div class="bg-red-50 border border-red-100 rounded-lg px-3 py-2">
@@ -359,6 +363,14 @@
             <span class="text-sm text-gray-600">Jumlah diterima seller</span>
             <span class="text-base font-bold text-green-700">{{ formatRp(withdrawal.amount_received) }}</span>
           </div>
+          <UFormField label="Referensi Transfer" required help="No. referensi atau berita transfer dari bank, untuk penelusuran bila seller menanyakan dana.">
+            <UInput
+              v-model="transferRef"
+              placeholder="Contoh: BCA 20261125 123456"
+              :maxlength="255"
+              class="w-full"
+            />
+          </UFormField>
           <div class="flex justify-end gap-2 pt-1">
             <UButton color="neutral" variant="outline" @click="isApproveOpen = false">Batal</UButton>
             <UButton color="success" icon="mdi:bank-transfer" :loading="actionLoading" @click="handleApprove">
@@ -538,10 +550,12 @@ const isAnomalous = computed(() =>
 const isApproveOpen = ref(false)
 const isRejectOpen = ref(false)
 const rejectReason = ref('')
+const transferRef = ref('')
 const actionLoading = ref(false)
 const actionError = ref<string | null>(null)
 
 function openApprove() {
+  transferRef.value = ''
   actionError.value = null
   isApproveOpen.value = true
 }
@@ -554,11 +568,15 @@ function openReject() {
 
 async function handleApprove() {
   if (!withdrawal.value) return
+  if (!transferRef.value.trim()) {
+    actionError.value = 'Referensi transfer harus diisi.'
+    return
+  }
 
   try {
     actionLoading.value = true
     actionError.value = null
-    await approveWithdrawal(withdrawal.value.id)
+    await approveWithdrawal(withdrawal.value.id, transferRef.value.trim())
     toast.add({
       title: 'Transfer Ditandai Selesai',
       description: `Seller menerima ${formatRp(withdrawal.value.amount_received)}.`,

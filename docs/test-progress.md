@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | `static-pages.spec.ts`, `help-pages.spec.ts`, `legal.spec.ts` | ✅ | — | SLA & jam CS (F-66), muat sebagian (F-67), konten contoh & kontak hardcoded (F-71). |
 
-Total saat ini: **427 tes** di 47 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (2026-11-25: suite penuh 427 lulus).
+Total saat ini: **428 tes** di 47 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (2026-11-25: suite penuh 428 lulus).
 
 ---
 
@@ -293,6 +293,7 @@ Total saat ini: **427 tes** di 47 spec, tanpa tes `test.fail` (semua bug yang pu
 |---|---|---|
 | Daftar: estimasi pakai `WD_FEE`, filter | ✅ | F-23 dicatat |
 | Tandai selesai / tolak; selesai basi (409) | ✅ | F-20 (selesai) |
+| Tandai selesai: referensi transfer wajib, body `{ admin_notes }` (daftar & detail); referensi tampil untuk COMPLETED | ✅ | F-78 (selesai) |
 | Detail: peringatan anomali (tanpa deposit, `amount` penarikan), biaya admin COMPLETED | ✅ | F-22 (selesai) |
 
 ## 19. Produk & stok admin

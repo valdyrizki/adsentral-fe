@@ -138,6 +138,7 @@
                 <p>Biaya admin: {{ formatRp(item.admin_fee) }}</p>
                 <p class="text-green-600 font-medium">Diterima: {{ formatRp(item.amount_received) }}</p>
                 <p v-if="item.processed_by">Oleh: {{ item.processed_by }}</p>
+                <p v-if="item.admin_notes" class="max-w-[200px] break-words">Ref: {{ item.admin_notes }}</p>
               </div>
 
               <!-- Estimasi biaya jika PENDING -->
@@ -243,6 +244,15 @@
             <span class="text-sm text-gray-600">Jumlah diterima seller</span>
             <span class="text-base font-bold text-green-700">{{ formatRp(selectedItem.amount_received) }}</span>
           </div>
+
+          <UFormField label="Referensi Transfer" required help="No. referensi atau berita transfer dari bank, untuk penelusuran bila seller menanyakan dana.">
+            <UInput
+              v-model="transferRef"
+              placeholder="Contoh: BCA 20261125 123456"
+              :maxlength="255"
+              class="w-full"
+            />
+          </UFormField>
 
           <div class="flex justify-end gap-2 pt-1">
             <UButton color="neutral" variant="outline" @click="isApproveOpen = false">Batal</UButton>
@@ -433,11 +443,13 @@ const isApproveOpen = ref(false)
 const isRejectOpen = ref(false)
 const selectedItem = ref<AdminWithdrawalResponse | null>(null)
 const rejectReason = ref('')
+const transferRef = ref('')
 const actionLoading = ref(false)
 const actionError = ref<string | null>(null)
 
 function openApprove(item: AdminWithdrawalResponse) {
   selectedItem.value = item
+  transferRef.value = ''
   actionError.value = null
   isApproveOpen.value = true
 }
@@ -452,11 +464,15 @@ function openReject(item: AdminWithdrawalResponse) {
 // ===== APPROVE =====
 async function handleApprove() {
   if (!selectedItem.value) return
+  if (!transferRef.value.trim()) {
+    actionError.value = 'Referensi transfer harus diisi.'
+    return
+  }
 
   try {
     actionLoading.value = true
     actionError.value = null
-    await approveWithdrawal(selectedItem.value.id)
+    await approveWithdrawal(selectedItem.value.id, transferRef.value.trim())
     toast.add({
       title: 'Transfer Ditandai Selesai',
       description: `Seller menerima ${formatRp(selectedItem.value.amount_received)}.`,
