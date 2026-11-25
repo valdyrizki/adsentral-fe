@@ -98,6 +98,9 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
 | F-73 | Produk seller | Produk SUSPEND masih punya tombol Edit (BE menolak 409); keterangan NONACTIVE tidak menyebut bahwa perbaikan lewat Edit masuk review ulang dan alasan ada di notifikasi | Rendah | SELESAI | Edit disembunyikan untuk SUSPEND; keterangan diperbarui. Tes regresi di `seller-product.spec.ts`. |
 | F-74 | Profil toko seller | Logo/banner: teks "JPG, PNG, GIF" dan validasi klien menerima GIF, padahal BE hanya JPG/PNG/WEBP | Rendah | SELESAI | Teks & validasi mengikuti BE. Tes regresi di `seller-profile.spec.ts`. |
 | F-75 | Estimasi pendapatan produk | Biaya admin selalu dari `TRX_FEE` (fallback 5%), padahal BE memakai `TRX_FEE_VERIFIED` untuk seller terverifikasi KTP dan default `TRX_FEE` 10% | Sedang | SELESAI | `trxFeePercentFor` (sama dengan BE `resolveTrxFeePercent`) di detail produk admin, buat & edit produk seller; status verifikasi dimuat ulang dari BE. Tes regresi di `seller-product.spec.ts`, `admin-product-view.spec.ts`. |
+| F-76 | Profil buyer | Kolom password di `/profile` tanpa atribut `autocomplete`: Chrome mengisi password tersimpan ke "Password Baru", sehingga Konfirmasi Password dan Password Lama ikut muncul dan simpan profil bisa gagal/membingungkan | Rendah | TERBUKA | Ditemukan saat pilot UAT staging 2026-11-24 (laporan BE `docs/uat/laporan-2026-11-24.md`). |
+| F-77 | Penalty (admin, buyer, seller) | Status suspend dibandingkan dengan `TEMPORARY`/`PERMANENT`, padahal BE mengirim `SUSPENDED`/`PERMANENT_SUSPENDED`: user tersuspend berlabel "Normal" di admin, filter suspend dikirim dengan nilai yang ditolak BE, kartu "Disuspend" ikut menghitung WARNING, banner pembeli dan dashboard seller tidak pernah menampilkan suspend. Mock E2E memakai nilai yang sama salahnya, jadi tes lolos | Tinggi | SELESAI | Tipe `UserSuspendStatus` dan semua pembanding mengikuti enum BE; kartu Disuspend hanya SUSPENDED/PERMANENT_SUSPENDED. Tes regresi di `penalty.spec.ts` (F-77). |
+| F-78 | Penarikan dana admin | "Tandai Selesai" tidak punya kolom catatan: `approveWithdrawal` mengirim body kosong, sehingga referensi transfer (SOP S4 langkah 3: isi `admin_notes`) tidak pernah tersimpan; `admin_notes` withdrawal COMPLETED juga tidak ditampilkan | Sedang | TERBUKA | Ditemukan saat pilot UAT-38 staging 2026-11-25 (audit `COMPLETE_WITHDRAWAL` berisi `notes: null`). |
 ---
 
 ## F-01 — Kredensial bocor ke URL jika form ter-submit sebelum hidrasi
@@ -1086,3 +1089,25 @@ Status: `TERBUKA` · `PERLU KONFIRMASI` (menyangkut aturan bisnis, tanya dulu) �
   dinonaktifkan tanpa pilihan; `TransactionItem.vue` tidak dipakai (tombol tanpa aksi, kode mati); tombol Tangguhkan seller hanya
   di status REJECT walau BE mengizinkan PAID/IN_PROGRESS/DELIVERED/CANCEL_REQUEST/DONE (pilihan UX, BE tetap penjaga);
   impor CSV/paste stok men-trim nilai, jadi password berawalan/berakhiran spasi berubah.
+
+## F-76 — Autofill browser mengisi kolom Password Baru di profil
+
+- **Lokasi:** `app/pages/profile/index.vue` (tiga `UInput type="password"`: password baru, konfirmasi, password lama)
+- **Status:** TERBUKA
+- **Gejala:** Chrome dengan password tersimpan untuk domain ini mengisi "Password Baru" secara otomatis; karena konfirmasi dan password lama tampil bila `new_password` terisi, user yang hanya ingin mengubah nama/HP melihat kolom password dan simpan bisa gagal atau mengganti password tanpa sengaja.
+- **Usulan:** `autocomplete="new-password"` pada password baru dan konfirmasi, `autocomplete="current-password"` pada password lama (juga kolom password hapus akun); tes E2E memastikan atributnya ada.
+
+## F-77 — Nilai status suspend FE berbeda dengan enum BE
+
+- **Lokasi:** `app/types/penalty/PenaltyUserResponse.ts`, `app/pages/admin/penalty/index.vue`, `app/components/form/PenaltyUserDetailSlideover.vue`, `app/components/app/BuyerPenaltyBanner.vue`, `app/pages/seller/dashboard/index.vue`
+- **Status:** SELESAI
+- **Gejala:** BE (`UserSuspendStatus`, `openapi.yaml`) mengirim `NONE`/`WARNING`/`SUSPENDED`/`PERMANENT_SUSPENDED`. FE membandingkan dengan `TEMPORARY`/`PERMANENT`, sehingga user tersuspend tampil "Normal" (hijau) di `/admin/penalty`, filter "Suspended Sementara/Permanen" mengirim `status=TEMPORARY`/`PERMANENT` yang tidak dikenal BE, kartu "Suspend Permanen" selalu 0, banner pembeli memakai gaya peringatan, dan dashboard seller tidak menyebut suspend. Ditemukan 2026-11-25 saat membuat tombol Lepas Suspend (T-54 BE).
+- **Perbaikan (2026-11-25):** nilai enum BE dipakai di tipe dan semua pembanding; kartu "Disuspend" hanya menghitung `SUSPENDED`/`PERMANENT_SUSPENDED` (WARNING bukan suspend).
+- **Tes:** `penalty.spec.ts`: mock memakai enum BE; tes baru label permanen + kartu, filter, dashboard seller, banner (merah di kode lama: 9 tes).
+
+## F-78 — Tandai selesai penarikan tanpa referensi transfer
+
+- **Lokasi:** `app/composables/api/admin-withdrawal.ts` (`approveWithdrawal`, body `{}`), dialog "Konfirmasi Transfer Selesai" di `app/pages/admin/withdrawal/index.vue` dan `[id].vue`
+- **Status:** TERBUKA
+- **Gejala:** BE `PATCH /admin/withdrawal/{id}/complete` menerima `admin_notes` (`WithdrawalActionRequest`) dan mencatatnya di audit, SOP S4 meminta CS mengisinya dengan referensi transfer, tetapi dialog FE tidak punya kolom catatan. Hasil pilot: withdrawal `WD20261125YGYFT4` COMPLETED dengan `admin_notes` kosong. Riwayat/detail hanya menampilkan `admin_notes` untuk REJECTED.
+- **Usulan:** kolom "Referensi transfer" di dialog (wajib atau minimal sangat dianjurkan, keputusan pemilik), dikirim sebagai `admin_notes`; tampilkan juga di detail/riwayat COMPLETED. Tes E2E: body berisi `admin_notes` ter-trim.

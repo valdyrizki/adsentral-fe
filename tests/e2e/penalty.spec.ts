@@ -246,7 +246,7 @@ const userRow = (page: Page) => main(page).locator('div.divide-y > button').filt
 test.describe('Manage penalty (admin)', () => {
   test('daftar user: status suspend & poin aktif', async ({ page, mockApi }) => {
     mockManagePenalty(mockApi, {
-      getUsers: () => [makePenaltyUser({ suspend_status: 'TEMPORARY', suspend_until: '2026-12-01T00:00:00', active_points: 40 })],
+      getUsers: () => [makePenaltyUser({ suspend_status: 'SUSPENDED', suspend_until: '2026-12-01T00:00:00', active_points: 40 })],
     })
 
     await gotoHydrated(page, '/admin/penalty')
@@ -269,6 +269,123 @@ test.describe('Manage penalty (admin)', () => {
 
     await gotoHydrated(page, '/admin/penalty')
     await expect(userRow(page).getByText('Peringatan')).toBeVisible({ timeout: 3000 })
+  })
+
+  test('status PERMANENT_SUSPENDED dari BE tampil "Suspend Permanen" dan dihitung di kartu (F-77)', async ({ page, mockApi }) => {
+    mockManagePenalty(mockApi, {
+      getUsers: () => [
+        makePenaltyUser({ suspend_status: 'PERMANENT_SUSPENDED', active_points: 12 }),
+        makePenaltyUser({ id: 'PU-8', user: makeUser('BUYER', { id: 8 }), suspend_status: 'WARNING', active_points: 5 }),
+      ],
+    })
+
+    await gotoHydrated(page, '/admin/penalty')
+    await expect(userRow(page).getByText('Suspend Permanen')).toBeVisible()
+    const card = (label: string) => main(page).locator('div.grid > div').filter({ has: page.getByText(label, { exact: true }) })
+    // WARNING bukan suspend: kartu "Disuspend" hanya menghitung SUSPENDED/PERMANENT_SUSPENDED
+    await expect(card('Disuspend').getByText('1', { exact: true })).toBeVisible()
+    await expect(card('Suspend Permanen').getByText('1', { exact: true })).toBeVisible()
+  })
+
+  test('filter suspend mengirim nilai enum BE (F-77)', async ({ page, mockApi }) => {
+    const { queries } = mockManagePenalty(mockApi, { getUsers: () => [makePenaltyUser()] })
+
+    await gotoHydrated(page, '/admin/penalty')
+    await expect(userRow(page)).toBeVisible()
+    for (const [label, value] of [['Suspended Sementara', 'SUSPENDED'], ['Suspended Permanen', 'PERMANENT_SUSPENDED']]) {
+      await main(page).getByRole('combobox').first().click()
+      await page.getByRole('option', { name: label }).click()
+      await expect.poll(() => queries.at(-1)?.get('status')).toBe(value)
+    }
+  })
+
+  test('lepas suspend: tombol hanya untuk user yang sedang disuspend', async ({ page, mockApi }) => {
+    let users = [makePenaltyUser({ suspend_status: 'WARNING', active_points: 6 })]
+    mockManagePenalty(mockApi, { getUsers: () => users })
+
+    await gotoHydrated(page, '/admin/penalty')
+    await userRow(page).click()
+    const slideover = page.getByRole('dialog', { name: 'Tes SELLER' })
+    await expect(slideover.getByText('Peringatan')).toBeVisible()
+    await expect(slideover.getByRole('button', { name: 'Lepas Suspend' })).toHaveCount(0)
+    await page.keyboard.press('Escape')
+
+    // suspend sementara yang masanya sudah lewat tidak lagi dianggap suspend oleh BE (PenaltyService.isSuspended)
+    users = [makePenaltyUser({ suspend_status: 'SUSPENDED', suspend_until: daysFromNow(-1), active_points: 8 })]
+    await main(page).getByRole('button', { name: 'Refresh' }).click()
+    await userRow(page).click()
+    await expect(slideover.getByText('Suspend Sementara')).toBeVisible()
+    await expect(slideover.getByRole('button', { name: 'Lepas Suspend' })).toHaveCount(0)
+  })
+
+  test('lepas suspend: alasan wajib, body tanpa poin membatalkan semua penalty, daftar dimuat ulang', async ({ page, mockApi }) => {
+    let users = [makePenaltyUser({ suspend_status: 'SUSPENDED', suspend_until: daysFromNow(5), active_points: 8 })]
+    const { queries } = mockManagePenalty(mockApi, { getUsers: () => users })
+    const bodies: unknown[] = []
+    mockApi.on('POST', '/admin/penalty/unlock/7', (route) => {
+      bodies.push(jsonBody(route))
+      users = [makePenaltyUser({ suspend_status: 'NONE', suspend_until: null, active_points: 0 })]
+      return ok(null, 'User berhasil di-unlock')
+    })
+
+    await gotoHydrated(page, '/admin/penalty')
+    await userRow(page).click()
+    await page.getByRole('dialog', { name: 'Tes SELLER' }).getByRole('button', { name: 'Lepas Suspend' }).click()
+
+    const modal = page.getByRole('dialog', { name: 'Lepas Suspend' })
+    const submit = modal.getByRole('button', { name: 'Lepas Suspend' })
+    await modal.getByTestId('unlock-notes').fill('abc ')
+    await expect(submit).toBeDisabled()
+    await modal.getByTestId('unlock-notes').fill('  Banding diterima pemilik  ')
+    const listBefore = queries.length
+    await submit.click()
+
+    await expect(page.getByText('Suspend dilepas').first()).toBeVisible()
+    expect(bodies).toEqual([{ notes: 'Banding diterima pemilik' }])
+    await expect(modal).toHaveCount(0)
+    await expect.poll(() => queries.length).toBeGreaterThan(listBefore)
+    await expect(userRow(page).getByText('Normal')).toBeVisible()
+  })
+
+  test('lepas suspend: atur poin 0-7 dikirim sebagai points; di luar rentang ditolak', async ({ page, mockApi }) => {
+    mockManagePenalty(mockApi, { getUsers: () => [makePenaltyUser({ suspend_status: 'PERMANENT_SUSPENDED', active_points: 12 })] })
+    const bodies: unknown[] = []
+    mockApi.on('POST', '/admin/penalty/unlock/7', (route) => (bodies.push(jsonBody(route)), ok(null)))
+
+    await gotoHydrated(page, '/admin/penalty')
+    await userRow(page).click()
+    await page.getByRole('dialog', { name: 'Tes SELLER' }).getByRole('button', { name: 'Lepas Suspend' }).click()
+    const modal = page.getByRole('dialog', { name: 'Lepas Suspend' })
+    await modal.getByTestId('unlock-notes').fill('Poin disesuaikan setelah banding')
+    await modal.getByText('Atur poin aktif menjadi').click()
+    const points = modal.getByTestId('unlock-points')
+    await points.fill('8')
+    await expect(modal.getByRole('button', { name: 'Lepas Suspend' })).toBeDisabled()
+    await points.fill('3')
+    await modal.getByRole('button', { name: 'Lepas Suspend' }).click()
+
+    await expect(page.getByText('Suspend dilepas').first()).toBeVisible()
+    expect(bodies).toEqual([{ notes: 'Poin disesuaikan setelah banding', points: 3 }])
+  })
+
+  test('lepas suspend: error BE tampil di modal, klik ganda hanya satu request', async ({ page, mockApi }) => {
+    mockManagePenalty(mockApi, { getUsers: () => [makePenaltyUser({ suspend_status: 'SUSPENDED', suspend_until: daysFromNow(5), active_points: 8 })] })
+    let calls = 0
+    mockApi.on('POST', '/admin/penalty/unlock/7', async () => {
+      calls++
+      await new Promise((r) => setTimeout(r, 300))
+      return fail(400, 'User tidak sedang disuspend')
+    })
+
+    await gotoHydrated(page, '/admin/penalty')
+    await userRow(page).click()
+    await page.getByRole('dialog', { name: 'Tes SELLER' }).getByRole('button', { name: 'Lepas Suspend' }).click()
+    const modal = page.getByRole('dialog', { name: 'Lepas Suspend' })
+    await modal.getByTestId('unlock-notes').fill('Banding diterima')
+    await modal.getByRole('button', { name: 'Lepas Suspend' }).dblclick()
+
+    await expect(modal.getByText('User tidak sedang disuspend')).toBeVisible()
+    expect(calls).toBe(1)
   })
 
   test('kenakan penalty: validasi, cari user, rule aktif saja & body request', async ({ page, mockApi }) => {
@@ -432,7 +549,7 @@ test.describe('Penalty milik user', () => {
       .asRole('BUYER')
       .on('GET', '/system/settings/public', ok([setting('WA_NUMBER', '+62 812-3456-7890')]))
       .on('GET', '/user/penalty/stat', ok({
-        active_points: 30, active_point_merchant: 0, suspend_status: 'TEMPORARY',
+        active_points: 30, active_point_merchant: 0, suspend_status: 'SUSPENDED',
         suspend_until: '2026-12-01T00:00:00', verified_seller: false,
       }))
       .on('GET', '/user/penalty', ok(page1([
@@ -486,6 +603,21 @@ test.describe('Penalty milik user', () => {
     const m = main(page)
     await expect(m.getByText('Keterlambatan Pengiriman')).toBeVisible()
     await expect(m.getByText('Telat kirim 3x')).toBeVisible()
+  })
+
+  test('seller tersuspend: dashboard menampilkan "Suspend Sementara" dari enum BE (F-77)', async ({ page, mockApi }) => {
+    mockApi
+      .asRole('SELLER')
+      .on('GET', '/seller/finance/summary', ok({ today_transaction_amount: 0, total_income: 0, withdrawn: 0 }))
+      .on('GET', '/seller/products/summary', ok({ active: 0, in_review: 0, blocked: 0 }))
+      .on('GET', '/seller/orders/summary', ok({}))
+      .on('GET', '/tx/seller', ok(emptyPage()))
+      .on('GET', '/user/penalty/stat', ok({ active_points: 8, active_point_merchant: 8, suspend_status: 'SUSPENDED', suspend_until: '2026-12-01T00:00:00', verified_seller: false }))
+
+    await gotoHydrated(page, '/seller/dashboard')
+    const m = main(page)
+    await expect(m.getByText('Suspend Sementara', { exact: true })).toBeVisible()
+    await expect(m.getByText('Disuspend hingga 01 Dec 2026. Aktivitas toko dibatasi.')).toBeVisible()
   })
 
   test('kartu "Poin Aktif" memakai stat BE, bukan jumlah baris halaman ini (F-32)', async ({ page, mockApi }) => {

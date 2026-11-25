@@ -76,8 +76,8 @@ const { data: stat } = await useAsyncData<MyPenaltyStat | null>(
   }
 )
 
-const isPermanent = computed(() => stat.value?.suspend_status === 'PERMANENT')
-const isTemporary = computed(() => stat.value?.suspend_status === 'TEMPORARY')
+const isPermanent = computed(() => stat.value?.suspend_status === 'PERMANENT_SUSPENDED')
+const isTemporary = computed(() => stat.value?.suspend_status === 'SUSPENDED')
 
 const outerClass = computed(() => {
   if (isPermanent.value) return 'bg-red-50 border-red-200'

@@ -110,7 +110,7 @@
     <UCard v-if="penaltyStat && (penaltyStat.suspend_status !== 'NONE' || (merchantStore.merchant?.penalty_points ?? 0) > 0)"
       class="shadow-sm border"
       :class="{
-        'border-red-200 bg-red-50': penaltyStat.suspend_status === 'PERMANENT' || penaltyStat.suspend_status === 'TEMPORARY',
+        'border-red-200 bg-red-50': penaltyStat.suspend_status === 'PERMANENT_SUSPENDED' || penaltyStat.suspend_status === 'SUSPENDED',
         'border-orange-200 bg-orange-50': penaltyStat.suspend_status === 'WARNING' || (penaltyStat.suspend_status === 'NONE' && penaltyStat.active_points > 0),
       }"
     >
@@ -124,19 +124,19 @@
         <div
           class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
           :class="{
-            'bg-red-100': penaltyStat.suspend_status === 'PERMANENT' || penaltyStat.suspend_status === 'TEMPORARY',
+            'bg-red-100': penaltyStat.suspend_status === 'PERMANENT_SUSPENDED' || penaltyStat.suspend_status === 'SUSPENDED',
             'bg-orange-100': penaltyStat.suspend_status === 'WARNING',
             'bg-green-100': penaltyStat.suspend_status === 'NONE',
           }"
         >
           <UIcon
-            :name="penaltyStat.suspend_status === 'PERMANENT' ? 'i-heroicons-x-circle'
-              : penaltyStat.suspend_status === 'TEMPORARY' ? 'i-heroicons-no-symbol'
+            :name="penaltyStat.suspend_status === 'PERMANENT_SUSPENDED' ? 'i-heroicons-x-circle'
+              : penaltyStat.suspend_status === 'SUSPENDED' ? 'i-heroicons-no-symbol'
               : penaltyStat.suspend_status === 'WARNING' ? 'i-heroicons-exclamation-triangle'
               : 'i-heroicons-shield-check'"
             class="text-2xl"
             :class="{
-              'text-red-500': penaltyStat.suspend_status === 'PERMANENT' || penaltyStat.suspend_status === 'TEMPORARY',
+              'text-red-500': penaltyStat.suspend_status === 'PERMANENT_SUSPENDED' || penaltyStat.suspend_status === 'SUSPENDED',
               'text-orange-500': penaltyStat.suspend_status === 'WARNING',
               'text-green-500': penaltyStat.suspend_status === 'NONE',
             }"
@@ -146,14 +146,14 @@
           <div class="flex items-center gap-2 flex-wrap">
             <p class="text-sm font-semibold text-gray-800">
               {{
-                penaltyStat.suspend_status === 'PERMANENT' ? 'Suspend Permanen' :
-                penaltyStat.suspend_status === 'TEMPORARY' ? 'Suspend Sementara' :
+                penaltyStat.suspend_status === 'PERMANENT_SUSPENDED' ? 'Suspend Permanen' :
+                penaltyStat.suspend_status === 'SUSPENDED' ? 'Suspend Sementara' :
                 penaltyStat.suspend_status === 'WARNING' ? 'Peringatan' :
                 'Normal'
               }}
             </p>
             <UBadge
-              :color="penaltyStat.suspend_status === 'PERMANENT' || penaltyStat.suspend_status === 'TEMPORARY' ? 'error'
+              :color="penaltyStat.suspend_status === 'PERMANENT_SUSPENDED' || penaltyStat.suspend_status === 'SUSPENDED' ? 'error'
                 : penaltyStat.suspend_status === 'WARNING' ? 'warning'
                 : 'success'"
               variant="subtle"
@@ -167,9 +167,9 @@
           </div>
           <p class="text-xs text-gray-400 mt-1">
             {{
-              penaltyStat.suspend_status === 'PERMANENT'
+              penaltyStat.suspend_status === 'PERMANENT_SUSPENDED'
                 ? 'Akun Anda disuspend permanen. Hubungi admin untuk informasi lebih lanjut.'
-                : penaltyStat.suspend_status === 'TEMPORARY' && penaltyStat.suspend_until
+                : penaltyStat.suspend_status === 'SUSPENDED' && penaltyStat.suspend_until
                 ? `Disuspend hingga ${dayjs(penaltyStat.suspend_until).format('DD MMM YYYY')}. Aktivitas toko dibatasi.`
                 : penaltyStat.suspend_status === 'WARNING'
                 ? 'Anda memiliki poin penalty aktif. Pelanggaran lebih lanjut dapat menyebabkan suspensi.'

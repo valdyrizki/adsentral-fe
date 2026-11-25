@@ -36,7 +36,7 @@
               <UBadge :color="suspendColor(user.suspend_status)" variant="subtle" size="xs">
                 {{ suspendLabel(user.suspend_status) }}
               </UBadge>
-              <span v-if="user.suspend_until && user.suspend_status === 'TEMPORARY'" class="text-xs text-gray-400 self-center">
+              <span v-if="user.suspend_until && user.suspend_status === 'SUSPENDED'" class="text-xs text-gray-400 self-center">
                 s/d {{ dayjs(user.suspend_until).format('DD MMM YYYY') }}
               </span>
             </div>
@@ -56,6 +56,18 @@
           @click="emit('apply-penalty', user)"
         >
           Kenakan Penalty ke User Ini
+        </UButton>
+
+        <!-- Membatalkan penalty tidak mengakhiri suspend sebelum suspend_until (BE evaluateSuspendStatus); jalurnya unlock (T-54) -->
+        <UButton
+          v-if="suspendedNow"
+          icon="i-heroicons-lock-open"
+          color="warning"
+          variant="soft"
+          class="w-full"
+          @click="emit('unlock', user)"
+        >
+          Lepas Suspend
         </UButton>
 
         <!-- Penalty List -->
@@ -147,7 +159,16 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   'apply-penalty': [user: PenaltyUserResponse]
   'penalty-cancelled': []
+  'unlock': [user: PenaltyUserResponse]
 }>()
+
+// Sama dengan BE PenaltyService.isSuspended: permanen selalu, sementara hanya sampai suspend_until
+const suspendedNow = computed(() => {
+  const u = props.user
+  if (!u) return false
+  if (u.suspend_status === 'PERMANENT_SUSPENDED') return true
+  return u.suspend_status === 'SUSPENDED' && !!u.suspend_until && dayjs(u.suspend_until).isAfter(dayjs())
+})
 
 const toast = useToast()
 const { cancelPenalty, fetchUserPenaltyDetail } = usePenaltyApi()
@@ -193,14 +214,14 @@ async function loadDetail() {
 }
 
 function suspendColor(status: UserSuspendStatus) {
-  if (status === 'PERMANENT') return 'error'
-  if (status === 'TEMPORARY' || status === 'WARNING') return 'warning'
+  if (status === 'PERMANENT_SUSPENDED') return 'error'
+  if (status === 'SUSPENDED' || status === 'WARNING') return 'warning'
   return 'success'
 }
 
 function suspendLabel(status: UserSuspendStatus) {
-  if (status === 'PERMANENT') return 'Suspend Permanen'
-  if (status === 'TEMPORARY') return 'Suspend Sementara'
+  if (status === 'PERMANENT_SUSPENDED') return 'Suspend Permanen'
+  if (status === 'SUSPENDED') return 'Suspend Sementara'
   if (status === 'WARNING') return 'Peringatan'
   return 'Normal'
 }

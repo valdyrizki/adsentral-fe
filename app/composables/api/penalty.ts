@@ -63,6 +63,20 @@ export const usePenaltyApi = () => {
     }
   }
 
+  /**
+   * Lepas suspend user (BE `unlockUser`, admin & super admin). Tanpa `points`: semua penalty aktif dibatalkan dan poin
+   * menjadi 0; dengan `points` (0-7): poin diset ke nilai itu, riwayat penalty tidak diubah.
+   */
+  const unlockPenaltyUser = async (userId: number, payload: { notes: string; points?: number }): Promise<void> => {
+    const res = await api<WebResponse<null>>(`/admin/penalty/unlock/${userId}`, {
+      method: 'POST',
+      body: payload,
+    })
+    if (res.status !== 'success') {
+      throw createError({ statusCode: 400, statusMessage: res.message || 'Gagal melepas suspend' })
+    }
+  }
+
   const fetchPenaltyUsers = async (
     page = 0,
     size = 20,
@@ -120,5 +134,5 @@ export const usePenaltyApi = () => {
     }
   }
 
-  return { searchUsers, applyPenalty, fetchPenalty, cancelPenalty, fetchPenaltyUsers, fetchUserPenaltyDetail, fetchMyPenalties, fetchMyPenaltyStat }
+  return { searchUsers, applyPenalty, fetchPenalty, cancelPenalty, unlockPenaltyUser, fetchPenaltyUsers, fetchUserPenaltyDetail, fetchMyPenalties, fetchMyPenaltyStat }
 }

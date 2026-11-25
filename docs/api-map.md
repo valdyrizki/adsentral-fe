@@ -335,6 +335,7 @@ Filter list: hanya **satu** nilai `status` per request (`'ALL'` = tanpa paramete
 | `fetchUserPenaltyDetail` | `/admin/penalty/user/{userId}` | `PenaltyUserDetailSlideover` |
 | `applyPenalty` | POST `/admin/penalty` | `components/form/ApplyPenaltyModal.vue` |
 | `cancelPenalty` | DELETE `/admin/penalty/{penaltyId}` | `PenaltyUserDetailSlideover` |
+| `unlockPenaltyUser` | POST `/admin/penalty/unlock/{userId}` | `components/form/UnlockPenaltyModal.vue` (dibuka dari `PenaltyUserDetailSlideover` lewat `pages/admin/penalty`) |
 | `fetchPenalty` | `/admin/penalty` | — |
 | `searchUsers` | `/admin/users` (pencarian user umum; daftar lengkap ada di `useAdminUserApi.fetchUsers`) | `ApplyPenaltyModal`, `CreateNotificationModal` |
 

@@ -31,7 +31,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 6 | Transaksi buyer | `transaction.spec.ts` | ✅ | — | F-11, F-17, F-18 selesai. Tarik pengajuan batal lewat konfirmasi (F-12). |
 | 7 | Garansi (buyer & seller) | `guarantee.spec.ts` | ✅ | — | F-21 selesai (`GuaranteeStatusBadge`). |
 | 8 | Saldo, deposit & transfer | `balance.spec.ts` | ✅ | — | F-20, F-33, F-34 selesai. |
-| 9 | Penalty (buyer, seller, admin) | `penalty.spec.ts` | ✅ | — | F-29–F-32 selesai (`/admin/penalty-user` dihapus, rule sesuai peran user). |
+| 9 | Penalty (buyer, seller, admin) | `penalty.spec.ts` | ✅ | — | F-29–F-32 selesai (`/admin/penalty-user` dihapus, rule sesuai peran user). Status suspend memakai enum BE `SUSPENDED`/`PERMANENT_SUSPENDED` (F-77); tombol Lepas Suspend (T-54 BE). |
 | 10 | Pesanan seller | `seller-order.spec.ts` | ✅ | — | F-10 & F-11 selesai. Ajukan arbitrase, kirim via file, kiriman otomatis dari stok. |
 | 11 | Penarikan dana & rekening bank seller | `withdrawal.spec.ts`, `bank-account.spec.ts` | 🐞 | — | `WD_FEE` diam-diam jatuh ke Rp 2.500 (F-23). |
 | 12 | Produk seller | `seller-product.spec.ts` | ✅ | — | Teks menyesatkan (F-37), Edit produk SUSPEND (F-73), estimasi fee seller terverifikasi (F-75). |
@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | `static-pages.spec.ts`, `help-pages.spec.ts`, `legal.spec.ts` | ✅ | — | SLA & jam CS (F-66), muat sebagian (F-67), konten contoh & kontak hardcoded (F-71). |
 
-Total saat ini: **420 tes** di 47 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (dihitung 2026-11-22 dengan `npx playwright test --list`).
+Total saat ini: **427 tes** di 47 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (2026-11-25: suite penuh 427 lulus).
 
 ---
 
@@ -198,6 +198,8 @@ Total saat ini: **420 tes** di 47 spec, tanpa tes `test.fail` (semua bug yang pu
 | Manage: header slideover basi, riwayat gagal dimuat | ✅ | F-31 (selesai) |
 | Buyer: banner & riwayat; seller: riwayat | ✅ | |
 | Kenakan penalty: rule sesuai peran user (`/admin/penalty-user` dihapus) | ✅ | F-32 (selesai) |
+| Status `SUSPENDED`/`PERMANENT_SUSPENDED` dari BE: label daftar & slideover, kartu Disuspend/Permanen, filter, banner buyer, dashboard seller | ✅ | F-77 (selesai) |
+| Lepas suspend: tombol hanya saat tersuspend, alasan wajib, body tanpa/dengan `points` (0-7), daftar dimuat ulang, error BE di modal, klik ganda satu request | ✅ | T-54 (BE) |
 
 ## 10. Pesanan seller — `seller-order.spec.ts`
 

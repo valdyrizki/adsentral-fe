@@ -179,7 +179,8 @@ Sumber mutasi saldo (`WalletSource`, label di `utils/walletSource.ts`): `DEPOSIT
 
 - **Penalty rule**: `target_role` `SELLER`/`BUYER`, `points`, `expired_days`, `trigger_type` `AUTO` (diberikan sistem, mis. telat respon garansi) atau `MANUAL` (diberikan admin).
 - Poin kedaluwarsa setelah `expired_days`; hanya poin aktif yang dihitung.
-- **Suspend status**: `NONE`, `WARNING`, `TEMPORARY` (sampai `suspend_until`), `PERMANENT`. Buyer yang terkena melihat `BuyerPenaltyBanner`.
+- **Suspend status** (enum BE `UserSuspendStatus`): `NONE`, `WARNING` (>= 5 poin, fungsi tetap normal), `SUSPENDED` (>= 8 poin, sampai `suspend_until`), `PERMANENT_SUSPENDED` (>= 10 poin). Bukan `TEMPORARY`/`PERMANENT` (F-77). Buyer yang terkena melihat `BuyerPenaltyBanner`.
+- Membatalkan penalty menurunkan poin tetapi **tidak** mengakhiri `SUSPENDED` sebelum `suspend_until`. Admin melepasnya lewat **Lepas Suspend** di `/admin/penalty` (`POST /admin/penalty/unlock/{userId}`, alasan 5-500 karakter; tanpa `points` semua penalty aktif dibatalkan dan poin 0, dengan `points` 0-7 poin diset ke nilai itu; tercatat `UNLOCK_PENALTY`). Tombol hanya untuk `PERMANENT_SUSPENDED` atau `SUSPENDED` yang `suspend_until`-nya belum lewat, sama dengan BE `isSuspended`.
 
 ## Verifikasi seller
 

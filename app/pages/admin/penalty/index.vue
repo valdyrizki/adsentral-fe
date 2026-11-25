@@ -15,6 +15,15 @@
       :user="selectedUser"
       @apply-penalty="openApplyForUser"
       @penalty-cancelled="refreshAfterCancel"
+      @unlock="openUnlockForUser"
+    />
+
+    <!-- Lepas suspend (T-54) -->
+    <FormUnlockPenaltyModal
+      v-model:open="showUnlockModal"
+      :user="unlockUser"
+      @unlocked="refresh()"
+      @failed="refresh()"
     />
 
     <ClientOnly>
@@ -137,7 +146,7 @@
                 <UBadge :color="suspendColor(user.suspend_status)" variant="subtle" size="xs">
                   {{ suspendLabel(user.suspend_status) }}
                 </UBadge>
-                <span v-if="user.suspend_until && user.suspend_status === 'TEMPORARY'" class="text-xs text-gray-400 self-center">
+                <span v-if="user.suspend_until && user.suspend_status === 'SUSPENDED'" class="text-xs text-gray-400 self-center">
                   s/d {{ dayjs(user.suspend_until).format('DD MMM YYYY') }}
                 </span>
               </div>
@@ -198,8 +207,8 @@ const statusOptions = [
   { label: 'Semua', value: 'ALL' },
   { label: 'Normal', value: 'NONE' },
   { label: 'Peringatan', value: 'WARNING' },
-  { label: 'Suspended Sementara', value: 'TEMPORARY' },
-  { label: 'Suspended Permanen', value: 'PERMANENT' },
+  { label: 'Suspended Sementara', value: 'SUSPENDED' },
+  { label: 'Suspended Permanen', value: 'PERMANENT_SUSPENDED' },
 ]
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
@@ -240,8 +249,9 @@ const penaltyRules = computed(() =>
 const statsCards = computed(() => {
   const list = users.value?.content ?? []
   const total = users.value?.total_elements ?? 0
-  const suspended = list.filter(u => u.suspend_status !== 'NONE').length
-  const permanent = list.filter(u => u.suspend_status === 'PERMANENT').length
+  // WARNING bukan suspend (fungsi tetap normal, BR-13)
+  const suspended = list.filter(u => u.suspend_status === 'SUSPENDED' || u.suspend_status === 'PERMANENT_SUSPENDED').length
+  const permanent = list.filter(u => u.suspend_status === 'PERMANENT_SUSPENDED').length
   const maxPoints = list.length ? Math.max(...list.map(u => u.active_points)) : 0
 
   return [
@@ -259,14 +269,14 @@ function handleFilter() {
 }
 
 function suspendColor(status: UserSuspendStatus) {
-  if (status === 'PERMANENT') return 'error'
-  if (status === 'TEMPORARY' || status === 'WARNING') return 'warning'
+  if (status === 'PERMANENT_SUSPENDED') return 'error'
+  if (status === 'SUSPENDED' || status === 'WARNING') return 'warning'
   return 'success'
 }
 
 function suspendLabel(status: UserSuspendStatus) {
-  if (status === 'PERMANENT') return 'Suspend Permanen'
-  if (status === 'TEMPORARY') return 'Suspend Sementara'
+  if (status === 'PERMANENT_SUSPENDED') return 'Suspend Permanen'
+  if (status === 'SUSPENDED') return 'Suspend Sementara'
   if (status === 'WARNING') return 'Peringatan'
   return 'Normal'
 }
@@ -301,5 +311,16 @@ function openApplyForUser(penaltyUser: PenaltyUserResponse) {
   applyForUser.value = penaltyUser.user
   showDetail.value = false
   setTimeout(() => { showApplyModal.value = true }, 300)
+}
+
+// ===== UNLOCK MODAL =====
+const showUnlockModal = ref(false)
+const unlockUser = ref<PenaltyUserResponse | null>(null)
+
+// sama dengan modal kenakan penalty: slideover ditutup dulu supaya modal tidak bertumpuk
+function openUnlockForUser(penaltyUser: PenaltyUserResponse) {
+  unlockUser.value = penaltyUser
+  showDetail.value = false
+  setTimeout(() => { showUnlockModal.value = true }, 300)
 }
 </script>
