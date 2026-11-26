@@ -97,6 +97,56 @@ test.describe('Admin: pembayaran tidak terproses', () => {
     await expect.poll(() => listCalls).toBeGreaterThanOrEqual(2)
   })
 
+  test('admin biasa tidak melihat Kembalikan ke Saldo; pembeli tampil di daftar', async ({ page, mockApi }) => {
+    mockApi.asRole('ADMIN').on('GET', '/admin/payments/unprocessed', ok(pageOf([item(1, { buyer_username: 'demo_buyer1' })])))
+
+    await gotoHydrated(page, '/admin/payments/unprocessed')
+    await expect(main(page).getByText('demo_buyer1')).toBeVisible()
+    await expect(main(page).getByRole('button', { name: 'Tandai selesai' })).toBeVisible()
+    await expect(main(page).getByRole('button', { name: 'Kembalikan ke Saldo' })).toHaveCount(0)
+  })
+
+  test('super admin: Kembalikan ke Saldo menyebut pembeli dan nominal, catatan wajib, POST ter-trim lalu dimuat ulang', async ({ page, mockApi }) => {
+    let body: unknown = null
+    mockApi.asRole('SUPER_ADMIN')
+      .on('GET', '/admin/payments/unprocessed', () => ok(pageOf(body ? [] : [item(1, { buyer_username: 'demo_buyer1', amount: 30250 })])))
+      .on('POST', '/admin/payments/unprocessed/1/refund-to-balance', (route) => {
+        body = route.request().postDataJSON()
+        return ok(item(1, { status: 'RESOLVED' }))
+      })
+
+    await gotoHydrated(page, '/admin/payments/unprocessed')
+    await main(page).getByRole('button', { name: 'Kembalikan ke Saldo' }).click()
+    await expect(dialog(page).getByText('demo_buyer1')).toBeVisible()
+    await expect(dialog(page).getByText('Rp 30.250')).toBeVisible()
+    const submit = dialog(page).getByRole('button', { name: 'Kembalikan', exact: true })
+    await expect(submit).toBeDisabled()
+
+    await dialog(page).getByRole('textbox').fill('  Pembeli setuju dikembalikan ke saldo  ')
+    await submit.click()
+
+    await expect(page.getByText('Dana dikembalikan ke saldo pembeli').first()).toBeVisible()
+    expect(body).toEqual({ note: 'Pembeli setuju dikembalikan ke saldo' })
+    await expect(main(page).getByText('Tidak ada pembayaran yang tertahan.')).toBeVisible()
+  })
+
+  test('super admin: Kembalikan ke Saldo pada antrean yang sudah ditangani (409) menutup modal dan memuat ulang', async ({ page, mockApi }) => {
+    let listCalls = 0
+    mockApi.asRole('SUPER_ADMIN')
+      .on('GET', '/admin/payments/unprocessed', () => { listCalls++; return ok(pageOf([item(1)])) })
+      .on('POST', '/admin/payments/unprocessed/1/refund-to-balance', fail(409, 'Data sudah diproses: RESOLVED'))
+
+    await gotoHydrated(page, '/admin/payments/unprocessed')
+    await main(page).getByText('Dibayar setelah kedaluwarsa').click()
+    await dialog(page).getByRole('button', { name: 'Kembalikan ke Saldo' }).click()
+    await dialog(page).getByRole('textbox').fill('setuju')
+    await dialog(page).getByRole('button', { name: 'Kembalikan', exact: true }).click()
+
+    await expect(page.getByText('Data sudah diproses: RESOLVED').first()).toBeVisible()
+    await expect(dialog(page)).toHaveCount(0)
+    await expect.poll(() => listCalls).toBeGreaterThanOrEqual(2)
+  })
+
   test('gagal memuat daftar: pesan BE tampil', async ({ page, mockApi }) => {
     mockApi.asRole('ADMIN').on('GET', '/admin/payments/unprocessed', fail(403, "You're not Admin"))
 

@@ -57,7 +57,7 @@ Saat menambah tes: ubah status di sini, perbarui ringkasan, dan catat bug baru d
 | 33 | Admin: data seller (EP06-08) | `admin-seller-data.spec.ts` | ✅ | — | `/admin/guarantee` dengan filter status/toko (`?merchant_id=`)/transaksi; Detail di `/admin/users`: mutasi saldo, ringkasan seller + tautan produk/stok/garansi/withdrawal berfilter, rekening nomor penuh; `/admin/product?merchant_id=` dan `/admin/withdrawal?user_id=` mengirim filter dan menampilkan label filter. |
 | 27 | Halaman statis | `static-pages.spec.ts`, `help-pages.spec.ts`, `legal.spec.ts` | ✅ | — | SLA & jam CS (F-66), muat sebagian (F-67), konten contoh & kontak hardcoded (F-71). |
 
-Total saat ini: **428 tes** di 47 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (2026-11-25: suite penuh 428 lulus).
+Total saat ini: **431 tes** di 47 spec, tanpa tes `test.fail` (semua bug yang punya tes sudah diperbaiki) (2026-11-25: suite penuh 428 lulus).
 
 ---
 
@@ -285,7 +285,7 @@ Total saat ini: **428 tes** di 47 spec, tanpa tes `test.fail` (semua bug yang pu
 | Tombol konfirmasi hanya untuk UNPAID manual/deposit | ✅ | |
 | Konfirmasi dari daftar + 409; tolak dari detail; batal di dialog | ✅ | F-06 (ditutup) |
 | Filter "Semua Status" | ✅ | F-07 (selesai) |
-| `/admin/payments/unprocessed`: tab status, normalisasi camelCase, detail RESOLVED, tandai selesai (catatan wajib, ter-trim), 409 → muat ulang, error muat | ✅ | `admin-unprocessed-payment.spec.ts` |
+| `/admin/payments/unprocessed`: tab status, normalisasi camelCase, detail RESOLVED, tandai selesai (catatan wajib, ter-trim), 409 → muat ulang, error muat; kolom Pembeli; Kembalikan ke Saldo hanya super admin (pembeli + nominal di dialog, catatan wajib ter-trim, 409 → muat ulang) (F-80) | ✅ | `admin-unprocessed-payment.spec.ts` |
 
 ## 18. Penarikan dana admin — `withdrawal.spec.ts`
 

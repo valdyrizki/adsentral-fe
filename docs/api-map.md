@@ -249,6 +249,7 @@ Filter list: hanya **satu** nilai `status` per request (`'ALL'` = tanpa paramete
 |---|---|---|
 | `fetchUnprocessedPayments` | `/admin/payments/unprocessed` | `pages/admin/payments/unprocessed` |
 | `resolveUnprocessedPayment` | PATCH `/admin/payments/unprocessed/{id}/resolve` | idem |
+| `refundUnprocessedToBalance` | POST `/admin/payments/unprocessed/{id}/refund-to-balance` body `{ note }` (super admin; kredit saldo pembeli + tandai selesai) | idem, tombol "Kembalikan ke Saldo" |
 
 **`voucher.ts` → `useVoucherApi`** · types: `types/voucher/*`
 

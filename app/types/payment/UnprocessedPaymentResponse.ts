@@ -4,6 +4,8 @@ export type UnprocessedPaymentReason = 'PAYMENT_EXPIRED' | 'PAYMENT_CANCELLED' |
 export interface UnprocessedPaymentResponse {
   id: number
   payment_id: string
+  // pemilik payment: tujuan Kembalikan ke Saldo (SOP S2)
+  buyer_username: string | null
   gateway_reference: string | null
   amount: number
   reason: UnprocessedPaymentReason

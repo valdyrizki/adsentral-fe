@@ -37,6 +37,10 @@
               <p class="font-semibold">{{ formatRupiah(selected.amount) }}</p>
             </div>
             <div>
+              <p class="text-xs text-gray-400">Pembeli</p>
+              <p>{{ selected.buyer_username || '-' }}</p>
+            </div>
+            <div>
               <p class="text-xs text-gray-400">Alasan</p>
               <p>{{ reasonLabel(selected.reason) }}</p>
               <p class="text-xs font-mono text-gray-400">{{ selected.reason }}</p>
@@ -61,8 +65,49 @@
       </template>
       <template #footer>
         <UButton color="neutral" variant="outline" @click="showDetail = false">Tutup</UButton>
+        <UButton
+          v-if="selected?.status === 'PENDING' && authStore.isSuperAdmin"
+          color="primary"
+          variant="soft"
+          icon="mdi:wallet-plus-outline"
+          @click="openRefund(selected!)"
+        >
+          Kembalikan ke Saldo
+        </UButton>
         <UButton v-if="selected?.status === 'PENDING'" color="primary" icon="mdi:check" @click="openResolve(selected!)">
           Tandai selesai
+        </UButton>
+      </template>
+    </UModal>
+
+    <!-- Modal: Kembalikan ke saldo (super admin, SOP S2) -->
+    <UModal v-if="showRefund" v-model:open="showRefund" title="Kembalikan ke Saldo" :ui="{ footer: 'justify-end' }">
+      <template #body>
+        <p v-if="refundTarget" class="text-sm text-gray-600 mb-3">
+          Saldo belanja <span class="font-semibold">{{ refundTarget.buyer_username || 'pembeli' }}</span>
+          akan bertambah <span class="font-semibold">{{ formatRupiah(refundTarget.amount) }}</span>
+          (pembayaran <span class="font-mono">{{ refundTarget.payment_id }}</span>), lalu antrean ini langsung ditandai selesai.
+          Lakukan hanya bila pembeli setuju dananya dikembalikan ke saldo, bukan ditransfer balik.
+        </p>
+        <UFormField label="Catatan" required>
+          <UTextarea
+            v-model="refundNote"
+            :rows="3"
+            placeholder="Mis. pembeli setuju dikembalikan ke saldo (chat CS 26/11)"
+            class="w-full"
+          />
+        </UFormField>
+      </template>
+      <template #footer>
+        <UButton color="neutral" variant="outline" :disabled="submitting" @click="showRefund = false">Batal</UButton>
+        <UButton
+          color="primary"
+          :loading="submitting"
+          :disabled="submitting || !refundNote.trim()"
+          icon="mdi:wallet-plus-outline"
+          @click="submitRefund"
+        >
+          Kembalikan
         </UButton>
       </template>
     </UModal>
@@ -102,7 +147,8 @@
       <template #description>
         Pembayaran di bawah ini <strong>sudah diterima gateway</strong>, tetapi pesanannya tidak bisa diproses lagi
         (sudah kedaluwarsa, dibatalkan, atau stoknya sudah dikembalikan). Uangnya ada di akun gateway, bukan di saldo aplikasi.
-        Lakukan <strong>refund lewat dashboard Tripay</strong> atau kredit saldo buyer secara manual, lalu tandai selesai dengan catatan.
+        Lakukan <strong>refund lewat dashboard Tripay</strong> atau transfer balik lalu tandai selesai dengan catatan,
+        atau (super admin) <strong>Kembalikan ke Saldo</strong> belanja pembeli, yang sekaligus menandai selesai.
       </template>
     </UAlert>
 
@@ -152,6 +198,7 @@
               <tr class="text-left text-xs text-gray-400 border-b border-gray-100">
                 <th class="py-2 px-2 font-medium">Waktu</th>
                 <th class="py-2 px-2 font-medium">Payment</th>
+                <th class="py-2 px-2 font-medium">Pembeli</th>
                 <th class="py-2 px-2 font-medium">Referensi Tripay</th>
                 <th class="py-2 px-2 font-medium text-right">Jumlah</th>
                 <th class="py-2 px-2 font-medium">Alasan</th>
@@ -175,6 +222,7 @@
                     <AppCopyButton :value="item.payment_id" />
                   </div>
                 </td>
+                <td class="py-3 px-2 text-gray-600">{{ item.buyer_username || '-' }}</td>
                 <td class="py-3 px-2" @click.stop>
                   <div class="flex items-center gap-1">
                     <span class="font-mono text-xs">{{ item.gateway_reference || '-' }}</span>
@@ -188,7 +236,16 @@
                     {{ statusMeta(item.status).label }}
                   </UBadge>
                 </td>
-                <td class="py-3 px-2 text-right" @click.stop>
+                <td class="py-3 px-2 text-right whitespace-nowrap space-x-1" @click.stop>
+                  <UButton
+                    v-if="item.status === 'PENDING' && authStore.isSuperAdmin"
+                    size="xs"
+                    color="primary"
+                    variant="outline"
+                    icon="mdi:wallet-plus-outline"
+                    label="Kembalikan ke Saldo"
+                    @click="openRefund(item)"
+                  />
                   <UButton
                     v-if="item.status === 'PENDING'"
                     size="xs"
@@ -230,7 +287,8 @@ definePageMeta({ layout: 'admin', label: 'Pembayaran Tidak Terproses' })
 
 const toast = useToast()
 const alertsStore = useAlertsStore()
-const { fetchUnprocessedPayments, resolveUnprocessedPayment } = useUnprocessedPaymentApi()
+const authStore = useAuthStore()
+const { fetchUnprocessedPayments, resolveUnprocessedPayment, refundUnprocessedToBalance } = useUnprocessedPaymentApi()
 
 // ===== HELPERS =====
 const reasonLabels: Record<string, string> = {
@@ -311,6 +369,40 @@ async function submitResolve() {
     toast.add({ title: 'Gagal menandai selesai', description: e.message, color: 'error' })
     if (e.status === 409 || e.status === 404) {
       showResolve.value = false
+      showDetail.value = false
+      await reload()
+    }
+  } finally {
+    submitting.value = false
+  }
+}
+
+// ===== KEMBALIKAN KE SALDO (super admin) =====
+const showRefund = ref(false)
+const refundTarget = ref<UnprocessedPaymentResponse | null>(null)
+const refundNote = ref('')
+
+function openRefund(item: UnprocessedPaymentResponse) {
+  refundTarget.value = item
+  refundNote.value = ''
+  showRefund.value = true
+}
+
+async function submitRefund() {
+  const note = refundNote.value.trim()
+  if (!refundTarget.value || !note || submitting.value) return
+  submitting.value = true
+  try {
+    await refundUnprocessedToBalance(refundTarget.value.id, note)
+    toast.add({ title: 'Dana dikembalikan ke saldo pembeli', color: 'success', icon: 'mdi:check-circle' })
+    showRefund.value = false
+    showDetail.value = false
+    await reload()
+  } catch (err) {
+    const e = err as UnprocessedApiError
+    toast.add({ title: 'Gagal mengembalikan ke saldo', description: e.message, color: 'error' })
+    if (e.status === 409 || e.status === 404) {
+      showRefund.value = false
       showDetail.value = false
       await reload()
     }

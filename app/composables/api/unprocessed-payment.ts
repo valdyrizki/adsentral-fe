@@ -9,6 +9,7 @@ const pick = (o: any, snake: string, camel: string) => o?.[snake] ?? o?.[camel] 
 const normalizeItem = (o: any): UnprocessedPaymentResponse => ({
   id: o.id,
   payment_id: pick(o, 'payment_id', 'paymentId'),
+  buyer_username: pick(o, 'buyer_username', 'buyerUsername'),
   gateway_reference: pick(o, 'gateway_reference', 'gatewayReference'),
   amount: Number(o.amount ?? 0),
   reason: o.reason,
@@ -68,5 +69,18 @@ export const useUnprocessedPaymentApi = () => {
     }
   }
 
-  return { fetchUnprocessedPayments, resolveUnprocessedPayment }
+  // Super admin: kredit saldo belanja pembeli sebesar nominal antrean dan tandai selesai sekaligus (409 bila sudah selesai)
+  const refundUnprocessedToBalance = async (id: number, note: string): Promise<UnprocessedPaymentResponse> => {
+    try {
+      const res = await api<WebResponse<any>>(`/admin/payments/unprocessed/${id}/refund-to-balance`, {
+        method: 'POST',
+        body: { note },
+      })
+      return normalizeItem(res.data)
+    } catch (err: any) {
+      throw toApiError(err, 'Gagal mengembalikan ke saldo')
+    }
+  }
+
+  return { fetchUnprocessedPayments, resolveUnprocessedPayment, refundUnprocessedToBalance }
 }
